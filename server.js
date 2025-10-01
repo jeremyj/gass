@@ -127,9 +127,6 @@ app.post('/api/consegna', (req, res) => {
           SET trovato_in_cassa = ?, pagato_produttore = ?, lasciato_in_cassa = ?, discrepanza_cassa = ?
           WHERE id = ?
         `).run(trovatoInCassa, pagatoProduttore, lasciatoInCassa, discrepanzaCassa, consegna.id);
-
-        // Delete old movimenti
-        db.prepare('DELETE FROM movimenti WHERE consegna_id = ?').run(consegna.id);
       } else {
         // Insert new consegna
         const result = db.prepare(`
@@ -140,13 +137,21 @@ app.post('/api/consegna', (req, res) => {
         consegna = { id: result.lastInsertRowid };
       }
 
-      // Insert movimenti and update saldi
+      // Upsert movimenti and update saldi (only for provided participants)
       const insertMovimento = db.prepare(`
         INSERT INTO movimenti (
           consegna_id, partecipante_id, salda_tutto, importo_saldato,
           usa_credito, debito_lasciato, credito_lasciato,
           salda_debito_totale, debito_saldato, note
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+
+      const updateMovimento = db.prepare(`
+        UPDATE movimenti
+        SET salda_tutto = ?, importo_saldato = ?, usa_credito = ?,
+            debito_lasciato = ?, credito_lasciato = ?,
+            salda_debito_totale = ?, debito_saldato = ?, note = ?
+        WHERE consegna_id = ? AND partecipante_id = ?
       `);
 
       const updateSaldo = db.prepare(`
@@ -159,18 +164,41 @@ app.post('/api/consegna', (req, res) => {
         const partecipante = db.prepare('SELECT * FROM partecipanti WHERE nome = ?').get(p.nome);
         if (!partecipante) return;
 
-        insertMovimento.run(
-          consegna.id,
-          partecipante.id,
-          p.saldaTutto ? 1 : 0,
-          p.importoSaldato || 0,
-          p.usaCredito || 0,
-          p.debitoLasciato || 0,
-          p.creditoLasciato || 0,
-          p.saldaDebitoTotale ? 1 : 0,
-          p.debitoSaldato || 0,
-          p.note || ''
-        );
+        // Check if movimento already exists for this participant
+        const existingMovimento = db.prepare(`
+          SELECT * FROM movimenti
+          WHERE consegna_id = ? AND partecipante_id = ?
+        `).get(consegna.id, partecipante.id);
+
+        if (existingMovimento) {
+          // Update existing movimento
+          updateMovimento.run(
+            p.saldaTutto ? 1 : 0,
+            p.importoSaldato || 0,
+            p.usaCredito || 0,
+            p.debitoLasciato || 0,
+            p.creditoLasciato || 0,
+            p.saldaDebitoTotale ? 1 : 0,
+            p.debitoSaldato || 0,
+            p.note || '',
+            consegna.id,
+            partecipante.id
+          );
+        } else {
+          // Insert new movimento
+          insertMovimento.run(
+            consegna.id,
+            partecipante.id,
+            p.saldaTutto ? 1 : 0,
+            p.importoSaldato || 0,
+            p.usaCredito || 0,
+            p.debitoLasciato || 0,
+            p.creditoLasciato || 0,
+            p.saldaDebitoTotale ? 1 : 0,
+            p.debitoSaldato || 0,
+            p.note || ''
+          );
+        }
 
         updateSaldo.run(p.nuovoSaldo, data, partecipante.id);
       });
