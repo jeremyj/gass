@@ -54,33 +54,10 @@ const count = db.prepare('SELECT COUNT(*) as count FROM partecipanti').get().cou
 if (count === 0) {
   const insert = db.prepare('INSERT INTO partecipanti (nome, saldo) VALUES (?, ?)');
   const participants = [
-    'Albertina',
-    'Ale Salvatori (AleAle)',
     'Alessandra Solimene',
-    'Cristina Ialongo',
-    'Elisa & Salvatore',
     'Fernanda Fischione',
-    'Flavia',
-    'Francesca Boschi',
-    'Francesca Ventura (frankkie)',
-    'Ilaria Masinara',
-    'Irene & Marco',
-    'Irene Pronio',
     'Jeremy (Rossellino)',
-    'Marco Binotto',
-    'Matias Borro Riva',
-    'Maurizio Ruffo',
-    'Paola mazza',
-    'Paola Silvestri (Polly)',
-    'Pietro Valigi',
-    'Rachele Brivio',
-    'Riccardo e Camille',
-    'sara streghizzi Simone',
-    'Sara Basta',
-    'Silke',
-    'Silvia & Paolo',
-    'Simone Landucci e Laura Porta',
-    'Stefania'
+    'Rachele Brivio'
   ];
 
   participants.forEach(name => {
