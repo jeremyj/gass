@@ -387,7 +387,6 @@ async function saveData() {
     const data = document.getElementById('data').value;
     const trovatoInCassa = roundUpCents(parseAmount(document.getElementById('trovatoInCassa').value));
     const pagatoProduttore = roundUpCents(parseAmount(document.getElementById('pagatoProduttore').value));
-    const lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
 
     if (!data) {
         showStatus('Inserisci la data', 'error');
@@ -461,6 +460,23 @@ async function saveData() {
         note,
         nuovoSaldo: roundUpCents(saldoCorrente)
     }];
+
+    // Auto-calculate lasciato in cassa from all participants' importo_saldato
+    let totalImportoSaldato = importoSaldato; // Start with current participant
+
+    // Get existing movimenti for this date to sum importo_saldato from other participants
+    if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
+        existingConsegnaMovimenti.forEach(m => {
+            if (m.nome !== currentNome) {
+                totalImportoSaldato += m.importo_saldato || 0;
+            }
+        });
+    }
+
+    const lasciatoInCassa = roundUpCents(trovatoInCassa - pagatoProduttore + totalImportoSaldato);
+
+    // Update the UI field
+    document.getElementById('lasciatoInCassa').value = lasciatoInCassa;
 
     try {
         const response = await fetch('/api/consegna', {
