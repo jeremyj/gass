@@ -350,7 +350,8 @@ async function saveData() {
     const saldaDebitoTotale = document.getElementById(`saldaDebito_${currentNome}`)?.checked || false;
     const note = document.getElementById(`note_${currentNome}`).value || '';
 
-    let saldoCorrente = p.saldo || 0;
+    // Use saldo before consegna if editing existing, otherwise current saldo
+    let saldoCorrente = saldiBefore[currentNome] !== undefined ? saldiBefore[currentNome] : (p.saldo || 0);
 
     // 1. Gestione pagamento/salda tutto
     if (saldaTutto) {
