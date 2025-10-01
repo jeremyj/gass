@@ -182,8 +182,8 @@ function renderParticipant(nome) {
         <div class="flow-section flow-debito">
             <div class="flow-section-title">4. SALDA DEBITO PRECEDENTE</div>
             <div class="checkbox-group">
-                <input type="checkbox" id="saldaDebito_${nome}" onchange="toggleSaldaDebito('${nome}')">
-                <label for="saldaDebito_${nome}">Salda debito totale €${formatSaldo(saldo)}</label>
+                <input type="checkbox" id="saldaDebito_${nome}" onchange="toggleSaldaDebito('${nome}', ${saldo})">
+                <label for="saldaDebito_${nome}">Salda intero debito €${formatSaldo(saldo)}</label>
             </div>
             <div class="form-group">
                 <label>Salda parziale:</label>
@@ -269,22 +269,26 @@ function validateCreditoMax(nome, saldo) {
     }
 }
 
-function toggleSaldaDebito(nome) {
+function toggleSaldaDebito(nome, saldo) {
     const checkbox = document.getElementById(`saldaDebito_${nome}`);
     const debitoField = document.getElementById(`debitoSaldato_${nome}`);
 
     if (checkbox && debitoField) {
         if (checkbox.checked) {
             debitoField.disabled = true;
-            debitoField.value = '';
+            // Set the field to the absolute value of the debt
+            debitoField.value = Math.abs(saldo);
         } else {
             debitoField.disabled = false;
+            debitoField.value = '';
         }
     }
 
-    // Get the participant's saldo
-    const p = participants.find(part => part.nome === nome);
-    const saldo = saldiBefore[nome] !== undefined ? saldiBefore[nome] : (p ? p.saldo || 0 : 0);
+    // Get the participant's saldo if not provided
+    if (!saldo) {
+        const p = participants.find(part => part.nome === nome);
+        saldo = saldiBefore[nome] !== undefined ? saldiBefore[nome] : (p ? p.saldo || 0 : 0);
+    }
 
     handleCreditoDebitoInput(nome, saldo);
 }
