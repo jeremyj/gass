@@ -51,14 +51,19 @@ function renderStorico(storico) {
         header.style.alignItems = 'center';
         header.style.marginBottom = '15px';
 
-        // Calcola discrepanza con consegna precedente
+        // Calcola discrepanza tra effettivo e calcolato
         let discrepanzaWarning = '';
         if (consegna.discrepanza_cassa) {
-            let discrepanzaImporto = 0;
-            if (index < storico.length - 1) {
-                const consegnaPrecedente = storico[index + 1]; // Array ordinato DESC
-                discrepanzaImporto = consegna.trovato_in_cassa - consegnaPrecedente.lasciato_in_cassa;
+            // Calcola lasciato teorico: trovato + incassato - pagato
+            let totalIncassato = 0;
+            if (consegna.movimenti && consegna.movimenti.length > 0) {
+                consegna.movimenti.forEach(m => {
+                    totalIncassato += m.importo_saldato || 0;
+                });
             }
+            const lasciatoCalcolato = consegna.trovato_in_cassa + totalIncassato - consegna.pagato_produttore;
+            const discrepanzaImporto = consegna.lasciato_in_cassa - lasciatoCalcolato;
+
             const segno = discrepanzaImporto >= 0 ? '+' : '';
             const color = discrepanzaImporto >= 0 ? '#2e7d32' : '#d32f2f';
             discrepanzaWarning = `<span style="color: ${color}; font-weight: bold; margin-left: 15px;">⚠️ DISCREPANZA CASSA ${segno}€${discrepanzaImporto.toFixed(2)}</span>`;
