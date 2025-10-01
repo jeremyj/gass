@@ -37,6 +37,12 @@ function normalizeInputField(input) {
     }
 }
 
+function handleInputFocus(input) {
+    if (input.value === '0' || input.value === '0.0' || input.value === '0.00') {
+        input.value = '';
+    }
+}
+
 function roundUpCents(amount) {
     return Math.round(amount * 10) / 10;
 }
@@ -146,7 +152,7 @@ function renderParticipant(nome) {
             <div class="flow-section-title">2. USA SALDO PRECEDENTE</div>
             <div class="form-group">
                 <label>Usa credito - max €${formatSaldo(saldo)}:</label>
-                <input type="text" inputmode="decimal" id="usaCredito_${nome}" placeholder="0.00" oninput="normalizeInputField(this)">
+                <input type="text" inputmode="decimal" id="usaCredito_${nome}" placeholder="0.00" oninput="normalizeInputField(this)" onfocus="handleInputFocus(this)">
             </div>
         </div>
         ` : ''}
@@ -156,11 +162,11 @@ function renderParticipant(nome) {
             <div class="row">
                 <div class="form-group">
                     <label>Lascia credito:</label>
-                    <input type="text" inputmode="decimal" id="credito_${nome}" placeholder="0.00" oninput="normalizeInputField(this); handleCreditoDebitoInput('${nome}')">
+                    <input type="text" inputmode="decimal" id="credito_${nome}" placeholder="0.00" oninput="normalizeInputField(this); handleCreditoDebitoInput('${nome}')" onfocus="handleInputFocus(this)">
                 </div>
                 <div class="form-group">
                     <label>Lascia debito:</label>
-                    <input type="text" inputmode="decimal" id="debito_${nome}" placeholder="0.00" oninput="normalizeInputField(this); handleCreditoDebitoInput('${nome}')">
+                    <input type="text" inputmode="decimal" id="debito_${nome}" placeholder="0.00" oninput="normalizeInputField(this); handleCreditoDebitoInput('${nome}')" onfocus="handleInputFocus(this)">
                 </div>
             </div>
         </div>
@@ -174,7 +180,7 @@ function renderParticipant(nome) {
             </div>
             <div class="form-group">
                 <label>Salda parziale:</label>
-                <input type="text" inputmode="decimal" id="debitoSaldato_${nome}" placeholder="0.00" oninput="normalizeInputField(this); handleCreditoDebitoInput('${nome}')">
+                <input type="text" inputmode="decimal" id="debitoSaldato_${nome}" placeholder="0.00" oninput="normalizeInputField(this); handleCreditoDebitoInput('${nome}')" onfocus="handleInputFocus(this)">
             </div>
         </div>
         ` : ''}

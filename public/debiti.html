@@ -25,12 +25,14 @@
             <button class="btn-add" onclick="showAddForm()">+ Aggiungi Partecipante</button>
 
             <div id="add-form" style="display: none; margin-top: 15px;">
-                <div class="form-group">
-                    <label>Nome Partecipante:</label>
-                    <input type="text" id="new-name" placeholder="Nome">
-                </div>
-                <button class="btn-save" onclick="addParticipant()">Salva</button>
-                <button onclick="hideAddForm()">Annulla</button>
+                <form onsubmit="event.preventDefault(); addParticipant();">
+                    <div class="form-group">
+                        <label>Nome Partecipante:</label>
+                        <input type="text" id="new-name" placeholder="Nome">
+                    </div>
+                    <button type="submit" class="btn-save">Salva</button>
+                    <button type="button" onclick="hideAddForm()">Annulla</button>
+                </form>
             </div>
 
             <table id="participants-table">

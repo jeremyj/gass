@@ -71,13 +71,13 @@ function renderParticipants() {
         const row = document.createElement('tr');
 
         const saldoClass = p.saldo < 0 ? 'saldo-debito' : p.saldo > 0 ? 'saldo-credito' : '';
-        const saldoText = p.saldo < 0 ? `Debito: ${Math.abs(p.saldo).toFixed(2)}` : p.saldo.toFixed(2);
+        const saldoText = p.saldo.toFixed(2);
 
         row.innerHTML = `
             <td><strong>${p.nome}</strong></td>
             <td class="${saldoClass}">
                 <span id="saldo-view-${p.id}">€${saldoText}</span>
-                <input type="text" inputmode="decimal" id="saldo-edit-${p.id}" value="${p.saldo}" style="display: none;" oninput="normalizeInputField(this)">
+                <input type="text" inputmode="decimal" id="saldo-edit-${p.id}" value="${p.saldo}" style="display: none;" oninput="normalizeInputField(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();saveSaldo(${p.id})}">
             </td>
             <td>${formatDateItalian(p.ultima_modifica)}</td>
             <td>
