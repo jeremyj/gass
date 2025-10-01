@@ -155,7 +155,7 @@ function renderParticipant(nome) {
             <div class="flow-section-title">2. USA SALDO PRECEDENTE</div>
             <div class="form-group">
                 <label>Usa credito - max €${formatSaldo(saldo)}:</label>
-                <input type="text" inputmode="decimal" id="usaCredito_${nome}" placeholder="0.00" oninput="normalizeInputField(this); handleCreditoDebitoInput('${nome}')" onfocus="handleInputFocus(this)">
+                <input type="text" inputmode="decimal" id="usaCredito_${nome}" placeholder="0.00" oninput="normalizeInputField(this); handleCreditoDebitoInput('${nome}', ${saldo})" onfocus="handleInputFocus(this)">
             </div>
         </div>
         ` : ''}
@@ -165,11 +165,11 @@ function renderParticipant(nome) {
             <div class="row">
                 <div class="form-group">
                     <label>Lascia credito:</label>
-                    <input type="text" inputmode="decimal" id="credito_${nome}" placeholder="0.00" oninput="normalizeInputField(this); handleCreditoDebitoInput('${nome}')" onfocus="handleInputFocus(this)">
+                    <input type="text" inputmode="decimal" id="credito_${nome}" placeholder="0.00" oninput="normalizeInputField(this); handleCreditoDebitoInput('${nome}', ${saldo})" onfocus="handleInputFocus(this)">
                 </div>
                 <div class="form-group">
                     <label>Lascia debito:</label>
-                    <input type="text" inputmode="decimal" id="debito_${nome}" placeholder="0.00" oninput="normalizeInputField(this); handleCreditoDebitoInput('${nome}')" onfocus="handleInputFocus(this)">
+                    <input type="text" inputmode="decimal" id="debito_${nome}" placeholder="0.00" oninput="normalizeInputField(this); handleCreditoDebitoInput('${nome}', ${saldo})" onfocus="handleInputFocus(this)">
                 </div>
             </div>
         </div>
@@ -183,7 +183,7 @@ function renderParticipant(nome) {
             </div>
             <div class="form-group">
                 <label>Salda parziale:</label>
-                <input type="text" inputmode="decimal" id="debitoSaldato_${nome}" placeholder="0.00" oninput="normalizeInputField(this); handleCreditoDebitoInput('${nome}')" onfocus="handleInputFocus(this)">
+                <input type="text" inputmode="decimal" id="debitoSaldato_${nome}" placeholder="0.00" oninput="normalizeInputField(this); handleCreditoDebitoInput('${nome}', ${saldo})" onfocus="handleInputFocus(this)">
             </div>
         </div>
         ` : ''}
@@ -243,10 +243,15 @@ function toggleSaldaDebito(nome) {
             debitoField.disabled = false;
         }
     }
-    handleCreditoDebitoInput(nome);
+
+    // Get the participant's saldo
+    const p = participants.find(part => part.nome === nome);
+    const saldo = saldiBefore[nome] !== undefined ? saldiBefore[nome] : (p ? p.saldo || 0 : 0);
+
+    handleCreditoDebitoInput(nome, saldo);
 }
 
-function handleCreditoDebitoInput(nome) {
+function handleCreditoDebitoInput(nome, saldo) {
     const creditoLasciato = document.getElementById(`credito_${nome}`);
     const debitoLasciato = document.getElementById(`debito_${nome}`);
     const debitoSaldato = document.getElementById(`debitoSaldato_${nome}`);
@@ -255,13 +260,23 @@ function handleCreditoDebitoInput(nome) {
 
     const hasCreditoLasciatoValue = creditoLasciato && parseAmount(creditoLasciato.value) > 0;
     const hasDebitoValue = debitoLasciato && parseAmount(debitoLasciato.value) > 0;
-    const hasUsaCreditoValue = usaCredito && parseAmount(usaCredito.value) > 0;
+    const usaCreditoValue = usaCredito ? parseAmount(usaCredito.value) : 0;
+    const hasUsaCreditoValue = usaCreditoValue > 0;
+
+    // Check if "usa credito" covers all available credit
+    const creditoDisponibile = saldo > 0 ? saldo : 0;
+    const usaCreditoParziale = hasUsaCreditoValue && usaCreditoValue < creditoDisponibile;
 
     // Se usa credito, disabilita lascia credito
     if (hasUsaCreditoValue) {
         if (creditoLasciato) {
             creditoLasciato.disabled = true;
             creditoLasciato.value = '';
+        }
+        // Se non usa tutto il credito, disabilita anche lascia debito
+        if (usaCreditoParziale && debitoLasciato) {
+            debitoLasciato.disabled = true;
+            debitoLasciato.value = '';
         }
     }
     // Se lascia credito, disabilita debito lasciato e salda debito
@@ -299,13 +314,21 @@ function handleCreditoDebitoInput(nome) {
         if (debitoLasciato) debitoLasciato.disabled = false;
 
         // Controlla se salda debito parziale ha valore
-        const hasDebitoSaldatoValue = debitoSaldato && parseAmount(debitoSaldato.value) > 0;
+        const debitoSaldatoValue = debitoSaldato ? parseAmount(debitoSaldato.value) : 0;
+        const hasDebitoSaldatoValue = debitoSaldatoValue > 0;
+        const debitoDisponibile = saldo < 0 ? Math.abs(saldo) : 0;
+        const saldaDebitoParziale = hasDebitoSaldatoValue && debitoSaldatoValue < debitoDisponibile;
 
         if (hasDebitoSaldatoValue) {
             // Se sto saldando debito parziale, non posso lasciare credito
             if (creditoLasciato) {
                 creditoLasciato.disabled = true;
                 creditoLasciato.value = '';
+            }
+            // Se non salda tutto il debito, non posso lasciare debito
+            if (saldaDebitoParziale && debitoLasciato) {
+                debitoLasciato.disabled = true;
+                debitoLasciato.value = '';
             }
         } else {
             // Riabilita tutto se checkbox non è checked
