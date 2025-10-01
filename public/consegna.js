@@ -249,26 +249,31 @@ async function saveData() {
 
     let saldoCorrente = p.saldo || 0;
 
+    // 1. Gestione pagamento/salda tutto
     if (saldaTutto) {
-        saldoCorrente = 0;
-    } else if (importoSaldato > 0) {
+        // Salda tutto azzera il debito/credito esistente
         saldoCorrente = 0;
     }
+    // Nota: importoSaldato NON modifica il saldo, è solo un pagamento
 
+    // 2. Usa credito esistente (sottrae dal credito)
     if (usaCredito > 0) {
         saldoCorrente -= usaCredito;
     }
 
+    // 3. Salda debito esistente
+    if (saldaDebitoTotale && saldoCorrente < 0) {
+        saldoCorrente = 0;
+    } else if (debitoSaldato > 0 && saldoCorrente < 0) {
+        saldoCorrente = Math.min(0, saldoCorrente + debitoSaldato);
+    }
+
+    // 4. Nuovo debito/credito da lasciare
     if (debitoLasciato > 0) {
         saldoCorrente -= debitoLasciato;
     }
     if (creditoLasciato > 0) {
         saldoCorrente += creditoLasciato;
-    }
-    if (saldaDebitoTotale && saldoCorrente < 0) {
-        saldoCorrente = 0;
-    } else if (debitoSaldato > 0 && saldoCorrente < 0) {
-        saldoCorrente = Math.min(0, saldoCorrente + debitoSaldato);
     }
 
     const partecipantiData = [{
