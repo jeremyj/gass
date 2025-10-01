@@ -659,8 +659,26 @@ async function checkDateData() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('data').valueAsDate = new Date();
+document.addEventListener('DOMContentLoaded', async () => {
+    // Carica l'ultima data disponibile dallo storico
+    try {
+        const response = await fetch('/api/storico');
+        const result = await response.json();
+
+        if (result.success && result.storico.length > 0) {
+            // Prendi la data più recente (primo elemento, array ordinato DESC)
+            const ultimaData = result.storico[0].data;
+            document.getElementById('data').value = ultimaData;
+        } else {
+            // Nessuna consegna esistente, usa data odierna
+            document.getElementById('data').valueAsDate = new Date();
+        }
+    } catch (error) {
+        console.error('Error loading last date:', error);
+        // Fallback to today's date
+        document.getElementById('data').valueAsDate = new Date();
+    }
+
     updateDateDisplay();
     loadData();
 });
