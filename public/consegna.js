@@ -156,11 +156,11 @@ function renderParticipant(nome) {
             <div class="row">
                 <div class="form-group">
                     <label>Lascia credito:</label>
-                    <input type="text" inputmode="decimal" id="credito_${nome}" placeholder="0.00" oninput="normalizeInputField(this)">
+                    <input type="text" inputmode="decimal" id="credito_${nome}" placeholder="0.00" oninput="normalizeInputField(this); handleCreditoDebitoInput('${nome}')">
                 </div>
                 <div class="form-group">
                     <label>Lascia debito:</label>
-                    <input type="text" inputmode="decimal" id="debito_${nome}" placeholder="0.00" oninput="normalizeInputField(this)">
+                    <input type="text" inputmode="decimal" id="debito_${nome}" placeholder="0.00" oninput="normalizeInputField(this); handleCreditoDebitoInput('${nome}')">
                 </div>
             </div>
         </div>
@@ -174,7 +174,7 @@ function renderParticipant(nome) {
             </div>
             <div class="form-group">
                 <label>Salda parziale:</label>
-                <input type="text" inputmode="decimal" id="debitoSaldato_${nome}" placeholder="0.00" oninput="normalizeInputField(this)">
+                <input type="text" inputmode="decimal" id="debitoSaldato_${nome}" placeholder="0.00" oninput="normalizeInputField(this); handleCreditoDebitoInput('${nome}')">
             </div>
         </div>
         ` : ''}
@@ -232,6 +232,69 @@ function toggleSaldaDebito(nome) {
             debitoField.value = '';
         } else {
             debitoField.disabled = false;
+        }
+    }
+    handleCreditoDebitoInput(nome);
+}
+
+function handleCreditoDebitoInput(nome) {
+    const creditoLasciato = document.getElementById(`credito_${nome}`);
+    const debitoLasciato = document.getElementById(`debito_${nome}`);
+    const debitoSaldato = document.getElementById(`debitoSaldato_${nome}`);
+    const saldaDebitoCheckbox = document.getElementById(`saldaDebito_${nome}`);
+
+    const hasCreditoValue = creditoLasciato && parseAmount(creditoLasciato.value) > 0;
+    const hasDebitoValue = debitoLasciato && parseAmount(debitoLasciato.value) > 0;
+
+    // Se lascia credito, disabilita debito lasciato e salda debito
+    if (hasCreditoValue) {
+        if (debitoLasciato) {
+            debitoLasciato.disabled = true;
+            debitoLasciato.value = '';
+        }
+        if (debitoSaldato) {
+            debitoSaldato.disabled = true;
+            debitoSaldato.value = '';
+        }
+        if (saldaDebitoCheckbox) {
+            saldaDebitoCheckbox.disabled = true;
+            saldaDebitoCheckbox.checked = false;
+        }
+    }
+    // Se lascia debito, disabilita credito lasciato
+    else if (hasDebitoValue) {
+        if (creditoLasciato) {
+            creditoLasciato.disabled = true;
+            creditoLasciato.value = '';
+        }
+        // Permetti comunque di saldare debito anche se lasci nuovo debito
+        if (debitoSaldato) {
+            debitoSaldato.disabled = false;
+        }
+        if (saldaDebitoCheckbox) {
+            saldaDebitoCheckbox.disabled = false;
+        }
+    }
+    // Se nessun valore, riabilita tutti
+    else {
+        if (creditoLasciato) creditoLasciato.disabled = false;
+        if (debitoLasciato) debitoLasciato.disabled = false;
+
+        // Controlla se salda debito parziale ha valore
+        const hasDebitoSaldatoValue = debitoSaldato && parseAmount(debitoSaldato.value) > 0;
+
+        if (hasDebitoSaldatoValue) {
+            // Se sto saldando debito parziale, non posso lasciare credito
+            if (creditoLasciato) {
+                creditoLasciato.disabled = true;
+                creditoLasciato.value = '';
+            }
+        } else {
+            // Riabilita tutto se checkbox non è checked
+            if (saldaDebitoCheckbox && !saldaDebitoCheckbox.checked) {
+                if (debitoSaldato) debitoSaldato.disabled = false;
+            }
+            if (saldaDebitoCheckbox) saldaDebitoCheckbox.disabled = false;
         }
     }
 }
