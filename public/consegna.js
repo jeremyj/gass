@@ -327,17 +327,26 @@ function updateLasciatoInCassa() {
     const trovatoInCassa = parseAmount(document.getElementById('trovatoInCassa').value);
     const pagatoProduttore = parseAmount(document.getElementById('pagatoProduttore').value);
 
-    // Usa il totale salvato come "before" state
-    let totalImportoSaldato = totalImportoSaldatoBefore;
+    // Calcola totale importi saldati
+    let totalImportoSaldato = 0;
 
-    // Aggiungi importo del partecipante corrente se selezionato
     const select = document.getElementById('participant-select');
     const currentNome = select.value;
+
+    // Se c'è un partecipante selezionato, usa totalImportoSaldatoBefore + importo corrente
     if (currentNome) {
+        totalImportoSaldato = totalImportoSaldatoBefore;
         const importoField = document.getElementById(`importo_${currentNome}`);
         if (importoField) {
             const importoCorrente = parseAmount(importoField.value);
             totalImportoSaldato += importoCorrente;
+        }
+    } else {
+        // Nessun partecipante selezionato: calcola da tutti i movimenti esistenti
+        if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
+            existingConsegnaMovimenti.forEach(m => {
+                totalImportoSaldato += m.importo_saldato || 0;
+            });
         }
     }
 
