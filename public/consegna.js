@@ -155,7 +155,7 @@ function renderParticipant(nome) {
             <div class="flow-section-title">2. USA SALDO PRECEDENTE</div>
             <div class="form-group">
                 <label>Usa credito - max €${formatSaldo(saldo)}:</label>
-                <input type="text" inputmode="decimal" id="usaCredito_${nome}" placeholder="0.00" oninput="normalizeInputField(this)" onfocus="handleInputFocus(this)">
+                <input type="text" inputmode="decimal" id="usaCredito_${nome}" placeholder="0.00" oninput="normalizeInputField(this); handleCreditoDebitoInput('${nome}')" onfocus="handleInputFocus(this)">
             </div>
         </div>
         ` : ''}
@@ -251,12 +251,21 @@ function handleCreditoDebitoInput(nome) {
     const debitoLasciato = document.getElementById(`debito_${nome}`);
     const debitoSaldato = document.getElementById(`debitoSaldato_${nome}`);
     const saldaDebitoCheckbox = document.getElementById(`saldaDebito_${nome}`);
+    const usaCredito = document.getElementById(`usaCredito_${nome}`);
 
-    const hasCreditoValue = creditoLasciato && parseAmount(creditoLasciato.value) > 0;
+    const hasCreditoLasciatoValue = creditoLasciato && parseAmount(creditoLasciato.value) > 0;
     const hasDebitoValue = debitoLasciato && parseAmount(debitoLasciato.value) > 0;
+    const hasUsaCreditoValue = usaCredito && parseAmount(usaCredito.value) > 0;
 
+    // Se usa credito, disabilita lascia credito
+    if (hasUsaCreditoValue) {
+        if (creditoLasciato) {
+            creditoLasciato.disabled = true;
+            creditoLasciato.value = '';
+        }
+    }
     // Se lascia credito, disabilita debito lasciato e salda debito
-    if (hasCreditoValue) {
+    else if (hasCreditoLasciatoValue) {
         if (debitoLasciato) {
             debitoLasciato.disabled = true;
             debitoLasciato.value = '';
