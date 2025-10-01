@@ -104,21 +104,24 @@ app.get('/api/consegna/:date', (req, res) => {
 // Save consegna data
 app.post('/api/consegna', (req, res) => {
   try {
-    const { data, trovatoInCassa, pagatoProduttore, lasciatoInCassa, partecipanti } = req.body;
+    const { data, trovatoInCassa, pagatoProduttore, lasciatoInCassa, discrepanzaCassa, partecipanti } = req.body;
 
     const transaction = db.transaction(() => {
       // Check if consegna already exists for this date
       let consegna = db.prepare('SELECT * FROM consegne WHERE data = ?').get(data);
 
-      // Check for cash discrepancy
-      const previousConsegna = db.prepare(`
-        SELECT lasciato_in_cassa FROM consegne
-        WHERE data < ?
-        ORDER BY data DESC
-        LIMIT 1
-      `).get(data);
-
-      const discrepanzaCassa = previousConsegna && previousConsegna.lasciato_in_cassa !== trovatoInCassa ? 1 : 0;
+      // Use provided discrepanzaCassa flag or auto-detect
+      let discrepanzaFlag = discrepanzaCassa ? 1 : 0;
+      if (!discrepanzaCassa) {
+        // Auto-detect discrepancy if not manually set
+        const previousConsegna = db.prepare(`
+          SELECT lasciato_in_cassa FROM consegne
+          WHERE data < ?
+          ORDER BY data DESC
+          LIMIT 1
+        `).get(data);
+        discrepanzaFlag = previousConsegna && previousConsegna.lasciato_in_cassa !== trovatoInCassa ? 1 : 0;
+      }
 
       if (consegna) {
         // Update existing consegna
@@ -126,13 +129,13 @@ app.post('/api/consegna', (req, res) => {
           UPDATE consegne
           SET trovato_in_cassa = ?, pagato_produttore = ?, lasciato_in_cassa = ?, discrepanza_cassa = ?
           WHERE id = ?
-        `).run(trovatoInCassa, pagatoProduttore, lasciatoInCassa, discrepanzaCassa, consegna.id);
+        `).run(trovatoInCassa, pagatoProduttore, lasciatoInCassa, discrepanzaFlag, consegna.id);
       } else {
         // Insert new consegna
         const result = db.prepare(`
           INSERT INTO consegne (data, trovato_in_cassa, pagato_produttore, lasciato_in_cassa, discrepanza_cassa)
           VALUES (?, ?, ?, ?, ?)
-        `).run(data, trovatoInCassa, pagatoProduttore, lasciatoInCassa, discrepanzaCassa);
+        `).run(data, trovatoInCassa, pagatoProduttore, lasciatoInCassa, discrepanzaFlag);
 
         consegna = { id: result.lastInsertRowid };
       }

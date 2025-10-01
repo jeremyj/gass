@@ -39,7 +39,7 @@ function renderStorico(storico) {
         return;
     }
 
-    storico.forEach(consegna => {
+    storico.forEach((consegna, index) => {
         const section = document.createElement('div');
         section.className = 'section';
         section.style.background = '#FFF9C4';
@@ -51,8 +51,18 @@ function renderStorico(storico) {
         header.style.alignItems = 'center';
         header.style.marginBottom = '15px';
 
-        const discrepanzaWarning = consegna.discrepanza_cassa ?
-            '<span style="color: #d32f2f; font-weight: bold; margin-left: 15px;">⚠️ DISCREPANZA CASSA</span>' : '';
+        // Calcola discrepanza con consegna precedente
+        let discrepanzaWarning = '';
+        if (consegna.discrepanza_cassa) {
+            let discrepanzaImporto = 0;
+            if (index < storico.length - 1) {
+                const consegnaPrecedente = storico[index + 1]; // Array ordinato DESC
+                discrepanzaImporto = consegna.trovato_in_cassa - consegnaPrecedente.lasciato_in_cassa;
+            }
+            const segno = discrepanzaImporto >= 0 ? '+' : '';
+            const color = discrepanzaImporto >= 0 ? '#2e7d32' : '#d32f2f';
+            discrepanzaWarning = `<span style="color: ${color}; font-weight: bold; margin-left: 15px;">⚠️ DISCREPANZA CASSA ${segno}€${discrepanzaImporto.toFixed(2)}</span>`;
+        }
 
         header.innerHTML = `
             <div>
@@ -65,7 +75,7 @@ function renderStorico(storico) {
         const infoTable = document.createElement('table');
         infoTable.innerHTML = `
             <thead>
-                <tr style="background: #FFF9C4;">
+                <tr style="background: #FFEB3B; color: white;">
                     <th>Trovato in Cassa</th>
                     <th>Pagato Produttore</th>
                     <th>Lasciato in Cassa</th>
@@ -94,12 +104,10 @@ function renderStorico(storico) {
                 <thead>
                     <tr>
                         <th>Nome</th>
-                        <th>Salda Tutto</th>
                         <th>Importo Saldato</th>
                         <th>Usa Credito</th>
                         <th>Debito Lasciato</th>
                         <th>Credito Lasciato</th>
-                        <th>Salda Debito Tot.</th>
                         <th>Debito Saldato</th>
                         <th>Note</th>
                     </tr>
@@ -110,12 +118,10 @@ function renderStorico(storico) {
                         return `
                             <tr style="background: ${bgColor};">
                                 <td><strong>${m.nome}</strong></td>
-                                <td>${m.salda_tutto ? '✓' : ''}</td>
                                 <td>${m.importo_saldato ? '€' + m.importo_saldato.toFixed(2) : ''}</td>
                                 <td>${m.usa_credito ? '€' + m.usa_credito.toFixed(2) : ''}</td>
                                 <td>${m.debito_lasciato ? '€' + m.debito_lasciato.toFixed(2) : ''}</td>
                                 <td>${m.credito_lasciato ? '€' + m.credito_lasciato.toFixed(2) : ''}</td>
-                                <td>${m.salda_debito_totale ? '✓' : ''}</td>
                                 <td>${m.debito_saldato ? '€' + m.debito_saldato.toFixed(2) : ''}</td>
                                 <td>${m.note || ''}</td>
                             </tr>

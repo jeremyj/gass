@@ -1,6 +1,8 @@
 let participants = [];
 let existingConsegnaMovimenti = null; // Store existing movimenti for the selected date
 let saldiBefore = {}; // Store saldi before the existing consegna
+let discrepanzaCassaEnabled = false; // Track discrepanza cassa checkbox state
+let totalImportoSaldatoBefore = 0; // Store total importo_saldato before editing
 
 function showStatus(message, type) {
     const status = document.getElementById('status');
@@ -108,9 +110,30 @@ function showParticipantForm() {
     const container = document.getElementById('selected-participants');
     container.innerHTML = '';
 
-    if (!nome) return;
+    if (!nome) {
+        // Reset total importo to include all movements
+        if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
+            totalImportoSaldatoBefore = 0;
+            existingConsegnaMovimenti.forEach(m => {
+                totalImportoSaldatoBefore += m.importo_saldato || 0;
+            });
+        }
+        updateLasciatoInCassa();
+        return;
+    }
+
+    // Aggiorna totalImportoSaldatoBefore escludendo il partecipante corrente
+    totalImportoSaldatoBefore = 0;
+    if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
+        existingConsegnaMovimenti.forEach(m => {
+            if (m.nome !== nome) {
+                totalImportoSaldatoBefore += m.importo_saldato || 0;
+            }
+        });
+    }
 
     renderParticipant(nome);
+    updateLasciatoInCassa();
 }
 
 function renderParticipant(nome) {
@@ -142,7 +165,7 @@ function renderParticipant(nome) {
             <div class="flow-section-title">1. PAGAMENTO OGGI</div>
             <div class="form-group">
                 <label>Importo saldato:</label>
-                <input type="text" inputmode="decimal" id="importo_${nome}" placeholder="0.00" oninput="normalizeInputField(this)" onfocus="handleInputFocus(this)">
+                <input type="text" inputmode="decimal" id="importo_${nome}" placeholder="0.00" oninput="normalizeInputField(this); updateLasciatoInCassa()" onfocus="handleInputFocus(this)">
             </div>
         </div>
 
@@ -277,6 +300,51 @@ function toggleSaldaDebito(nome, saldo) {
     handleCreditoDebitoInput(nome, saldo);
 }
 
+function toggleDiscrepanzaCassa() {
+    const checkbox = document.getElementById('discrepanzaCassa');
+    const lasciatoField = document.getElementById('lasciatoInCassa');
+
+    if (checkbox.checked) {
+        discrepanzaCassaEnabled = true;
+        lasciatoField.readOnly = false;
+        lasciatoField.style.cursor = 'text';
+        lasciatoField.style.background = '#fff';
+        lasciatoField.focus();
+    } else {
+        discrepanzaCassaEnabled = false;
+        lasciatoField.readOnly = true;
+        lasciatoField.style.cursor = 'not-allowed';
+        lasciatoField.style.background = '#f0f0f0';
+        updateLasciatoInCassa();
+    }
+}
+
+function updateLasciatoInCassa() {
+    if (discrepanzaCassaEnabled) {
+        return; // Non aggiornare se discrepanza è abilitata
+    }
+
+    const trovatoInCassa = parseAmount(document.getElementById('trovatoInCassa').value);
+    const pagatoProduttore = parseAmount(document.getElementById('pagatoProduttore').value);
+
+    // Usa il totale salvato come "before" state
+    let totalImportoSaldato = totalImportoSaldatoBefore;
+
+    // Aggiungi importo del partecipante corrente se selezionato
+    const select = document.getElementById('participant-select');
+    const currentNome = select.value;
+    if (currentNome) {
+        const importoField = document.getElementById(`importo_${currentNome}`);
+        if (importoField) {
+            const importoCorrente = parseAmount(importoField.value);
+            totalImportoSaldato += importoCorrente;
+        }
+    }
+
+    const lasciatoInCassa = roundUpCents(trovatoInCassa - pagatoProduttore + totalImportoSaldato);
+    document.getElementById('lasciatoInCassa').value = lasciatoInCassa;
+}
+
 function handleCreditoDebitoInput(nome, saldo) {
     const creditoLasciato = document.getElementById(`credito_${nome}`);
     const debitoLasciato = document.getElementById(`debito_${nome}`);
@@ -284,102 +352,74 @@ function handleCreditoDebitoInput(nome, saldo) {
     const saldaDebitoCheckbox = document.getElementById(`saldaDebito_${nome}`);
     const usaCredito = document.getElementById(`usaCredito_${nome}`);
 
-    const hasCreditoLasciatoValue = creditoLasciato && parseAmount(creditoLasciato.value) > 0;
-    const hasDebitoValue = debitoLasciato && parseAmount(debitoLasciato.value) > 0;
+    // Valori correnti
+    const creditoLasciatoValue = creditoLasciato ? parseAmount(creditoLasciato.value) : 0;
+    const debitoLasciatoValue = debitoLasciato ? parseAmount(debitoLasciato.value) : 0;
     const usaCreditoValue = usaCredito ? parseAmount(usaCredito.value) : 0;
-    const hasUsaCreditoValue = usaCreditoValue > 0;
     const debitoSaldatoValue = debitoSaldato ? parseAmount(debitoSaldato.value) : 0;
-    const hasDebitoSaldatoValue = debitoSaldatoValue > 0;
-    const hasSaldaDebitoCheckbox = saldaDebitoCheckbox && saldaDebitoCheckbox.checked;
+    const saldaDebitoChecked = saldaDebitoCheckbox && saldaDebitoCheckbox.checked;
 
-    // Check if "usa credito" covers all available credit
+    // Calcoli derivati
     const creditoDisponibile = saldo > 0 ? saldo : 0;
-    const usaCreditoParziale = hasUsaCreditoValue && usaCreditoValue < creditoDisponibile;
+    const debitoDisponibile = saldo < 0 ? Math.abs(saldo) : 0;
+    const usaInteroCredito = usaCreditoValue > 0 && usaCreditoValue >= creditoDisponibile;
+    const usaCreditoParziale = usaCreditoValue > 0 && usaCreditoValue < creditoDisponibile;
+    const saldaDebito = saldaDebitoChecked || debitoSaldatoValue > 0;
 
-    // Se c'è qualsiasi attività nella sezione 4 (SALDA DEBITO), disabilita sezione 3 (NUOVO SALDO)
-    const hasSection4Activity = hasDebitoSaldatoValue || hasSaldaDebitoCheckbox;
-    if (hasSection4Activity) {
+    // Reset: abilita tutti i campi
+    if (creditoLasciato) creditoLasciato.disabled = false;
+    if (debitoLasciato) debitoLasciato.disabled = false;
+    if (debitoSaldato) debitoSaldato.disabled = false;
+    if (saldaDebitoCheckbox) saldaDebitoCheckbox.disabled = false;
+
+    // REGOLA 1: Non puoi lasciare credito E debito contemporaneamente
+    if (creditoLasciatoValue > 0 && debitoLasciatoValue > 0) {
+        // Questo sarà gestito dalla validazione in saveData
+    }
+
+    // REGOLA 2: Se usi credito (intero o parziale), disabilita "Lascia credito"
+    if (usaCreditoValue > 0) {
         if (creditoLasciato) {
             creditoLasciato.disabled = true;
             creditoLasciato.value = '';
         }
+    }
+
+    // REGOLA 3: Se usi credito PARZIALE, disabilita "Lascia debito"
+    // (hai ancora credito residuo, non puoi accumulare debito)
+    if (usaCreditoParziale) {
         if (debitoLasciato) {
             debitoLasciato.disabled = true;
             debitoLasciato.value = '';
         }
-        return; // Exit early, don't process other logic
     }
 
-    // Se usa credito, disabilita lascia credito
-    if (hasUsaCreditoValue) {
-        if (creditoLasciato) {
-            creditoLasciato.disabled = true;
-            creditoLasciato.value = '';
-        }
-        // Se non usa tutto il credito, disabilita anche lascia debito
-        if (usaCreditoParziale && debitoLasciato) {
-            debitoLasciato.disabled = true;
-            debitoLasciato.value = '';
-        }
-    }
-    // Se lascia credito, disabilita debito lasciato e salda debito
-    else if (hasCreditoLasciatoValue) {
+    // REGOLA 4: Se salda debito (intero o parziale), disabilita "Lascia debito"
+    // (non ha senso saldare debito e contemporaneamente lasciarne di nuovo dalla sezione 3)
+    if (saldaDebito) {
         if (debitoLasciato) {
             debitoLasciato.disabled = true;
             debitoLasciato.value = '';
         }
-        if (debitoSaldato) {
-            debitoSaldato.disabled = true;
-            debitoSaldato.value = '';
-        }
-        if (saldaDebitoCheckbox) {
-            saldaDebitoCheckbox.disabled = true;
-            saldaDebitoCheckbox.checked = false;
-        }
+        // MA permetti di lasciare credito (Scenario 10: salda debito + paga + lascia credito)
     }
-    // Se lascia debito, disabilita credito lasciato
-    else if (hasDebitoValue) {
+
+    // REGOLA 5: Se lascia credito, disabilita "Lascia debito"
+    if (creditoLasciatoValue > 0) {
+        if (debitoLasciato) {
+            debitoLasciato.disabled = true;
+            debitoLasciato.value = '';
+        }
+        // MA permetti di saldare debito (Scenario 14: salda debito + lascia credito)
+    }
+
+    // REGOLA 6: Se lascia debito, disabilita "Lascia credito"
+    if (debitoLasciatoValue > 0) {
         if (creditoLasciato) {
             creditoLasciato.disabled = true;
             creditoLasciato.value = '';
         }
-        // Permetti comunque di saldare debito anche se lasci nuovo debito
-        if (debitoSaldato) {
-            debitoSaldato.disabled = false;
-        }
-        if (saldaDebitoCheckbox) {
-            saldaDebitoCheckbox.disabled = false;
-        }
-    }
-    // Se nessun valore, riabilita tutti
-    else {
-        if (creditoLasciato) creditoLasciato.disabled = false;
-        if (debitoLasciato) debitoLasciato.disabled = false;
-
-        // Controlla se salda debito parziale ha valore
-        const debitoSaldatoValue = debitoSaldato ? parseAmount(debitoSaldato.value) : 0;
-        const hasDebitoSaldatoValue = debitoSaldatoValue > 0;
-        const debitoDisponibile = saldo < 0 ? Math.abs(saldo) : 0;
-        const saldaDebitoParziale = hasDebitoSaldatoValue && debitoSaldatoValue < debitoDisponibile;
-
-        if (hasDebitoSaldatoValue) {
-            // Se sto saldando debito parziale, non posso lasciare credito
-            if (creditoLasciato) {
-                creditoLasciato.disabled = true;
-                creditoLasciato.value = '';
-            }
-            // Se non salda tutto il debito, non posso lasciare debito
-            if (saldaDebitoParziale && debitoLasciato) {
-                debitoLasciato.disabled = true;
-                debitoLasciato.value = '';
-            }
-        } else {
-            // Riabilita tutto se checkbox non è checked
-            if (saldaDebitoCheckbox && !saldaDebitoCheckbox.checked) {
-                if (debitoSaldato) debitoSaldato.disabled = false;
-            }
-            if (saldaDebitoCheckbox) saldaDebitoCheckbox.disabled = false;
-        }
+        // MA permetti di saldare debito precedente (Scenario 13: salda debito parziale + lascia nuovo debito)
     }
 }
 
@@ -396,8 +436,47 @@ async function saveData() {
     const select = document.getElementById('participant-select');
     const currentNome = select.value;
 
+    // Permetti salvataggio senza partecipante (solo dati cassa)
     if (!currentNome) {
-        showStatus('Seleziona un partecipante', 'error');
+        showStatus('Salvataggio dati cassa in corso...', 'success');
+
+        let lasciatoInCassa;
+        if (discrepanzaCassaEnabled) {
+            lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
+        } else {
+            lasciatoInCassa = roundUpCents(trovatoInCassa - pagatoProduttore);
+            document.getElementById('lasciatoInCassa').value = lasciatoInCassa;
+        }
+
+        try {
+            const response = await fetch('/api/consegna', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    data,
+                    trovatoInCassa,
+                    pagatoProduttore,
+                    lasciatoInCassa,
+                    discrepanzaCassa: discrepanzaCassaEnabled,
+                    partecipanti: [],
+                }),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showStatus('Dati cassa salvati con successo!', 'success');
+                setTimeout(() => {
+                    loadData();
+                }, 1000);
+            } else {
+                showStatus('Errore: ' + result.error, 'error');
+            }
+        } catch (error) {
+            showStatus('Errore durante il salvataggio: ' + error.message, 'error');
+        }
         return;
     }
 
@@ -473,10 +552,16 @@ async function saveData() {
         });
     }
 
-    const lasciatoInCassa = roundUpCents(trovatoInCassa - pagatoProduttore + totalImportoSaldato);
-
-    // Update the UI field
-    document.getElementById('lasciatoInCassa').value = lasciatoInCassa;
+    let lasciatoInCassa;
+    if (discrepanzaCassaEnabled) {
+        // Use manual value if discrepanza is enabled
+        lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
+    } else {
+        // Auto-calculate
+        lasciatoInCassa = roundUpCents(trovatoInCassa - pagatoProduttore + totalImportoSaldato);
+        // Update the UI field
+        document.getElementById('lasciatoInCassa').value = lasciatoInCassa;
+    }
 
     try {
         const response = await fetch('/api/consegna', {
@@ -489,6 +574,7 @@ async function saveData() {
                 trovatoInCassa,
                 pagatoProduttore,
                 lasciatoInCassa,
+                discrepanzaCassa: discrepanzaCassaEnabled,
                 partecipanti: partecipantiData,
             }),
         });
@@ -523,9 +609,34 @@ async function checkDateData() {
             document.getElementById('pagatoProduttore').value = result.consegna.pagato_produttore || '';
             document.getElementById('lasciatoInCassa').value = result.consegna.lasciato_in_cassa || '';
 
+            // Ripristina stato checkbox discrepanza
+            const discrepanzaCheckbox = document.getElementById('discrepanzaCassa');
+            const lasciatoField = document.getElementById('lasciatoInCassa');
+            if (result.consegna.discrepanza_cassa) {
+                discrepanzaCheckbox.checked = true;
+                discrepanzaCassaEnabled = true;
+                lasciatoField.readOnly = false;
+                lasciatoField.style.cursor = 'text';
+                lasciatoField.style.background = '#fff';
+            } else {
+                discrepanzaCheckbox.checked = false;
+                discrepanzaCassaEnabled = false;
+                lasciatoField.readOnly = true;
+                lasciatoField.style.cursor = 'not-allowed';
+                lasciatoField.style.background = '#f0f0f0';
+            }
+
             // Store movimenti and saldi before this consegna
             existingConsegnaMovimenti = result.movimenti || [];
             saldiBefore = result.saldiBefore || {};
+
+            // Calcola totale importi saldati (senza includere nessun partecipante corrente)
+            totalImportoSaldatoBefore = 0;
+            if (existingConsegnaMovimenti.length > 0) {
+                existingConsegnaMovimenti.forEach(m => {
+                    totalImportoSaldatoBefore += m.importo_saldato || 0;
+                });
+            }
 
             showStatus('Dati esistenti caricati per questa data', 'success');
         } else {
@@ -534,6 +645,7 @@ async function checkDateData() {
             document.getElementById('lasciatoInCassa').value = '';
             existingConsegnaMovimenti = null;
             saldiBefore = {};
+            totalImportoSaldatoBefore = 0;
         }
     } catch (error) {
         console.error('Error checking date data:', error);
