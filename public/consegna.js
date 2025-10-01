@@ -549,17 +549,8 @@ async function saveData() {
         nuovoSaldo: roundUpCents(saldoCorrente)
     }];
 
-    // Auto-calculate lasciato in cassa from all participants' importo_saldato
-    let totalImportoSaldato = importoSaldato; // Start with current participant
-
-    // Get existing movimenti for this date to sum importo_saldato from other participants
-    if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
-        existingConsegnaMovimenti.forEach(m => {
-            if (m.nome !== currentNome) {
-                totalImportoSaldato += m.importo_saldato || 0;
-            }
-        });
-    }
+    // Calcola totale importi saldati usando la stessa logica di updateLasciatoInCassa
+    let totalImportoSaldato = totalImportoSaldatoBefore + importoSaldato;
 
     let lasciatoInCassa;
     if (discrepanzaCassaEnabled) {
