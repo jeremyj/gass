@@ -453,7 +453,14 @@ async function saveData() {
         if (discrepanzaCassaEnabled) {
             lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
         } else {
-            lasciatoInCassa = roundUpCents(trovatoInCassa - pagatoProduttore);
+            // Calcola totale importi da tutti i movimenti esistenti
+            let totalImportoSaldato = 0;
+            if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
+                existingConsegnaMovimenti.forEach(m => {
+                    totalImportoSaldato += m.importo_saldato || 0;
+                });
+            }
+            lasciatoInCassa = roundUpCents(trovatoInCassa - pagatoProduttore + totalImportoSaldato);
             document.getElementById('lasciatoInCassa').value = lasciatoInCassa;
         }
 
