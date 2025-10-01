@@ -33,13 +33,69 @@ app.get('/api/consegna/:date', (req, res) => {
     }
 
     const movimenti = db.prepare(`
-      SELECT m.*, p.nome
+      SELECT m.*, p.nome, p.id as partecipante_id
       FROM movimenti m
       JOIN partecipanti p ON m.partecipante_id = p.id
       WHERE m.consegna_id = ?
     `).all(consegna.id);
 
-    res.json({ success: true, found: true, consegna, movimenti });
+    // Calculate saldo before this consegna for each participant
+    const saldiBefore = {};
+    movimenti.forEach(m => {
+      // Get participant's current saldo
+      const participant = db.prepare('SELECT saldo FROM partecipanti WHERE id = ?').get(m.partecipante_id);
+      let saldoBefore = participant.saldo || 0;
+
+      // Reverse the effects of this movimento
+      if (m.credito_lasciato > 0) {
+        saldoBefore -= m.credito_lasciato;
+      }
+      if (m.debito_lasciato > 0) {
+        saldoBefore += m.debito_lasciato;
+      }
+      if (m.usa_credito > 0) {
+        saldoBefore += m.usa_credito;
+      }
+      if (m.debito_saldato > 0) {
+        saldoBefore -= m.debito_saldato;
+      }
+      if (m.salda_debito_totale) {
+        // The saldo before was negative (debito)
+        // After salda_debito_totale it became 0 or positive
+        // We need to find what it was - check previous movimento
+        const prevMovimenti = db.prepare(`
+          SELECT m2.*
+          FROM movimenti m2
+          JOIN consegne c2 ON m2.consegna_id = c2.id
+          WHERE m2.partecipante_id = ? AND c2.data < ?
+          ORDER BY c2.data DESC
+          LIMIT 1
+        `).get(m.partecipante_id, date);
+
+        if (prevMovimenti) {
+          saldoBefore = prevMovimenti.credito_lasciato - prevMovimenti.debito_lasciato;
+        }
+      }
+      if (m.salda_tutto) {
+        // Similar to salda_debito_totale - need previous saldo
+        const prevMovimenti = db.prepare(`
+          SELECT m2.*
+          FROM movimenti m2
+          JOIN consegne c2 ON m2.consegna_id = c2.id
+          WHERE m2.partecipante_id = ? AND c2.data < ?
+          ORDER BY c2.data DESC
+          LIMIT 1
+        `).get(m.partecipante_id, date);
+
+        if (prevMovimenti) {
+          saldoBefore = prevMovimenti.credito_lasciato - prevMovimenti.debito_lasciato;
+        }
+      }
+
+      saldiBefore[m.nome] = saldoBefore;
+    });
+
+    res.json({ success: true, found: true, consegna, movimenti, saldiBefore });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }

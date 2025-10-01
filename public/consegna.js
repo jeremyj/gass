@@ -1,4 +1,6 @@
 let participants = [];
+let existingConsegnaMovimenti = null; // Store existing movimenti for the selected date
+let saldiBefore = {}; // Store saldi before the existing consegna
 
 function showStatus(message, type) {
     const status = document.getElementById('status');
@@ -116,7 +118,8 @@ function renderParticipant(nome) {
     const p = participants.find(part => part.nome === nome);
     if (!p) return;
 
-    const saldo = p.saldo || 0;
+    // Use saldo before this consegna if editing existing
+    let saldo = saldiBefore[nome] !== undefined ? saldiBefore[nome] : (p.saldo || 0);
     const haCredito = saldo > 0;
     const haDebito = saldo < 0;
 
@@ -434,11 +437,17 @@ async function checkDateData() {
             document.getElementById('pagatoProduttore').value = result.consegna.pagato_produttore || '';
             document.getElementById('lasciatoInCassa').value = result.consegna.lasciato_in_cassa || '';
 
+            // Store movimenti and saldi before this consegna
+            existingConsegnaMovimenti = result.movimenti || [];
+            saldiBefore = result.saldiBefore || {};
+
             showStatus('Dati esistenti caricati per questa data', 'success');
         } else {
             document.getElementById('trovatoInCassa').value = '';
             document.getElementById('pagatoProduttore').value = '';
             document.getElementById('lasciatoInCassa').value = '';
+            existingConsegnaMovimenti = null;
+            saldiBefore = {};
         }
     } catch (error) {
         console.error('Error checking date data:', error);
