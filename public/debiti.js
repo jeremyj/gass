@@ -94,11 +94,20 @@ function renderParticipants() {
 
 function editSaldo(id) {
     editingId = id;
+    const inputField = document.getElementById(`saldo-edit-${id}`);
+
     document.getElementById(`saldo-view-${id}`).style.display = 'none';
-    document.getElementById(`saldo-edit-${id}`).style.display = 'inline-block';
+    inputField.style.display = 'inline-block';
     document.getElementById(`edit-btn-${id}`).style.display = 'none';
     document.getElementById(`save-btn-${id}`).style.display = 'inline-block';
     document.getElementById(`cancel-btn-${id}`).style.display = 'inline-block';
+
+    // Clear if value is 0 and focus
+    if (inputField.value === '0' || inputField.value === '0.0' || inputField.value === '0.00') {
+        inputField.value = '';
+    }
+    inputField.focus();
+    inputField.select();
 }
 
 function cancelEdit(id) {
