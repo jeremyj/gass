@@ -1,0 +1,4 @@
+credentials.json
+.env
+gass.db
+node_modules/

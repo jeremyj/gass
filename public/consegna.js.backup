@@ -1,0 +1,331 @@
+let participants = [];
+let saldi = {};
+
+function showStatus(message, type) {
+    const status = document.getElementById('status');
+    status.textContent = message;
+    status.className = 'status ' + type;
+    setTimeout(() => {
+        status.className = 'status';
+    }, 5000);
+}
+
+function normalizeDecimal(value) {
+    if (typeof value === 'string') {
+        return value.replace(',', '.');
+    }
+    return value;
+}
+
+function parseAmount(value) {
+    const normalized = normalizeDecimal(value);
+    return parseFloat(normalized) || 0;
+}
+
+function roundUpCents(amount) {
+    // Arrotonda ai decimi (10 centesimi): 0.0, 0.1, 0.2, etc.
+    // 10.17 -> 10.2, 10.25 -> 10.3, 10.21 -> 10.2
+    return Math.round(amount * 10) / 10;
+}
+
+async function loadData() {
+    showStatus('Caricamento in corso...', 'success');
+
+    try {
+        const response = await fetch('/api/participants');
+        const result = await response.json();
+
+        if (result.success) {
+            participants = result.participants;
+            saldi = {};
+            participants.forEach(p => {
+                saldi[p.nome] = p.saldo;
+            });
+            renderParticipants();
+            document.getElementById('data').valueAsDate = new Date();
+            showStatus('Dati caricati con successo!', 'success');
+        } else {
+            showStatus('Errore: ' + result.error, 'error');
+        }
+    } catch (error) {
+        showStatus('Errore: ' + error.message, 'error');
+    }
+}
+
+function renderParticipants() {
+    const container = document.getElementById('participants');
+    container.innerHTML = '';
+
+    participants.forEach(p => {
+        const nome = p.nome;
+        const saldo = p.saldo || 0;
+        const saldoText = saldo < 0
+            ? `Debito: €${Math.abs(saldo).toFixed(2)}`
+            : saldo > 0
+                ? `Credito: €${saldo.toFixed(2)}`
+                : 'In pari';
+        const saldoClass = saldo < 0 ? 'saldo-debito' : saldo > 0 ? 'saldo-credito' : '';
+
+        const card = document.createElement('div');
+        card.className = 'participant-card';
+        card.innerHTML = `
+            <div class="participant-name">${nome}</div>
+            <div class="saldo-info ${saldoClass}">${saldoText}</div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="salda_${nome}" onchange="toggleSalda('${nome}')">
+                <label for="salda_${nome}">Salda tutto</label>
+            </div>
+            <div class="form-group">
+                <label>Importo saldato (€):</label>
+                <input type="text" inputmode="decimal" id="importo_${nome}" placeholder="0.00">
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label>Usa credito (€):</label>
+                    <input type="text" inputmode="decimal" id="usaCredito_${nome}" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label>Lascia credito (€):</label>
+                    <input type="text" inputmode="decimal" id="credito_${nome}" placeholder="0.00">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Lascia debito (€):</label>
+                <input type="text" inputmode="decimal" id="debito_${nome}" placeholder="0.00">
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="saldaDebito_${nome}" onchange="toggleSaldaDebito('${nome}')">
+                <label for="saldaDebito_${nome}">Salda debito totale</label>
+            </div>
+            <div class="form-group">
+                <label>Salda debito parziale (€):</label>
+                <input type="text" inputmode="decimal" id="debitoSaldato_${nome}" placeholder="0.00">
+            </div>
+
+            <div class="form-group">
+                <label>Note:</label>
+                <input type="text" id="note_${nome}" placeholder="Note aggiuntive">
+            </div>
+        `;
+        container.appendChild(card);
+
+        // Imposta i campi disabled in base al saldo
+        const usaCreditoField = document.getElementById(`usaCredito_${nome}`);
+        const saldaDebitoCheckbox = document.getElementById(`saldaDebito_${nome}`);
+        const debitoSaldatoField = document.getElementById(`debitoSaldato_${nome}`);
+
+        if (saldo <= 0) {
+            // Non ha credito: disabilita "usa credito"
+            if (usaCreditoField) usaCreditoField.disabled = true;
+        }
+        if (saldo >= 0) {
+            // Non ha debito: disabilita campi "salda debito"
+            if (saldaDebitoCheckbox) saldaDebitoCheckbox.disabled = true;
+            if (debitoSaldatoField) {
+                debitoSaldatoField.disabled = true;
+                console.log(`Disabilitato debitoSaldato per ${nome}, saldo: ${saldo}`);
+            }
+        }
+    });
+}
+
+function toggleSalda(nome) {
+    const checkbox = document.getElementById(`salda_${nome}`);
+    const importoField = document.getElementById(`importo_${nome}`);
+    const debitoField = document.getElementById(`debito_${nome}`);
+    if (checkbox.checked) {
+        importoField.disabled = true;
+        importoField.value = '';
+        debitoField.disabled = true;
+        debitoField.value = '';
+    } else {
+        importoField.disabled = false;
+        debitoField.disabled = false;
+    }
+}
+
+function toggleSaldaDebito(nome) {
+    const checkbox = document.getElementById(`saldaDebito_${nome}`);
+    const debitoField = document.getElementById(`debitoSaldato_${nome}`);
+
+    if (checkbox.checked) {
+        debitoField.disabled = true;
+        debitoField.value = '';
+    } else {
+        // Ri-abilita solo se il partecipante ha effettivamente un debito
+        const participant = participants.find(p => p.nome === nome);
+        const saldo = participant ? participant.saldo : 0;
+        debitoField.disabled = saldo >= 0; // disabled se non ha debito
+    }
+}
+
+async function saveData() {
+    const data = document.getElementById('data').value;
+    const trovatoInCassa = roundUpCents(parseAmount(document.getElementById('trovatoInCassa').value));
+    const pagatoProduttore = roundUpCents(parseAmount(document.getElementById('pagatoProduttore').value));
+    const lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
+
+    if (!data) {
+        showStatus('Inserisci la data', 'error');
+        return;
+    }
+
+    // Validazione: controlla che nessuno abbia sia credito che debito lasciato
+    for (const p of participants) {
+        const nome = p.nome;
+        const debitoLasciato = parseAmount(document.getElementById(`debito_${nome}`).value);
+        const creditoLasciato = parseAmount(document.getElementById(`credito_${nome}`).value);
+
+        if (debitoLasciato > 0 && creditoLasciato > 0) {
+            showStatus(`Errore per ${nome}: non puoi lasciare sia credito che debito contemporaneamente`, 'error');
+            return;
+        }
+    }
+
+    showStatus('Salvataggio in corso...', 'success');
+
+    const partecipantiData = [];
+
+    participants.forEach(p => {
+        const nome = p.nome;
+        const saldaTutto = document.getElementById(`salda_${nome}`).checked;
+        const importoSaldato = roundUpCents(parseAmount(document.getElementById(`importo_${nome}`).value));
+        const usaCredito = roundUpCents(parseAmount(document.getElementById(`usaCredito_${nome}`).value));
+        const debitoLasciato = roundUpCents(parseAmount(document.getElementById(`debito_${nome}`).value));
+        const creditoLasciato = roundUpCents(parseAmount(document.getElementById(`credito_${nome}`).value));
+        const saldaDebitoTotale = document.getElementById(`saldaDebito_${nome}`).checked;
+        const debitoSaldato = roundUpCents(parseAmount(document.getElementById(`debitoSaldato_${nome}`).value));
+        const note = document.getElementById(`note_${nome}`).value || '';
+
+        let saldoCorrente = p.saldo || 0;
+
+        if (saldaTutto) {
+            saldoCorrente = 0;
+        } else if (importoSaldato > 0) {
+            saldoCorrente = 0;
+        }
+
+        if (usaCredito > 0) {
+            saldoCorrente -= usaCredito;
+        }
+
+        if (debitoLasciato > 0) {
+            saldoCorrente -= debitoLasciato;
+        }
+        if (creditoLasciato > 0) {
+            saldoCorrente += creditoLasciato;
+        }
+        if (saldaDebitoTotale && saldoCorrente < 0) {
+            saldoCorrente = 0;
+        } else if (debitoSaldato > 0 && saldoCorrente < 0) {
+            saldoCorrente = Math.min(0, saldoCorrente + debitoSaldato);
+        }
+
+        partecipantiData.push({
+            nome,
+            saldaTutto,
+            importoSaldato,
+            usaCredito,
+            debitoLasciato,
+            creditoLasciato,
+            saldaDebitoTotale,
+            debitoSaldato,
+            note,
+            nuovoSaldo: roundUpCents(saldoCorrente)
+        });
+    });
+
+    try {
+        const response = await fetch('/api/consegna', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                data,
+                trovatoInCassa,
+                pagatoProduttore,
+                lasciatoInCassa,
+                partecipanti: partecipantiData,
+            }),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showStatus('Dati salvati con successo!', 'success');
+            setTimeout(() => loadData(), 1000);
+        } else {
+            showStatus('Errore: ' + result.error, 'error');
+        }
+    } catch (error) {
+        showStatus('Errore durante il salvataggio: ' + error.message, 'error');
+    }
+}
+
+async function checkDateData() {
+    const dateValue = document.getElementById('data').value;
+    if (!dateValue) return;
+
+    try {
+        const response = await fetch(`/api/consegna/${dateValue}`);
+        const result = await response.json();
+
+        if (result.success && result.found) {
+            // Load general data
+            document.getElementById('trovatoInCassa').value = result.consegna.trovato_in_cassa || '';
+            document.getElementById('pagatoProduttore').value = result.consegna.pagato_produttore || '';
+            document.getElementById('lasciatoInCassa').value = result.consegna.lasciato_in_cassa || '';
+
+            // Load participant data
+            result.movimenti.forEach(m => {
+                const nome = m.nome;
+
+                document.getElementById(`salda_${nome}`).checked = m.salda_tutto;
+                document.getElementById(`importo_${nome}`).value = m.importo_saldato || '';
+                document.getElementById(`usaCredito_${nome}`).value = m.usa_credito || '';
+                document.getElementById(`debito_${nome}`).value = m.debito_lasciato || '';
+                document.getElementById(`credito_${nome}`).value = m.credito_lasciato || '';
+                document.getElementById(`saldaDebito_${nome}`).checked = m.salda_debito_totale;
+                document.getElementById(`debitoSaldato_${nome}`).value = m.debito_saldato || '';
+                document.getElementById(`note_${nome}`).value = m.note || '';
+
+                if (m.salda_tutto) toggleSalda(nome);
+                if (m.salda_debito_totale) toggleSaldaDebito(nome);
+            });
+
+            showStatus('Dati esistenti caricati per questa data', 'success');
+        } else {
+            // Clear form for new date
+            document.getElementById('trovatoInCassa').value = '';
+            document.getElementById('pagatoProduttore').value = '';
+            document.getElementById('lasciatoInCassa').value = '';
+
+            participants.forEach(p => {
+                const nome = p.nome;
+                document.getElementById(`salda_${nome}`).checked = false;
+                document.getElementById(`importo_${nome}`).value = '';
+                document.getElementById(`usaCredito_${nome}`).value = '';
+                document.getElementById(`debito_${nome}`).value = '';
+                document.getElementById(`credito_${nome}`).value = '';
+                document.getElementById(`saldaDebito_${nome}`).checked = false;
+                document.getElementById(`debitoSaldato_${nome}`).value = '';
+                document.getElementById(`note_${nome}`).value = '';
+
+                toggleSalda(nome);
+                toggleSaldaDebito(nome);
+            });
+        }
+    } catch (error) {
+        console.error('Error checking date data:', error);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('data').valueAsDate = new Date();
+    loadData().then(() => checkDateData());
+});
