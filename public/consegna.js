@@ -136,7 +136,7 @@ function renderParticipant(nome) {
                 <label for="salda_${nome}">Salda tutto</label>
             </div>
             <div class="form-group">
-                <label>Importo saldato (€):</label>
+                <label>Importo saldato:</label>
                 <input type="text" inputmode="decimal" id="importo_${nome}" placeholder="0.00" oninput="normalizeInputField(this)">
             </div>
         </div>
@@ -145,7 +145,7 @@ function renderParticipant(nome) {
         <div class="flow-section flow-credito">
             <div class="flow-section-title">2. USA SALDO PRECEDENTE</div>
             <div class="form-group">
-                <label>Usa credito (€) - max €${formatSaldo(saldo)}:</label>
+                <label>Usa credito - max €${formatSaldo(saldo)}:</label>
                 <input type="text" inputmode="decimal" id="usaCredito_${nome}" placeholder="0.00" oninput="normalizeInputField(this)">
             </div>
         </div>
@@ -155,11 +155,11 @@ function renderParticipant(nome) {
             <div class="flow-section-title">3. NUOVO SALDO</div>
             <div class="row">
                 <div class="form-group">
-                    <label>Lascia credito (€):</label>
+                    <label>Lascia credito:</label>
                     <input type="text" inputmode="decimal" id="credito_${nome}" placeholder="0.00" oninput="normalizeInputField(this)">
                 </div>
                 <div class="form-group">
-                    <label>Lascia debito (€):</label>
+                    <label>Lascia debito:</label>
                     <input type="text" inputmode="decimal" id="debito_${nome}" placeholder="0.00" oninput="normalizeInputField(this)">
                 </div>
             </div>
@@ -170,10 +170,10 @@ function renderParticipant(nome) {
             <div class="flow-section-title">4. SALDA DEBITO PRECEDENTE</div>
             <div class="checkbox-group">
                 <input type="checkbox" id="saldaDebito_${nome}" onchange="toggleSaldaDebito('${nome}')">
-                <label for="saldaDebito_${nome}">Salda debito totale (€${formatSaldo(saldo)})</label>
+                <label for="saldaDebito_${nome}">Salda debito totale €${formatSaldo(saldo)}</label>
             </div>
             <div class="form-group">
-                <label>Salda parziale (€):</label>
+                <label>Salda parziale:</label>
                 <input type="text" inputmode="decimal" id="debitoSaldato_${nome}" placeholder="0.00" oninput="normalizeInputField(this)">
             </div>
         </div>
