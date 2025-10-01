@@ -16,6 +16,22 @@ function formatDateItalian(dateStr) {
     return `${day}/${month}/${year}`;
 }
 
+function normalizeInputField(input) {
+    // Replace comma with dot in real-time
+    if (input.value.includes(',')) {
+        const cursorPos = input.selectionStart;
+        input.value = input.value.replace(',', '.');
+        input.setSelectionRange(cursorPos, cursorPos);
+    }
+
+    // Validate it's a valid decimal number (allow numbers, single dot, optional negative)
+    const valid = /^-?\d*\.?\d*$/.test(input.value);
+    if (!valid && input.value !== '') {
+        // Remove invalid characters
+        input.value = input.value.slice(0, -1);
+    }
+}
+
 function showAddForm() {
     document.getElementById('add-form').style.display = 'block';
     document.getElementById('new-name').value = '';
@@ -61,7 +77,7 @@ function renderParticipants() {
             <td><strong>${p.nome}</strong></td>
             <td class="${saldoClass}">
                 <span id="saldo-view-${p.id}">€${saldoText}</span>
-                <input type="number" step="0.01" id="saldo-edit-${p.id}" value="${p.saldo}" style="display: none;">
+                <input type="text" inputmode="decimal" id="saldo-edit-${p.id}" value="${p.saldo}" style="display: none;" oninput="normalizeInputField(this)">
             </td>
             <td>${formatDateItalian(p.ultima_modifica)}</td>
             <td>
