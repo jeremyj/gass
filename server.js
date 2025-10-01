@@ -165,11 +165,63 @@ app.get('/api/storico/dettaglio', (req, res) => {
   }
 });
 
-// Delete consegna
+// Delete consegna and recalculate all saldi
 app.delete('/api/consegna/:id', (req, res) => {
   try {
     const { id } = req.params;
-    db.prepare('DELETE FROM consegne WHERE id = ?').run(id);
+
+    const transaction = db.transaction(() => {
+      // Delete the consegna (movimenti will be deleted via CASCADE)
+      db.prepare('DELETE FROM consegne WHERE id = ?').run(id);
+
+      // Reset all participant saldi to 0
+      db.prepare('UPDATE partecipanti SET saldo = 0').run();
+
+      // Get all consegne in chronological order
+      const consegne = db.prepare('SELECT * FROM consegne ORDER BY data ASC').all();
+
+      // Recalculate saldi by replaying all movements in order
+      consegne.forEach(consegna => {
+        const movimenti = db.prepare(`
+          SELECT m.*, p.saldo as current_saldo
+          FROM movimenti m
+          JOIN partecipanti p ON m.partecipante_id = p.id
+          WHERE m.consegna_id = ?
+        `).all(consegna.id);
+
+        movimenti.forEach(m => {
+          let nuovoSaldo = m.current_saldo || 0;
+
+          // Apply the same logic as saveData
+          if (m.salda_tutto) {
+            nuovoSaldo = 0;
+          }
+
+          if (m.usa_credito > 0) {
+            nuovoSaldo -= m.usa_credito;
+          }
+
+          if (m.salda_debito_totale && nuovoSaldo < 0) {
+            nuovoSaldo = 0;
+          } else if (m.debito_saldato > 0 && nuovoSaldo < 0) {
+            nuovoSaldo = Math.min(0, nuovoSaldo + m.debito_saldato);
+          }
+
+          if (m.debito_lasciato > 0) {
+            nuovoSaldo -= m.debito_lasciato;
+          }
+          if (m.credito_lasciato > 0) {
+            nuovoSaldo += m.credito_lasciato;
+          }
+
+          // Update the participant saldo
+          db.prepare('UPDATE partecipanti SET saldo = ? WHERE id = ?')
+            .run(nuovoSaldo, m.partecipante_id);
+        });
+      });
+    });
+
+    transaction();
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
