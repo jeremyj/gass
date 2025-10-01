@@ -140,13 +140,9 @@ function renderParticipant(nome) {
 
         <div class="flow-section">
             <div class="flow-section-title">1. PAGAMENTO OGGI</div>
-            <div class="checkbox-group">
-                <input type="checkbox" id="salda_${nome}" onchange="toggleSaldaTutto('${nome}')">
-                <label for="salda_${nome}">Salda tutto</label>
-            </div>
             <div class="form-group">
                 <label>Importo saldato:</label>
-                <input type="text" inputmode="decimal" id="importo_${nome}" placeholder="0.00" oninput="normalizeInputField(this)">
+                <input type="text" inputmode="decimal" id="importo_${nome}" placeholder="0.00" oninput="normalizeInputField(this)" onfocus="handleInputFocus(this)">
             </div>
         </div>
 
@@ -226,18 +222,6 @@ function renderParticipant(nome) {
         hiddenAmount.id = `debitoSaldato_${nome}`;
         hiddenAmount.value = '0';
         card.appendChild(hiddenAmount);
-    }
-}
-
-function toggleSaldaTutto(nome) {
-    const checkbox = document.getElementById(`salda_${nome}`);
-    const importoField = document.getElementById(`importo_${nome}`);
-
-    if (checkbox.checked) {
-        importoField.disabled = true;
-        importoField.value = '';
-    } else {
-        importoField.disabled = false;
     }
 }
 
@@ -434,7 +418,6 @@ async function saveData() {
         return;
     }
 
-    const saldaTutto = document.getElementById(`salda_${currentNome}`)?.checked || false;
     const importoSaldato = roundUpCents(parseAmount(document.getElementById(`importo_${currentNome}`).value));
     const usaCredito = roundUpCents(parseAmount(document.getElementById(`usaCredito_${currentNome}`)?.value || '0'));
     const debitoSaldato = roundUpCents(parseAmount(document.getElementById(`debitoSaldato_${currentNome}`)?.value || '0'));
@@ -468,7 +451,7 @@ async function saveData() {
 
     const partecipantiData = [{
         nome: currentNome,
-        saldaTutto,
+        saldaTutto: false,
         importoSaldato,
         usaCredito,
         debitoLasciato: roundUpCents(debitoLasciato),
