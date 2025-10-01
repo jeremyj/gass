@@ -444,26 +444,21 @@ async function saveData() {
     // Use saldo before consegna if editing existing, otherwise current saldo
     let saldoCorrente = saldiBefore[currentNome] !== undefined ? saldiBefore[currentNome] : (p.saldo || 0);
 
-    // 1. Gestione pagamento/salda tutto
-    if (saldaTutto) {
-        // Salda tutto azzera il debito/credito esistente
-        saldoCorrente = 0;
-    }
-    // Nota: importoSaldato NON modifica il saldo, è solo un pagamento
+    // Nota: importoSaldato e saldaTutto NON modificano il saldo, sono solo pagamenti
 
-    // 2. Usa credito esistente (sottrae dal credito)
+    // 1. Usa credito esistente (sottrae dal credito)
     if (usaCredito > 0) {
         saldoCorrente -= usaCredito;
     }
 
-    // 3. Salda debito esistente
+    // 2. Salda debito esistente
     if (saldaDebitoTotale && saldoCorrente < 0) {
         saldoCorrente = 0;
     } else if (debitoSaldato > 0 && saldoCorrente < 0) {
         saldoCorrente = Math.min(0, saldoCorrente + debitoSaldato);
     }
 
-    // 4. Nuovo debito/credito da lasciare
+    // 3. Nuovo debito/credito da lasciare
     if (debitoLasciato > 0) {
         saldoCorrente -= debitoLasciato;
     }
