@@ -21,6 +21,22 @@ function parseAmount(value) {
     return parseFloat(normalized) || 0;
 }
 
+function normalizeInputField(input) {
+    // Replace comma with dot in real-time
+    if (input.value.includes(',')) {
+        const cursorPos = input.selectionStart;
+        input.value = input.value.replace(',', '.');
+        input.setSelectionRange(cursorPos, cursorPos);
+    }
+
+    // Validate it's a valid decimal number (allow numbers, single dot, optional negative)
+    const valid = /^-?\d*\.?\d*$/.test(input.value);
+    if (!valid && input.value !== '') {
+        // Remove invalid characters
+        input.value = input.value.slice(0, -1);
+    }
+}
+
 function roundUpCents(amount) {
     return Math.round(amount * 10) / 10;
 }
@@ -121,7 +137,7 @@ function renderParticipant(nome) {
             </div>
             <div class="form-group">
                 <label>Importo saldato (€):</label>
-                <input type="text" inputmode="decimal" id="importo_${nome}" placeholder="0.00">
+                <input type="text" inputmode="decimal" id="importo_${nome}" placeholder="0.00" oninput="normalizeInputField(this)">
             </div>
         </div>
 
@@ -130,7 +146,7 @@ function renderParticipant(nome) {
             <div class="flow-section-title">2. USA SALDO PRECEDENTE</div>
             <div class="form-group">
                 <label>Usa credito (€) - max €${formatSaldo(saldo)}:</label>
-                <input type="text" inputmode="decimal" id="usaCredito_${nome}" placeholder="0.00">
+                <input type="text" inputmode="decimal" id="usaCredito_${nome}" placeholder="0.00" oninput="normalizeInputField(this)">
             </div>
         </div>
         ` : ''}
@@ -140,11 +156,11 @@ function renderParticipant(nome) {
             <div class="row">
                 <div class="form-group">
                     <label>Lascia credito (€):</label>
-                    <input type="text" inputmode="decimal" id="credito_${nome}" placeholder="0.00">
+                    <input type="text" inputmode="decimal" id="credito_${nome}" placeholder="0.00" oninput="normalizeInputField(this)">
                 </div>
                 <div class="form-group">
                     <label>Lascia debito (€):</label>
-                    <input type="text" inputmode="decimal" id="debito_${nome}" placeholder="0.00">
+                    <input type="text" inputmode="decimal" id="debito_${nome}" placeholder="0.00" oninput="normalizeInputField(this)">
                 </div>
             </div>
         </div>
@@ -158,7 +174,7 @@ function renderParticipant(nome) {
             </div>
             <div class="form-group">
                 <label>Salda parziale (€):</label>
-                <input type="text" inputmode="decimal" id="debitoSaldato_${nome}" placeholder="0.00">
+                <input type="text" inputmode="decimal" id="debitoSaldato_${nome}" placeholder="0.00" oninput="normalizeInputField(this)">
             </div>
         </div>
         ` : ''}
