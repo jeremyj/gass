@@ -153,9 +153,13 @@ function renderParticipant(nome) {
         ${haCredito ? `
         <div class="flow-section flow-credito">
             <div class="flow-section-title">2. USA SALDO PRECEDENTE</div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="usaInteroCreditoCheckbox_${nome}" onchange="toggleUsaInteroCredito('${nome}', ${saldo})">
+                <label for="usaInteroCreditoCheckbox_${nome}">Usa intero credito €${formatSaldo(saldo)}</label>
+            </div>
             <div class="form-group">
-                <label>Usa credito - max €${formatSaldo(saldo)}:</label>
-                <input type="text" inputmode="decimal" id="usaCredito_${nome}" placeholder="0.00" oninput="normalizeInputField(this); handleCreditoDebitoInput('${nome}', ${saldo})" onfocus="handleInputFocus(this)">
+                <label>Usa credito parziale:</label>
+                <input type="text" inputmode="decimal" id="usaCredito_${nome}" placeholder="0.00" oninput="normalizeInputField(this); validateCreditoMax('${nome}', ${saldo}); handleCreditoDebitoInput('${nome}', ${saldo})" onfocus="handleInputFocus(this)">
             </div>
         </div>
         ` : ''}
@@ -203,6 +207,12 @@ function renderParticipant(nome) {
         hidden.id = `usaCredito_${nome}`;
         hidden.value = '0';
         card.appendChild(hidden);
+
+        const hiddenCheckbox = document.createElement('input');
+        hiddenCheckbox.type = 'hidden';
+        hiddenCheckbox.id = `usaInteroCreditoCheckbox_${nome}`;
+        hiddenCheckbox.value = 'false';
+        card.appendChild(hiddenCheckbox);
     }
     if (!haDebito) {
         const hiddenCheck = document.createElement('input');
@@ -228,6 +238,34 @@ function toggleSaldaTutto(nome) {
         importoField.value = '';
     } else {
         importoField.disabled = false;
+    }
+}
+
+function toggleUsaInteroCredito(nome, saldo) {
+    const checkbox = document.getElementById(`usaInteroCreditoCheckbox_${nome}`);
+    const usaCreditoField = document.getElementById(`usaCredito_${nome}`);
+
+    if (checkbox && usaCreditoField) {
+        if (checkbox.checked) {
+            usaCreditoField.disabled = true;
+            usaCreditoField.value = saldo;
+        } else {
+            usaCreditoField.disabled = false;
+            usaCreditoField.value = '';
+        }
+    }
+
+    handleCreditoDebitoInput(nome, saldo);
+}
+
+function validateCreditoMax(nome, saldo) {
+    const usaCreditoField = document.getElementById(`usaCredito_${nome}`);
+    if (!usaCreditoField) return;
+
+    const value = parseAmount(usaCreditoField.value);
+    if (value > saldo) {
+        usaCreditoField.value = saldo;
+        showStatus(`Non puoi usare più di €${formatSaldo(saldo)} di credito`, 'error');
     }
 }
 
@@ -262,10 +300,27 @@ function handleCreditoDebitoInput(nome, saldo) {
     const hasDebitoValue = debitoLasciato && parseAmount(debitoLasciato.value) > 0;
     const usaCreditoValue = usaCredito ? parseAmount(usaCredito.value) : 0;
     const hasUsaCreditoValue = usaCreditoValue > 0;
+    const debitoSaldatoValue = debitoSaldato ? parseAmount(debitoSaldato.value) : 0;
+    const hasDebitoSaldatoValue = debitoSaldatoValue > 0;
+    const hasSaldaDebitoCheckbox = saldaDebitoCheckbox && saldaDebitoCheckbox.checked;
 
     // Check if "usa credito" covers all available credit
     const creditoDisponibile = saldo > 0 ? saldo : 0;
     const usaCreditoParziale = hasUsaCreditoValue && usaCreditoValue < creditoDisponibile;
+
+    // Se c'è qualsiasi attività nella sezione 4 (SALDA DEBITO), disabilita sezione 3 (NUOVO SALDO)
+    const hasSection4Activity = hasDebitoSaldatoValue || hasSaldaDebitoCheckbox;
+    if (hasSection4Activity) {
+        if (creditoLasciato) {
+            creditoLasciato.disabled = true;
+            creditoLasciato.value = '';
+        }
+        if (debitoLasciato) {
+            debitoLasciato.disabled = true;
+            debitoLasciato.value = '';
+        }
+        return; // Exit early, don't process other logic
+    }
 
     // Se usa credito, disabilita lascia credito
     if (hasUsaCreditoValue) {
