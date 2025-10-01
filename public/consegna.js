@@ -30,6 +30,20 @@ function formatSaldo(val) {
     return formatted.endsWith('.0') ? formatted.slice(0, -2) : formatted;
 }
 
+function formatDateItalian(dateStr) {
+    const [year, month, day] = dateStr.split('-');
+    return `${day}/${month}/${year}`;
+}
+
+function updateDateDisplay() {
+    const dateInput = document.getElementById('data');
+    const displayInput = document.getElementById('data-display');
+    if (dateInput.value) {
+        displayInput.value = formatDateItalian(dateInput.value);
+        checkDateData();
+    }
+}
+
 async function loadData() {
     showStatus('Caricamento in corso...', 'success');
 
@@ -41,6 +55,7 @@ async function loadData() {
             participants = result.participants;
             renderParticipantSelect();
             document.getElementById('data').valueAsDate = new Date();
+            updateDateDisplay();
             showStatus('Dati caricati con successo!', 'success');
         } else {
             showStatus('Errore: ' + result.error, 'error');
@@ -347,5 +362,6 @@ async function checkDateData() {
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('data').valueAsDate = new Date();
-    loadData().then(() => checkDateData());
+    updateDateDisplay();
+    loadData();
 });

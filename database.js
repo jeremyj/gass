@@ -24,6 +24,7 @@ db.exec(`
     trovato_in_cassa REAL DEFAULT 0,
     pagato_produttore REAL DEFAULT 0,
     lasciato_in_cassa REAL DEFAULT 0,
+    discrepanza_cassa BOOLEAN DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 

@@ -7,6 +7,11 @@ function showStatus(message, type) {
     }, 5000);
 }
 
+function formatDateItalian(dateStr) {
+    const [year, month, day] = dateStr.split('-');
+    return `${day}/${month}/${year}`;
+}
+
 async function loadStorico() {
     showStatus('Caricamento in corso...', 'success');
 
@@ -46,8 +51,14 @@ function renderStorico(storico) {
         header.style.alignItems = 'center';
         header.style.marginBottom = '15px';
 
+        const discrepanzaWarning = consegna.discrepanza_cassa ?
+            '<span style="color: #d32f2f; font-weight: bold; margin-left: 15px;">⚠️ DISCREPANZA CASSA</span>' : '';
+
         header.innerHTML = `
-            <h3 style="margin: 0; color: #2c3e50;">Data: ${consegna.data}</h3>
+            <div>
+                <h3 style="margin: 0; color: #2c3e50; display: inline;">Data: ${formatDateItalian(consegna.data)}</h3>
+                ${discrepanzaWarning}
+            </div>
             <button class="btn-delete" onclick="deleteConsegna(${consegna.id})">Elimina</button>
         `;
 

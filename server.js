@@ -54,22 +54,32 @@ app.post('/api/consegna', (req, res) => {
       // Check if consegna already exists for this date
       let consegna = db.prepare('SELECT * FROM consegne WHERE data = ?').get(data);
 
+      // Check for cash discrepancy
+      const previousConsegna = db.prepare(`
+        SELECT lasciato_in_cassa FROM consegne
+        WHERE data < ?
+        ORDER BY data DESC
+        LIMIT 1
+      `).get(data);
+
+      const discrepanzaCassa = previousConsegna && previousConsegna.lasciato_in_cassa !== trovatoInCassa ? 1 : 0;
+
       if (consegna) {
         // Update existing consegna
         db.prepare(`
           UPDATE consegne
-          SET trovato_in_cassa = ?, pagato_produttore = ?, lasciato_in_cassa = ?
+          SET trovato_in_cassa = ?, pagato_produttore = ?, lasciato_in_cassa = ?, discrepanza_cassa = ?
           WHERE id = ?
-        `).run(trovatoInCassa, pagatoProduttore, lasciatoInCassa, consegna.id);
+        `).run(trovatoInCassa, pagatoProduttore, lasciatoInCassa, discrepanzaCassa, consegna.id);
 
         // Delete old movimenti
         db.prepare('DELETE FROM movimenti WHERE consegna_id = ?').run(consegna.id);
       } else {
         // Insert new consegna
         const result = db.prepare(`
-          INSERT INTO consegne (data, trovato_in_cassa, pagato_produttore, lasciato_in_cassa)
-          VALUES (?, ?, ?, ?)
-        `).run(data, trovatoInCassa, pagatoProduttore, lasciatoInCassa);
+          INSERT INTO consegne (data, trovato_in_cassa, pagato_produttore, lasciato_in_cassa, discrepanza_cassa)
+          VALUES (?, ?, ?, ?, ?)
+        `).run(data, trovatoInCassa, pagatoProduttore, lasciatoInCassa, discrepanzaCassa);
 
         consegna = { id: result.lastInsertRowid };
       }

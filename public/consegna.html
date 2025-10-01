@@ -24,7 +24,8 @@
             <h2>Dati Giornata</h2>
             <div class="form-group">
                 <label>Data:</label>
-                <input type="date" id="data" required onchange="checkDateData()">
+                <input type="text" id="data-display" readonly style="cursor: pointer; background: white;" onclick="document.getElementById('data').showPicker()">
+                <input type="date" id="data" required onchange="updateDateDisplay()" style="position: absolute; opacity: 0; pointer-events: none;">
             </div>
             <div class="form-group">
                 <label>Trovato in cassa (€):</label>

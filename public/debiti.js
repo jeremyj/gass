@@ -10,6 +10,12 @@ function showStatus(message, type) {
     }, 5000);
 }
 
+function formatDateItalian(dateStr) {
+    if (!dateStr) return '-';
+    const [year, month, day] = dateStr.split('-');
+    return `${day}/${month}/${year}`;
+}
+
 function showAddForm() {
     document.getElementById('add-form').style.display = 'block';
     document.getElementById('new-name').value = '';
@@ -57,7 +63,7 @@ function renderParticipants() {
                 <span id="saldo-view-${p.id}">€${saldoText}</span>
                 <input type="number" step="0.01" id="saldo-edit-${p.id}" value="${p.saldo}" style="display: none;">
             </td>
-            <td>${p.ultima_modifica || '-'}</td>
+            <td>${formatDateItalian(p.ultima_modifica)}</td>
             <td>
                 <button onclick="editSaldo(${p.id})" id="edit-btn-${p.id}">Modifica</button>
                 <button onclick="saveSaldo(${p.id})" id="save-btn-${p.id}" style="display: none;" class="btn-save">Salva</button>
