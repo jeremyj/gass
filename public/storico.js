@@ -1,7 +1,6 @@
 // ===== DATA LOADING =====
 
 async function loadStorico() {
-  showStatus('Caricamento in corso...', 'success');
 
   try {
     const response = await fetch('/api/storico/dettaglio');
@@ -9,7 +8,6 @@ async function loadStorico() {
 
     if (result.success) {
       renderStorico(result.storico);
-      showStatus('Storico caricato con successo!', 'success');
     } else {
       showStatus('Errore: ' + result.error, 'error');
     }

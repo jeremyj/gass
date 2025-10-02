@@ -256,7 +256,6 @@ async function loadConsegneDates() {
 // ===== DATA LOADING =====
 
 async function loadData() {
-  showStatus('Caricamento in corso...', 'success');
 
   try {
     const response = await fetch('/api/participants');
