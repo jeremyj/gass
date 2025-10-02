@@ -291,19 +291,56 @@ async function checkDateData() {
 }
 
 function loadExistingConsegna(result) {
-  document.getElementById('trovatoInCassa').value = result.consegna.trovato_in_cassa || '';
-  document.getElementById('pagatoProduttore').value = result.consegna.pagato_produttore || '';
-  document.getElementById('lasciatoInCassa').value = result.consegna.lasciato_in_cassa || '';
+  const trovatoField = document.getElementById('trovatoInCassa');
+  const pagatoField = document.getElementById('pagatoProduttore');
+  const lasciatoField = document.getElementById('lasciatoInCassa');
+
+  trovatoField.value = result.consegna.trovato_in_cassa || '';
+  pagatoField.value = result.consegna.pagato_produttore || '';
+  lasciatoField.value = result.consegna.lasciato_in_cassa || '';
   document.getElementById('noteGiornata').value = result.consegna.note || '';
 
-  restoreOverrideCheckbox('discrepanzaCassa', 'lasciatoInCassa',
-    result.consegna.discrepanza_cassa, () => discrepanzaCassaEnabled = true, () => discrepanzaCassaEnabled = false);
+  // Restore smart override states for mobile version
+  if (result.consegna.discrepanza_trovata === 1) {
+    smartOverrides.trovato = true;
+    trovatoField.classList.remove('auto');
+    trovatoField.classList.add('manual');
+    trovatoField.removeAttribute('readonly');
+    const badge = document.getElementById('badge-trovato');
+    if (badge) {
+      badge.classList.remove('auto');
+      badge.classList.add('manual');
+      badge.textContent = 'MANUALE';
+    }
+  }
 
-  restoreOverrideCheckbox('discrepanzaCassaTrovata', 'trovatoInCassa',
-    result.consegna.discrepanza_trovata, () => discrepanzaTrovataEnabled = true, () => discrepanzaTrovataEnabled = false);
+  if (result.consegna.discrepanza_pagato === 1) {
+    smartOverrides.pagato = true;
+    pagatoField.classList.remove('auto');
+    pagatoField.classList.add('manual');
+    pagatoField.removeAttribute('readonly');
+    const badge = document.getElementById('badge-pagato');
+    if (badge) {
+      badge.classList.remove('auto');
+      badge.classList.add('manual');
+      badge.textContent = 'MANUALE';
+    }
+  }
 
-  restoreOverrideCheckbox('discrepanzaPagatoProduttore', 'pagatoProduttore',
-    result.consegna.discrepanza_pagato, () => discrepanzaPagatoProduttoreEnabled = true, () => discrepanzaPagatoProduttoreEnabled = false);
+  if (result.consegna.discrepanza_cassa === 1) {
+    smartOverrides.lasciato = true;
+    lasciatoField.classList.remove('auto');
+    lasciatoField.classList.add('manual');
+    lasciatoField.removeAttribute('readonly');
+    const badge = document.getElementById('badge-lasciato');
+    if (badge) {
+      badge.classList.remove('auto');
+      badge.classList.add('manual');
+      badge.textContent = 'MANUALE';
+    }
+  }
+
+  checkShowSalvaCassaButton();
 
   existingConsegnaMovimenti = result.movimenti || [];
   saldiBefore = result.saldiBefore || {};
