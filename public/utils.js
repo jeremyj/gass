@@ -63,3 +63,24 @@ function formatSaldo(val) {
   const formatted = Math.abs(val).toFixed(1);
   return formatted.endsWith('.0') ? formatted.slice(0, -2) : formatted;
 }
+
+// Switch between mobile and desktop view
+async function switchViewMode(mode) {
+  try {
+    const response = await fetch('/api/set-view-mode', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      window.location.reload();
+    } else {
+      showStatus('Errore nel cambio visualizzazione', 'error');
+    }
+  } catch (error) {
+    showStatus('Errore: ' + error.message, 'error');
+  }
+}

@@ -55,6 +55,28 @@ body {
     font-weight: bold;
 }
 
+.view-switch-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid white;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+}
+
+.view-switch-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.view-switch-btn:active {
+    background: rgba(255, 255, 255, 0.4);
+    transform: scale(0.95);
+}
+
 /* Main Container */
 .container {
     padding: 15px;

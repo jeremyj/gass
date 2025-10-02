@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAS - Consegna</title>
+    <link rel="stylesheet" href="style-desktop.css">
+</head>
+<body>
+    <nav class="nav-menu">
+        <ul>
+            <li><a href="/consegna" class="active">CONSEGNA</a></li>
+            <li><a href="/storico">STORICO</a></li>
+            <li><a href="/debiti">DEBITI/CREDITI</a></li>
+        </ul>
+        <button class="view-switch-btn" onclick="switchViewMode('mobile')" title="Passa alla visualizzazione mobile">📱 Mobile</button>
+    </nav>
+
+    <div class="container">
+        <h1>Gestione Consegna</h1>
+
+        <div id="status" class="status"></div>
+
+        <form id="consegna-form" onsubmit="event.preventDefault(); saveData();">
+        <div class="section">
+            <h2>Dati Giornata</h2>
+            <div class="form-group">
+                <label>Data Consegna:</label>
+                <input type="text" id="data-display" readonly placeholder="DD-MM-YYYY" onclick="toggleDatePicker()" style="cursor: pointer; background: white;">
+                <input type="hidden" id="data" required>
+                <div id="date-picker-container" class="date-picker-popup" style="display: none;"></div>
+            </div>
+            <div class="form-group">
+                <label>Trovato in cassa:</label>
+                <input type="text" inputmode="decimal" id="trovatoInCassa" placeholder="0.00" oninput="normalizeInputField(this); updateLasciatoInCassa()" onfocus="handleInputFocus(this)" readonly style="cursor: not-allowed; background: #f0f0f0;">
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="discrepanzaCassaTrovata" onchange="toggleDiscrepanzaCassaTrovata()">
+                <label for="discrepanzaCassaTrovata">Discrepanza cassa trovata (abilita modifica manuale)</label>
+            </div>
+            <div class="form-group">
+                <label>Pagato Produttore:</label>
+                <input type="text" inputmode="decimal" id="pagatoProduttore" placeholder="0.00" oninput="normalizeInputField(this); updateLasciatoInCassa()" onfocus="handleInputFocus(this)" readonly style="cursor: not-allowed; background: #f0f0f0;">
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="discrepanzaPagatoProduttore" onchange="toggleDiscrepanzaPagatoProduttore()">
+                <label for="discrepanzaPagatoProduttore">Discrepanza pagato produttore (abilita modifica manuale)</label>
+            </div>
+            <div class="form-group">
+                <label>Lasciato in cassa:</label>
+                <input type="text" inputmode="decimal" id="lasciatoInCassa" placeholder="0.00" oninput="normalizeInputField(this)" onfocus="handleInputFocus(this)" readonly style="cursor: not-allowed; background: #f0f0f0;">
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="discrepanzaCassa" onchange="toggleDiscrepanzaCassa()">
+                <label for="discrepanzaCassa">Discrepanza cassa lasciata (abilita modifica manuale)</label>
+            </div>
+            <div class="form-group">
+                <label>Note:</label>
+                <input type="text" id="noteGiornata" placeholder="Note per questa consegna">
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Partecipanti</h2>
+            <div class="form-group">
+                <label>Seleziona partecipante:</label>
+                <select id="participant-select" onchange="showParticipantForm()">
+                    <option value="">-- Seleziona un partecipante --</option>
+                </select>
+            </div>
+
+            <div id="selected-participants"></div>
+
+            <div id="movimenti-giorno" style="margin-top: 30px;"></div>
+        </div>
+
+        </form>
+    </div>
+
+    <script src="utils.js"></script>
+    <script src="consegna-desktop.js?v=10"></script>
+</body>
+</html>

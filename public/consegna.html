@@ -9,9 +9,9 @@
 <body>
     <!-- Desktop Navigation -->
     <div class="desktop-nav">
-        <a href="consegna.html" class="desktop-nav-item active">📦 Consegna</a>
-        <a href="storico.html" class="desktop-nav-item">📋 Storico</a>
-        <a href="debiti.html" class="desktop-nav-item">💰 Saldi</a>
+        <a href="/consegna" class="desktop-nav-item active">📦 Consegna</a>
+        <a href="/storico" class="desktop-nav-item">📋 Storico</a>
+        <a href="/debiti" class="desktop-nav-item">💰 Saldi</a>
     </div>
 
     <!-- Mobile Header -->
@@ -21,6 +21,7 @@
             <button class="change-date-btn" onclick="showCalendarModal()">📅 Cambia Data</button>
         </div>
         <div class="header-title">GASS Torpignattara</div>
+        <button class="view-switch-btn" onclick="switchViewMode('desktop')" title="Passa alla visualizzazione desktop">🖥️ Desktop</button>
     </div>
 
     <div class="container">
@@ -129,15 +130,15 @@
 
     <!-- Bottom Navigation -->
     <div class="bottom-nav">
-        <a href="consegna.html" class="bottom-nav-item active">
+        <a href="/consegna" class="bottom-nav-item active">
             <span class="bottom-nav-icon">📦</span>
             Consegna
         </a>
-        <a href="storico.html" class="bottom-nav-item">
+        <a href="/storico" class="bottom-nav-item">
             <span class="bottom-nav-icon">📋</span>
             Storico
         </a>
-        <a href="debiti.html" class="bottom-nav-item">
+        <a href="/debiti" class="bottom-nav-item">
             <span class="bottom-nav-icon">💰</span>
             Saldi
         </a>

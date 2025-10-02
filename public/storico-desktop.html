@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAS - Storico</title>
+    <link rel="stylesheet" href="style-desktop.css">
+</head>
+<body>
+    <nav class="nav-menu">
+        <ul>
+            <li><a href="/consegna">CONSEGNA</a></li>
+            <li><a href="/storico" class="active">STORICO</a></li>
+            <li><a href="/debiti">DEBITI/CREDITI</a></li>
+        </ul>
+        <button class="view-switch-btn" onclick="switchViewMode('mobile')" title="Passa alla visualizzazione mobile">📱 Mobile</button>
+    </nav>
+
+    <div class="container">
+        <h1>Storico Consegne</h1>
+
+        <div id="status" class="status"></div>
+
+        <div class="section">
+            <h2>Tutte le Consegne</h2>
+            <div id="storico-list"></div>
+        </div>
+    </div>
+
+    <script src="utils.js"></script>
+    <script src="storico-desktop.js"></script>
+</body>
+</html>

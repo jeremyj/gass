@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const cookieParser = require('cookie-parser');
 const db = require('./database');
 
 const app = express();
@@ -7,7 +8,75 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.static('public'));
+
+// ===== USER AGENT DETECTION =====
+
+function isMobile(userAgent) {
+  const mobilePatterns = [
+    /Android/i,
+    /webOS/i,
+    /iPhone/i,
+    /iPod/i,
+    /BlackBerry/i,
+    /Windows Phone/i,
+    /Opera Mini/i,
+    /IEMobile/i
+  ];
+  return mobilePatterns.some(pattern => pattern.test(userAgent));
+}
+
+function shouldUseMobileView(req) {
+  // Check for manual override cookie
+  if (req.cookies.viewMode) {
+    return req.cookies.viewMode === 'mobile';
+  }
+
+  // Auto-detect from user agent
+  return isMobile(req.headers['user-agent'] || '');
+}
+
+// ===== VIEW MODE SWITCHING API =====
+
+app.post('/api/set-view-mode', (req, res) => {
+  const { mode } = req.body;
+
+  if (mode === 'mobile' || mode === 'desktop') {
+    res.cookie('viewMode', mode, {
+      maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+      httpOnly: true
+    });
+    res.json({ success: true });
+  } else {
+    res.status(400).json({ success: false, error: 'Invalid mode' });
+  }
+});
+
+// ===== CONDITIONAL ROUTING FOR PAGES =====
+
+app.get('/consegna', (req, res) => {
+  const useMobile = shouldUseMobileView(req);
+  const file = useMobile ? 'consegna.html' : 'consegna-desktop.html';
+  res.sendFile(path.join(__dirname, 'public', file));
+});
+
+app.get('/storico', (req, res) => {
+  const useMobile = shouldUseMobileView(req);
+  const file = useMobile ? 'storico.html' : 'storico-desktop.html';
+  res.sendFile(path.join(__dirname, 'public', file));
+});
+
+app.get('/debiti', (req, res) => {
+  const useMobile = shouldUseMobileView(req);
+  const file = useMobile ? 'debiti.html' : 'debiti-desktop.html';
+  res.sendFile(path.join(__dirname, 'public', file));
+});
+
+// Redirect root to consegna
+app.get('/', (req, res) => {
+  res.redirect('/consegna');
+});
 
 // ===== HELPER FUNCTIONS =====
 
