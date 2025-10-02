@@ -53,15 +53,11 @@ function renderStorico(storico) {
 
         // Calcola discrepanza tra effettivo e calcolato
         let discrepanzaWarning = '';
-        if (consegna.discrepanza_cassa) {
-            // Calcola lasciato teorico: trovato + incassato - pagato
-            let totalIncassato = 0;
-            if (consegna.movimenti && consegna.movimenti.length > 0) {
-                consegna.movimenti.forEach(m => {
-                    totalIncassato += m.importo_saldato || 0;
-                });
-            }
-            const lasciatoCalcolato = consegna.trovato_in_cassa + totalIncassato - consegna.pagato_produttore;
+
+        // Discrepanza Cassa Lasciata: solo se flag discrepanza_cassa è abilitato
+        if (consegna.discrepanza_cassa === 1) {
+            // Calcola lasciato teorico: trovato - pagato
+            const lasciatoCalcolato = consegna.trovato_in_cassa - consegna.pagato_produttore;
             const discrepanzaImporto = consegna.lasciato_in_cassa - lasciatoCalcolato;
 
             const segno = discrepanzaImporto >= 0 ? '+' : '';
@@ -69,8 +65,8 @@ function renderStorico(storico) {
             discrepanzaWarning = `<span style="color: ${color}; font-weight: bold; margin-left: 15px;">⚠️ DISCREPANZA CASSA LASCIATA ${segno}€${discrepanzaImporto.toFixed(2)}</span>`;
         }
 
-        // Check for discrepanza cassa trovata (confronto con consegna precedente)
-        if (index < storico.length - 1) {
+        // Discrepanza Cassa Trovata: solo se flag discrepanza_trovata è abilitato
+        if (consegna.discrepanza_trovata === 1 && index < storico.length - 1) {
             const consegnaPrecedente = storico[index + 1];
             const discrepanzaTrovata = consegna.trovato_in_cassa - consegnaPrecedente.lasciato_in_cassa;
 
