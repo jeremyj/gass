@@ -107,10 +107,20 @@ app.get('/api/consegna/:date', (req, res) => {
       saldiBefore[m.nome] = saldoBefore;
     });
 
+    // Calculate trovato_in_cassa dynamically from previous lasciato
+    // UNLESS discrepanza_trovata is enabled (manual override)
+    let trovatoInCassa = consegna.trovato_in_cassa;
+    if (consegna.discrepanza_trovata !== 1 && previousConsegna) {
+      trovatoInCassa = previousConsegna.lasciato_in_cassa;
+    }
+
     res.json({
       success: true,
       found: true,
-      consegna,
+      consegna: {
+        ...consegna,
+        trovato_in_cassa: trovatoInCassa
+      },
       movimenti,
       saldiBefore,
       lasciatoPrecedente: previousConsegna ? previousConsegna.lasciato_in_cassa : null
@@ -247,7 +257,20 @@ app.get('/api/storico', (req, res) => {
       ORDER BY c.data DESC
     `).all();
 
-    res.json({ success: true, consegne });
+    // Calculate trovato_in_cassa dynamically for each consegna
+    const consegneWithDynamicTrovato = consegne.map((consegna, index) => {
+      let trovatoInCassa = consegna.trovato_in_cassa;
+      if (consegna.discrepanza_trovata !== 1 && index < consegne.length - 1) {
+        const previousConsegna = consegne[index + 1];
+        trovatoInCassa = previousConsegna.lasciato_in_cassa;
+      }
+      return {
+        ...consegna,
+        trovato_in_cassa: trovatoInCassa
+      };
+    });
+
+    res.json({ success: true, consegne: consegneWithDynamicTrovato });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -258,7 +281,7 @@ app.get('/api/storico/dettaglio', (req, res) => {
   try {
     const consegne = db.prepare('SELECT * FROM consegne ORDER BY data DESC').all();
 
-    const storico = consegne.map(consegna => {
+    const storico = consegne.map((consegna, index) => {
       const movimenti = db.prepare(`
         SELECT m.*, p.nome
         FROM movimenti m
@@ -266,7 +289,20 @@ app.get('/api/storico/dettaglio', (req, res) => {
         WHERE m.consegna_id = ?
       `).all(consegna.id);
 
-      return { ...consegna, movimenti };
+      // Calculate trovato_in_cassa dynamically from previous lasciato
+      // UNLESS discrepanza_trovata is enabled (manual override)
+      let trovatoInCassa = consegna.trovato_in_cassa;
+      if (consegna.discrepanza_trovata !== 1 && index < consegne.length - 1) {
+        // Previous consegna is the next one in the array (DESC order)
+        const previousConsegna = consegne[index + 1];
+        trovatoInCassa = previousConsegna.lasciato_in_cassa;
+      }
+
+      return {
+        ...consegna,
+        trovato_in_cassa: trovatoInCassa,
+        movimenti
+      };
     });
 
     res.json({ success: true, storico });
