@@ -114,12 +114,20 @@ app.get('/api/consegna/:date', (req, res) => {
       trovatoInCassa = previousConsegna.lasciato_in_cassa;
     }
 
+    // Calculate lasciato_in_cassa dynamically from trovato - pagato
+    // UNLESS discrepanza_cassa is enabled (manual override)
+    let lasciatoInCassa = consegna.lasciato_in_cassa;
+    if (consegna.discrepanza_cassa !== 1) {
+      lasciatoInCassa = trovatoInCassa - consegna.pagato_produttore;
+    }
+
     res.json({
       success: true,
       found: true,
       consegna: {
         ...consegna,
-        trovato_in_cassa: trovatoInCassa
+        trovato_in_cassa: trovatoInCassa,
+        lasciato_in_cassa: lasciatoInCassa
       },
       movimenti,
       saldiBefore,
@@ -257,20 +265,39 @@ app.get('/api/storico', (req, res) => {
       ORDER BY c.data DESC
     `).all();
 
-    // Calculate trovato_in_cassa dynamically for each consegna
-    const consegneWithDynamicTrovato = consegne.map((consegna, index) => {
+    // Calculate trovato_in_cassa and lasciato_in_cassa dynamically for each consegna
+    // We need to process in chronological order (ASC) for recursive calculation
+    const consegneAsc = [...consegne].reverse(); // Convert DESC to ASC
+
+    const consegneWithDynamicValues = consegneAsc.map((consegna, index) => {
+      // Calculate trovato from previous lasciato
       let trovatoInCassa = consegna.trovato_in_cassa;
-      if (consegna.discrepanza_trovata !== 1 && index < consegne.length - 1) {
-        const previousConsegna = consegne[index + 1];
-        trovatoInCassa = previousConsegna.lasciato_in_cassa;
+      if (consegna.discrepanza_trovata !== 1 && index > 0) {
+        const previousConsegna = consegneAsc[index - 1];
+        // Use the calculated lasciato from previous iteration
+        trovatoInCassa = previousConsegna.lasciato_in_cassa_calculated !== undefined
+          ? previousConsegna.lasciato_in_cassa_calculated
+          : previousConsegna.lasciato_in_cassa;
       }
+
+      // Calculate lasciato from trovato - pagato
+      let lasciatoInCassa = consegna.lasciato_in_cassa;
+      if (consegna.discrepanza_cassa !== 1) {
+        lasciatoInCassa = trovatoInCassa - consegna.pagato_produttore;
+      }
+
+      // Store calculated value for next iteration
+      consegna.lasciato_in_cassa_calculated = lasciatoInCassa;
+
       return {
         ...consegna,
-        trovato_in_cassa: trovatoInCassa
+        trovato_in_cassa: trovatoInCassa,
+        lasciato_in_cassa: lasciatoInCassa
       };
     });
 
-    res.json({ success: true, consegne: consegneWithDynamicTrovato });
+    // Reverse back to DESC order
+    res.json({ success: true, consegne: consegneWithDynamicValues.reverse() });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -281,7 +308,10 @@ app.get('/api/storico/dettaglio', (req, res) => {
   try {
     const consegne = db.prepare('SELECT * FROM consegne ORDER BY data DESC').all();
 
-    const storico = consegne.map((consegna, index) => {
+    // Process in chronological order (ASC) for recursive calculation
+    const consegneAsc = [...consegne].reverse();
+
+    const storico = consegneAsc.map((consegna, index) => {
       const movimenti = db.prepare(`
         SELECT m.*, p.nome
         FROM movimenti m
@@ -289,23 +319,34 @@ app.get('/api/storico/dettaglio', (req, res) => {
         WHERE m.consegna_id = ?
       `).all(consegna.id);
 
-      // Calculate trovato_in_cassa dynamically from previous lasciato
-      // UNLESS discrepanza_trovata is enabled (manual override)
+      // Calculate trovato from previous lasciato
       let trovatoInCassa = consegna.trovato_in_cassa;
-      if (consegna.discrepanza_trovata !== 1 && index < consegne.length - 1) {
-        // Previous consegna is the next one in the array (DESC order)
-        const previousConsegna = consegne[index + 1];
-        trovatoInCassa = previousConsegna.lasciato_in_cassa;
+      if (consegna.discrepanza_trovata !== 1 && index > 0) {
+        const previousConsegna = consegneAsc[index - 1];
+        trovatoInCassa = previousConsegna.lasciato_in_cassa_calculated !== undefined
+          ? previousConsegna.lasciato_in_cassa_calculated
+          : previousConsegna.lasciato_in_cassa;
       }
+
+      // Calculate lasciato from trovato - pagato
+      let lasciatoInCassa = consegna.lasciato_in_cassa;
+      if (consegna.discrepanza_cassa !== 1) {
+        lasciatoInCassa = trovatoInCassa - consegna.pagato_produttore;
+      }
+
+      // Store calculated value for next iteration
+      consegna.lasciato_in_cassa_calculated = lasciatoInCassa;
 
       return {
         ...consegna,
         trovato_in_cassa: trovatoInCassa,
+        lasciato_in_cassa: lasciatoInCassa,
         movimenti
       };
     });
 
-    res.json({ success: true, storico });
+    // Reverse back to DESC order
+    res.json({ success: true, storico: storico.reverse() });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
