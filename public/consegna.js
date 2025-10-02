@@ -7,6 +7,10 @@ let discrepanzaCassaEnabled = false;
 let discrepanzaTrovataEnabled = false;
 let discrepanzaPagatoProduttoreEnabled = false;
 
+let currentCalendarYear = new Date().getFullYear();
+let currentCalendarMonth = new Date().getMonth();
+let consegneDates = new Set(); // Store dates with saved consegne
+
 // ===== DATE HANDLING =====
 
 function formatDateItalian(dateStr) {
@@ -20,6 +24,115 @@ function updateDateDisplay() {
   if (dateInput.value) {
     displayInput.value = formatDateItalian(dateInput.value);
     checkDateData();
+  }
+}
+
+function selectDate(dateStr) {
+  document.getElementById('data').value = dateStr;
+  updateDateDisplay();
+  renderCalendar();
+}
+
+// ===== CALENDAR =====
+
+function renderCalendar() {
+  const container = document.getElementById('calendar-container');
+  const monthNames = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
+                      'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+  const weekDays = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
+
+  const today = new Date();
+  const selectedDate = document.getElementById('data').value;
+
+  // Get first and last day of month
+  const firstDay = new Date(currentCalendarYear, currentCalendarMonth, 1);
+  const lastDay = new Date(currentCalendarYear, currentCalendarMonth + 1, 0);
+
+  // Adjust firstDay to Monday (1 = Monday, 0 = Sunday)
+  let startDay = firstDay.getDay();
+  startDay = startDay === 0 ? 6 : startDay - 1; // Convert Sunday from 0 to 6
+
+  let html = '<div class="calendar">';
+
+  // Header
+  html += '<div class="calendar-header">';
+  html += `<button type="button" class="calendar-nav" onclick="changeMonth(-1)">◀</button>`;
+  html += `<h3>${monthNames[currentCalendarMonth]} ${currentCalendarYear}</h3>`;
+  html += `<button type="button" class="calendar-nav" onclick="changeMonth(1)">▶</button>`;
+  html += '</div>';
+
+  // Weekdays
+  html += '<div class="calendar-weekdays">';
+  weekDays.forEach(day => {
+    html += `<div class="calendar-weekday">${day}</div>`;
+  });
+  html += '</div>';
+
+  // Days
+  html += '<div class="calendar-days">';
+
+  // Empty cells before first day
+  for (let i = 0; i < startDay; i++) {
+    html += '<div class="calendar-day empty"></div>';
+  }
+
+  // Days of month
+  for (let day = 1; day <= lastDay.getDate(); day++) {
+    const dateStr = `${currentCalendarYear}-${String(currentCalendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const isToday = dateStr === today.toISOString().split('T')[0];
+    const isSelected = dateStr === selectedDate;
+    const hasConsegna = consegneDates.has(dateStr);
+
+    let classes = 'calendar-day';
+    if (isToday) classes += ' today';
+    if (isSelected) classes += ' selected';
+    if (hasConsegna) classes += ' has-consegna';
+    else classes += ' no-consegna';
+
+    html += `<div class="${classes}" onclick="selectDate('${dateStr}')">${day}</div>`;
+  }
+
+  html += '</div>';
+
+  // Legend
+  html += '<div class="calendar-legend">';
+  html += '<div class="calendar-legend-item">';
+  html += '<div class="calendar-legend-color" style="background: #2ecc71;"></div>';
+  html += '<span>Con consegna</span>';
+  html += '</div>';
+  html += '<div class="calendar-legend-item">';
+  html += '<div class="calendar-legend-color" style="background: white;"></div>';
+  html += '<span>Senza consegna</span>';
+  html += '</div>';
+  html += '</div>';
+
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function changeMonth(delta) {
+  currentCalendarMonth += delta;
+  if (currentCalendarMonth > 11) {
+    currentCalendarMonth = 0;
+    currentCalendarYear++;
+  } else if (currentCalendarMonth < 0) {
+    currentCalendarMonth = 11;
+    currentCalendarYear--;
+  }
+  renderCalendar();
+}
+
+async function loadConsegneDates() {
+  try {
+    const response = await fetch('/api/storico');
+    const result = await response.json();
+
+    if (result.success) {
+      consegneDates = new Set(result.consegne.map(c => c.data));
+      renderCalendar();
+    }
+  } catch (error) {
+    console.error('Error loading consegne dates:', error);
   }
 }
 
@@ -544,6 +657,7 @@ async function saveCassaOnly(data, trovatoInCassa, pagatoProduttore, noteGiornat
 
     if (result.success) {
       showStatus('Dati cassa salvati con successo!', 'success');
+      await loadConsegneDates(); // Refresh calendar
       setTimeout(() => loadData(), 1000);
     } else {
       showStatus('Errore: ' + result.error, 'error');
@@ -617,6 +731,7 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
 
     if (result.success) {
       showStatus('Dati salvati con successo!', 'success');
+      await loadConsegneDates(); // Refresh calendar
       setTimeout(() => {
         document.getElementById('selected-participants').innerHTML = '';
         document.getElementById('participant-select').value = '';
@@ -633,20 +748,33 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
 // ===== INITIALIZATION =====
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Load consegne dates for calendar
+  await loadConsegneDates();
+
+  // Set initial date (last consegna or today)
   try {
     const response = await fetch('/api/storico');
     const result = await response.json();
 
     if (result.success && result.storico.length > 0) {
       document.getElementById('data').value = result.storico[0].data;
+      // Set calendar to the month of the last consegna
+      const lastDate = new Date(result.storico[0].data);
+      currentCalendarYear = lastDate.getFullYear();
+      currentCalendarMonth = lastDate.getMonth();
     } else {
-      document.getElementById('data').valueAsDate = new Date();
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0];
+      document.getElementById('data').value = todayStr;
     }
   } catch (error) {
     console.error('Error loading last date:', error);
-    document.getElementById('data').valueAsDate = new Date();
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    document.getElementById('data').value = todayStr;
   }
 
+  renderCalendar();
   updateDateDisplay();
   loadData();
 });

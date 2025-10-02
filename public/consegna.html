@@ -24,10 +24,11 @@
         <div class="section">
             <h2>Dati Giornata</h2>
             <div class="form-group">
-                <label>Data:</label>
-                <input type="text" id="data-display" readonly style="cursor: pointer; background: white;" onclick="document.getElementById('data').showPicker()">
-                <input type="date" id="data" required onchange="updateDateDisplay()" style="position: absolute; opacity: 0; pointer-events: none;">
+                <label>Data Selezionata:</label>
+                <input type="text" id="data-display" readonly style="background: #f0f0f0; cursor: default;">
+                <input type="hidden" id="data" required>
             </div>
+            <div id="calendar-container" style="margin: 20px 0;"></div>
             <div class="form-group">
                 <label>Trovato in cassa:</label>
                 <input type="text" inputmode="decimal" id="trovatoInCassa" placeholder="0.00" oninput="normalizeInputField(this); updateLasciatoInCassa()" onfocus="handleInputFocus(this)" readonly style="cursor: not-allowed; background: #f0f0f0;">
