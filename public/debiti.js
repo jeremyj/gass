@@ -162,7 +162,7 @@ async function saveSaldo(id) {
     const result = await response.json();
 
     if (result.success) {
-      showStatus('Saldo aggiornato con successo!', 'success');
+      showStatus('✓ Saldo aggiornato', 'success');
       expandedParticipantId = null;
       loadParticipants();
     } else {
@@ -187,7 +187,7 @@ async function deleteParticipant(id) {
     const result = await response.json();
 
     if (result.success) {
-      showStatus('Partecipante eliminato con successo!', 'success');
+      showStatus('✓ Partecipante eliminato', 'success');
       expandedParticipantId = null;
       loadParticipants();
     } else {

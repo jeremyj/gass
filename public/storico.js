@@ -219,7 +219,7 @@ async function deleteConsegna(id) {
     const result = await response.json();
 
     if (result.success) {
-      showStatus('Consegna eliminata con successo!', 'success');
+      showStatus('✓ Consegna eliminata', 'success');
       expandedConsegnaId = null;
       loadStorico();
     } else {

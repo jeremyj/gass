@@ -264,7 +264,6 @@ async function loadData() {
     if (result.success) {
       participants = result.participants;
       renderParticipantSelect();
-      showStatus('Dati caricati con successo!', 'success');
     } else {
       showStatus('Errore: ' + result.error, 'error');
     }
@@ -811,7 +810,7 @@ async function saveCassaOnly(data, trovatoInCassa, pagatoProduttore, noteGiornat
     const result = await response.json();
 
     if (result.success) {
-      showStatus('Dati cassa salvati con successo!', 'success');
+      showStatus('✓ Cassa salvata', 'success');
       await loadConsegneDates(); // Refresh calendar
       setTimeout(() => loadData(), 1000);
     } else {
@@ -885,7 +884,7 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
     const result = await response.json();
 
     if (result.success) {
-      showStatus('Dati salvati con successo!', 'success');
+      showStatus('✓ Movimento salvato', 'success');
       await loadConsegneDates(); // Refresh calendar
       setTimeout(() => {
         document.getElementById('selected-participants').innerHTML = '';
