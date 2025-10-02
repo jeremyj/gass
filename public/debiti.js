@@ -32,6 +32,12 @@ function normalizeInputField(input) {
     }
 }
 
+function handleInputFocus(input) {
+    if (input.value === '0' || input.value === '0.0' || input.value === '0.00') {
+        input.value = '';
+    }
+}
+
 function showAddForm() {
     document.getElementById('add-form').style.display = 'block';
     document.getElementById('new-name').value = '';
@@ -77,7 +83,7 @@ function renderParticipants() {
             <td><strong>${p.nome}</strong></td>
             <td class="${saldoClass}">
                 <span id="saldo-view-${p.id}">€${saldoText}</span>
-                <input type="text" inputmode="decimal" id="saldo-edit-${p.id}" value="${p.saldo}" style="display: none;" oninput="normalizeInputField(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();saveSaldo(${p.id})}">
+                <input type="text" inputmode="decimal" id="saldo-edit-${p.id}" value="${p.saldo}" style="display: none;" oninput="normalizeInputField(this)" onfocus="handleInputFocus(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();saveSaldo(${p.id})}">
             </td>
             <td>${formatDateItalian(p.ultima_modifica)}</td>
             <td>
