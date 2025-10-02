@@ -193,17 +193,8 @@ app.post('/api/consegna', (req, res) => {
     const transaction = db.transaction(() => {
       let consegna = db.prepare('SELECT * FROM consegne WHERE data = ?').get(data);
 
-      // Auto-detect discrepancy if not manually set
-      let discrepanzaFlag = discrepanzaCassa ? 1 : 0;
-      if (!discrepanzaCassa) {
-        const previousConsegna = db.prepare(`
-          SELECT lasciato_in_cassa FROM consegne
-          WHERE data < ?
-          ORDER BY data DESC
-          LIMIT 1
-        `).get(data);
-        discrepanzaFlag = previousConsegna && previousConsegna.lasciato_in_cassa !== trovatoInCassa ? 1 : 0;
-      }
+      // Only set override flags if explicitly requested by user
+      const discrepanzaFlag = discrepanzaCassa ? 1 : 0;
 
       const consegnaData = [
         trovatoInCassa, pagatoProduttore, lasciatoInCassa, discrepanzaFlag,
