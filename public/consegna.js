@@ -700,7 +700,7 @@ async function checkDateData() {
             saldiBefore = result.saldiBefore || {};
 
             renderMovimentiGiorno();
-            updatePagatoProduttore();
+            // Non ricalcolare Pagato Produttore per consegne esistenti - il valore è già salvato nel DB
             showStatus('Dati esistenti caricati per questa data', 'success');
         } else {
             // New date - auto-populate trovato with previous lasciato
