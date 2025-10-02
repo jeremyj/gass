@@ -37,48 +37,47 @@ function renderStorico(storico) {
 
 function createConsegnaSection(consegna, index, storico) {
   const section = document.createElement('div');
-  section.className = 'section';
-  section.style.background = '#FFF9C4';
-  section.style.marginBottom = '20px';
+  section.className = 'storico-card';
 
   const header = createConsegnaHeader(consegna, index, storico);
-  const infoTable = createInfoTable(consegna);
+  const content = document.createElement('div');
+  content.className = 'storico-card-content';
 
-  section.appendChild(header);
-  section.appendChild(infoTable);
+  const infoTable = createInfoTable(consegna);
+  content.appendChild(infoTable);
 
   if (consegna.movimenti && consegna.movimenti.length > 0) {
     const movimentiTitle = createMovimentiTitle();
     const movimentiTable = createMovimentiTable(consegna.movimenti);
-    section.appendChild(movimentiTitle);
-    section.appendChild(movimentiTable);
+    content.appendChild(movimentiTitle);
+    content.appendChild(movimentiTable);
   }
+
+  section.appendChild(header);
+  section.appendChild(content);
 
   return section;
 }
 
 function createConsegnaHeader(consegna, index, storico) {
   const header = document.createElement('div');
-  header.style.display = 'flex';
-  header.style.justifyContent = 'space-between';
-  header.style.alignItems = 'center';
-  header.style.marginBottom = '15px';
+  header.className = 'storico-card-header';
 
   const discrepanzaWarning = calculateDiscrepanzaWarning(consegna, index, storico);
 
   header.innerHTML = `
     <div>
-      <h3 style="margin: 0; color: #2c3e50; display: inline;">Data: ${formatDateItalian(consegna.data)}</h3>
-      ${discrepanzaWarning}
+      <div class="storico-date">${formatDateItalian(consegna.data)}</div>
+      ${discrepanzaWarning ? `<div class="storico-warning">${discrepanzaWarning}</div>` : ''}
     </div>
-    <button class="btn-delete" onclick="deleteConsegna(${consegna.id})">Elimina</button>
+    <button class="btn-delete-storico" onclick="deleteConsegna(${consegna.id})">Elimina</button>
   `;
 
   return header;
 }
 
 function calculateDiscrepanzaWarning(consegna, index, storico) {
-  let warning = '';
+  const warnings = [];
 
   // Discrepanza Cassa Lasciata
   if (consegna.discrepanza_cassa === 1) {
@@ -87,7 +86,7 @@ function calculateDiscrepanzaWarning(consegna, index, storico) {
 
     const segno = discrepanzaImporto >= 0 ? '+' : '';
     const color = discrepanzaImporto >= 0 ? '#2e7d32' : '#d32f2f';
-    warning = `<span style="color: ${color}; font-weight: bold; margin-left: 15px;">⚠️ DISCREPANZA CASSA LASCIATA ${segno}€${discrepanzaImporto.toFixed(2)}</span>`;
+    warnings.push(`<span style="color: ${color};">⚠️ CASSA LASCIATA ${segno}€${discrepanzaImporto.toFixed(2)}</span>`);
   }
 
   // Discrepanza Cassa Trovata
@@ -98,11 +97,11 @@ function calculateDiscrepanzaWarning(consegna, index, storico) {
     if (Math.abs(discrepanzaTrovata) > 0.01) {
       const segno = discrepanzaTrovata >= 0 ? '+' : '';
       const color = discrepanzaTrovata >= 0 ? '#2e7d32' : '#d32f2f';
-      warning += `<span style="color: ${color}; font-weight: bold; margin-left: 15px;">⚠️ DISCREPANZA CASSA TROVATA ${segno}€${discrepanzaTrovata.toFixed(2)}</span>`;
+      warnings.push(`<span style="color: ${color};">⚠️ CASSA TROVATA ${segno}€${discrepanzaTrovata.toFixed(2)}</span>`);
     }
   }
 
-  return warning;
+  return warnings.join('<br>');
 }
 
 function createInfoTable(consegna) {
@@ -120,12 +119,13 @@ function createInfoTable(consegna) {
     : `€${consegna.lasciato_in_cassa.toFixed(2)}`;
 
   const table = document.createElement('table');
+  table.className = 'storico-info-table';
   table.innerHTML = `
     <thead>
-      <tr style="background: #FFEB3B; color: white;">
-        <th>Trovato in Cassa</th>
-        <th>Pagato Produttore</th>
-        <th>Lasciato in Cassa</th>
+      <tr>
+        <th>Trovato</th>
+        <th>Pagato</th>
+        <th>Lasciato</th>
       </tr>
     </thead>
     <tbody>
@@ -140,40 +140,37 @@ function createInfoTable(consegna) {
 }
 
 function createMovimentiTitle() {
-  const title = document.createElement('h4');
+  const title = document.createElement('div');
+  title.className = 'storico-movimenti-title';
   title.textContent = 'Movimenti Partecipanti';
-  title.style.marginTop = '20px';
-  title.style.marginBottom = '10px';
   return title;
 }
 
 function createMovimentiTable(movimenti) {
-  const rows = movimenti.map((m, idx) => {
-    const bgColor = idx % 2 === 0 ? '#FFFFFF' : '#E3F2FD';
+  const rows = movimenti.map((m) => {
     return `
-      <tr style="background: ${bgColor};">
+      <tr>
         <td><strong>${m.nome}</strong></td>
-        <td>${m.importo_saldato ? '€' + m.importo_saldato.toFixed(2) : ''}</td>
-        <td>${m.usa_credito ? '€' + m.usa_credito.toFixed(2) : ''}</td>
-        <td>${m.debito_lasciato ? '€' + m.debito_lasciato.toFixed(2) : ''}</td>
-        <td>${m.credito_lasciato ? '€' + m.credito_lasciato.toFixed(2) : ''}</td>
-        <td>${m.debito_saldato ? '€' + m.debito_saldato.toFixed(2) : ''}</td>
-        <td>${m.note || ''}</td>
+        <td>${m.importo_saldato ? '€' + m.importo_saldato.toFixed(2) : '-'}</td>
+        <td>${m.usa_credito ? '€' + m.usa_credito.toFixed(2) : '-'}</td>
+        <td>${m.debito_lasciato ? '€' + m.debito_lasciato.toFixed(2) : '-'}</td>
+        <td>${m.credito_lasciato ? '€' + m.credito_lasciato.toFixed(2) : '-'}</td>
+        <td>${m.debito_saldato ? '€' + m.debito_saldato.toFixed(2) : '-'}</td>
       </tr>
     `;
   }).join('');
 
   const table = document.createElement('table');
+  table.className = 'storico-movimenti-table';
   table.innerHTML = `
     <thead>
       <tr>
         <th>Nome</th>
-        <th>Importo Saldato</th>
-        <th>Usa Credito</th>
-        <th>Debito Lasciato</th>
-        <th>Credito Lasciato</th>
-        <th>Debito Saldato</th>
-        <th>Note</th>
+        <th>Saldato</th>
+        <th>Credito</th>
+        <th>Deb.Lasc</th>
+        <th>Cred.Lasc</th>
+        <th>Deb.Sald</th>
       </tr>
     </thead>
     <tbody>${rows}</tbody>

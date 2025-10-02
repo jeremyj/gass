@@ -826,10 +826,202 @@ body {
     display: none !important;
 }
 
+/* ===== STORICO PAGE ===== */
+
+.storico-card {
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.storico-card-header {
+    padding: 18px;
+    background: linear-gradient(135deg, #FFEB3B 0%, #FDD835 100%);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.storico-date {
+    font-weight: bold;
+    font-size: 16px;
+    color: #2c3e50;
+}
+
+.storico-warning {
+    font-size: 12px;
+    margin-top: 4px;
+    font-weight: 600;
+}
+
+.storico-card-content {
+    padding: 18px;
+}
+
+.storico-info-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+}
+
+.storico-info-table th {
+    background: #f8f9fa;
+    padding: 10px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6c757d;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.storico-info-table td {
+    padding: 12px 10px;
+    font-size: 14px;
+    border-bottom: 1px solid #f1f3f5;
+}
+
+.consegna-info-value.has-override {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.override-indicator {
+    display: inline-block;
+    background: #e74c3c;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+.storico-movimenti-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin: 16px 0 8px 0;
+}
+
+.storico-movimenti-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.storico-movimenti-table th {
+    background: #f8f9fa;
+    padding: 8px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6c757d;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.storico-movimenti-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #f1f3f5;
+}
+
+.btn-delete-storico {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* ===== SALDI/DEBITI PAGE ===== */
+
+.saldo-card {
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.saldo-card.expanded {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.saldo-card-header {
+    padding: 18px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+}
+
+.saldo-card-header:active {
+    background: linear-gradient(135deg, #5568d3 0%, #653a8a 100%);
+}
+
+.saldo-card-info {
+    flex: 1;
+}
+
+.saldo-card-name {
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 4px;
+}
+
+.saldo-card-date {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.saldo-badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.saldo-badge.debito {
+    background: #e74c3c;
+    color: white;
+}
+
+.saldo-badge.credito {
+    background: #2ecc71;
+    color: white;
+}
+
+.saldo-badge.zero {
+    background: #95a5a6;
+    color: white;
+}
+
+.saldo-card-content {
+    padding: 18px;
+    background: white;
+}
+
+.saldo-card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 18px;
+}
+
 /* Desktop styles */
 @media (min-width: 769px) {
     .container {
-        max-width: 800px;
+        max-width: 400px;
         margin: 0 auto;
         padding: 20px;
     }
