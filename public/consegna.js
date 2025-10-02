@@ -300,13 +300,51 @@ function loadExistingConsegna(result) {
   lasciatoField.value = result.consegna.lasciato_in_cassa || '';
   document.getElementById('noteGiornata').value = result.consegna.note || '';
 
-  // Restore smart override states for mobile version
+  // First, reset ALL fields to AUTO state
+  smartOverrides.trovato = false;
+  smartOverrides.pagato = false;
+  smartOverrides.lasciato = false;
+
+  // Reset trovato to AUTO
+  trovatoField.classList.remove('manual');
+  trovatoField.classList.add('auto');
+  trovatoField.setAttribute('readonly', 'readonly');
+  let badge = document.getElementById('badge-trovato');
+  if (badge) {
+    badge.classList.remove('manual');
+    badge.classList.add('auto');
+    badge.textContent = 'AUTO';
+  }
+
+  // Reset pagato to AUTO
+  pagatoField.classList.remove('manual');
+  pagatoField.classList.add('auto');
+  pagatoField.setAttribute('readonly', 'readonly');
+  badge = document.getElementById('badge-pagato');
+  if (badge) {
+    badge.classList.remove('manual');
+    badge.classList.add('auto');
+    badge.textContent = 'AUTO';
+  }
+
+  // Reset lasciato to AUTO
+  lasciatoField.classList.remove('manual');
+  lasciatoField.classList.add('auto');
+  lasciatoField.setAttribute('readonly', 'readonly');
+  badge = document.getElementById('badge-lasciato');
+  if (badge) {
+    badge.classList.remove('manual');
+    badge.classList.add('auto');
+    badge.textContent = 'AUTO';
+  }
+
+  // Then, apply MANUAL state only where needed
   if (result.consegna.discrepanza_trovata === 1) {
     smartOverrides.trovato = true;
     trovatoField.classList.remove('auto');
     trovatoField.classList.add('manual');
     trovatoField.removeAttribute('readonly');
-    const badge = document.getElementById('badge-trovato');
+    badge = document.getElementById('badge-trovato');
     if (badge) {
       badge.classList.remove('auto');
       badge.classList.add('manual');
@@ -319,7 +357,7 @@ function loadExistingConsegna(result) {
     pagatoField.classList.remove('auto');
     pagatoField.classList.add('manual');
     pagatoField.removeAttribute('readonly');
-    const badge = document.getElementById('badge-pagato');
+    badge = document.getElementById('badge-pagato');
     if (badge) {
       badge.classList.remove('auto');
       badge.classList.add('manual');
@@ -332,7 +370,7 @@ function loadExistingConsegna(result) {
     lasciatoField.classList.remove('auto');
     lasciatoField.classList.add('manual');
     lasciatoField.removeAttribute('readonly');
-    const badge = document.getElementById('badge-lasciato');
+    badge = document.getElementById('badge-lasciato');
     if (badge) {
       badge.classList.remove('auto');
       badge.classList.add('manual');
