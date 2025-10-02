@@ -119,6 +119,7 @@ function showParticipantForm() {
             });
         }
         updateLasciatoInCassa();
+        renderMovimentiGiorno();
         return;
     }
 
@@ -134,6 +135,44 @@ function showParticipantForm() {
 
     renderParticipant(nome);
     updateLasciatoInCassa();
+    renderMovimentiGiorno();
+}
+
+function renderMovimentiGiorno() {
+    const container = document.getElementById('movimenti-giorno');
+
+    if (!existingConsegnaMovimenti || existingConsegnaMovimenti.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+
+    let html = '<h3 style="margin-bottom: 10px;">Movimenti del Giorno</h3>';
+    html += '<table style="width: 100%; border-collapse: collapse;">';
+    html += '<thead><tr style="background: #FFEB3B; color: white;">';
+    html += '<th style="padding: 10px; text-align: left;">Nome</th>';
+    html += '<th style="padding: 10px; text-align: right;">Importo Saldato</th>';
+    html += '<th style="padding: 10px; text-align: right;">Usa Credito</th>';
+    html += '<th style="padding: 10px; text-align: right;">Debito Lasciato</th>';
+    html += '<th style="padding: 10px; text-align: right;">Credito Lasciato</th>';
+    html += '<th style="padding: 10px; text-align: right;">Debito Saldato</th>';
+    html += '<th style="padding: 10px; text-align: left;">Note</th>';
+    html += '</tr></thead><tbody>';
+
+    existingConsegnaMovimenti.forEach((m, idx) => {
+        const bgColor = idx % 2 === 0 ? '#FFFFFF' : '#E3F2FD';
+        html += `<tr style="background: ${bgColor};">`;
+        html += `<td style="padding: 8px;"><strong>${m.nome}</strong></td>`;
+        html += `<td style="padding: 8px; text-align: right;">${m.importo_saldato ? '€' + m.importo_saldato.toFixed(2) : ''}</td>`;
+        html += `<td style="padding: 8px; text-align: right;">${m.usa_credito ? '€' + m.usa_credito.toFixed(2) : ''}</td>`;
+        html += `<td style="padding: 8px; text-align: right;">${m.debito_lasciato ? '€' + m.debito_lasciato.toFixed(2) : ''}</td>`;
+        html += `<td style="padding: 8px; text-align: right;">${m.credito_lasciato ? '€' + m.credito_lasciato.toFixed(2) : ''}</td>`;
+        html += `<td style="padding: 8px; text-align: right;">${m.debito_saldato ? '€' + m.debito_saldato.toFixed(2) : ''}</td>`;
+        html += `<td style="padding: 8px;">${m.note || ''}</td>`;
+        html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    container.innerHTML = html;
 }
 
 function renderParticipant(nome) {
@@ -666,6 +705,7 @@ async function checkDateData() {
                 });
             }
 
+            renderMovimentiGiorno();
             showStatus('Dati esistenti caricati per questa data', 'success');
         } else {
             // New date - auto-populate trovato with previous lasciato
@@ -680,6 +720,7 @@ async function checkDateData() {
             existingConsegnaMovimenti = null;
             saldiBefore = {};
             totalImportoSaldatoBefore = 0;
+            renderMovimentiGiorno();
         }
     } catch (error) {
         console.error('Error checking date data:', error);
