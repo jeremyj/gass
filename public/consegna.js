@@ -3,7 +3,6 @@ let existingConsegnaMovimenti = null; // Store existing movimenti for the select
 let saldiBefore = {}; // Store saldi before the existing consegna
 let discrepanzaCassaEnabled = false; // Track discrepanza cassa checkbox state
 let discrepanzaPagatoProduttoreEnabled = false; // Track discrepanza pagato produttore checkbox state
-let totalImportoSaldatoBefore = 0; // Store total importo_saldato before editing
 
 function showStatus(message, type) {
     const status = document.getElementById('status');
@@ -112,25 +111,8 @@ function showParticipantForm() {
     container.innerHTML = '';
 
     if (!nome) {
-        // Reset total importo to include all movements
-        if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
-            totalImportoSaldatoBefore = 0;
-            existingConsegnaMovimenti.forEach(m => {
-                totalImportoSaldatoBefore += m.importo_saldato || 0;
-            });
-        }
         updateLasciatoInCassa();
         return;
-    }
-
-    // Aggiorna totalImportoSaldatoBefore escludendo il partecipante corrente
-    totalImportoSaldatoBefore = 0;
-    if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
-        existingConsegnaMovimenti.forEach(m => {
-            if (m.nome !== nome) {
-                totalImportoSaldatoBefore += m.importo_saldato || 0;
-            }
-        });
     }
 
     renderParticipant(nome);
@@ -422,30 +404,9 @@ function updateLasciatoInCassa() {
     const trovatoInCassa = parseAmount(document.getElementById('trovatoInCassa').value);
     const pagatoProduttore = parseAmount(document.getElementById('pagatoProduttore').value);
 
-    // Calcola totale importi saldati
-    let totalImportoSaldato = 0;
-
-    const select = document.getElementById('participant-select');
-    const currentNome = select.value;
-
-    // Se c'è un partecipante selezionato, usa totalImportoSaldatoBefore + importo corrente
-    if (currentNome) {
-        totalImportoSaldato = totalImportoSaldatoBefore;
-        const importoField = document.getElementById(`importo_${currentNome}`);
-        if (importoField) {
-            const importoCorrente = parseAmount(importoField.value);
-            totalImportoSaldato += importoCorrente;
-        }
-    } else {
-        // Nessun partecipante selezionato: calcola da tutti i movimenti esistenti
-        if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
-            existingConsegnaMovimenti.forEach(m => {
-                totalImportoSaldato += m.importo_saldato || 0;
-            });
-        }
-    }
-
-    const lasciatoInCassa = roundUpCents(trovatoInCassa - pagatoProduttore + totalImportoSaldato);
+    // Lasciato in Cassa = Trovato in Cassa - Pagato Produttore
+    // (Pagato Produttore include già tutti i movimenti: Importo Saldato + Usa Credito + Debito Lasciato - Credito Lasciato - Debito Saldato)
+    const lasciatoInCassa = roundUpCents(trovatoInCassa - pagatoProduttore);
     document.getElementById('lasciatoInCassa').value = lasciatoInCassa;
 }
 
@@ -549,14 +510,8 @@ async function saveData() {
         if (discrepanzaCassaEnabled) {
             lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
         } else {
-            // Calcola totale importi da tutti i movimenti esistenti
-            let totalImportoSaldato = 0;
-            if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
-                existingConsegnaMovimenti.forEach(m => {
-                    totalImportoSaldato += m.importo_saldato || 0;
-                });
-            }
-            lasciatoInCassa = roundUpCents(trovatoInCassa - pagatoProduttore + totalImportoSaldato);
+            // Lasciato in Cassa = Trovato in Cassa - Pagato Produttore
+            lasciatoInCassa = roundUpCents(trovatoInCassa - pagatoProduttore);
             document.getElementById('lasciatoInCassa').value = lasciatoInCassa;
         }
 
@@ -653,16 +608,13 @@ async function saveData() {
         nuovoSaldo: roundUpCents(saldoCorrente)
     }];
 
-    // Calcola totale importi saldati usando la stessa logica di updateLasciatoInCassa
-    let totalImportoSaldato = totalImportoSaldatoBefore + importoSaldato;
-
     let lasciatoInCassa;
     if (discrepanzaCassaEnabled) {
         // Use manual value if discrepanza is enabled
         lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
     } else {
-        // Auto-calculate
-        lasciatoInCassa = roundUpCents(trovatoInCassa - pagatoProduttore + totalImportoSaldato);
+        // Auto-calculate: Lasciato in Cassa = Trovato in Cassa - Pagato Produttore
+        lasciatoInCassa = roundUpCents(trovatoInCassa - pagatoProduttore);
         // Update the UI field
         document.getElementById('lasciatoInCassa').value = lasciatoInCassa;
     }
@@ -747,14 +699,6 @@ async function checkDateData() {
             existingConsegnaMovimenti = result.movimenti || [];
             saldiBefore = result.saldiBefore || {};
 
-            // Calcola totale importi saldati (senza includere nessun partecipante corrente)
-            totalImportoSaldatoBefore = 0;
-            if (existingConsegnaMovimenti.length > 0) {
-                existingConsegnaMovimenti.forEach(m => {
-                    totalImportoSaldatoBefore += m.importo_saldato || 0;
-                });
-            }
-
             renderMovimentiGiorno();
             updatePagatoProduttore();
             showStatus('Dati esistenti caricati per questa data', 'success');
@@ -770,7 +714,6 @@ async function checkDateData() {
             document.getElementById('noteGiornata').value = '';
             existingConsegnaMovimenti = null;
             saldiBefore = {};
-            totalImportoSaldatoBefore = 0;
             renderMovimentiGiorno();
             updatePagatoProduttore();
         }
