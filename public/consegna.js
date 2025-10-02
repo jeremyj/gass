@@ -119,7 +119,6 @@ function showParticipantForm() {
             });
         }
         updateLasciatoInCassa();
-        renderMovimentiGiorno();
         return;
     }
 
@@ -135,7 +134,6 @@ function showParticipantForm() {
 
     renderParticipant(nome);
     updateLasciatoInCassa();
-    renderMovimentiGiorno();
 }
 
 function renderMovimentiGiorno() {
