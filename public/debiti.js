@@ -104,13 +104,10 @@ function createParticipantCard(p) {
 
       <div class="saldo-card-actions">
         <button class="big-btn big-btn-success" onclick="saveSaldo(${p.id})">
-          💾 Salva Saldo
+          💾 Salva
         </button>
         <button class="big-btn big-btn-secondary" onclick="toggleParticipantCard(${p.id})">
-          ✖️ Chiudi
-        </button>
-        <button class="big-btn big-btn-danger" onclick="deleteParticipant(${p.id})">
-          🗑️ Elimina Partecipante
+          Annulla
         </button>
       </div>
     `;

@@ -367,11 +367,15 @@ function showParticipantForm() {
   const container = document.getElementById('selected-participants');
   container.innerHTML = '';
 
+  const infoBadge = document.getElementById('participant-info-badge');
+
   if (!nome) {
+    infoBadge.style.display = 'block';
     updateLasciatoInCassa();
     return;
   }
 
+  infoBadge.style.display = 'none';
   renderParticipant(nome);
   updateLasciatoInCassa();
 }
@@ -436,6 +440,36 @@ function renderParticipant(nome) {
   container.appendChild(card);
 
   addHiddenFields(card, nome, haCredito, haDebito);
+
+  // Load existing data if available
+  loadExistingParticipantData(nome);
+}
+
+function loadExistingParticipantData(nome) {
+  if (!existingConsegnaMovimenti) return;
+
+  const movimento = existingConsegnaMovimenti.find(m => m.nome === nome);
+  if (!movimento) return;
+
+  // Populate fields with existing data
+  if (movimento.importo_saldato) {
+    document.getElementById(`importo_${nome}`).value = movimento.importo_saldato;
+  }
+  if (movimento.usa_credito) {
+    document.getElementById(`usaCredito_${nome}`).value = movimento.usa_credito;
+  }
+  if (movimento.credito_lasciato) {
+    document.getElementById(`credito_${nome}`).value = movimento.credito_lasciato;
+  }
+  if (movimento.debito_lasciato) {
+    document.getElementById(`debito_${nome}`).value = movimento.debito_lasciato;
+  }
+  if (movimento.debito_saldato) {
+    document.getElementById(`debitoSaldato_${nome}`).value = movimento.debito_saldato;
+  }
+  if (movimento.note) {
+    document.getElementById(`note_${nome}`).value = movimento.note;
+  }
 }
 
 function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito, haDebito) {

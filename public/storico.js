@@ -77,16 +77,6 @@ function createConsegnaCard(consegna) {
       content.appendChild(movimentiSection);
     }
 
-    // Pulsante Elimina
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'big-btn big-btn-danger';
-    deleteBtn.textContent = '🗑️ Elimina Consegna';
-    deleteBtn.onclick = (e) => {
-      e.stopPropagation();
-      deleteConsegna(consegna.id);
-    };
-    content.appendChild(deleteBtn);
-
     card.appendChild(content);
   }
 
