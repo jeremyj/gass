@@ -123,6 +123,9 @@ function setDateDisplay(dateStr) {
   // Set picker to the same month/year
   pickerYear = parseInt(year);
   pickerMonth = parseInt(month) - 1;
+
+  // Load data for this date
+  checkDateData();
 }
 
 // Deprecated calendar functions - kept for compatibility

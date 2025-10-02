@@ -1040,5 +1040,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   renderCalendar();
   updateHeaderDate();
+  await checkDateData();
   loadData();
 });
