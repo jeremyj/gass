@@ -612,14 +612,15 @@ async function checkDateData() {
         const result = await response.json();
 
         if (result.success && result.found) {
+            // Existing consegna - load data
             document.getElementById('trovatoInCassa').value = result.consegna.trovato_in_cassa || '';
             document.getElementById('pagatoProduttore').value = result.consegna.pagato_produttore || '';
             document.getElementById('lasciatoInCassa').value = result.consegna.lasciato_in_cassa || '';
 
-            // Ripristina stato checkbox discrepanza
+            // Ripristina stato checkbox discrepanza SOLO se era effettivamente abilitata
             const discrepanzaCheckbox = document.getElementById('discrepanzaCassa');
             const lasciatoField = document.getElementById('lasciatoInCassa');
-            if (result.consegna.discrepanza_cassa) {
+            if (result.consegna.discrepanza_cassa === 1) {
                 discrepanzaCheckbox.checked = true;
                 discrepanzaCassaEnabled = true;
                 lasciatoField.readOnly = false;
@@ -647,7 +648,12 @@ async function checkDateData() {
 
             showStatus('Dati esistenti caricati per questa data', 'success');
         } else {
-            document.getElementById('trovatoInCassa').value = '';
+            // New date - auto-populate trovato with previous lasciato
+            if (result.lasciatoPrecedente !== undefined && result.lasciatoPrecedente !== null) {
+                document.getElementById('trovatoInCassa').value = result.lasciatoPrecedente;
+            } else {
+                document.getElementById('trovatoInCassa').value = '';
+            }
             document.getElementById('pagatoProduttore').value = '';
             document.getElementById('lasciatoInCassa').value = '';
             existingConsegnaMovimenti = null;

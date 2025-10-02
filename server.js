@@ -28,8 +28,20 @@ app.get('/api/consegna/:date', (req, res) => {
 
     const consegna = db.prepare('SELECT * FROM consegne WHERE data = ?').get(date);
 
+    // Get previous consegna's lasciato_in_cassa for auto-populate
+    const previousConsegna = db.prepare(`
+      SELECT lasciato_in_cassa FROM consegne
+      WHERE data < ?
+      ORDER BY data DESC
+      LIMIT 1
+    `).get(date);
+
     if (!consegna) {
-      return res.json({ success: true, found: false });
+      return res.json({
+        success: true,
+        found: false,
+        lasciatoPrecedente: previousConsegna ? previousConsegna.lasciato_in_cassa : null
+      });
     }
 
     const movimenti = db.prepare(`
@@ -95,7 +107,14 @@ app.get('/api/consegna/:date', (req, res) => {
       saldiBefore[m.nome] = saldoBefore;
     });
 
-    res.json({ success: true, found: true, consegna, movimenti, saldiBefore });
+    res.json({
+      success: true,
+      found: true,
+      consegna,
+      movimenti,
+      saldiBefore,
+      lasciatoPrecedente: previousConsegna ? previousConsegna.lasciato_in_cassa : null
+    });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
