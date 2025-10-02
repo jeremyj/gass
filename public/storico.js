@@ -66,7 +66,19 @@ function renderStorico(storico) {
 
             const segno = discrepanzaImporto >= 0 ? '+' : '';
             const color = discrepanzaImporto >= 0 ? '#2e7d32' : '#d32f2f';
-            discrepanzaWarning = `<span style="color: ${color}; font-weight: bold; margin-left: 15px;">⚠️ DISCREPANZA CASSA ${segno}€${discrepanzaImporto.toFixed(2)}</span>`;
+            discrepanzaWarning = `<span style="color: ${color}; font-weight: bold; margin-left: 15px;">⚠️ DISCREPANZA CASSA LASCIATA ${segno}€${discrepanzaImporto.toFixed(2)}</span>`;
+        }
+
+        // Check for discrepanza cassa trovata (confronto con consegna precedente)
+        if (index < storico.length - 1) {
+            const consegnaPrecedente = storico[index + 1];
+            const discrepanzaTrovata = consegna.trovato_in_cassa - consegnaPrecedente.lasciato_in_cassa;
+
+            if (Math.abs(discrepanzaTrovata) > 0.01) {
+                const segno = discrepanzaTrovata >= 0 ? '+' : '';
+                const color = discrepanzaTrovata >= 0 ? '#2e7d32' : '#d32f2f';
+                discrepanzaWarning += `<span style="color: ${color}; font-weight: bold; margin-left: 15px;">⚠️ DISCREPANZA CASSA TROVATA ${segno}€${discrepanzaTrovata.toFixed(2)}</span>`;
+            }
         }
 
         header.innerHTML = `
