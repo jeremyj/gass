@@ -493,15 +493,18 @@ body {
 }
 
 .flow-section-title {
-    font-weight: 600;
-    font-size: 13px;
-    color: #495057;
+    font-weight: 700;
+    font-size: 14px;
+    color: #2c3e50;
     margin-bottom: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
 }
 
 .flow-section .form-group {
+    margin-bottom: 10px;
+}
+
+.flow-section .form-group:last-child {
     margin-bottom: 0;
 }
 
@@ -509,6 +512,26 @@ body {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
+    margin-bottom: 0;
+}
+
+.flow-section .row .form-group {
+    margin-bottom: 0;
+}
+
+.flow-section input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.flow-section input[type="text"]:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
 .checkbox-group {

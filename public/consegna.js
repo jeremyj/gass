@@ -485,6 +485,13 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
         <input type="text" id="note_${nome}" placeholder="Note aggiuntive">
       </div>
     </div>
+
+    <button class="big-btn big-btn-success" onclick="saveParticipant('${nome}')">
+      💾 Salva Movimento
+    </button>
+    <button class="big-btn big-btn-secondary" onclick="removeParticipant('${nome}')">
+      ✖️ Chiudi
+    </button>
   `;
 }
 
@@ -709,6 +716,40 @@ function updateLasciatoInCassa() {
 
   const lasciatoInCassa = roundUpCents(trovatoInCassa - pagatoProduttore);
   document.getElementById('lasciatoInCassa').value = lasciatoInCassa;
+}
+
+// ===== PARTICIPANT FORM ACTIONS =====
+
+async function saveParticipant(nome) {
+  const data = document.getElementById('data').value;
+  const trovatoInCassa = roundUpCents(parseAmount(document.getElementById('trovatoInCassa').value));
+  const pagatoProduttore = roundUpCents(parseAmount(document.getElementById('pagatoProduttore').value));
+  const noteGiornata = document.getElementById('noteGiornata').value || '';
+
+  if (!data) {
+    showStatus('Inserisci la data', 'error');
+    return;
+  }
+
+  const debitoLasciato = parseAmount(document.getElementById(`debito_${nome}`).value);
+  const creditoLasciato = parseAmount(document.getElementById(`credito_${nome}`).value);
+
+  if (debitoLasciato > 0 && creditoLasciato > 0) {
+    showStatus(`Errore: non puoi lasciare sia credito che debito contemporaneamente`, 'error');
+    return;
+  }
+
+  await saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteGiornata, nome);
+}
+
+function removeParticipant(nome) {
+  const container = document.getElementById('selected-participants');
+  container.innerHTML = '';
+
+  const select = document.getElementById('participant-select');
+  select.value = '';
+
+  updateLasciatoInCassa();
 }
 
 // ===== SAVE DATA =====
