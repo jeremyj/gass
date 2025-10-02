@@ -452,6 +452,7 @@ async function saveData() {
     const data = document.getElementById('data').value;
     const trovatoInCassa = roundUpCents(parseAmount(document.getElementById('trovatoInCassa').value));
     const pagatoProduttore = roundUpCents(parseAmount(document.getElementById('pagatoProduttore').value));
+    const noteGiornata = document.getElementById('noteGiornata').value || '';
 
     if (!data) {
         showStatus('Inserisci la data', 'error');
@@ -492,6 +493,7 @@ async function saveData() {
                     pagatoProduttore,
                     lasciatoInCassa,
                     discrepanzaCassa: discrepanzaCassaEnabled,
+                    noteGiornata,
                     partecipanti: [],
                 }),
             });
@@ -598,6 +600,7 @@ async function saveData() {
                 pagatoProduttore,
                 lasciatoInCassa,
                 discrepanzaCassa: discrepanzaCassaEnabled,
+                noteGiornata,
                 partecipanti: partecipantiData,
             }),
         });
@@ -632,6 +635,7 @@ async function checkDateData() {
             document.getElementById('trovatoInCassa').value = result.consegna.trovato_in_cassa || '';
             document.getElementById('pagatoProduttore').value = result.consegna.pagato_produttore || '';
             document.getElementById('lasciatoInCassa').value = result.consegna.lasciato_in_cassa || '';
+            document.getElementById('noteGiornata').value = result.consegna.note || '';
 
             // Ripristina stato checkbox discrepanza SOLO se era effettivamente abilitata
             const discrepanzaCheckbox = document.getElementById('discrepanzaCassa');
@@ -672,6 +676,7 @@ async function checkDateData() {
             }
             document.getElementById('pagatoProduttore').value = '';
             document.getElementById('lasciatoInCassa').value = '';
+            document.getElementById('noteGiornata').value = '';
             existingConsegnaMovimenti = null;
             saldiBefore = {};
             totalImportoSaldatoBefore = 0;

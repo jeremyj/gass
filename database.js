@@ -49,6 +49,17 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_movimenti_partecipante ON movimenti(partecipante_id);
 `);
 
+// Add note column to consegne if it doesn't exist
+try {
+  db.exec(`ALTER TABLE consegne ADD COLUMN note TEXT`);
+  console.log('Added note column to consegne table');
+} catch (err) {
+  // Column already exists, ignore
+  if (!err.message.includes('duplicate column')) {
+    throw err;
+  }
+}
+
 // Initialize with participants list
 const count = db.prepare('SELECT COUNT(*) as count FROM partecipanti').get().count;
 if (count === 0) {
