@@ -977,68 +977,173 @@ body {
 
 /* ===== STORICO PAGE ===== */
 
-.storico-card {
+/* Consegna Card (Collapsed/Expanded) */
+.storico-consegna-card {
     background: white;
     border-radius: 12px;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
 }
 
-.storico-card-header {
-    padding: 18px;
-    background: linear-gradient(135deg, #FFEB3B 0%, #FDD835 100%);
+.storico-consegna-card.expanded {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.storico-consegna-header {
+    padding: 16px 18px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    transition: background 0.2s;
 }
 
-.storico-date {
+.storico-consegna-header:active {
+    background: linear-gradient(135deg, #5568d3 0%, #653a8a 100%);
+}
+
+.storico-consegna-date {
     font-weight: bold;
-    font-size: 16px;
-    color: #2c3e50;
-}
-
-.storico-warning {
-    font-size: 12px;
-    margin-top: 4px;
-    font-weight: 600;
-}
-
-.storico-card-content {
-    padding: 18px;
-}
-
-.storico-info-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 16px;
     font-size: 14px;
+    color: white;
 }
 
-.storico-info-table th {
-    background: #f8f9fa;
-    padding: 8px 6px;
-    text-align: center;
-    font-size: 11px;
-    font-weight: 600;
-    color: #6c757d;
-    border-bottom: 2px solid #dee2e6;
+.storico-arrow {
+    font-size: 18px;
+    color: white;
 }
 
-.storico-info-table td {
-    padding: 10px 6px;
-    font-size: 13px;
-    text-align: center;
+.storico-consegna-content {
+    padding: 18px;
+    background: white;
+}
+
+/* Sezione Cassa */
+.storico-cassa-section {
+    background: white;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 16px;
+    border: 2px solid #e9ecef;
+}
+
+.storico-cassa-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
     border-bottom: 1px solid #f1f3f5;
 }
 
-.consegna-info-value.has-override {
-    display: inline-flex;
+.storico-cassa-item:last-child {
+    border-bottom: none;
+}
+
+.storico-cassa-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.storico-cassa-value {
+    font-size: 16px;
+    font-weight: bold;
+    color: #e74c3c;
+    display: flex;
     align-items: center;
     gap: 8px;
 }
 
+.storico-cassa-value.lasciato {
+    color: #2ecc71;
+}
+
+/* Sezione Movimenti */
+.storico-movimenti-section {
+    margin-top: 16px;
+}
+
+.storico-movimenti-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    border-radius: 8px;
+    color: white;
+}
+
+/* Participant Cards in Storico */
+.storico-participant-card {
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    border-left: 4px solid;
+}
+
+.storico-participant-card.credito {
+    background: #d4edda;
+    border-left-color: #28a745;
+}
+
+.storico-participant-card.debito {
+    background: #f8d7da;
+    border-left-color: #dc3545;
+}
+
+.storico-participant-card.pari {
+    background: #d1ecf1;
+    border-left-color: #17a2b8;
+}
+
+.storico-participant-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.storico-participant-name {
+    font-weight: bold;
+    font-size: 14px;
+    color: #2c3e50;
+}
+
+.storico-saldo-badge {
+    font-weight: bold;
+    font-size: 14px;
+    padding: 4px 10px;
+    border-radius: 12px;
+}
+
+.storico-saldo-badge.credito {
+    background: #28a745;
+    color: white;
+}
+
+.storico-saldo-badge.debito {
+    background: #dc3545;
+    color: white;
+}
+
+.storico-saldo-badge.pari {
+    background: #17a2b8;
+    color: white;
+}
+
+.storico-participant-details {
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.5;
+}
+
+/* Override indicator */
 .override-indicator {
     display: inline-block;
     background: #e74c3c;
@@ -1048,62 +1153,6 @@ body {
     font-size: 10px;
     font-weight: bold;
     letter-spacing: 0.5px;
-}
-
-.storico-movimenti-title {
-    font-size: 14px;
-    font-weight: bold;
-    color: #2c3e50;
-    margin: 16px 0 8px 0;
-}
-
-.storico-movimenti-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 11px;
-    overflow-x: auto;
-    display: block;
-}
-
-.storico-movimenti-table thead,
-.storico-movimenti-table tbody,
-.storico-movimenti-table tr {
-    display: table;
-    width: 100%;
-    table-layout: fixed;
-}
-
-.storico-movimenti-table th {
-    background: #f8f9fa;
-    padding: 6px 4px;
-    text-align: center;
-    font-size: 10px;
-    font-weight: 600;
-    color: #6c757d;
-    border-bottom: 2px solid #dee2e6;
-}
-
-.storico-movimenti-table td {
-    padding: 8px 4px;
-    border-bottom: 1px solid #f1f3f5;
-    text-align: center;
-    font-size: 11px;
-}
-
-.storico-movimenti-table td:first-child {
-    text-align: left;
-    font-weight: 600;
-}
-
-.btn-delete-storico {
-    background: #dc3545;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
 }
 
 /* ===== SALDI/DEBITI PAGE ===== */

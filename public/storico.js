@@ -1,7 +1,10 @@
+// ===== STATE =====
+
+let expandedConsegnaId = null;
+
 // ===== DATA LOADING =====
 
 async function loadStorico() {
-
   try {
     const response = await fetch('/api/storico/dettaglio');
     const result = await response.json();
@@ -23,157 +26,182 @@ function renderStorico(storico) {
   container.innerHTML = '';
 
   if (storico.length === 0) {
-    container.innerHTML = '<p>Nessuna consegna registrata</p>';
+    container.innerHTML = '<p style="text-align: center; padding: 20px;">Nessuna consegna registrata</p>';
     return;
   }
 
-  storico.forEach((consegna, index) => {
-    const section = createConsegnaSection(consegna, index, storico);
-    container.appendChild(section);
+  storico.forEach((consegna) => {
+    const card = createConsegnaCard(consegna);
+    container.appendChild(card);
   });
 }
 
-function createConsegnaSection(consegna, index, storico) {
-  const section = document.createElement('div');
-  section.className = 'storico-card';
-
-  const header = createConsegnaHeader(consegna, index, storico);
-  const content = document.createElement('div');
-  content.className = 'storico-card-content';
-
-  const infoTable = createInfoTable(consegna);
-  content.appendChild(infoTable);
-
-  if (consegna.movimenti && consegna.movimenti.length > 0) {
-    const movimentiTitle = createMovimentiTitle();
-    const movimentiTable = createMovimentiTable(consegna.movimenti);
-    content.appendChild(movimentiTitle);
-    content.appendChild(movimentiTable);
+function createConsegnaCard(consegna) {
+  const isExpanded = expandedConsegnaId === consegna.id;
+  const card = document.createElement('div');
+  card.className = 'storico-consegna-card';
+  if (isExpanded) {
+    card.classList.add('expanded');
   }
 
-  section.appendChild(header);
-  section.appendChild(content);
+  // Header (sempre visibile)
+  const header = document.createElement('div');
+  header.className = 'storico-consegna-header';
+  header.onclick = () => toggleConsegnaCard(consegna.id);
+
+  const dateObj = new Date(consegna.data + 'T00:00:00');
+  const dateFormatted = formatDateItalianWithDay(consegna.data);
+  const arrow = isExpanded ? '▲' : '▼';
+
+  header.innerHTML = `
+    <div class="storico-consegna-date">
+      📦 ${dateFormatted}
+    </div>
+    <span class="storico-arrow">${arrow}</span>
+  `;
+
+  card.appendChild(header);
+
+  // Content (espandibile)
+  if (isExpanded) {
+    const content = document.createElement('div');
+    content.className = 'storico-consegna-content';
+
+    // Sezione CASSA
+    const cassaSection = createCassaSection(consegna);
+    content.appendChild(cassaSection);
+
+    // Sezione MOVIMENTI
+    if (consegna.movimenti && consegna.movimenti.length > 0) {
+      const movimentiSection = createMovimentiSection(consegna.movimenti);
+      content.appendChild(movimentiSection);
+    }
+
+    // Pulsante Elimina
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'big-btn big-btn-danger';
+    deleteBtn.textContent = '🗑️ Elimina Consegna';
+    deleteBtn.onclick = (e) => {
+      e.stopPropagation();
+      deleteConsegna(consegna.id);
+    };
+    content.appendChild(deleteBtn);
+
+    card.appendChild(content);
+  }
+
+  return card;
+}
+
+function createCassaSection(consegna) {
+  const section = document.createElement('div');
+  section.className = 'storico-cassa-section';
+
+  // TROVATO IN CASSA
+  const trovatoDiv = document.createElement('div');
+  trovatoDiv.className = 'storico-cassa-item';
+  trovatoDiv.innerHTML = `
+    <div class="storico-cassa-label">TROVATO IN CASSA</div>
+    <div class="storico-cassa-value">
+      ${consegna.trovato_in_cassa.toFixed(2)} €
+      ${consegna.discrepanza_trovata === 1 ? '<span class="override-indicator">MANUALE</span>' : ''}
+    </div>
+  `;
+  section.appendChild(trovatoDiv);
+
+  // PAGATO PRODUTTORE
+  const pagatoDiv = document.createElement('div');
+  pagatoDiv.className = 'storico-cassa-item';
+  pagatoDiv.innerHTML = `
+    <div class="storico-cassa-label">PAGATO PRODUTTORE</div>
+    <div class="storico-cassa-value">
+      ${consegna.pagato_produttore.toFixed(2)} €
+      ${consegna.discrepanza_pagato === 1 ? '<span class="override-indicator">MANUALE</span>' : ''}
+    </div>
+  `;
+  section.appendChild(pagatoDiv);
+
+  // LASCIATO IN CASSA
+  const lasciatoDiv = document.createElement('div');
+  lasciatoDiv.className = 'storico-cassa-item';
+  lasciatoDiv.innerHTML = `
+    <div class="storico-cassa-label">LASCIATO IN CASSA</div>
+    <div class="storico-cassa-value lasciato">
+      ${consegna.lasciato_in_cassa.toFixed(2)} €
+      ${consegna.discrepanza_cassa === 1 ? '<span class="override-indicator">MANUALE</span>' : ''}
+    </div>
+  `;
+  section.appendChild(lasciatoDiv);
 
   return section;
 }
 
-function createConsegnaHeader(consegna, index, storico) {
-  const header = document.createElement('div');
-  header.className = 'storico-card-header';
+function createMovimentiSection(movimenti) {
+  const section = document.createElement('div');
+  section.className = 'storico-movimenti-section';
 
-  const discrepanzaWarning = calculateDiscrepanzaWarning(consegna, index, storico);
-
-  header.innerHTML = `
-    <div>
-      <div class="storico-date">${formatDateItalian(consegna.data)}</div>
-      ${discrepanzaWarning ? `<div class="storico-warning">${discrepanzaWarning}</div>` : ''}
-    </div>
-    <button class="btn-delete-storico" onclick="deleteConsegna(${consegna.id})">Elimina</button>
-  `;
-
-  return header;
-}
-
-function calculateDiscrepanzaWarning(consegna, index, storico) {
-  const warnings = [];
-
-  // Discrepanza Cassa Lasciata
-  if (consegna.discrepanza_cassa === 1) {
-    const lasciatoCalcolato = consegna.trovato_in_cassa - consegna.pagato_produttore;
-    const discrepanzaImporto = consegna.lasciato_in_cassa - lasciatoCalcolato;
-
-    const segno = discrepanzaImporto >= 0 ? '+' : '';
-    const color = discrepanzaImporto >= 0 ? '#2e7d32' : '#d32f2f';
-    warnings.push(`<span style="color: ${color};">⚠️ CASSA LASCIATA ${segno}€${discrepanzaImporto.toFixed(2)}</span>`);
-  }
-
-  // Discrepanza Cassa Trovata
-  if (consegna.discrepanza_trovata === 1 && index < storico.length - 1) {
-    const consegnaPrecedente = storico[index + 1];
-    const discrepanzaTrovata = consegna.trovato_in_cassa - consegnaPrecedente.lasciato_in_cassa;
-
-    if (Math.abs(discrepanzaTrovata) > 0.01) {
-      const segno = discrepanzaTrovata >= 0 ? '+' : '';
-      const color = discrepanzaTrovata >= 0 ? '#2e7d32' : '#d32f2f';
-      warnings.push(`<span style="color: ${color};">⚠️ CASSA TROVATA ${segno}€${discrepanzaTrovata.toFixed(2)}</span>`);
-    }
-  }
-
-  return warnings.join('<br>');
-}
-
-function createInfoTable(consegna) {
-  // Build HTML for each value with override indicator if needed
-  const trovatoHtml = consegna.discrepanza_trovata === 1
-    ? `<span class="consegna-info-value has-override">€${consegna.trovato_in_cassa.toFixed(2)}<span class="override-indicator">MANUALE</span></span>`
-    : `€${consegna.trovato_in_cassa.toFixed(2)}`;
-
-  const pagatoHtml = consegna.discrepanza_pagato === 1
-    ? `<span class="consegna-info-value has-override">€${consegna.pagato_produttore.toFixed(2)}<span class="override-indicator">MANUALE</span></span>`
-    : `€${consegna.pagato_produttore.toFixed(2)}`;
-
-  const lasciatoHtml = consegna.discrepanza_cassa === 1
-    ? `<span class="consegna-info-value has-override">€${consegna.lasciato_in_cassa.toFixed(2)}<span class="override-indicator">MANUALE</span></span>`
-    : `€${consegna.lasciato_in_cassa.toFixed(2)}`;
-
-  const table = document.createElement('table');
-  table.className = 'storico-info-table';
-  table.innerHTML = `
-    <thead>
-      <tr>
-        <th>Trovato</th>
-        <th>Pagato</th>
-        <th>Lasciato</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>${trovatoHtml}</td>
-        <td>${pagatoHtml}</td>
-        <td>${lasciatoHtml}</td>
-      </tr>
-    </tbody>
-  `;
-  return table;
-}
-
-function createMovimentiTitle() {
   const title = document.createElement('div');
   title.className = 'storico-movimenti-title';
-  title.textContent = 'Movimenti Partecipanti';
-  return title;
+  title.innerHTML = `👥 MOVIMENTI (${movimenti.length} PARTECIPANT${movimenti.length > 1 ? 'I' : 'E'})`;
+  section.appendChild(title);
+
+  movimenti.forEach(m => {
+    const card = createParticipantMovimentoCard(m);
+    section.appendChild(card);
+  });
+
+  return section;
 }
 
-function createMovimentiTable(movimenti) {
-  const rows = movimenti.map((m) => {
-    return `
-      <tr>
-        <td><strong>${m.nome}</strong></td>
-        <td>${m.importo_saldato ? '€' + m.importo_saldato.toFixed(2) : '-'}</td>
-        <td>${m.usa_credito ? '€' + m.usa_credito.toFixed(2) : '-'}</td>
-        <td>${m.debito_lasciato ? '€' + m.debito_lasciato.toFixed(2) : '-'}</td>
-        <td>${m.credito_lasciato ? '€' + m.credito_lasciato.toFixed(2) : '-'}</td>
-        <td>${m.debito_saldato ? '€' + m.debito_saldato.toFixed(2) : '-'}</td>
-      </tr>
-    `;
-  }).join('');
+function createParticipantMovimentoCard(m) {
+  const card = document.createElement('div');
 
-  const table = document.createElement('table');
-  table.className = 'storico-movimenti-table';
-  table.innerHTML = `
-    <thead>
-      <tr>
-        <th>Nome</th>
-        <th>Saldato</th>
-        <th>Credito</th>
-        <th>Deb.Lasc</th>
-        <th>Cred.Lasc</th>
-        <th>Deb.Sald</th>
-      </tr>
-    </thead>
-    <tbody>${rows}</tbody>
+  // Calcola saldo finale
+  const saldoFinale = (m.credito_lasciato || 0) - (m.debito_lasciato || 0);
+
+  let cardClass = 'storico-participant-card';
+  let saldoBadgeClass = 'storico-saldo-badge';
+  let saldoText = '0.00 €';
+
+  if (saldoFinale > 0) {
+    cardClass += ' credito';
+    saldoBadgeClass += ' credito';
+    saldoText = `+${saldoFinale.toFixed(2)} €`;
+  } else if (saldoFinale < 0) {
+    cardClass += ' debito';
+    saldoBadgeClass += ' debito';
+    saldoText = `${saldoFinale.toFixed(2)} €`;
+  } else {
+    cardClass += ' pari';
+    saldoBadgeClass += ' pari';
+    saldoText = '0.00 €';
+  }
+
+  card.className = cardClass;
+
+  card.innerHTML = `
+    <div class="storico-participant-header">
+      <div class="storico-participant-name">👤 ${m.nome}</div>
+      <div class="${saldoBadgeClass}">${saldoText}</div>
+    </div>
+    <div class="storico-participant-details">
+      ${m.importo_saldato ? `Pagato: ${m.importo_saldato.toFixed(2)} €` : ''}
+      ${m.usa_credito ? ` • Credito precedente: ${m.usa_credito.toFixed(2)} €` : ''}
+      ${m.debito_saldato ? ` • Debito saldato: ${m.debito_saldato.toFixed(2)} €` : ''}
+      ${!m.importo_saldato && !m.usa_credito && !m.debito_saldato ? 'Pari' : ''}
+    </div>
   `;
-  return table;
+
+  return card;
+}
+
+function toggleConsegnaCard(id) {
+  if (expandedConsegnaId === id) {
+    expandedConsegnaId = null;
+  } else {
+    expandedConsegnaId = id;
+  }
+  loadStorico();
 }
 
 // ===== DELETE =====
@@ -182,8 +210,6 @@ async function deleteConsegna(id) {
   if (!confirm('Sei sicuro di voler eliminare questa consegna?')) {
     return;
   }
-
-  showStatus('Eliminazione in corso...', 'success');
 
   try {
     const response = await fetch(`/api/consegna/${id}`, {
@@ -194,6 +220,7 @@ async function deleteConsegna(id) {
 
     if (result.success) {
       showStatus('Consegna eliminata con successo!', 'success');
+      expandedConsegnaId = null;
       loadStorico();
     } else {
       showStatus('Errore: ' + result.error, 'error');
@@ -201,6 +228,19 @@ async function deleteConsegna(id) {
   } catch (error) {
     showStatus('Errore durante l\'eliminazione: ' + error.message, 'error');
   }
+}
+
+// ===== UTILS =====
+
+function formatDateItalianWithDay(dateStr) {
+  const date = new Date(dateStr + 'T00:00:00');
+  const days = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const dayName = days[date.getDay()];
+
+  return `${day}/${month}/${year} - ${dayName}`;
 }
 
 // ===== INITIALIZATION =====
