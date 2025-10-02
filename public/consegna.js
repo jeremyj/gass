@@ -2,6 +2,7 @@ let participants = [];
 let existingConsegnaMovimenti = null; // Store existing movimenti for the selected date
 let saldiBefore = {}; // Store saldi before the existing consegna
 let discrepanzaCassaEnabled = false; // Track discrepanza cassa checkbox state
+let discrepanzaPagatoProduttoreEnabled = false; // Track discrepanza pagato produttore checkbox state
 let totalImportoSaldatoBefore = 0; // Store total importo_saldato before editing
 
 function showStatus(message, type) {
@@ -372,6 +373,47 @@ function toggleDiscrepanzaCassaTrovata() {
     }
 }
 
+function toggleDiscrepanzaPagatoProduttore() {
+    const checkbox = document.getElementById('discrepanzaPagatoProduttore');
+    const pagatoField = document.getElementById('pagatoProduttore');
+
+    if (checkbox.checked) {
+        discrepanzaPagatoProduttoreEnabled = true;
+        pagatoField.readOnly = false;
+        pagatoField.style.cursor = 'text';
+        pagatoField.style.background = '#fff';
+        pagatoField.focus();
+    } else {
+        discrepanzaPagatoProduttoreEnabled = false;
+        pagatoField.readOnly = true;
+        pagatoField.style.cursor = 'not-allowed';
+        pagatoField.style.background = '#f0f0f0';
+        updatePagatoProduttore();
+    }
+}
+
+function updatePagatoProduttore() {
+    if (discrepanzaPagatoProduttoreEnabled) {
+        return; // Non aggiornare se discrepanza è abilitata
+    }
+
+    // Calcola: Importo Saldato + Usa Credito + Debito Lasciato - Credito Lasciato - Debito Saldato
+    let totalPagato = 0;
+
+    if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
+        existingConsegnaMovimenti.forEach(m => {
+            totalPagato += (m.importo_saldato || 0);
+            totalPagato += (m.usa_credito || 0);
+            totalPagato += (m.debito_lasciato || 0);
+            totalPagato -= (m.credito_lasciato || 0);
+            totalPagato -= (m.debito_saldato || 0);
+        });
+    }
+
+    document.getElementById('pagatoProduttore').value = roundUpCents(totalPagato);
+    updateLasciatoInCassa();
+}
+
 function updateLasciatoInCassa() {
     if (discrepanzaCassaEnabled) {
         return; // Non aggiornare se discrepanza è abilitata
@@ -674,7 +716,7 @@ async function checkDateData() {
             document.getElementById('lasciatoInCassa').value = result.consegna.lasciato_in_cassa || '';
             document.getElementById('noteGiornata').value = result.consegna.note || '';
 
-            // Ripristina stato checkbox discrepanza SOLO se era effettivamente abilitata
+            // Ripristina stato checkbox discrepanza cassa lasciata
             const discrepanzaCheckbox = document.getElementById('discrepanzaCassa');
             const lasciatoField = document.getElementById('lasciatoInCassa');
             if (result.consegna.discrepanza_cassa === 1) {
@@ -691,6 +733,16 @@ async function checkDateData() {
                 lasciatoField.style.background = '#f0f0f0';
             }
 
+            // Ripristina stato checkbox discrepanza pagato produttore
+            const discrepanzaPagatoCheckbox = document.getElementById('discrepanzaPagatoProduttore');
+            const pagatoField = document.getElementById('pagatoProduttore');
+            // Per ora non salviamo questo flag nel DB, quindi rimane sempre unchecked
+            discrepanzaPagatoCheckbox.checked = false;
+            discrepanzaPagatoProduttoreEnabled = false;
+            pagatoField.readOnly = true;
+            pagatoField.style.cursor = 'not-allowed';
+            pagatoField.style.background = '#f0f0f0';
+
             // Store movimenti and saldi before this consegna
             existingConsegnaMovimenti = result.movimenti || [];
             saldiBefore = result.saldiBefore || {};
@@ -704,6 +756,7 @@ async function checkDateData() {
             }
 
             renderMovimentiGiorno();
+            updatePagatoProduttore();
             showStatus('Dati esistenti caricati per questa data', 'success');
         } else {
             // New date - auto-populate trovato with previous lasciato
@@ -719,6 +772,7 @@ async function checkDateData() {
             saldiBefore = {};
             totalImportoSaldatoBefore = 0;
             renderMovimentiGiorno();
+            updatePagatoProduttore();
         }
     } catch (error) {
         console.error('Error checking date data:', error);
