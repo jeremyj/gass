@@ -1177,9 +1177,10 @@ body {
         display: flex;
         background: #2c3e50;
         padding: 0;
-        margin-bottom: 20px;
+        margin: 0 auto 20px auto;
         border-radius: 8px;
         overflow: hidden;
+        max-width: 400px;
     }
 
     .desktop-nav-item {
@@ -1224,5 +1225,7 @@ body {
 
     .page-header {
         position: relative;
+        max-width: 400px;
+        margin: 0 auto;
     }
 }
