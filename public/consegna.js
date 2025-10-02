@@ -825,7 +825,7 @@ async function saveData() {
   const currentNome = select.value;
 
   if (!currentNome) {
-    await saveCassaOnly(data, trovatoInCassa, pagatoProduttore, noteGiornata);
+    await saveCassaOnly();
     return;
   }
 
@@ -840,7 +840,18 @@ async function saveData() {
   await saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteGiornata, currentNome);
 }
 
-async function saveCassaOnly(data, trovatoInCassa, pagatoProduttore, noteGiornata) {
+async function saveCassaOnly() {
+  // Read values from DOM
+  const data = document.getElementById('data').value;
+  const trovatoInCassa = roundUpCents(parseAmount(document.getElementById('trovatoInCassa').value));
+  const pagatoProduttore = roundUpCents(parseAmount(document.getElementById('pagatoProduttore').value));
+  const noteGiornata = document.getElementById('noteGiornata').value || '';
+
+  if (!data) {
+    showStatus('Inserisci la data', 'error');
+    return;
+  }
+
   showStatus('Salvataggio dati cassa in corso...', 'success');
 
   let lasciatoInCassa;
