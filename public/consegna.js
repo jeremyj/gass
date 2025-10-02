@@ -319,6 +319,22 @@ function toggleDiscrepanzaCassa() {
     }
 }
 
+function toggleDiscrepanzaCassaTrovata() {
+    const checkbox = document.getElementById('discrepanzaCassaTrovata');
+    const trovatoField = document.getElementById('trovatoInCassa');
+
+    if (checkbox.checked) {
+        trovatoField.readOnly = false;
+        trovatoField.style.cursor = 'text';
+        trovatoField.style.background = '#fff';
+        trovatoField.focus();
+    } else {
+        trovatoField.readOnly = true;
+        trovatoField.style.cursor = 'not-allowed';
+        trovatoField.style.background = '#f0f0f0';
+    }
+}
+
 function updateLasciatoInCassa() {
     if (discrepanzaCassaEnabled) {
         return; // Non aggiornare se discrepanza è abilitata
