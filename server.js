@@ -107,18 +107,21 @@ app.get('/api/consegna/:date', (req, res) => {
       saldiBefore[m.nome] = saldoBefore;
     });
 
+    // Helper function to round to 0.1
+    const roundToCents = (num) => Math.round(num * 10) / 10;
+
     // Calculate trovato_in_cassa dynamically from previous lasciato
     // UNLESS discrepanza_trovata is enabled (manual override)
     let trovatoInCassa = consegna.trovato_in_cassa;
     if (consegna.discrepanza_trovata !== 1 && previousConsegna) {
-      trovatoInCassa = previousConsegna.lasciato_in_cassa;
+      trovatoInCassa = roundToCents(previousConsegna.lasciato_in_cassa);
     }
 
     // Calculate lasciato_in_cassa dynamically from trovato - pagato
     // UNLESS discrepanza_cassa is enabled (manual override)
     let lasciatoInCassa = consegna.lasciato_in_cassa;
     if (consegna.discrepanza_cassa !== 1) {
-      lasciatoInCassa = trovatoInCassa - consegna.pagato_produttore;
+      lasciatoInCassa = roundToCents(trovatoInCassa - consegna.pagato_produttore);
     }
 
     res.json({
@@ -268,6 +271,7 @@ app.get('/api/storico', (req, res) => {
     // Calculate trovato_in_cassa and lasciato_in_cassa dynamically for each consegna
     // We need to process in chronological order (ASC) for recursive calculation
     const consegneAsc = [...consegne].reverse(); // Convert DESC to ASC
+    const roundToCents = (num) => Math.round(num * 10) / 10;
 
     const consegneWithDynamicValues = consegneAsc.map((consegna, index) => {
       // Calculate trovato from previous lasciato
@@ -278,12 +282,13 @@ app.get('/api/storico', (req, res) => {
         trovatoInCassa = previousConsegna.lasciato_in_cassa_calculated !== undefined
           ? previousConsegna.lasciato_in_cassa_calculated
           : previousConsegna.lasciato_in_cassa;
+        trovatoInCassa = roundToCents(trovatoInCassa);
       }
 
       // Calculate lasciato from trovato - pagato
       let lasciatoInCassa = consegna.lasciato_in_cassa;
       if (consegna.discrepanza_cassa !== 1) {
-        lasciatoInCassa = trovatoInCassa - consegna.pagato_produttore;
+        lasciatoInCassa = roundToCents(trovatoInCassa - consegna.pagato_produttore);
       }
 
       // Store calculated value for next iteration
@@ -310,6 +315,7 @@ app.get('/api/storico/dettaglio', (req, res) => {
 
     // Process in chronological order (ASC) for recursive calculation
     const consegneAsc = [...consegne].reverse();
+    const roundToCents = (num) => Math.round(num * 10) / 10;
 
     const storico = consegneAsc.map((consegna, index) => {
       const movimenti = db.prepare(`
@@ -326,12 +332,13 @@ app.get('/api/storico/dettaglio', (req, res) => {
         trovatoInCassa = previousConsegna.lasciato_in_cassa_calculated !== undefined
           ? previousConsegna.lasciato_in_cassa_calculated
           : previousConsegna.lasciato_in_cassa;
+        trovatoInCassa = roundToCents(trovatoInCassa);
       }
 
       // Calculate lasciato from trovato - pagato
       let lasciatoInCassa = consegna.lasciato_in_cassa;
       if (consegna.discrepanza_cassa !== 1) {
-        lasciatoInCassa = trovatoInCassa - consegna.pagato_produttore;
+        lasciatoInCassa = roundToCents(trovatoInCassa - consegna.pagato_produttore);
       }
 
       // Store calculated value for next iteration
