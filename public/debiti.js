@@ -66,12 +66,17 @@ function createParticipantCard(p) {
   header.className = 'saldo-card-header';
   header.onclick = () => toggleParticipantCard(p.id);
 
+  const arrow = isExpanded ? '▲' : '▼';
+
   header.innerHTML = `
     <div class="saldo-card-info">
-      <div class="saldo-card-name">${p.nome}</div>
+      <div class="saldo-card-name">👤 ${p.nome}</div>
       <div class="saldo-card-date">${formatDateItalian(p.ultima_modifica)}</div>
     </div>
-    <div class="${saldoBadgeClass}">${saldoText}</div>
+    <div class="saldo-card-right">
+      <div class="${saldoBadgeClass}">${saldoText}</div>
+      <span class="saldo-arrow">${arrow}</span>
+    </div>
   `;
 
   card.appendChild(header);

@@ -1200,9 +1200,20 @@ body {
     color: rgba(255, 255, 255, 0.9);
 }
 
+.saldo-card-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.saldo-arrow {
+    color: white;
+    font-size: 18px;
+}
+
 .saldo-badge {
-    padding: 8px 16px;
-    border-radius: 20px;
+    padding: 6px 12px;
+    border-radius: 16px;
     font-weight: bold;
     font-size: 14px;
     white-space: nowrap;
