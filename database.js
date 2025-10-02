@@ -60,6 +60,26 @@ try {
   }
 }
 
+// Add discrepanza_trovata column if it doesn't exist
+try {
+  db.exec(`ALTER TABLE consegne ADD COLUMN discrepanza_trovata BOOLEAN DEFAULT 0`);
+  console.log('Added discrepanza_trovata column to consegne table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) {
+    throw err;
+  }
+}
+
+// Add discrepanza_pagato column if it doesn't exist
+try {
+  db.exec(`ALTER TABLE consegne ADD COLUMN discrepanza_pagato BOOLEAN DEFAULT 0`);
+  console.log('Added discrepanza_pagato column to consegne table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) {
+    throw err;
+  }
+}
+
 // Initialize with participants list
 const count = db.prepare('SELECT COUNT(*) as count FROM partecipanti').get().count;
 if (count === 0) {

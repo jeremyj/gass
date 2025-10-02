@@ -1,7 +1,8 @@
 let participants = [];
 let existingConsegnaMovimenti = null; // Store existing movimenti for the selected date
 let saldiBefore = {}; // Store saldi before the existing consegna
-let discrepanzaCassaEnabled = false; // Track discrepanza cassa checkbox state
+let discrepanzaCassaEnabled = false; // Track discrepanza cassa lasciata checkbox state
+let discrepanzaTrovataEnabled = false; // Track discrepanza cassa trovata checkbox state
 let discrepanzaPagatoProduttoreEnabled = false; // Track discrepanza pagato produttore checkbox state
 
 function showStatus(message, type) {
@@ -344,11 +345,13 @@ function toggleDiscrepanzaCassaTrovata() {
     const trovatoField = document.getElementById('trovatoInCassa');
 
     if (checkbox.checked) {
+        discrepanzaTrovataEnabled = true;
         trovatoField.readOnly = false;
         trovatoField.style.cursor = 'text';
         trovatoField.style.background = '#fff';
         trovatoField.focus();
     } else {
+        discrepanzaTrovataEnabled = false;
         trovatoField.readOnly = true;
         trovatoField.style.cursor = 'not-allowed';
         trovatoField.style.background = '#f0f0f0';
@@ -527,6 +530,8 @@ async function saveData() {
                     pagatoProduttore,
                     lasciatoInCassa,
                     discrepanzaCassa: discrepanzaCassaEnabled,
+                    discrepanzaTrovata: discrepanzaTrovataEnabled,
+                    discrepanzaPagato: discrepanzaPagatoProduttoreEnabled,
                     noteGiornata,
                     partecipanti: [],
                 }),
@@ -631,6 +636,8 @@ async function saveData() {
                 pagatoProduttore,
                 lasciatoInCassa,
                 discrepanzaCassa: discrepanzaCassaEnabled,
+                discrepanzaTrovata: discrepanzaTrovataEnabled,
+                discrepanzaPagato: discrepanzaPagatoProduttoreEnabled,
                 noteGiornata,
                 partecipanti: partecipantiData,
             }),
@@ -685,15 +692,39 @@ async function checkDateData() {
                 lasciatoField.style.background = '#f0f0f0';
             }
 
+            // Ripristina stato checkbox discrepanza cassa trovata
+            const discrepanzaTrovataCheckbox = document.getElementById('discrepanzaCassaTrovata');
+            const trovatoField = document.getElementById('trovatoInCassa');
+            if (result.consegna.discrepanza_trovata === 1) {
+                discrepanzaTrovataCheckbox.checked = true;
+                discrepanzaTrovataEnabled = true;
+                trovatoField.readOnly = false;
+                trovatoField.style.cursor = 'text';
+                trovatoField.style.background = '#fff';
+            } else {
+                discrepanzaTrovataCheckbox.checked = false;
+                discrepanzaTrovataEnabled = false;
+                trovatoField.readOnly = true;
+                trovatoField.style.cursor = 'not-allowed';
+                trovatoField.style.background = '#f0f0f0';
+            }
+
             // Ripristina stato checkbox discrepanza pagato produttore
             const discrepanzaPagatoCheckbox = document.getElementById('discrepanzaPagatoProduttore');
             const pagatoField = document.getElementById('pagatoProduttore');
-            // Per ora non salviamo questo flag nel DB, quindi rimane sempre unchecked
-            discrepanzaPagatoCheckbox.checked = false;
-            discrepanzaPagatoProduttoreEnabled = false;
-            pagatoField.readOnly = true;
-            pagatoField.style.cursor = 'not-allowed';
-            pagatoField.style.background = '#f0f0f0';
+            if (result.consegna.discrepanza_pagato === 1) {
+                discrepanzaPagatoCheckbox.checked = true;
+                discrepanzaPagatoProduttoreEnabled = true;
+                pagatoField.readOnly = false;
+                pagatoField.style.cursor = 'text';
+                pagatoField.style.background = '#fff';
+            } else {
+                discrepanzaPagatoCheckbox.checked = false;
+                discrepanzaPagatoProduttoreEnabled = false;
+                pagatoField.readOnly = true;
+                pagatoField.style.cursor = 'not-allowed';
+                pagatoField.style.background = '#f0f0f0';
+            }
 
             // Store movimenti and saldi before this consegna
             existingConsegnaMovimenti = result.movimenti || [];

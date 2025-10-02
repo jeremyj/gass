@@ -123,7 +123,7 @@ app.get('/api/consegna/:date', (req, res) => {
 // Save consegna data
 app.post('/api/consegna', (req, res) => {
   try {
-    const { data, trovatoInCassa, pagatoProduttore, lasciatoInCassa, discrepanzaCassa, noteGiornata, partecipanti } = req.body;
+    const { data, trovatoInCassa, pagatoProduttore, lasciatoInCassa, discrepanzaCassa, discrepanzaTrovata, discrepanzaPagato, noteGiornata, partecipanti } = req.body;
 
     const transaction = db.transaction(() => {
       // Check if consegna already exists for this date
@@ -146,15 +146,19 @@ app.post('/api/consegna', (req, res) => {
         // Update existing consegna
         db.prepare(`
           UPDATE consegne
-          SET trovato_in_cassa = ?, pagato_produttore = ?, lasciato_in_cassa = ?, discrepanza_cassa = ?, note = ?
+          SET trovato_in_cassa = ?, pagato_produttore = ?, lasciato_in_cassa = ?,
+              discrepanza_cassa = ?, discrepanza_trovata = ?, discrepanza_pagato = ?, note = ?
           WHERE id = ?
-        `).run(trovatoInCassa, pagatoProduttore, lasciatoInCassa, discrepanzaFlag, noteGiornata || '', consegna.id);
+        `).run(trovatoInCassa, pagatoProduttore, lasciatoInCassa, discrepanzaFlag,
+               discrepanzaTrovata ? 1 : 0, discrepanzaPagato ? 1 : 0, noteGiornata || '', consegna.id);
       } else {
         // Insert new consegna
         const result = db.prepare(`
-          INSERT INTO consegne (data, trovato_in_cassa, pagato_produttore, lasciato_in_cassa, discrepanza_cassa, note)
-          VALUES (?, ?, ?, ?, ?, ?)
-        `).run(data, trovatoInCassa, pagatoProduttore, lasciatoInCassa, discrepanzaFlag, noteGiornata || '');
+          INSERT INTO consegne (data, trovato_in_cassa, pagato_produttore, lasciato_in_cassa,
+                                discrepanza_cassa, discrepanza_trovata, discrepanza_pagato, note)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(data, trovatoInCassa, pagatoProduttore, lasciatoInCassa, discrepanzaFlag,
+               discrepanzaTrovata ? 1 : 0, discrepanzaPagato ? 1 : 0, noteGiornata || '');
 
         consegna = { id: result.lastInsertRowid };
       }
