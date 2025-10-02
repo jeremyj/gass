@@ -1013,21 +1013,23 @@ body {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 16px;
+    font-size: 14px;
 }
 
 .storico-info-table th {
     background: #f8f9fa;
-    padding: 10px;
-    text-align: left;
-    font-size: 12px;
+    padding: 8px 6px;
+    text-align: center;
+    font-size: 11px;
     font-weight: 600;
     color: #6c757d;
     border-bottom: 2px solid #dee2e6;
 }
 
 .storico-info-table td {
-    padding: 12px 10px;
-    font-size: 14px;
+    padding: 10px 6px;
+    font-size: 13px;
+    text-align: center;
     border-bottom: 1px solid #f1f3f5;
 }
 
@@ -1058,22 +1060,39 @@ body {
 .storico-movimenti-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 12px;
+    font-size: 11px;
+    overflow-x: auto;
+    display: block;
+}
+
+.storico-movimenti-table thead,
+.storico-movimenti-table tbody,
+.storico-movimenti-table tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
 }
 
 .storico-movimenti-table th {
     background: #f8f9fa;
-    padding: 8px;
-    text-align: left;
-    font-size: 11px;
+    padding: 6px 4px;
+    text-align: center;
+    font-size: 10px;
     font-weight: 600;
     color: #6c757d;
     border-bottom: 2px solid #dee2e6;
 }
 
 .storico-movimenti-table td {
-    padding: 10px 8px;
+    padding: 8px 4px;
     border-bottom: 1px solid #f1f3f5;
+    text-align: center;
+    font-size: 11px;
+}
+
+.storico-movimenti-table td:first-child {
+    text-align: left;
+    font-weight: 600;
 }
 
 .btn-delete-storico {

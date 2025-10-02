@@ -932,7 +932,4 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderCalendar();
   updateHeaderDate();
   loadData();
-
-  // Open Cassa accordion by default
-  toggleAccordion('cassa');
 });
