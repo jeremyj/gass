@@ -3,30 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GAS - Storico</title>
+    <title>GASS Torpignattara - Storico</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <nav class="nav-menu">
-        <ul>
-            <li><a href="consegna.html">CONSEGNA</a></li>
-            <li><a href="storico.html" class="active">STORICO</a></li>
-            <li><a href="debiti.html">DEBITI/CREDITI</a></li>
-        </ul>
-    </nav>
+    <!-- Mobile Header -->
+    <div class="page-header">
+        <div class="header-title">📋 Storico Consegne</div>
+    </div>
 
     <div class="container">
-        <h1>Storico Consegne</h1>
-
         <div id="status" class="status"></div>
 
-        <div class="section">
-            <h2>Tutte le Consegne</h2>
-            <div id="storico-list"></div>
+        <div class="info-badge">
+            📝 Per modificare una consegna, vai alla tab Consegna e seleziona la data da modificare
         </div>
+
+        <div id="storico-list"></div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <a href="consegna.html" class="bottom-nav-item">
+            <span class="bottom-nav-icon">📦</span>
+            Consegna
+        </a>
+        <a href="storico.html" class="bottom-nav-item active">
+            <span class="bottom-nav-icon">📋</span>
+            Storico
+        </a>
+        <a href="debiti.html" class="bottom-nav-item">
+            <span class="bottom-nav-icon">💰</span>
+            Saldi
+        </a>
     </div>
 
     <script src="utils.js"></script>
-    <script src="storico.js"></script>
+    <script src="storico.js?v=2"></script>
 </body>
 </html>

@@ -3,81 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GAS - Consegna</title>
+    <title>GASS Torpignattara - Consegna</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <nav class="nav-menu">
-        <ul>
-            <li><a href="consegna.html" class="active">CONSEGNA</a></li>
-            <li><a href="storico.html">STORICO</a></li>
-            <li><a href="debiti.html">DEBITI/CREDITI</a></li>
-        </ul>
-    </nav>
+    <!-- Mobile Header -->
+    <div class="page-header">
+        <div class="header-top">
+            <div class="header-date" id="header-date">Oggi</div>
+            <button class="change-date-btn" onclick="showCalendarModal()">📅 Cambia Data</button>
+        </div>
+        <div class="header-title">GASS Torpignattara</div>
+    </div>
 
     <div class="container">
-        <h1>Gestione Consegna</h1>
-
         <div id="status" class="status"></div>
 
-        <form id="consegna-form" onsubmit="event.preventDefault(); saveData();">
-        <div class="section">
-            <h2>Dati Giornata</h2>
-            <div class="form-group">
-                <label>Data Selezionata:</label>
-                <input type="text" id="data-display" readonly style="background: #f0f0f0; cursor: default;">
-                <input type="hidden" id="data" required>
+        <!-- Hidden Calendar Container (shown in modal) -->
+        <div id="calendar-container" class="calendar hidden"></div>
+        <input type="hidden" id="data" required>
+
+        <!-- Accordion: CASSA -->
+        <div class="accordion-item">
+            <div class="accordion-header cassa" onclick="toggleAccordion('cassa')">
+                <span>💰 CASSA</span>
+                <span class="accordion-arrow" id="arrow-cassa">▼</span>
             </div>
-            <div id="calendar-container" style="margin: 20px 0;"></div>
-            <div class="form-group">
-                <label>Trovato in cassa:</label>
-                <input type="text" inputmode="decimal" id="trovatoInCassa" placeholder="0.00" oninput="normalizeInputField(this); updateLasciatoInCassa()" onfocus="handleInputFocus(this)" readonly style="cursor: not-allowed; background: #f0f0f0;">
-            </div>
-            <div class="checkbox-group">
-                <input type="checkbox" id="discrepanzaCassaTrovata" onchange="toggleDiscrepanzaCassaTrovata()">
-                <label for="discrepanzaCassaTrovata">Discrepanza cassa trovata (abilita modifica manuale)</label>
-            </div>
-            <div class="form-group">
-                <label>Pagato Produttore:</label>
-                <input type="text" inputmode="decimal" id="pagatoProduttore" placeholder="0.00" oninput="normalizeInputField(this); updateLasciatoInCassa()" onfocus="handleInputFocus(this)" readonly style="cursor: not-allowed; background: #f0f0f0;">
-            </div>
-            <div class="checkbox-group">
-                <input type="checkbox" id="discrepanzaPagatoProduttore" onchange="toggleDiscrepanzaPagatoProduttore()">
-                <label for="discrepanzaPagatoProduttore">Discrepanza pagato produttore (abilita modifica manuale)</label>
-            </div>
-            <div class="form-group">
-                <label>Lasciato in cassa:</label>
-                <input type="text" inputmode="decimal" id="lasciatoInCassa" placeholder="0.00" oninput="normalizeInputField(this)" onfocus="handleInputFocus(this)" readonly style="cursor: not-allowed; background: #f0f0f0;">
-            </div>
-            <div class="checkbox-group">
-                <input type="checkbox" id="discrepanzaCassa" onchange="toggleDiscrepanzaCassa()">
-                <label for="discrepanzaCassa">Discrepanza cassa lasciata (abilita modifica manuale)</label>
-            </div>
-            <div class="form-group">
-                <label>Note:</label>
-                <input type="text" id="noteGiornata" placeholder="Note per questa consegna">
+            <div class="accordion-content" id="content-cassa">
+                <!-- Trovato in Cassa -->
+                <div class="input-group">
+                    <div class="input-label">
+                        <span>Trovato in Cassa</span>
+                        <span class="mode-badge auto" id="badge-trovato">AUTO</span>
+                    </div>
+                    <input type="text"
+                           inputmode="decimal"
+                           id="trovatoInCassa"
+                           class="smart-input auto"
+                           placeholder="Dal lasciato precedente"
+                           oninput="normalizeInputField(this); updateLasciatoInCassa(); updateSmartInput(this, 'trovato')"
+                           onfocus="enableSmartInput(this, 'trovato')"
+                           onblur="checkSmartInputEmpty(this, 'trovato')">
+                </div>
+
+                <!-- Pagato Produttore -->
+                <div class="input-group">
+                    <div class="input-label">
+                        <span>Pagato Produttore</span>
+                        <span class="mode-badge auto" id="badge-pagato">AUTO</span>
+                    </div>
+                    <input type="text"
+                           inputmode="decimal"
+                           id="pagatoProduttore"
+                           class="smart-input auto"
+                           placeholder="Σ tutti i movimenti"
+                           oninput="normalizeInputField(this); updateLasciatoInCassa(); updateSmartInput(this, 'pagato')"
+                           onfocus="enableSmartInput(this, 'pagato')"
+                           onblur="checkSmartInputEmpty(this, 'pagato')">
+                </div>
+
+                <!-- Lasciato in Cassa -->
+                <div class="input-group">
+                    <div class="input-label">
+                        <span>Lasciato in Cassa</span>
+                        <span class="mode-badge auto" id="badge-lasciato">AUTO</span>
+                    </div>
+                    <input type="text"
+                           inputmode="decimal"
+                           id="lasciatoInCassa"
+                           class="smart-input auto"
+                           placeholder="Trovato - Pagato"
+                           oninput="normalizeInputField(this); updateSmartInput(this, 'lasciato')"
+                           onfocus="enableSmartInput(this, 'lasciato')"
+                           onblur="checkSmartInputEmpty(this, 'lasciato')">
+                </div>
+
+                <div class="info-badge">
+                    💡 Click sui campi per modificare manualmente
+                </div>
+
+                <!-- Note Giornata -->
+                <div class="input-group">
+                    <div class="input-label">
+                        <span>Note Giornata</span>
+                    </div>
+                    <input type="text" id="noteGiornata" class="input-field" placeholder="Note opzionali...">
+                </div>
+
+                <!-- Pulsante Salva Cassa (visibile solo con override) -->
+                <button class="big-btn big-btn-success hidden" id="btn-salva-cassa" onclick="saveCassaOnly()">
+                    💾 Salva Cassa
+                </button>
             </div>
         </div>
 
-        <div class="section">
-            <h2>Partecipanti</h2>
-            <div class="form-group">
-                <label>Seleziona partecipante:</label>
-                <select id="participant-select" onchange="showParticipantForm()">
-                    <option value="">-- Seleziona un partecipante --</option>
-                </select>
+        <!-- Sezione MOVIMENTI - Sempre aperta -->
+        <div class="section-movimenti">
+            <div class="section-header-movimenti">
+                <span id="movimenti-title">📦 MOVIMENTI (0 salvati)</span>
             </div>
+            <div class="section-content-movimenti">
+                <!-- Dropdown seleziona partecipante -->
+                <div class="input-group">
+                    <select id="participant-select" class="input-field" onchange="showParticipantForm()">
+                        <option value="">➕ Aggiungi Partecipante</option>
+                    </select>
+                </div>
 
-            <div id="selected-participants"></div>
+                <!-- Form partecipante espandibile -->
+                <div id="selected-participants"></div>
 
-            <div id="movimenti-giorno" style="margin-top: 30px;"></div>
+                <div class="info-badge">
+                    💡 Seleziona un partecipante per inserire/modificare i dati
+                </div>
+            </div>
         </div>
+    </div>
 
-        <button type="submit" class="btn-save">Salva Tutto</button>
-        </form>
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <a href="consegna.html" class="bottom-nav-item active">
+            <span class="bottom-nav-icon">📦</span>
+            Consegna
+        </a>
+        <a href="storico.html" class="bottom-nav-item">
+            <span class="bottom-nav-icon">📋</span>
+            Storico
+        </a>
+        <a href="debiti.html" class="bottom-nav-item">
+            <span class="bottom-nav-icon">💰</span>
+            Saldi
+        </a>
     </div>
 
     <script src="utils.js"></script>
-    <script src="consegna.js?v=10"></script>
+    <script src="consegna.js?v=11"></script>
 </body>
 </html>

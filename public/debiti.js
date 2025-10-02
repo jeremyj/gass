@@ -1,19 +1,7 @@
 // ===== STATE MANAGEMENT =====
 
 let participants = [];
-let editingId = null;
-
-// ===== UI HELPERS =====
-
-function showAddForm() {
-  document.getElementById('add-form').style.display = 'block';
-  document.getElementById('new-name').value = '';
-  document.getElementById('new-name').focus();
-}
-
-function hideAddForm() {
-  document.getElementById('add-form').style.display = 'none';
-}
+let expandedParticipantId = null;
 
 // ===== DATA LOADING =====
 
@@ -36,79 +24,128 @@ async function loadParticipants() {
 // ===== RENDERING =====
 
 function renderParticipants() {
-  const tbody = document.getElementById('participants-body');
-  tbody.innerHTML = '';
+  const container = document.getElementById('saldi-list');
+  container.innerHTML = '';
 
   if (participants.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Nessun partecipante</td></tr>';
+    container.innerHTML = '<p style="text-align: center; padding: 20px;">Nessun partecipante</p>';
     return;
   }
 
   participants.forEach(p => {
-    const row = createParticipantRow(p);
-    tbody.appendChild(row);
+    const card = createParticipantCard(p);
+    container.appendChild(card);
   });
 }
 
-function createParticipantRow(p) {
-  const row = document.createElement('tr');
-  const saldoClass = p.saldo < 0 ? 'saldo-debito' : p.saldo > 0 ? 'saldo-credito' : '';
-  const saldoText = p.saldo.toFixed(2);
+function createParticipantCard(p) {
+  const isExpanded = expandedParticipantId === p.id;
 
-  row.innerHTML = `
-    <td><strong>${p.nome}</strong></td>
-    <td class="${saldoClass}">
-      <span id="saldo-view-${p.id}">€${saldoText}</span>
-      <input type="text" inputmode="decimal" id="saldo-edit-${p.id}" value="${p.saldo}"
-             style="display: none;"
-             oninput="normalizeInputField(this)"
-             onfocus="handleInputFocus(this)"
-             onkeydown="if(event.key==='Enter'){event.preventDefault();saveSaldo(${p.id})}">
-    </td>
-    <td>${formatDateItalian(p.ultima_modifica)}</td>
-    <td>
-      <button onclick="editSaldo(${p.id})" id="edit-btn-${p.id}">Modifica</button>
-      <button onclick="saveSaldo(${p.id})" id="save-btn-${p.id}" style="display: none;" class="btn-save">Salva</button>
-      <button onclick="cancelEdit(${p.id})" id="cancel-btn-${p.id}" style="display: none;">Annulla</button>
-      <button onclick="deleteParticipant(${p.id})" class="btn-delete">Elimina</button>
-    </td>
+  const card = document.createElement('div');
+  card.className = 'saldo-card';
+  if (isExpanded) {
+    card.classList.add('expanded');
+  }
+
+  // Determine saldo badge class
+  let saldoBadgeClass = 'saldo-badge';
+  let saldoText = '€0.00';
+  if (p.saldo < 0) {
+    saldoBadgeClass += ' debito';
+    saldoText = `€${p.saldo.toFixed(2)}`;
+  } else if (p.saldo > 0) {
+    saldoBadgeClass += ' credito';
+    saldoText = `€${p.saldo.toFixed(2)}`;
+  } else {
+    saldoBadgeClass += ' zero';
+    saldoText = '€0.00';
+  }
+
+  // Collapsed header (always visible)
+  const header = document.createElement('div');
+  header.className = 'saldo-card-header';
+  header.onclick = () => toggleParticipantCard(p.id);
+
+  header.innerHTML = `
+    <div class="saldo-card-info">
+      <div class="saldo-card-name">${p.nome}</div>
+      <div class="saldo-card-date">${formatDateItalian(p.ultima_modifica)}</div>
+    </div>
+    <div class="${saldoBadgeClass}">${saldoText}</div>
   `;
 
-  return row;
-}
+  card.appendChild(header);
 
-// ===== EDIT SALDO =====
+  // Expanded content
+  if (isExpanded) {
+    const content = document.createElement('div');
+    content.className = 'saldo-card-content';
 
-function editSaldo(id) {
-  editingId = id;
-  const inputField = document.getElementById(`saldo-edit-${id}`);
+    content.innerHTML = `
+      <div class="input-group">
+        <div class="input-label">
+          <span>Nuovo Saldo</span>
+        </div>
+        <input type="text"
+               inputmode="decimal"
+               id="saldo-input-${p.id}"
+               class="input-field"
+               value="${p.saldo}"
+               placeholder="Inserisci nuovo saldo..."
+               oninput="normalizeInputField(this)"
+               onfocus="handleInputFocus(this)"
+               onkeydown="if(event.key==='Enter'){event.preventDefault();saveSaldo(${p.id})}">
+      </div>
 
-  document.getElementById(`saldo-view-${id}`).style.display = 'none';
-  inputField.style.display = 'inline-block';
-  document.getElementById(`edit-btn-${id}`).style.display = 'none';
-  document.getElementById(`save-btn-${id}`).style.display = 'inline-block';
-  document.getElementById(`cancel-btn-${id}`).style.display = 'inline-block';
+      <div class="saldo-card-actions">
+        <button class="big-btn big-btn-success" onclick="saveSaldo(${p.id})">
+          💾 Salva Saldo
+        </button>
+        <button class="big-btn big-btn-secondary" onclick="toggleParticipantCard(${p.id})">
+          ✖️ Chiudi
+        </button>
+        <button class="big-btn big-btn-danger" onclick="deleteParticipant(${p.id})">
+          🗑️ Elimina Partecipante
+        </button>
+      </div>
+    `;
 
-  if (inputField.value === '0' || inputField.value === '0.0' || inputField.value === '0.00') {
-    inputField.value = '';
+    card.appendChild(content);
+
+    // Focus input after render
+    setTimeout(() => {
+      const input = document.getElementById(`saldo-input-${p.id}`);
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    }, 100);
   }
-  inputField.focus();
-  inputField.select();
+
+  return card;
 }
 
-function cancelEdit(id) {
-  const participant = participants.find(p => p.id === id);
-  document.getElementById(`saldo-edit-${id}`).value = participant.saldo;
-  document.getElementById(`saldo-view-${id}`).style.display = 'inline';
-  document.getElementById(`saldo-edit-${id}`).style.display = 'none';
-  document.getElementById(`edit-btn-${id}`).style.display = 'inline-block';
-  document.getElementById(`save-btn-${id}`).style.display = 'none';
-  document.getElementById(`cancel-btn-${id}`).style.display = 'none';
-  editingId = null;
+// ===== CARD INTERACTION =====
+
+function toggleParticipantCard(id) {
+  if (expandedParticipantId === id) {
+    expandedParticipantId = null;
+  } else {
+    expandedParticipantId = id;
+  }
+  renderParticipants();
 }
+
+// ===== SAVE/DELETE =====
 
 async function saveSaldo(id) {
-  const newSaldo = parseFloat(document.getElementById(`saldo-edit-${id}`).value);
+  const inputField = document.getElementById(`saldo-input-${id}`);
+  const newSaldo = parseAmount(inputField.value);
+
+  if (isNaN(newSaldo)) {
+    showStatus('Inserisci un saldo valido', 'error');
+    return;
+  }
 
   try {
     const response = await fetch(`/api/participants/${id}`, {
@@ -121,44 +158,13 @@ async function saveSaldo(id) {
 
     if (result.success) {
       showStatus('Saldo aggiornato con successo!', 'success');
+      expandedParticipantId = null;
       loadParticipants();
-      editingId = null;
     } else {
       showStatus('Errore: ' + result.error, 'error');
     }
   } catch (error) {
     showStatus('Errore durante l\'aggiornamento: ' + error.message, 'error');
-  }
-}
-
-// ===== ADD/DELETE PARTICIPANT =====
-
-async function addParticipant() {
-  const nome = document.getElementById('new-name').value.trim();
-
-  if (!nome) {
-    showStatus('Inserisci un nome', 'error');
-    return;
-  }
-
-  try {
-    const response = await fetch('/api/participants', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nome }),
-    });
-
-    const result = await response.json();
-
-    if (result.success) {
-      showStatus('Partecipante aggiunto con successo!', 'success');
-      hideAddForm();
-      loadParticipants();
-    } else {
-      showStatus('Errore: ' + result.error, 'error');
-    }
-  } catch (error) {
-    showStatus('Errore durante l\'aggiunta: ' + error.message, 'error');
   }
 }
 
@@ -177,35 +183,13 @@ async function deleteParticipant(id) {
 
     if (result.success) {
       showStatus('Partecipante eliminato con successo!', 'success');
+      expandedParticipantId = null;
       loadParticipants();
     } else {
       showStatus('Errore: ' + result.error, 'error');
     }
   } catch (error) {
     showStatus('Errore durante l\'eliminazione: ' + error.message, 'error');
-  }
-}
-
-// ===== SYNC (UNUSED) =====
-
-async function syncParticipants() {
-  showStatus('Sincronizzazione in corso...', 'success');
-
-  try {
-    const response = await fetch('/api/sync-participants', {
-      method: 'POST',
-    });
-
-    const result = await response.json();
-
-    if (result.success) {
-      showStatus('Partecipanti sincronizzati con successo!', 'success');
-      loadParticipants();
-    } else {
-      showStatus('Errore: ' + result.error, 'error');
-    }
-  } catch (error) {
-    showStatus('Errore durante la sincronizzazione: ' + error.message, 'error');
   }
 }
 

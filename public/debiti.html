@@ -3,54 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GAS - Debiti/Crediti</title>
+    <title>GASS Torpignattara - Saldi</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <nav class="nav-menu">
-        <ul>
-            <li><a href="consegna.html">CONSEGNA</a></li>
-            <li><a href="storico.html">STORICO</a></li>
-            <li><a href="debiti.html" class="active">DEBITI/CREDITI</a></li>
-        </ul>
-    </nav>
+    <!-- Mobile Header -->
+    <div class="page-header">
+        <div class="header-title">💰 Saldi Partecipanti</div>
+    </div>
 
     <div class="container">
-        <h1>Gestione Debiti/Crediti</h1>
-
         <div id="status" class="status"></div>
 
-        <div class="section">
-            <h2>Partecipanti</h2>
-            <button class="btn-add" onclick="showAddForm()">+ Aggiungi Partecipante</button>
-
-            <div id="add-form" style="display: none; margin-top: 15px;">
-                <form onsubmit="event.preventDefault(); addParticipant();">
-                    <div class="form-group">
-                        <label>Nome Partecipante:</label>
-                        <input type="text" id="new-name" placeholder="Nome">
-                    </div>
-                    <button type="submit" class="btn-save">Salva</button>
-                    <button type="button" onclick="hideAddForm()">Annulla</button>
-                </form>
-            </div>
-
-            <table id="participants-table">
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Saldo (€)</th>
-                        <th>Ultima Modifica</th>
-                        <th>Azioni</th>
-                    </tr>
-                </thead>
-                <tbody id="participants-body">
-                </tbody>
-            </table>
+        <div class="info-badge">
+            💡 Clicca su un partecipante per modificare il saldo
         </div>
+
+        <div id="saldi-list"></div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <a href="consegna.html" class="bottom-nav-item">
+            <span class="bottom-nav-icon">📦</span>
+            Consegna
+        </a>
+        <a href="storico.html" class="bottom-nav-item">
+            <span class="bottom-nav-icon">📋</span>
+            Storico
+        </a>
+        <a href="debiti.html" class="bottom-nav-item active">
+            <span class="bottom-nav-icon">💰</span>
+            Saldi
+        </a>
     </div>
 
     <script src="utils.js"></script>
-    <script src="debiti.js"></script>
+    <script src="debiti.js?v=2"></script>
 </body>
 </html>

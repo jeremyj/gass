@@ -106,6 +106,19 @@ function calculateDiscrepanzaWarning(consegna, index, storico) {
 }
 
 function createInfoTable(consegna) {
+  // Build HTML for each value with override indicator if needed
+  const trovatoHtml = consegna.discrepanza_trovata === 1
+    ? `<span class="consegna-info-value has-override">€${consegna.trovato_in_cassa.toFixed(2)}<span class="override-indicator">MANUALE</span></span>`
+    : `€${consegna.trovato_in_cassa.toFixed(2)}`;
+
+  const pagatoHtml = consegna.discrepanza_pagato === 1
+    ? `<span class="consegna-info-value has-override">€${consegna.pagato_produttore.toFixed(2)}<span class="override-indicator">MANUALE</span></span>`
+    : `€${consegna.pagato_produttore.toFixed(2)}`;
+
+  const lasciatoHtml = consegna.discrepanza_cassa === 1
+    ? `<span class="consegna-info-value has-override">€${consegna.lasciato_in_cassa.toFixed(2)}<span class="override-indicator">MANUALE</span></span>`
+    : `€${consegna.lasciato_in_cassa.toFixed(2)}`;
+
   const table = document.createElement('table');
   table.innerHTML = `
     <thead>
@@ -117,9 +130,9 @@ function createInfoTable(consegna) {
     </thead>
     <tbody>
       <tr>
-        <td>€${consegna.trovato_in_cassa.toFixed(2)}</td>
-        <td>€${consegna.pagato_produttore.toFixed(2)}</td>
-        <td>€${consegna.lasciato_in_cassa.toFixed(2)}</td>
+        <td>${trovatoHtml}</td>
+        <td>${pagatoHtml}</td>
+        <td>${lasciatoHtml}</td>
       </tr>
     </tbody>
   `;

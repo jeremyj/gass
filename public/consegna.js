@@ -11,6 +11,121 @@ let currentCalendarYear = new Date().getFullYear();
 let currentCalendarMonth = new Date().getMonth();
 let consegneDates = new Set(); // Store dates with saved consegne
 
+// Smart Override State
+let smartOverrides = {
+  trovato: false,
+  pagato: false,
+  lasciato: false
+};
+
+// ===== ACCORDION FUNCTIONS =====
+
+function toggleAccordion(section) {
+  const content = document.getElementById(`content-${section}`);
+  const arrow = document.getElementById(`arrow-${section}`);
+
+  if (content.classList.contains('show')) {
+    content.classList.remove('show');
+    arrow.classList.remove('expanded');
+    arrow.textContent = '▼';
+  } else {
+    content.classList.add('show');
+    arrow.classList.add('expanded');
+    arrow.textContent = '▲';
+  }
+}
+
+// ===== SMART OVERRIDE FUNCTIONS =====
+
+function enableSmartInput(input, type) {
+  // When clicking on a smart input, make it editable
+  input.classList.remove('auto');
+  input.classList.add('manual');
+  input.removeAttribute('readonly');
+
+  const badge = document.getElementById(`badge-${type}`);
+  badge.classList.remove('auto');
+  badge.classList.add('manual');
+  badge.textContent = 'MANUALE';
+
+  smartOverrides[type] = true;
+  checkShowSalvaCassaButton();
+}
+
+function updateSmartInput(input, type) {
+  // Keep the manual state while typing
+  if (input.value) {
+    smartOverrides[type] = true;
+  }
+  checkShowSalvaCassaButton();
+}
+
+function checkSmartInputEmpty(input, type) {
+  // If user clears the field, revert to AUTO
+  if (!input.value || input.value.trim() === '') {
+    input.classList.remove('manual');
+    input.classList.add('auto');
+
+    const badge = document.getElementById(`badge-${type}`);
+    badge.classList.remove('manual');
+    badge.classList.add('auto');
+    badge.textContent = 'AUTO';
+
+    smartOverrides[type] = false;
+
+    // Recalculate auto value
+    if (type === 'trovato') {
+      // Will be set from previous lasciato
+    } else if (type === 'pagato') {
+      updatePagatoProduttore();
+    } else if (type === 'lasciato') {
+      updateLasciatoInCassa();
+    }
+
+    checkShowSalvaCassaButton();
+  }
+}
+
+function calculatePagatoProduttore() {
+  // Wrapper for compatibility
+  updatePagatoProduttore();
+}
+
+function checkShowSalvaCassaButton() {
+  const button = document.getElementById('btn-salva-cassa');
+  const hasOverride = smartOverrides.trovato || smartOverrides.pagato || smartOverrides.lasciato;
+
+  if (hasOverride) {
+    button.classList.remove('hidden');
+  } else {
+    button.classList.add('hidden');
+  }
+}
+
+// ===== CALENDAR MODAL =====
+
+function showCalendarModal() {
+  const calendar = document.getElementById('calendar-container');
+  calendar.classList.remove('hidden');
+  // TODO: Implement proper modal overlay
+}
+
+// ===== HEADER DATE UPDATE =====
+
+function updateHeaderDate() {
+  const dateInput = document.getElementById('data');
+  const headerDate = document.getElementById('header-date');
+
+  if (dateInput.value) {
+    const today = new Date().toISOString().split('T')[0];
+    if (dateInput.value === today) {
+      headerDate.textContent = 'Oggi';
+    } else {
+      headerDate.textContent = formatDateItalian(dateInput.value);
+    }
+  }
+}
+
 // ===== DATE HANDLING =====
 
 function formatDateItalian(dateStr) {
@@ -19,18 +134,20 @@ function formatDateItalian(dateStr) {
 }
 
 function updateDateDisplay() {
-  const dateInput = document.getElementById('data');
-  const displayInput = document.getElementById('data-display');
-  if (dateInput.value) {
-    displayInput.value = formatDateItalian(dateInput.value);
+  // Legacy function - now using updateHeaderDate()
+  updateHeaderDate();
+  if (document.getElementById('data').value) {
     checkDateData();
   }
 }
 
 function selectDate(dateStr) {
   document.getElementById('data').value = dateStr;
-  updateDateDisplay();
+  updateHeaderDate();
   renderCalendar();
+  checkDateData();
+  // Hide calendar after selection
+  document.getElementById('calendar-container').classList.add('hidden');
 }
 
 // ===== CALENDAR =====
@@ -630,7 +747,7 @@ async function saveCassaOnly(data, trovatoInCassa, pagatoProduttore, noteGiornat
   showStatus('Salvataggio dati cassa in corso...', 'success');
 
   let lasciatoInCassa;
-  if (discrepanzaCassaEnabled) {
+  if (smartOverrides.lasciato || discrepanzaCassaEnabled) {
     lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
   } else {
     lasciatoInCassa = roundUpCents(trovatoInCassa - pagatoProduttore);
@@ -643,9 +760,9 @@ async function saveCassaOnly(data, trovatoInCassa, pagatoProduttore, noteGiornat
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         data, trovatoInCassa, pagatoProduttore, lasciatoInCassa,
-        discrepanzaCassa: discrepanzaCassaEnabled,
-        discrepanzaTrovata: discrepanzaTrovataEnabled,
-        discrepanzaPagato: discrepanzaPagatoProduttoreEnabled,
+        discrepanzaCassa: smartOverrides.lasciato || discrepanzaCassaEnabled,
+        discrepanzaTrovata: smartOverrides.trovato || discrepanzaTrovataEnabled,
+        discrepanzaPagato: smartOverrides.pagato || discrepanzaPagatoProduttoreEnabled,
         noteGiornata,
         partecipanti: [],
       }),
@@ -704,7 +821,7 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
   }];
 
   let lasciatoInCassa;
-  if (discrepanzaCassaEnabled) {
+  if (smartOverrides.lasciato || discrepanzaCassaEnabled) {
     lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
   } else {
     lasciatoInCassa = roundUpCents(trovatoInCassa - pagatoProduttore);
@@ -717,9 +834,9 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         data, trovatoInCassa, pagatoProduttore, lasciatoInCassa,
-        discrepanzaCassa: discrepanzaCassaEnabled,
-        discrepanzaTrovata: discrepanzaTrovataEnabled,
-        discrepanzaPagato: discrepanzaPagatoProduttoreEnabled,
+        discrepanzaCassa: smartOverrides.lasciato || discrepanzaCassaEnabled,
+        discrepanzaTrovata: smartOverrides.trovato || discrepanzaTrovataEnabled,
+        discrepanzaPagato: smartOverrides.pagato || discrepanzaPagatoProduttoreEnabled,
         noteGiornata,
         partecipanti: partecipantiData,
       }),
@@ -773,6 +890,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   renderCalendar();
-  updateDateDisplay();
+  updateHeaderDate();
   loadData();
+
+  // Open Cassa accordion by default
+  toggleAccordion('cassa');
 });
