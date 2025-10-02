@@ -148,8 +148,6 @@ async function loadData() {
     if (result.success) {
       participants = result.participants;
       renderParticipantSelect();
-      document.getElementById('data').valueAsDate = new Date();
-      updateDateDisplay();
       showStatus('Dati caricati con successo!', 'success');
     } else {
       showStatus('Errore: ' + result.error, 'error');
