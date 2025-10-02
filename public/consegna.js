@@ -346,7 +346,6 @@ function loadExistingConsegna(result) {
   saldiBefore = result.saldiBefore || {};
 
   renderMovimentiGiorno();
-  showStatus('Dati esistenti caricati per questa data', 'success');
 }
 
 function loadNewConsegna(result) {
