@@ -404,6 +404,11 @@ body {
     border: 2px solid #ddd;
 }
 
+.big-btn-danger {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+}
+
 .collapse-btn {
     background: #ecf0f1;
     border: none;
@@ -419,6 +424,127 @@ body {
 
 .collapse-btn:hover {
     background: #d5d8dc;
+}
+
+/* Participant Card Flow (for selected participant form) */
+.participant-card-flow {
+    background: white;
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 3px solid #3498db;
+}
+
+.participant-card-flow.new-entry {
+    border-color: #ffc107;
+}
+
+.flow-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 3px solid #ecf0f1;
+}
+
+.participant-name {
+    font-weight: bold;
+    font-size: 18px;
+    color: #2c3e50;
+}
+
+.saldo-info {
+    font-size: 14px;
+    font-weight: bold;
+    padding: 8px 14px;
+    border-radius: 20px;
+}
+
+.saldo-info.saldo-credito {
+    background: #d4edda;
+    color: #155724;
+}
+
+.saldo-info.saldo-debito {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.saldo-info.saldo-pari {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.flow-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 12px;
+}
+
+.flow-section.flow-credito {
+    background: #d4edda;
+}
+
+.flow-section.flow-debito {
+    background: #f8d7da;
+}
+
+.flow-section-title {
+    font-weight: 600;
+    font-size: 13px;
+    color: #495057;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.flow-section .form-group {
+    margin-bottom: 0;
+}
+
+.flow-section .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+}
+
+.checkbox-group label {
+    font-size: 14px;
+    color: #2c3e50;
+    cursor: pointer;
+}
+
+.form-group {
+    margin-bottom: 12px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    color: #6c757d;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
 }
 
 /* Info badge */
@@ -1018,6 +1144,45 @@ body {
     margin-top: 18px;
 }
 
+/* Desktop Navigation (top tabs) */
+.desktop-nav {
+    display: none;
+}
+
+@media (min-width: 769px) {
+    .desktop-nav {
+        display: flex;
+        background: #2c3e50;
+        padding: 0;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .desktop-nav-item {
+        flex: 1;
+        padding: 15px;
+        text-align: center;
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        transition: background 0.2s;
+        border-right: 1px solid #34495e;
+    }
+
+    .desktop-nav-item:last-child {
+        border-right: none;
+    }
+
+    .desktop-nav-item:hover {
+        background: #34495e;
+    }
+
+    .desktop-nav-item.active {
+        background: #3498db;
+    }
+}
+
 /* Desktop styles */
 @media (min-width: 769px) {
     .container {
@@ -1032,5 +1197,9 @@ body {
 
     body {
         padding-bottom: 0;
+    }
+
+    .page-header {
+        position: relative;
     }
 }
