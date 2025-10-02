@@ -350,11 +350,53 @@ function loadExistingConsegna(result) {
 
 function loadNewConsegna(result) {
   const trovatoField = document.getElementById('trovatoInCassa');
-  trovatoField.value = result.lasciatoPrecedente ?? '';
+  const pagatoField = document.getElementById('pagatoProduttore');
+  const lasciatoField = document.getElementById('lasciatoInCassa');
 
-  document.getElementById('pagatoProduttore').value = '';
-  document.getElementById('lasciatoInCassa').value = '';
+  trovatoField.value = result.lasciatoPrecedente ?? '';
+  pagatoField.value = '';
+  lasciatoField.value = '';
   document.getElementById('noteGiornata').value = '';
+
+  // Reset all smart override states to AUTO
+  smartOverrides.trovato = false;
+  smartOverrides.pagato = false;
+  smartOverrides.lasciato = false;
+
+  // Reset trovato field to AUTO
+  trovatoField.classList.remove('manual');
+  trovatoField.classList.add('auto');
+  trovatoField.setAttribute('readonly', 'readonly');
+  const badgeTrovato = document.getElementById('badge-trovato');
+  if (badgeTrovato) {
+    badgeTrovato.classList.remove('manual');
+    badgeTrovato.classList.add('auto');
+    badgeTrovato.textContent = 'AUTO';
+  }
+
+  // Reset pagato field to AUTO
+  pagatoField.classList.remove('manual');
+  pagatoField.classList.add('auto');
+  pagatoField.setAttribute('readonly', 'readonly');
+  const badgePagato = document.getElementById('badge-pagato');
+  if (badgePagato) {
+    badgePagato.classList.remove('manual');
+    badgePagato.classList.add('auto');
+    badgePagato.textContent = 'AUTO';
+  }
+
+  // Reset lasciato field to AUTO
+  lasciatoField.classList.remove('manual');
+  lasciatoField.classList.add('auto');
+  lasciatoField.setAttribute('readonly', 'readonly');
+  const badgeLasciato = document.getElementById('badge-lasciato');
+  if (badgeLasciato) {
+    badgeLasciato.classList.remove('manual');
+    badgeLasciato.classList.add('auto');
+    badgeLasciato.textContent = 'AUTO';
+  }
+
+  checkShowSalvaCassaButton();
 
   existingConsegnaMovimenti = null;
   saldiBefore = {};
