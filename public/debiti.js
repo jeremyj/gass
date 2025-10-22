@@ -2,6 +2,7 @@
 
 let participants = [];
 let expandedParticipantId = null;
+let originalSaldoValues = {}; // Track original values when card is expanded
 
 // ===== DATA LOADING =====
 
@@ -36,90 +37,162 @@ function renderParticipants() {
     const card = createParticipantCard(p);
     container.appendChild(card);
   });
+
+  renderSaldiSummary();
+}
+
+function renderSaldiSummary() {
+  const summaryContainer = document.getElementById('saldi-summary');
+
+  let creditiTotali = 0;
+  let debitiTotali = 0;
+
+  participants.forEach(p => {
+    if (p.saldo > 0) {
+      creditiTotali += p.saldo;
+    } else if (p.saldo < 0) {
+      debitiTotali += p.saldo;
+    }
+  });
+
+  const bilancio = creditiTotali + debitiTotali;
+  const bilancioColor = bilancio < 0 ? '#e74c3c' : bilancio > 0 ? '#2ecc71' : '#3498db';
+
+  summaryContainer.innerHTML = `
+    <div style="background: white; padding: 20px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <h3 style="color: #2c3e50; margin-bottom: 15px; text-align: center;">📊 Riepilogo</h3>
+      <div style="display: flex; justify-content: space-around; text-align: center;">
+        <div>
+          <div style="font-size: 12px; color: #6c757d; margin-bottom: 5px;">Crediti Totali</div>
+          <div style="font-size: 24px; font-weight: bold; color: #2ecc71;">+${creditiTotali.toFixed(2)} €</div>
+        </div>
+        <div>
+          <div style="font-size: 12px; color: #6c757d; margin-bottom: 5px;">Debiti Totali</div>
+          <div style="font-size: 24px; font-weight: bold; color: #e74c3c;">${debitiTotali.toFixed(2)} €</div>
+        </div>
+      </div>
+      <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #ecf0f1; text-align: center;">
+        <div style="font-size: 12px; color: #6c757d; margin-bottom: 5px;">Bilancio</div>
+        <div style="font-size: 28px; font-weight: bold; color: ${bilancioColor};">${bilancio >= 0 ? '+' : ''}${bilancio.toFixed(2)} €</div>
+      </div>
+    </div>
+  `;
 }
 
 function createParticipantCard(p) {
   const isExpanded = expandedParticipantId === p.id;
 
   const card = document.createElement('div');
-  card.className = 'saldo-card';
-  if (isExpanded) {
-    card.classList.add('expanded');
-  }
 
-  // Determine saldo badge class
-  let saldoBadgeClass = 'saldo-badge';
-  let saldoText = '€0.00';
+  // Determine card class based on saldo type
+  let cardClass = 'saldo-card-collapsed';
+  let saldoBadgeClass = 'saldo-amount-badge';
+  let saldoText = '0.00 €';
+
   if (p.saldo < 0) {
-    saldoBadgeClass += ' debito';
-    saldoText = `€${p.saldo.toFixed(2)}`;
+    cardClass += ' has-debito';
+    saldoBadgeClass += ' saldo-debito';
+    saldoText = `${p.saldo.toFixed(2)} €`;
   } else if (p.saldo > 0) {
-    saldoBadgeClass += ' credito';
-    saldoText = `€${p.saldo.toFixed(2)}`;
+    cardClass += ' has-credito';
+    saldoBadgeClass += ' saldo-credito';
+    saldoText = `+${p.saldo.toFixed(2)} €`;
   } else {
-    saldoBadgeClass += ' zero';
-    saldoText = '€0.00';
+    cardClass += ' is-pari';
+    saldoBadgeClass += ' saldo-pari';
+    saldoText = '0.00 €';
   }
 
-  // Collapsed header (always visible)
-  const header = document.createElement('div');
-  header.className = 'saldo-card-header';
-  header.onclick = () => toggleParticipantCard(p.id);
-
-  const arrow = isExpanded ? '▲' : '▼';
-
-  header.innerHTML = `
-    <div class="saldo-card-info">
-      <div class="saldo-card-name">👤 ${p.nome}</div>
-      <div class="saldo-card-date">${formatDateItalian(p.ultima_modifica)}</div>
-    </div>
-    <div class="saldo-card-right">
-      <div class="${saldoBadgeClass}">${saldoText}</div>
-      <span class="saldo-arrow">${arrow}</span>
-    </div>
-  `;
-
-  card.appendChild(header);
-
-  // Expanded content
   if (isExpanded) {
-    const content = document.createElement('div');
-    content.className = 'saldo-card-content';
+    card.className = 'saldo-card-expanded';
+    if (p.saldo < 0) {
+      card.classList.add('has-debito');
+    } else if (p.saldo > 0) {
+      card.classList.add('has-credito');
+    }
+  } else {
+    card.className = cardClass;
+  }
 
-    content.innerHTML = `
-      <div class="input-group">
-        <div class="input-label">
-          <span>Nuovo Saldo</span>
-        </div>
-        <input type="text"
-               inputmode="decimal"
-               id="saldo-input-${p.id}"
-               class="input-field"
-               value="${p.saldo}"
-               placeholder="Inserisci nuovo saldo..."
-               oninput="normalizeInputField(this)"
-               onfocus="handleInputFocus(this)"
-               onkeydown="if(event.key==='Enter'){event.preventDefault();saveSaldo(${p.id})}">
+  if (!isExpanded) {
+    // Collapsed view
+    card.onclick = () => toggleParticipantCard(p.id);
+    card.innerHTML = `
+      <div class="saldo-info-left">
+        <div class="saldo-name">👤 ${p.nome}</div>
+        <div class="saldo-last-date">Ultimo movimento: ${formatDateItalian(p.ultima_modifica)}</div>
       </div>
-
-      <div class="saldo-card-actions">
-        <button class="big-btn big-btn-success" onclick="saveSaldo(${p.id})">
-          💾 Salva
-        </button>
-        <button class="big-btn big-btn-secondary" onclick="toggleParticipantCard(${p.id})">
-          Annulla
-        </button>
+      <div class="${saldoBadgeClass}">
+        ${saldoText}
       </div>
     `;
+  } else {
+    // Expanded view
+    card.innerHTML = `
+      <div class="saldo-header-expanded" onclick="toggleParticipantCard(${p.id})" style="cursor: pointer;">
+        <div>
+          <div class="participant-name-expanded">👤 ${p.nome}</div>
+          <div class="saldo-last-date">Ultimo movimento: ${formatDateItalian(p.ultima_modifica)}</div>
+        </div>
+        <div class="${saldoBadgeClass}">
+          ${saldoText}
+        </div>
+      </div>
 
-    card.appendChild(content);
+      <div class="saldo-edit-section">
+        <div class="saldo-edit-title">✏️ Modifica Saldo Attuale</div>
+        <div class="input-row">
+          <div>
+            <label style="font-size: 12px; color: #6c757d; margin-bottom: 5px; display: block;">Nuovo Credito</label>
+            <input type="text"
+                   inputmode="decimal"
+                   id="credito-input-${p.id}"
+                   class="input-field"
+                   value="${p.saldo > 0 ? p.saldo : ''}"
+                   placeholder="0.00"
+                   oninput="normalizeInputField(this); updateSaldoInputs(${p.id}, 'credito')"
+                   onfocus="handleInputFocus(this)"
+                   ${p.saldo < 0 ? 'disabled style="opacity: 0.5;"' : ''}>
+          </div>
+          <div>
+            <label style="font-size: 12px; color: #6c757d; margin-bottom: 5px; display: block;">Nuovo Debito</label>
+            <input type="text"
+                   inputmode="decimal"
+                   id="debito-input-${p.id}"
+                   class="input-field"
+                   value="${p.saldo < 0 ? Math.abs(p.saldo) : ''}"
+                   placeholder="0.00"
+                   oninput="normalizeInputField(this); updateSaldoInputs(${p.id}, 'debito')"
+                   onfocus="handleInputFocus(this)"
+                   ${p.saldo > 0 ? 'disabled style="opacity: 0.5;"' : ''}>
+          </div>
+        </div>
+      </div>
 
-    // Focus input after render
+      <div class="info-badge" style="background: #fff3cd; border-color: #ffc107; color: #856404;">
+        ⚠️ Modifica manuale del saldo. Usa con attenzione.
+      </div>
+
+      <button class="big-btn big-btn-success" style="margin-top: 12px;" onclick="saveSaldo(${p.id})">
+        💾 Salva Modifiche
+      </button>
+
+      <button class="collapse-btn" onclick="toggleParticipantCard(${p.id})">
+        ▲ Chiudi
+      </button>
+    `;
+
+    // Focus appropriate input after render
     setTimeout(() => {
-      const input = document.getElementById(`saldo-input-${p.id}`);
-      if (input) {
-        input.focus();
-        input.select();
+      const creditoInput = document.getElementById(`credito-input-${p.id}`);
+      const debitoInput = document.getElementById(`debito-input-${p.id}`);
+
+      if (p.saldo >= 0 && creditoInput) {
+        creditoInput.focus();
+        creditoInput.select();
+      } else if (p.saldo < 0 && debitoInput) {
+        debitoInput.focus();
+        debitoInput.select();
       }
     }, 100);
   }
@@ -131,18 +204,94 @@ function createParticipantCard(p) {
 
 function toggleParticipantCard(id) {
   if (expandedParticipantId === id) {
+    // Trying to close - check for unsaved changes
+    if (hasUnsavedChanges(id)) {
+      if (!confirm('Ci sono modifiche non salvate. Vuoi chiudere senza salvare?')) {
+        return; // User cancelled, keep card open
+      }
+    }
     expandedParticipantId = null;
+    originalSaldoValues = {}; // Clear saved values
   } else {
+    // Opening card - save original values
+    const participant = participants.find(p => p.id === id);
+    if (participant) {
+      originalSaldoValues[id] = {
+        credito: participant.saldo > 0 ? participant.saldo : 0,
+        debito: participant.saldo < 0 ? Math.abs(participant.saldo) : 0
+      };
+    }
     expandedParticipantId = id;
   }
   renderParticipants();
 }
 
+function hasUnsavedChanges(id) {
+  // Check if current input values differ from original values
+  const creditoInput = document.getElementById(`credito-input-${id}`);
+  const debitoInput = document.getElementById(`debito-input-${id}`);
+
+  if (!creditoInput || !debitoInput || !originalSaldoValues[id]) {
+    return false;
+  }
+
+  const currentCredito = parseAmount(creditoInput.value);
+  const currentDebito = parseAmount(debitoInput.value);
+
+  const originalCredito = originalSaldoValues[id].credito;
+  const originalDebito = originalSaldoValues[id].debito;
+
+  return currentCredito !== originalCredito || currentDebito !== originalDebito;
+}
+
+function updateSaldoInputs(id, changedField) {
+  const creditoInput = document.getElementById(`credito-input-${id}`);
+  const debitoInput = document.getElementById(`debito-input-${id}`);
+
+  if (changedField === 'credito') {
+    const creditoValue = parseAmount(creditoInput.value);
+    if (creditoValue > 0) {
+      debitoInput.value = '';
+      debitoInput.disabled = true;
+      debitoInput.style.opacity = '0.5';
+    } else {
+      debitoInput.disabled = false;
+      debitoInput.style.opacity = '1';
+    }
+  } else if (changedField === 'debito') {
+    const debitoValue = parseAmount(debitoInput.value);
+    if (debitoValue > 0) {
+      creditoInput.value = '';
+      creditoInput.disabled = true;
+      creditoInput.style.opacity = '0.5';
+    } else {
+      creditoInput.disabled = false;
+      creditoInput.style.opacity = '1';
+    }
+  }
+}
+
 // ===== SAVE/DELETE =====
 
 async function saveSaldo(id) {
-  const inputField = document.getElementById(`saldo-input-${id}`);
-  const newSaldo = parseAmount(inputField.value);
+  const creditoInput = document.getElementById(`credito-input-${id}`);
+  const debitoInput = document.getElementById(`debito-input-${id}`);
+
+  let newSaldo = 0;
+
+  if (creditoInput && !creditoInput.disabled) {
+    const creditoValue = parseAmount(creditoInput.value);
+    if (creditoValue > 0) {
+      newSaldo = creditoValue;
+    }
+  }
+
+  if (debitoInput && !debitoInput.disabled) {
+    const debitoValue = parseAmount(debitoInput.value);
+    if (debitoValue > 0) {
+      newSaldo = -debitoValue;
+    }
+  }
 
   if (isNaN(newSaldo)) {
     showStatus('Inserisci un saldo valido', 'error');
@@ -161,6 +310,7 @@ async function saveSaldo(id) {
     if (result.success) {
       showStatus('✓ Saldo aggiornato', 'success');
       expandedParticipantId = null;
+      originalSaldoValues = {}; // Clear saved values after successful save
       loadParticipants();
     } else {
       showStatus('Errore: ' + result.error, 'error');
