@@ -1160,18 +1160,6 @@ body {
     color: white;
 }
 
-.storico-saldo-text.credito {
-    color: #28a745;
-}
-
-.storico-saldo-text.debito {
-    color: #dc3545;
-}
-
-.storico-saldo-text.pari {
-    color: #17a2b8;
-}
-
 .storico-participant-details {
     font-size: 12px;
     color: #6c757d;
