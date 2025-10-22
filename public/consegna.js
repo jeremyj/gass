@@ -623,13 +623,24 @@ function loadExistingParticipantData(nome, saldo) {
   }
 
   const creditoField = document.getElementById(`credito_${nome}`);
+  const debitoField = document.getElementById(`debito_${nome}`);
+
   if (creditoField && movimento.credito_lasciato) {
     creditoField.value = movimento.credito_lasciato;
+    // Disable debito field if credito has value
+    if (debitoField) {
+      debitoField.disabled = true;
+      debitoField.style.opacity = '0.5';
+    }
   }
 
-  const debitoField = document.getElementById(`debito_${nome}`);
   if (debitoField && movimento.debito_lasciato) {
     debitoField.value = movimento.debito_lasciato;
+    // Disable credito field if debito has value
+    if (creditoField) {
+      creditoField.disabled = true;
+      creditoField.style.opacity = '0.5';
+    }
   }
 
   const debitoSaldatoField = document.getElementById(`debitoSaldato_${nome}`);
