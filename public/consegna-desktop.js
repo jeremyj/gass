@@ -662,11 +662,12 @@ function updatePagatoProduttore() {
 
   if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
     existingConsegnaMovimenti.forEach(m => {
+      // Conto produttore = importo_saldato + usa_credito + debito_lasciato - credito_lasciato
+      // debito_saldato serves only to update participant balance, not producer payment
       totalPagato += (m.importo_saldato || 0);
       totalPagato += (m.usa_credito || 0);
       totalPagato += (m.debito_lasciato || 0);
       totalPagato -= (m.credito_lasciato || 0);
-      totalPagato -= (m.debito_saldato || 0);
     });
   }
 
@@ -680,7 +681,16 @@ function updateLasciatoInCassa() {
   const trovatoInCassa = parseAmount(document.getElementById('trovatoInCassa').value);
   const pagatoProduttore = parseAmount(document.getElementById('pagatoProduttore').value);
 
-  const lasciatoInCassa = roundUpCents(trovatoInCassa - pagatoProduttore);
+  // Calculate total cash collected (incassato)
+  let incassato = 0;
+  if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
+    existingConsegnaMovimenti.forEach(m => {
+      incassato += (m.importo_saldato || 0);
+    });
+  }
+
+  // Formula: Lasciato = Trovato + Incassato - Pagato Produttore
+  const lasciatoInCassa = roundUpCents(trovatoInCassa + incassato - pagatoProduttore);
   document.getElementById('lasciatoInCassa').value = lasciatoInCassa;
 }
 
@@ -832,7 +842,7 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
       setTimeout(() => {
         document.getElementById('selected-participants').innerHTML = '';
         document.getElementById('participant-select').value = '';
-        loadData();
+        checkDateData();
       }, 1000);
     } else {
       showStatus('Errore: ' + result.error, 'error');
