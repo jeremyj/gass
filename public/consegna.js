@@ -666,7 +666,6 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
   return `
     <div class="flow-header" id="header-${nome.replace(/\s/g, '_')}" style="cursor: pointer;">
       <div class="participant-name">${nome}</div>
-      <div class="saldo-info ${saldoClass}">${saldoText}</div>
     </div>
 
     <div class="flow-section">
@@ -679,7 +678,7 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
       </div>
     </div>
 
-    ${haCredito ? buildCreditoSection(nome, saldo) : ''}
+    ${haCredito ? buildCreditoSection(nome, saldo, saldoText, saldoClass) : ''}
 
     <div class="flow-section">
       <div class="flow-section-title">3. NUOVO SALDO</div>
@@ -699,7 +698,7 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
       </div>
     </div>
 
-    ${haDebito ? buildDebitoSection(nome, saldo) : ''}
+    ${haDebito ? buildDebitoSection(nome, saldo, saldoText, saldoClass) : ''}
 
     <div class="flow-section">
       <div class="form-group">
@@ -717,10 +716,13 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
   `;
 }
 
-function buildCreditoSection(nome, saldo) {
+function buildCreditoSection(nome, saldo, saldoText, saldoClass) {
   return `
     <div class="flow-section flow-credito">
-      <div class="flow-section-title">2. USA SALDO PRECEDENTE</div>
+      <div class="flow-section-title">
+        <span>2. USA SALDO PRECEDENTE</span>
+        <span class="saldo-info ${saldoClass}" style="margin-left: 10px;">${saldoText}</span>
+      </div>
       <div class="checkbox-group">
         <input type="checkbox" id="usaInteroCreditoCheckbox_${nome}" onchange="toggleUsaInteroCredito('${nome}', ${saldo})">
         <label for="usaInteroCreditoCheckbox_${nome}">Usa intero credito €${formatSaldo(saldo)}</label>
@@ -735,10 +737,13 @@ function buildCreditoSection(nome, saldo) {
   `;
 }
 
-function buildDebitoSection(nome, saldo) {
+function buildDebitoSection(nome, saldo, saldoText, saldoClass) {
   return `
     <div class="flow-section flow-debito">
-      <div class="flow-section-title">4. SALDA DEBITO PRECEDENTE</div>
+      <div class="flow-section-title">
+        <span>4. SALDA DEBITO PRECEDENTE</span>
+        <span class="saldo-info ${saldoClass}" style="margin-left: 10px;">${saldoText}</span>
+      </div>
       <div class="checkbox-group">
         <input type="checkbox" id="saldaDebito_${nome}" onchange="toggleSaldaDebito('${nome}', ${saldo})">
         <label for="saldaDebito_${nome}">Salda intero debito €${formatSaldo(saldo)}</label>
