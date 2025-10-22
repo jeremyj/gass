@@ -129,7 +129,7 @@ function createParticipantCard(p) {
   } else {
     // Expanded view
     card.innerHTML = `
-      <div class="saldo-header-expanded" onclick="toggleParticipantCard(${p.id})" style="cursor: pointer;">
+      <div class="saldo-header-expanded" id="header-${p.id}" style="cursor: pointer;">
         <div>
           <div class="participant-name-expanded">👤 ${p.nome}</div>
           <div class="saldo-last-date">Ultimo movimento: ${formatDateItalian(p.ultima_modifica)}</div>
@@ -182,8 +182,18 @@ function createParticipantCard(p) {
       </button>
     `;
 
-    // Focus appropriate input after render
+    // Add click handler to header and focus appropriate input after render
     setTimeout(() => {
+      const header = document.getElementById(`header-${p.id}`);
+      if (header) {
+        header.addEventListener('click', (e) => {
+          // Don't close if clicking on input fields or buttons
+          if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
+            toggleParticipantCard(p.id);
+          }
+        });
+      }
+
       const creditoInput = document.getElementById(`credito-input-${p.id}`);
       const debitoInput = document.getElementById(`debito-input-${p.id}`);
 
