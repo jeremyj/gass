@@ -576,15 +576,28 @@ function renderParticipant(nome) {
 
   addHiddenFields(card, nome, haCredito, haDebito);
 
+  // Add click handler to header to close card
+  setTimeout(() => {
+    const header = document.getElementById(`header-${nome.replace(/\s/g, '_')}`);
+    if (header) {
+      header.addEventListener('click', (e) => {
+        // Don't close if clicking on input fields or buttons
+        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
+          removeParticipant(nome);
+        }
+      });
+    }
+  }, 100);
+
   // Load existing data if available (with timeout to ensure DOM is ready)
   setTimeout(() => {
-    loadExistingParticipantData(nome);
+    loadExistingParticipantData(nome, saldo);
     // Save original values after form is fully loaded
     setTimeout(() => saveOriginalParticipantValues(nome), 10);
   }, 0);
 }
 
-function loadExistingParticipantData(nome) {
+function loadExistingParticipantData(nome, saldo) {
   if (!existingConsegnaMovimenti) return;
 
   const movimento = existingConsegnaMovimenti.find(m => m.nome === nome);
@@ -597,8 +610,16 @@ function loadExistingParticipantData(nome) {
   }
 
   const usaCreditoField = document.getElementById(`usaCredito_${nome}`);
+  const usaInteroCreditoCheckbox = document.getElementById(`usaInteroCreditoCheckbox_${nome}`);
+
   if (usaCreditoField && movimento.usa_credito) {
     usaCreditoField.value = movimento.usa_credito;
+
+    // If usa_credito equals the full credit amount, check the "usa intero credito" checkbox
+    if (usaInteroCreditoCheckbox && saldo > 0 && Math.abs(movimento.usa_credito - saldo) < 0.01) {
+      usaInteroCreditoCheckbox.checked = true;
+      usaCreditoField.disabled = true;
+    }
   }
 
   const creditoField = document.getElementById(`credito_${nome}`);
@@ -623,16 +644,21 @@ function loadExistingParticipantData(nome) {
 
   // Check and set checkboxes if applicable
   if (movimento.salda_tutto === 1) {
-    const saldaCheckbox = document.getElementById(`saldaDebitoCheckbox_${nome}`);
+    const saldaCheckbox = document.getElementById(`saldaDebito_${nome}`);
     if (saldaCheckbox) {
       saldaCheckbox.checked = true;
+      // Also disable the partial debito field if checkbox is checked
+      const debitoSaldatoField = document.getElementById(`debitoSaldato_${nome}`);
+      if (debitoSaldatoField) {
+        debitoSaldatoField.disabled = true;
+      }
     }
   }
 }
 
 function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito, haDebito) {
   return `
-    <div class="flow-header">
+    <div class="flow-header" id="header-${nome.replace(/\s/g, '_')}" style="cursor: pointer;">
       <div class="participant-name">${nome}</div>
       <div class="saldo-info ${saldoClass}">${saldoText}</div>
     </div>
@@ -1161,10 +1187,22 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
       // Update Pagato Produttore with new total
       updatePagatoProduttore();
 
-      // Update saved original values for current participant
-      setTimeout(() => saveOriginalParticipantValues(currentNome), 100);
-
       await loadConsegneDates(); // Refresh calendar
+
+      // Close participant card after save
+      const container = document.getElementById('selected-participants');
+      container.innerHTML = '';
+
+      const select = document.getElementById('participant-select');
+      select.value = '';
+
+      const infoBadge = document.getElementById('participant-info-badge');
+      if (infoBadge) {
+        infoBadge.style.display = 'block';
+      }
+
+      // Clear saved values
+      delete originalParticipantValues[currentNome];
     } else {
       showStatus('Errore: ' + result.error, 'error');
     }
