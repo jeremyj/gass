@@ -18,6 +18,13 @@ let smartOverrides = {
   lasciato: false
 };
 
+// Store original values when focusing on smart inputs
+let originalValues = {
+  trovato: null,
+  pagato: null,
+  lasciato: null
+};
+
 // ===== ACCORDION FUNCTIONS =====
 
 function toggleAccordion(section) {
@@ -38,6 +45,9 @@ function toggleAccordion(section) {
 // ===== SMART OVERRIDE FUNCTIONS =====
 
 function enableSmartInput(input, type) {
+  // Save the original value when focusing
+  originalValues[type] = input.value;
+
   // When clicking on a smart input, make it editable
   input.classList.remove('auto');
   input.classList.add('manual');
@@ -61,10 +71,14 @@ function updateSmartInput(input, type) {
 }
 
 function checkSmartInputEmpty(input, type) {
-  // If user clears the field, revert to AUTO
-  if (!input.value || input.value.trim() === '') {
+  // If user clears the field OR value is unchanged, revert to AUTO
+  const isEmpty = !input.value || input.value.trim() === '';
+  const isUnchanged = input.value === originalValues[type];
+
+  if (isEmpty || isUnchanged) {
     input.classList.remove('manual');
     input.classList.add('auto');
+    input.setAttribute('readonly', 'readonly');
 
     const badge = document.getElementById(`badge-${type}`);
     badge.classList.remove('manual');
