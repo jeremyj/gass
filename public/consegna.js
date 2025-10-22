@@ -657,10 +657,9 @@ function loadExistingParticipantData(nome, saldo) {
     }
   }
 
-  // Trigger business rules to properly disable/enable fields based on loaded data
-  if (hasUsaCredito || movimento.credito_lasciato || movimento.debito_lasciato || movimento.debito_saldato) {
-    handleCreditoDebitoInput(nome, saldo);
-  }
+  // Note: We don't call handleCreditoDebitoInput here because if the saldo has changed
+  // since the data was saved, the business rules might incorrectly disable fields.
+  // The rules will be applied when user starts interacting with the form via oninput handlers.
 }
 
 function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito, haDebito) {
