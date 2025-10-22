@@ -34,7 +34,7 @@ console.log('\n📅 Day 1: 2025-10-20');
 const consegna1 = db.prepare(`
   INSERT INTO consegne (data, trovato_in_cassa, pagato_produttore, lasciato_in_cassa, note, discrepanza_cassa, discrepanza_trovata, discrepanza_pagato)
   VALUES (?, ?, ?, ?, ?, 0, 0, 0)
-`).run('2025-10-20', 0, 97, 97, 'Prima consegna di test');
+`).run('2025-10-20', 0, 87, 10, 'Prima consegna di test');
 
 const c1id = consegna1.lastInsertRowid;
 
@@ -44,23 +44,23 @@ db.prepare(`
   VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0, ?)
 `).run(c1id, pMap['Alessandra Solimene'], 25, 0, 5, 0, 'Primo movimento');
 
-// Fernanda: paga 30€, in pari
+// Fernanda: paga 25€, in pari
 db.prepare(`
   INSERT INTO movimenti (consegna_id, partecipante_id, importo_saldato, usa_credito, credito_lasciato, debito_lasciato, salda_tutto, salda_debito_totale, debito_saldato)
   VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0)
-`).run(c1id, pMap['Fernanda Fischione'], 30, 0, 0, 0);
+`).run(c1id, pMap['Fernanda Fischione'], 25, 0, 0, 0);
 
-// Jeremy: paga 20€, lascia credito 2€
+// Jeremy: paga 24€, lascia credito 2€
 db.prepare(`
   INSERT INTO movimenti (consegna_id, partecipante_id, importo_saldato, usa_credito, credito_lasciato, debito_lasciato, salda_tutto, salda_debito_totale, debito_saldato)
   VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0)
-`).run(c1id, pMap['Jeremy (Rossellino)'], 20, 0, 2, 0);
+`).run(c1id, pMap['Jeremy (Rossellino)'], 24, 0, 2, 0);
 
-// Rachele: paga 22€, lascia credito 3€
+// Rachele: paga 23€, lascia credito 3€
 db.prepare(`
   INSERT INTO movimenti (consegna_id, partecipante_id, importo_saldato, usa_credito, credito_lasciato, debito_lasciato, salda_tutto, salda_debito_totale, debito_saldato)
   VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0)
-`).run(c1id, pMap['Rachele Brivio'], 22, 0, 3, 0);
+`).run(c1id, pMap['Rachele Brivio'], 23, 0, 3, 0);
 
 // Update saldi after day 1
 db.prepare('UPDATE partecipanti SET saldo = ?, ultima_modifica = ? WHERE id = ?')
@@ -73,10 +73,10 @@ db.prepare('UPDATE partecipanti SET saldo = ?, ultima_modifica = ? WHERE id = ?'
   .run(3, '2025-10-20', pMap['Rachele Brivio']);
 
 console.log('  • Alessandra: paga 25€, lascia credito 5€ → saldo: +5€');
-console.log('  • Fernanda: paga 30€, in pari → saldo: 0€');
-console.log('  • Jeremy: paga 20€, lascia credito 2€ → saldo: +2€');
-console.log('  • Rachele: paga 22€, lascia credito 3€ → saldo: +3€');
-console.log('  • Trovato: 0€, Pagato produttore: 97€, Lasciato: 97€');
+console.log('  • Fernanda: paga 25€, in pari → saldo: 0€');
+console.log('  • Jeremy: paga 24€, lascia credito 2€ → saldo: +2€');
+console.log('  • Rachele: paga 23€, lascia credito 3€ → saldo: +3€');
+console.log('  • Trovato: 0€, Pagato produttore: 87€, Lasciato: 10€');
 
 // ==== GIORNO 2: 2025-10-21 ====
 console.log('\n📅 Day 2: 2025-10-21');
@@ -84,56 +84,55 @@ console.log('\n📅 Day 2: 2025-10-21');
 const consegna2 = db.prepare(`
   INSERT INTO consegne (data, trovato_in_cassa, pagato_produttore, lasciato_in_cassa, note, discrepanza_cassa, discrepanza_trovata, discrepanza_pagato)
   VALUES (?, ?, ?, ?, ?, 0, 0, 0)
-`).run('2025-10-21', 97, 78, 19, 'Seconda consegna di test');
+`).run('2025-10-21', 10, 92, 6, 'Seconda consegna di test');
 
 const c2id = consegna2.lastInsertRowid;
 
-// Alessandra: usa credito 3€, paga 20€, lascia credito 2€ (aveva 5, usa 3, +2 = 4... no)
-// Calcolo: saldo iniziale +5, usa 3, quindi -3, poi lascia +2, saldo finale: 5-3+2 = 4
+// Alessandra: usa credito 3€, paga 25€, in pari (saldo: 5 - 3 = 2)
 db.prepare(`
   INSERT INTO movimenti (consegna_id, partecipante_id, importo_saldato, usa_credito, credito_lasciato, debito_lasciato, salda_tutto, salda_debito_totale, debito_saldato, note)
   VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0, ?)
-`).run(c2id, pMap['Alessandra Solimene'], 20, 3, 2, 0, 'Usa parte del credito');
+`).run(c2id, pMap['Alessandra Solimene'], 25, 3, 0, 0, 'Usa parte del credito');
 
-// Fernanda: paga 25€, lascia debito 8€
+// Fernanda: paga 25€, lascia debito 8€ (saldo: 0 - 8 = -8)
 db.prepare(`
   INSERT INTO movimenti (consegna_id, partecipante_id, importo_saldato, usa_credito, credito_lasciato, debito_lasciato, salda_tutto, salda_debito_totale, debito_saldato)
   VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0)
 `).run(c2id, pMap['Fernanda Fischione'], 25, 0, 0, 8);
 
-// Jeremy: paga 18€, usa intero credito 2€, in pari
+// Jeremy: paga 22€, usa intero credito 2€, in pari (saldo: 2 - 2 = 0)
 db.prepare(`
   INSERT INTO movimenti (consegna_id, partecipante_id, importo_saldato, usa_credito, credito_lasciato, debito_lasciato, salda_tutto, salda_debito_totale, debito_saldato, note)
   VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0, ?)
-`).run(c2id, pMap['Jeremy (Rossellino)'], 18, 2, 0, 0, 'Usa tutto il credito');
+`).run(c2id, pMap['Jeremy (Rossellino)'], 22, 2, 0, 0, 'Usa tutto il credito');
 
-// Rachele: paga 15€, usa credito 1€, lascia credito 2€ (aveva 3, usa 1, +2 = 4)
+// Rachele: paga 22€, usa credito 1€, in pari (saldo: 3 - 1 = 2)
 db.prepare(`
   INSERT INTO movimenti (consegna_id, partecipante_id, importo_saldato, usa_credito, credito_lasciato, debito_lasciato, salda_tutto, salda_debito_totale, debito_saldato)
   VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0)
-`).run(c2id, pMap['Rachele Brivio'], 15, 1, 2, 0);
+`).run(c2id, pMap['Rachele Brivio'], 22, 1, 0, 0);
 
 // Update saldi after day 2
 db.prepare('UPDATE partecipanti SET saldo = ?, ultima_modifica = ? WHERE id = ?')
-  .run(4, '2025-10-21', pMap['Alessandra Solimene']);
+  .run(2, '2025-10-21', pMap['Alessandra Solimene']);
 db.prepare('UPDATE partecipanti SET saldo = ?, ultima_modifica = ? WHERE id = ?')
   .run(-8, '2025-10-21', pMap['Fernanda Fischione']);
 db.prepare('UPDATE partecipanti SET saldo = ?, ultima_modifica = ? WHERE id = ?')
   .run(0, '2025-10-21', pMap['Jeremy (Rossellino)']);
 db.prepare('UPDATE partecipanti SET saldo = ?, ultima_modifica = ? WHERE id = ?')
-  .run(4, '2025-10-21', pMap['Rachele Brivio']);
+  .run(2, '2025-10-21', pMap['Rachele Brivio']);
 
-console.log('  • Alessandra: usa credito 3€, paga 20€, lascia credito 2€ → saldo: +4€');
+console.log('  • Alessandra: paga 25€, usa credito 3€, in pari → saldo: +2€');
 console.log('  • Fernanda: paga 25€, lascia debito 8€ → saldo: -8€');
-console.log('  • Jeremy: paga 18€, usa intero credito 2€, in pari → saldo: 0€');
-console.log('  • Rachele: paga 15€, usa credito 1€, lascia credito 2€ → saldo: +4€');
-console.log('  • Trovato: 97€, Pagato produttore: 78€, Lasciato: 19€');
+console.log('  • Jeremy: paga 22€, usa intero credito 2€, in pari → saldo: 0€');
+console.log('  • Rachele: paga 22€, usa credito 1€, in pari → saldo: +2€');
+console.log('  • Trovato: 10€, Pagato produttore: 92€, Lasciato: 6€');
 
 console.log('\n✅ Test data created successfully!');
 console.log('\nFinal balances:');
-console.log('  • Alessandra: +4€');
+console.log('  • Alessandra: +2€');
 console.log('  • Fernanda: -8€');
 console.log('  • Jeremy: 0€');
-console.log('  • Rachele: +4€');
+console.log('  • Rachele: +2€');
 
 db.close();
