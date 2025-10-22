@@ -53,6 +53,7 @@ body {
 .header-title {
     font-size: 18px;
     font-weight: bold;
+    text-align: center;
 }
 
 .view-switch-btn {
@@ -1157,6 +1158,18 @@ body {
 .storico-saldo-badge.pari {
     background: #17a2b8;
     color: white;
+}
+
+.storico-saldo-text.credito {
+    color: #28a745;
+}
+
+.storico-saldo-text.debito {
+    color: #dc3545;
+}
+
+.storico-saldo-text.pari {
+    color: #17a2b8;
 }
 
 .storico-participant-details {

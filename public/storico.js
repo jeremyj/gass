@@ -172,13 +172,15 @@ function createParticipantMovimentoCard(m) {
   card.innerHTML = `
     <div class="storico-participant-header">
       <div class="storico-participant-name">👤 ${m.nome}</div>
-      <div class="${saldoBadgeClass}">${saldoText}</div>
     </div>
     <div class="storico-participant-details">
       ${m.importo_saldato ? `Pagato: ${m.importo_saldato.toFixed(2)} €` : ''}
-      ${m.usa_credito ? ` • Credito precedente: ${m.usa_credito.toFixed(2)} €` : ''}
-      ${m.debito_saldato ? ` • Debito saldato: ${m.debito_saldato.toFixed(2)} €` : ''}
+      ${m.usa_credito ? ` • Usa credito: ${m.usa_credito.toFixed(2)} €` : ''}
+      ${m.debito_saldato ? ` • Salda debito: ${m.debito_saldato.toFixed(2)} €` : ''}
       ${!m.importo_saldato && !m.usa_credito && !m.debito_saldato ? 'Pari' : ''}
+    </div>
+    <div class="storico-participant-details" style="margin-top: 8px; font-weight: bold;">
+      Saldo finale: <span class="${saldoBadgeClass.replace('storico-saldo-badge', 'storico-saldo-text')}">${saldoText}</span>
     </div>
   `;
 

@@ -155,7 +155,7 @@ function createMovimentiTable(movimenti) {
         <th>Usa Credito</th>
         <th>Debito Lasciato</th>
         <th>Credito Lasciato</th>
-        <th>Debito Saldato</th>
+        <th>Salda Debito</th>
         <th>Note</th>
       </tr>
     </thead>
