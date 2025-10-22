@@ -664,8 +664,10 @@ function loadExistingParticipantData(nome, saldo) {
 
 function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito, haDebito) {
   // Determine section numbers based on what sections are shown
-  const nuovoSaldoNum = haCredito ? 3 : 2;
-  const saldaDebitoNum = haCredito ? 4 : 3;
+  // With credit: 1. Pagamento, 2. Usa saldo, 3. Nuovo saldo
+  // With debt: 1. Pagamento, 2. Salda debito, 3. Nuovo saldo
+  const saldaDebitoNum = 2;
+  const nuovoSaldoNum = haCredito ? 3 : (haDebito ? 3 : 2);
 
   return `
     <div class="flow-header" id="header-${nome.replace(/\s/g, '_')}" style="cursor: pointer;">
@@ -683,6 +685,7 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
     </div>
 
     ${haCredito ? buildCreditoSection(nome, saldo, saldoText, saldoClass) : ''}
+    ${haDebito ? buildDebitoSection(nome, saldo, saldoText, saldoClass, saldaDebitoNum) : ''}
 
     <div class="flow-section">
       <div class="flow-section-title">${nuovoSaldoNum}. NUOVO SALDO</div>
@@ -701,8 +704,6 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
         </div>
       </div>
     </div>
-
-    ${haDebito ? buildDebitoSection(nome, saldo, saldoText, saldoClass, saldaDebitoNum) : ''}
 
     <div class="flow-section">
       <div class="form-group">
