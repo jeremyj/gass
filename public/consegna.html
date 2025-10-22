@@ -21,7 +21,6 @@
             <button class="change-date-btn" onclick="showCalendarModal()">📅 Cambia Data</button>
         </div>
         <div class="header-title">GASS Torpignattara</div>
-        <button class="view-switch-btn" onclick="switchViewMode('desktop')" title="Passa alla visualizzazione desktop">🖥️ Desktop</button>
     </div>
 
     <div class="container">
@@ -124,6 +123,9 @@
 
                 <!-- Form partecipante espandibile -->
                 <div id="selected-participants"></div>
+
+                <!-- Movimenti salvati del giorno -->
+                <div id="movimenti-giorno"></div>
             </div>
         </div>
     </div>
@@ -141,6 +143,10 @@
         <a href="/debiti" class="bottom-nav-item">
             <span class="bottom-nav-icon">💰</span>
             Saldi
+        </a>
+        <a href="#" class="bottom-nav-item" onclick="switchViewMode('desktop'); return false;">
+            <span class="bottom-nav-icon">🖥️</span>
+            Desktop
         </a>
     </div>
 

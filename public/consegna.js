@@ -400,6 +400,7 @@ function loadExistingConsegna(result) {
   existingConsegnaMovimenti = result.movimenti || [];
   saldiBefore = result.saldiBefore || {};
 
+  updateMovimentiCounter();
   renderMovimentiGiorno();
 }
 
@@ -456,6 +457,7 @@ function loadNewConsegna(result) {
   existingConsegnaMovimenti = null;
   saldiBefore = {};
 
+  updateMovimentiCounter();
   renderMovimentiGiorno();
   updatePagatoProduttore();
 }
@@ -906,6 +908,16 @@ function updateLasciatoInCassa() {
   document.getElementById('lasciatoInCassa').value = lasciatoInCassa;
 }
 
+// ===== MOVEMENTS COUNTER =====
+
+function updateMovimentiCounter() {
+  const count = existingConsegnaMovimenti ? existingConsegnaMovimenti.length : 0;
+  const movimentiTitle = document.getElementById('movimenti-title');
+  if (movimentiTitle) {
+    movimentiTitle.textContent = `📦 MOVIMENTI (${count} salvat${count === 1 ? 'o' : 'i'})`;
+  }
+}
+
 // ===== UNSAVED CHANGES DETECTION =====
 
 function saveOriginalParticipantValues(nome) {
@@ -1139,18 +1151,20 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
 
     if (result.success) {
       showStatus('✓ Movimento salvato', 'success');
-      // Clear saved values after successful save
-      delete originalParticipantValues[currentNome];
+
+      // Reload consegna data to get updated movements
+      await checkDateData();
+
+      // Update movements counter
+      updateMovimentiCounter();
+
+      // Update Pagato Produttore with new total
+      updatePagatoProduttore();
+
+      // Update saved original values for current participant
+      setTimeout(() => saveOriginalParticipantValues(currentNome), 100);
+
       await loadConsegneDates(); // Refresh calendar
-      setTimeout(() => {
-        document.getElementById('selected-participants').innerHTML = '';
-        document.getElementById('participant-select').value = '';
-        const infoBadge = document.getElementById('participant-info-badge');
-        if (infoBadge) {
-          infoBadge.style.display = 'block';
-        }
-        loadData();
-      }, 1000);
     } else {
       showStatus('Errore: ' + result.error, 'error');
     }
