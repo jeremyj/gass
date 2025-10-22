@@ -663,6 +663,10 @@ function loadExistingParticipantData(nome, saldo) {
 }
 
 function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito, haDebito) {
+  // Determine section numbers based on what sections are shown
+  const nuovoSaldoNum = haCredito ? 3 : 2;
+  const saldaDebitoNum = haCredito ? 4 : 3;
+
   return `
     <div class="flow-header" id="header-${nome.replace(/\s/g, '_')}" style="cursor: pointer;">
       <div class="participant-name">${nome}</div>
@@ -681,7 +685,7 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
     ${haCredito ? buildCreditoSection(nome, saldo, saldoText, saldoClass) : ''}
 
     <div class="flow-section">
-      <div class="flow-section-title">3. NUOVO SALDO</div>
+      <div class="flow-section-title">${nuovoSaldoNum}. NUOVO SALDO</div>
       <div class="row">
         <div class="form-group">
           <label>Lascia credito:</label>
@@ -698,7 +702,7 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
       </div>
     </div>
 
-    ${haDebito ? buildDebitoSection(nome, saldo, saldoText, saldoClass) : ''}
+    ${haDebito ? buildDebitoSection(nome, saldo, saldoText, saldoClass, saldaDebitoNum) : ''}
 
     <div class="flow-section">
       <div class="form-group">
@@ -737,11 +741,11 @@ function buildCreditoSection(nome, saldo, saldoText, saldoClass) {
   `;
 }
 
-function buildDebitoSection(nome, saldo, saldoText, saldoClass) {
+function buildDebitoSection(nome, saldo, saldoText, saldoClass, sectionNum) {
   return `
     <div class="flow-section flow-debito">
       <div class="flow-section-title">
-        <span>4. SALDA DEBITO PRECEDENTE</span>
+        <span>${sectionNum}. SALDA DEBITO PRECEDENTE</span>
         <span class="saldo-info ${saldoClass}" style="margin-left: 10px;">${saldoText}</span>
       </div>
       <div class="checkbox-group">
