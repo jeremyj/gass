@@ -730,7 +730,7 @@ function buildCreditoSection(nome, saldo, saldoText, saldoClass) {
       </div>
       <div class="checkbox-group">
         <input type="checkbox" id="usaInteroCreditoCheckbox_${nome}" onchange="toggleUsaInteroCredito('${nome}', ${saldo})">
-        <label for="usaInteroCreditoCheckbox_${nome}">Usa intero credito €${formatSaldo(saldo)}</label>
+        <label for="usaInteroCreditoCheckbox_${nome}">Usa intero credito</label>
       </div>
       <div class="form-group">
         <label>Usa credito parziale:</label>
@@ -751,7 +751,7 @@ function buildDebitoSection(nome, saldo, saldoText, saldoClass, sectionNum) {
       </div>
       <div class="checkbox-group">
         <input type="checkbox" id="saldaDebito_${nome}" onchange="toggleSaldaDebito('${nome}', ${saldo})">
-        <label for="saldaDebito_${nome}">Salda intero debito €${formatSaldo(saldo)}</label>
+        <label for="saldaDebito_${nome}">Salda intero debito</label>
       </div>
       <div class="form-group">
         <label>Salda parziale:</label>
