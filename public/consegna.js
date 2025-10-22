@@ -11,6 +11,9 @@ let currentCalendarYear = new Date().getFullYear();
 let currentCalendarMonth = new Date().getMonth();
 let consegneDates = new Set(); // Store dates with saved consegne
 
+// Track original values for unsaved changes detection
+let originalParticipantValues = {};
+
 // Smart Override State
 let smartOverrides = {
   trovato: false,
@@ -572,7 +575,11 @@ function renderParticipant(nome) {
   addHiddenFields(card, nome, haCredito, haDebito);
 
   // Load existing data if available (with timeout to ensure DOM is ready)
-  setTimeout(() => loadExistingParticipantData(nome), 0);
+  setTimeout(() => {
+    loadExistingParticipantData(nome);
+    // Save original values after form is fully loaded
+    setTimeout(() => saveOriginalParticipantValues(nome), 10);
+  }, 0);
 }
 
 function loadExistingParticipantData(nome) {
@@ -899,6 +906,44 @@ function updateLasciatoInCassa() {
   document.getElementById('lasciatoInCassa').value = lasciatoInCassa;
 }
 
+// ===== UNSAVED CHANGES DETECTION =====
+
+function saveOriginalParticipantValues(nome) {
+  // Save current form values as original values
+  originalParticipantValues[nome] = {
+    importo: document.getElementById(`importo_${nome}`)?.value || '',
+    usaCredito: document.getElementById(`usaCredito_${nome}`)?.value || '',
+    credito: document.getElementById(`credito_${nome}`)?.value || '',
+    debito: document.getElementById(`debito_${nome}`)?.value || '',
+    debitoSaldato: document.getElementById(`debitoSaldato_${nome}`)?.value || '',
+    note: document.getElementById(`note_${nome}`)?.value || ''
+  };
+}
+
+function hasUnsavedParticipantChanges(nome) {
+  // Check if current form values differ from original values
+  if (!originalParticipantValues[nome]) {
+    return false;
+  }
+
+  const original = originalParticipantValues[nome];
+  const current = {
+    importo: document.getElementById(`importo_${nome}`)?.value || '',
+    usaCredito: document.getElementById(`usaCredito_${nome}`)?.value || '',
+    credito: document.getElementById(`credito_${nome}`)?.value || '',
+    debito: document.getElementById(`debito_${nome}`)?.value || '',
+    debitoSaldato: document.getElementById(`debitoSaldato_${nome}`)?.value || '',
+    note: document.getElementById(`note_${nome}`)?.value || ''
+  };
+
+  return original.importo !== current.importo ||
+         original.usaCredito !== current.usaCredito ||
+         original.credito !== current.credito ||
+         original.debito !== current.debito ||
+         original.debitoSaldato !== current.debitoSaldato ||
+         original.note !== current.note;
+}
+
 // ===== PARTICIPANT FORM ACTIONS =====
 
 async function saveParticipant(nome) {
@@ -924,6 +969,13 @@ async function saveParticipant(nome) {
 }
 
 function removeParticipant(nome) {
+  // Check for unsaved changes
+  if (hasUnsavedParticipantChanges(nome)) {
+    if (!confirm('Ci sono modifiche non salvate. Vuoi chiudere senza salvare?')) {
+      return; // User cancelled, keep form open
+    }
+  }
+
   const container = document.getElementById('selected-participants');
   container.innerHTML = '';
 
@@ -934,6 +986,9 @@ function removeParticipant(nome) {
   if (infoBadge) {
     infoBadge.style.display = 'block';
   }
+
+  // Clear saved values
+  delete originalParticipantValues[nome];
 
   updateLasciatoInCassa();
 }
@@ -1084,6 +1139,8 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
 
     if (result.success) {
       showStatus('✓ Movimento salvato', 'success');
+      // Clear saved values after successful save
+      delete originalParticipantValues[currentNome];
       await loadConsegneDates(); // Refresh calendar
       setTimeout(() => {
         document.getElementById('selected-participants').innerHTML = '';
