@@ -269,10 +269,17 @@ async function loadConsegneDates() {
 
 // ===== DATA LOADING =====
 
-async function loadData() {
-
+async function loadData(date = null) {
   try {
-    const response = await fetch('/api/participants');
+    let url = '/api/participants';
+    if (date) {
+      const today = new Date().toISOString().split('T')[0];
+      if (date !== today) {
+        url += `?date=${date}`;
+      }
+    }
+
+    const response = await fetch(url);
     const result = await response.json();
 
     if (result.success) {
@@ -291,6 +298,10 @@ async function checkDateData() {
   if (!dateValue) return;
 
   try {
+    // Reload participants with saldi for the selected date
+    await loadData(dateValue);
+
+    // Load consegna data
     const response = await fetch(`/api/consegna/${dateValue}`);
     const result = await response.json();
 

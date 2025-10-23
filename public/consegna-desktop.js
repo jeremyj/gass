@@ -230,9 +230,17 @@ async function loadConsegneDates() {
 
 // ===== DATA LOADING =====
 
-async function loadData() {
+async function loadData(date = null) {
   try {
-    const response = await fetch('/api/participants');
+    let url = '/api/participants';
+    if (date) {
+      const today = new Date().toISOString().split('T')[0];
+      if (date !== today) {
+        url += `?date=${date}`;
+      }
+    }
+
+    const response = await fetch(url);
     const result = await response.json();
 
     if (result.success) {
@@ -250,7 +258,15 @@ async function checkDateData() {
   const dateValue = document.getElementById('data').value;
   if (!dateValue) return;
 
+  // Save currently selected participant
+  const select = document.getElementById('participant-select');
+  const selectedNome = select ? select.value : '';
+
   try {
+    // Reload participants with saldi for the selected date
+    await loadData(dateValue);
+
+    // Load consegna data
     const response = await fetch(`/api/consegna/${dateValue}`);
     const result = await response.json();
 
@@ -258,6 +274,12 @@ async function checkDateData() {
       loadExistingConsegna(result);
     } else {
       loadNewConsegna(result);
+    }
+
+    // Reselect participant if there was one selected
+    if (selectedNome && select) {
+      select.value = selectedNome;
+      showParticipantForm();
     }
   } catch (error) {
     console.error('Error checking date data:', error);
