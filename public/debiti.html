@@ -16,11 +16,19 @@
 
     <!-- Mobile Header -->
     <div class="page-header">
+        <div class="header-top">
+            <div class="header-date" id="header-date">Oggi</div>
+            <button class="change-date-btn" onclick="showCalendarModal()">📅 Cambia Data</button>
+        </div>
         <div class="header-title">💰 Saldi Partecipanti</div>
     </div>
 
     <div class="container">
         <div id="status" class="status"></div>
+
+        <!-- Hidden Calendar Container (shown in modal) -->
+        <div id="calendar-container" class="calendar hidden"></div>
+        <input type="hidden" id="data" required>
 
         <div id="saldi-list"></div>
 

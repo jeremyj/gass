@@ -17,7 +17,19 @@
     </nav>
 
     <div class="container">
-        <h1>Gestione Debiti/Crediti</h1>
+        <div class="desktop-header">
+            <div class="desktop-header-top">
+                <h1>Gestione Debiti/Crediti</h1>
+                <div class="desktop-date-selector">
+                    <span id="header-date">Oggi</span>
+                    <button class="change-date-btn" onclick="showCalendarModal()">📅 Cambia Data</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden Calendar Container (shown in modal) -->
+        <div id="calendar-container" class="calendar hidden"></div>
+        <input type="hidden" id="data" required>
 
         <div id="status" class="status"></div>
 
