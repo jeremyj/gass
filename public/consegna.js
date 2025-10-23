@@ -123,8 +123,7 @@ function checkShowSalvaCassaButton() {
 
 function showCalendarModal() {
   const calendar = document.getElementById('calendar-container');
-  calendar.classList.remove('hidden');
-  // TODO: Implement proper modal overlay
+  calendar.classList.toggle('hidden');
 }
 
 // ===== HEADER DATE UPDATE =====
@@ -163,8 +162,6 @@ function selectDate(dateStr) {
   updateHeaderDate();
   renderCalendar();
   checkDateData();
-  // Hide calendar after selection
-  document.getElementById('calendar-container').classList.add('hidden');
 }
 
 // ===== CALENDAR =====
@@ -657,9 +654,9 @@ function loadExistingParticipantData(nome, saldo) {
     }
   }
 
-  // Note: We don't call handleCreditoDebitoInput here because if the saldo has changed
-  // since the data was saved, the business rules might incorrectly disable fields.
-  // The rules will be applied when user starts interacting with the form via oninput handlers.
+  // Apply business rules to correctly set disabled states based on loaded data
+  // This ensures that when user unchecks a checkbox, the fields don't remain incorrectly disabled
+  handleCreditoDebitoInput(nome, saldo);
 }
 
 function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito, haDebito) {

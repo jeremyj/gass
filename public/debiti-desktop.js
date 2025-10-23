@@ -10,8 +10,10 @@ let currentCalendarMonth = new Date().getMonth();
 
 function showCalendarModal() {
   const calendar = document.getElementById('calendar-container');
-  calendar.classList.remove('hidden');
-  renderCalendar();
+  calendar.classList.toggle('hidden');
+  if (!calendar.classList.contains('hidden')) {
+    renderCalendar();
+  }
 }
 
 function selectDate(dateStr) {
@@ -19,8 +21,6 @@ function selectDate(dateStr) {
   updateHeaderDate();
   renderCalendar();
   loadParticipants();
-  // Hide calendar after selection
-  document.getElementById('calendar-container').classList.add('hidden');
 }
 
 function updateHeaderDate() {

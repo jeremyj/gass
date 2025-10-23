@@ -41,23 +41,8 @@ function toggleDatePicker() {
   if (isPickerOpen) {
     renderDatePicker();
     container.style.display = 'block';
-
-    // Close on click outside
-    setTimeout(() => {
-      document.addEventListener('click', closeDatePickerOnClickOutside);
-    }, 0);
   } else {
     container.style.display = 'none';
-    document.removeEventListener('click', closeDatePickerOnClickOutside);
-  }
-}
-
-function closeDatePickerOnClickOutside(e) {
-  const container = document.getElementById('date-picker-container');
-  const display = document.getElementById('data-display');
-
-  if (!container.contains(e.target) && e.target !== display) {
-    toggleDatePicker();
   }
 }
 
@@ -124,7 +109,7 @@ function selectPickerDate(dateStr) {
   document.getElementById('data').value = dateStr;
   const [year, month, day] = dateStr.split('-');
   document.getElementById('data-display').value = `${day}-${month}-${year}`;
-  toggleDatePicker();
+  renderDatePicker();
   checkDateData();
 }
 
