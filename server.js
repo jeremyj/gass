@@ -95,10 +95,8 @@ function calculateTrovatoInCassa(consegna, previousLasciato) {
 // Calculate lasciato_in_cassa dynamically: trovato - pagato
 // Returns calculated value UNLESS manual override flag is set
 function calculateLasciatoInCassa(consegna, trovato) {
-  if (consegna.discrepanza_cassa === 1) {
-    return consegna.lasciato_in_cassa; // Manual override
-  }
-  return roundToCents(trovato - consegna.pagato_produttore);
+  // Always use the value from database - it's calculated correctly when saving
+  return consegna.lasciato_in_cassa;
 }
 
 // Apply dynamic calculations to single consegna
@@ -329,6 +327,35 @@ app.post('/api/consegna', (req, res) => {
 
         updateSaldo.run(p.nuovoSaldo, data, partecipante.id);
       });
+
+      // Recalculate totals from movements if not manually overridden
+      if (!discrepanzaPagato) {
+        const movimenti = db.prepare('SELECT * FROM movimenti WHERE consegna_id = ?').all(consegna.id);
+        let totalPagato = 0;
+        movimenti.forEach(m => {
+          // conto_produttore = importo_saldato + usa_credito + debito_lasciato - credito_lasciato - debito_saldato
+          totalPagato += (m.importo_saldato || 0);
+          totalPagato += (m.usa_credito || 0);
+          totalPagato += (m.debito_lasciato || 0);
+          totalPagato -= (m.credito_lasciato || 0);
+          totalPagato -= (m.debito_saldato || 0);
+        });
+
+        db.prepare('UPDATE consegne SET pagato_produttore = ? WHERE id = ?').run(totalPagato, consegna.id);
+      }
+
+      if (!discrepanzaCassa) {
+        const movimenti = db.prepare('SELECT * FROM movimenti WHERE consegna_id = ?').all(consegna.id);
+        const currentConsegna = db.prepare('SELECT * FROM consegne WHERE id = ?').get(consegna.id);
+
+        let incassato = 0;
+        movimenti.forEach(m => {
+          incassato += (m.importo_saldato || 0);
+        });
+
+        const lasciato = currentConsegna.trovato_in_cassa + incassato - currentConsegna.pagato_produttore;
+        db.prepare('UPDATE consegne SET lasciato_in_cassa = ? WHERE id = ?').run(lasciato, consegna.id);
+      }
     });
 
     transaction();
@@ -465,6 +492,7 @@ app.delete('/api/participants/:id', (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Network: http://192.168.178.21:${PORT}`);
 });

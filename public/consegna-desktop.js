@@ -423,9 +423,15 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
     <div class="flow-section">
       <div class="flow-section-title">1. PAGAMENTO OGGI</div>
       <div class="form-group">
+        <label>Conto Produttore:</label>
+        <input type="text" inputmode="decimal" id="contoProduttore_${nome}" placeholder="0.00"
+               oninput="normalizeInputField(this); handleContoProduttoreInput('${nome}', ${saldo})"
+               onfocus="handleInputFocus(this)">
+      </div>
+      <div class="form-group">
         <label>Importo saldato:</label>
         <input type="text" inputmode="decimal" id="importo_${nome}" placeholder="0.00"
-               oninput="normalizeInputField(this); updateLasciatoInCassa()"
+               oninput="normalizeInputField(this); handleContoProduttoreInput('${nome}', ${saldo}); updateLasciatoInCassa()"
                onfocus="handleInputFocus(this)">
       </div>
     </div>
@@ -438,13 +444,13 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
         <div class="form-group">
           <label>Lascia credito:</label>
           <input type="text" inputmode="decimal" id="credito_${nome}" placeholder="0.00"
-                 oninput="normalizeInputField(this); handleCreditoDebitoInput('${nome}', ${saldo})"
+                 oninput="normalizeInputField(this); delete this.dataset.autoCalculated; handleCreditoDebitoInput('${nome}', ${saldo})"
                  onfocus="handleInputFocus(this)">
         </div>
         <div class="form-group">
           <label>Lascia debito:</label>
           <input type="text" inputmode="decimal" id="debito_${nome}" placeholder="0.00"
-                 oninput="normalizeInputField(this); handleCreditoDebitoInput('${nome}', ${saldo})"
+                 oninput="normalizeInputField(this); delete this.dataset.autoCalculated; handleCreditoDebitoInput('${nome}', ${saldo})"
                  onfocus="handleInputFocus(this)">
         </div>
       </div>
@@ -472,7 +478,7 @@ function buildCreditoSection(nome, saldo) {
       <div class="form-group">
         <label>Usa credito parziale:</label>
         <input type="text" inputmode="decimal" id="usaCredito_${nome}" placeholder="0.00"
-               oninput="normalizeInputField(this); validateCreditoMax('${nome}', ${saldo}); handleCreditoDebitoInput('${nome}', ${saldo})"
+               oninput="normalizeInputField(this); validateCreditoMax('${nome}', ${saldo}); handleContoProduttoreInput('${nome}', ${saldo}); handleCreditoDebitoInput('${nome}', ${saldo})"
                onfocus="handleInputFocus(this)">
       </div>
     </div>
@@ -490,7 +496,7 @@ function buildDebitoSection(nome, saldo) {
       <div class="form-group">
         <label>Salda parziale:</label>
         <input type="text" inputmode="decimal" id="debitoSaldato_${nome}" placeholder="0.00"
-               oninput="normalizeInputField(this); handleCreditoDebitoInput('${nome}', ${saldo})"
+               oninput="normalizeInputField(this); handleContoProduttoreInput('${nome}', ${saldo}); handleCreditoDebitoInput('${nome}', ${saldo})"
                onfocus="handleInputFocus(this)">
       </div>
     </div>
@@ -653,6 +659,80 @@ function handleCreditoDebitoInput(nome, saldo) {
   }
 }
 
+function handleContoProduttoreInput(nome, saldo) {
+  const contoProduttore = document.getElementById(`contoProduttore_${nome}`);
+  const importoSaldato = document.getElementById(`importo_${nome}`);
+  const usaCredito = document.getElementById(`usaCredito_${nome}`);
+  const debitoSaldato = document.getElementById(`debitoSaldato_${nome}`);
+  const creditoLasciato = document.getElementById(`credito_${nome}`);
+  const debitoLasciato = document.getElementById(`debito_${nome}`);
+
+  if (!contoProduttore || !importoSaldato) return;
+
+  const contoProduttoreValue = parseAmount(contoProduttore.value);
+  const importoSaldatoValue = parseAmount(importoSaldato.value);
+  const usaCreditoValue = usaCredito ? parseAmount(usaCredito.value) : 0;
+  const debitoSaldatoValue = debitoSaldato ? parseAmount(debitoSaldato.value) : 0;
+
+  // Only auto-calculate if we have a conto_produttore value
+  if (contoProduttoreValue === 0) {
+    return;
+  }
+
+  // Formula: conto_produttore = importo_saldato + usa_credito + debito_lasciato - credito_lasciato - debito_saldato
+  // Rearranged: diff = importo_saldato + usa_credito - debito_saldato - conto_produttore
+  // If diff > 0: credito_lasciato = diff
+  // If diff < 0: debito_lasciato = -diff
+  // If diff = 0: in pari
+
+  const diff = importoSaldatoValue + usaCreditoValue - debitoSaldatoValue - contoProduttoreValue;
+
+  // Check if credito/debito fields have been manually modified by user (not auto-calculated)
+  const creditoIsManual = creditoLasciato && creditoLasciato.dataset.autoCalculated !== 'true' && creditoLasciato.value && !creditoLasciato.disabled;
+  const debitoIsManual = debitoLasciato && debitoLasciato.dataset.autoCalculated !== 'true' && debitoLasciato.value && !debitoLasciato.disabled;
+
+  // Don't auto-fill if user has manually entered values
+  if (creditoIsManual || debitoIsManual) {
+    return;
+  }
+
+  // Auto-fill based on calculation
+  if (diff > 0) {
+    // Leaving credit
+    if (creditoLasciato && !creditoLasciato.disabled) {
+      creditoLasciato.value = roundUpCents(diff);
+      creditoLasciato.dataset.autoCalculated = 'true';
+    }
+    if (debitoLasciato && !debitoLasciato.disabled) {
+      debitoLasciato.value = '';
+      delete debitoLasciato.dataset.autoCalculated;
+    }
+  } else if (diff < 0) {
+    // Leaving debt
+    if (debitoLasciato && !debitoLasciato.disabled) {
+      debitoLasciato.value = roundUpCents(-diff);
+      debitoLasciato.dataset.autoCalculated = 'true';
+    }
+    if (creditoLasciato && !creditoLasciato.disabled) {
+      creditoLasciato.value = '';
+      delete creditoLasciato.dataset.autoCalculated;
+    }
+  } else {
+    // In pari
+    if (creditoLasciato && !creditoLasciato.disabled) {
+      creditoLasciato.value = '';
+      delete creditoLasciato.dataset.autoCalculated;
+    }
+    if (debitoLasciato && !debitoLasciato.disabled) {
+      debitoLasciato.value = '';
+      delete debitoLasciato.dataset.autoCalculated;
+    }
+  }
+
+  // Trigger credito/debito validation
+  handleCreditoDebitoInput(nome, saldo);
+}
+
 // ===== CALCULATIONS =====
 
 function updatePagatoProduttore() {
@@ -662,12 +742,12 @@ function updatePagatoProduttore() {
 
   if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
     existingConsegnaMovimenti.forEach(m => {
-      // Conto produttore = importo_saldato + usa_credito + debito_lasciato - credito_lasciato
-      // debito_saldato serves only to update participant balance, not producer payment
+      // Conto produttore = importo_saldato + usa_credito + debito_lasciato - credito_lasciato - debito_saldato
       totalPagato += (m.importo_saldato || 0);
       totalPagato += (m.usa_credito || 0);
       totalPagato += (m.debito_lasciato || 0);
       totalPagato -= (m.credito_lasciato || 0);
+      totalPagato -= (m.debito_saldato || 0);
     });
   }
 
@@ -682,6 +762,7 @@ function updateLasciatoInCassa() {
   const pagatoProduttore = parseAmount(document.getElementById('pagatoProduttore').value);
 
   // Calculate total cash collected (incassato)
+  // Incassato = sum of all importo_saldato (physical cash given by participants)
   let incassato = 0;
   if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
     existingConsegnaMovimenti.forEach(m => {
@@ -740,13 +821,8 @@ async function saveCassaOnly() {
 
   showStatus('Salvataggio dati cassa in corso...', 'success');
 
-  let lasciatoInCassa;
-  if (discrepanzaCassaEnabled) {
-    lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
-  } else {
-    lasciatoInCassa = roundUpCents(trovatoInCassa - pagatoProduttore);
-    document.getElementById('lasciatoInCassa').value = lasciatoInCassa;
-  }
+  // Always read from DOM - updateLasciatoInCassa() has already calculated the correct value
+  let lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
 
   try {
     const response = await fetch('/api/consegna', {
@@ -813,13 +889,8 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
     nuovoSaldo: roundUpCents(saldoCorrente)
   }];
 
-  let lasciatoInCassa;
-  if (discrepanzaCassaEnabled) {
-    lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
-  } else {
-    lasciatoInCassa = roundUpCents(trovatoInCassa - pagatoProduttore);
-    document.getElementById('lasciatoInCassa').value = lasciatoInCassa;
-  }
+  // Always read from DOM - updateLasciatoInCassa() has already calculated the correct value
+  let lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
 
   try {
     const response = await fetch('/api/consegna', {

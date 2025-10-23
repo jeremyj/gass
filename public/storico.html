@@ -17,7 +17,6 @@
     <!-- Mobile Header -->
     <div class="page-header">
         <div class="header-title">📋 Storico Consegne</div>
-        <button class="view-switch-btn" onclick="switchViewMode('desktop')" title="Passa alla visualizzazione desktop">🖥️ Desktop</button>
     </div>
 
     <div class="container">
@@ -43,6 +42,10 @@
         <a href="/debiti" class="bottom-nav-item">
             <span class="bottom-nav-icon">💰</span>
             Saldi
+        </a>
+        <a href="#" class="bottom-nav-item" onclick="switchViewMode('desktop'); return false;">
+            <span class="bottom-nav-icon">🖥️</span>
+            Desktop
         </a>
     </div>
 

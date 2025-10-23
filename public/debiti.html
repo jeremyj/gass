@@ -17,17 +17,18 @@
     <!-- Mobile Header -->
     <div class="page-header">
         <div class="header-title">💰 Saldi Partecipanti</div>
-        <button class="view-switch-btn" onclick="switchViewMode('desktop')" title="Passa alla visualizzazione desktop">🖥️ Desktop</button>
     </div>
 
     <div class="container">
         <div id="status" class="status"></div>
 
-        <div class="info-badge">
-            💡 Clicca su un partecipante per modificare il saldo
+        <div id="saldi-list"></div>
+
+        <div class="info-badge" style="margin-top: 15px;">
+            💡 Click su un partecipante per modificare il saldo
         </div>
 
-        <div id="saldi-list"></div>
+        <div id="saldi-summary"></div>
     </div>
 
     <!-- Bottom Navigation -->
@@ -43,6 +44,10 @@
         <a href="/debiti" class="bottom-nav-item active">
             <span class="bottom-nav-icon">💰</span>
             Saldi
+        </a>
+        <a href="#" class="bottom-nav-item" onclick="switchViewMode('desktop'); return false;">
+            <span class="bottom-nav-icon">🖥️</span>
+            Desktop
         </a>
     </div>
 

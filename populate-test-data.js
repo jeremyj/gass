@@ -49,13 +49,14 @@ console.log('\n📅 Day 1: 2025-10-20');
 // Jeremy: paga 25€, in pari → conto produttore = 25€
 // Rachele: paga 22€, lascia credito 2€ → conto produttore = 22-2 = 20€
 // Pagato produttore = 25 + 31 + 25 + 20 = 101€
-// Incassato = 30 + 28 + 25 + 22 = 105€
-// Lasciato = Trovato(0) + Incassato(105) - Pagato(101) = 4€
+// Incassato = importo_saldato + debito_saldato + credito_lasciato
+// Incassato = (30+28+25+22) + 0 + (5+0+0+2) = 105 + 0 + 7 = 112€
+// Lasciato = Trovato(0) + Incassato(112) - Pagato(101) = 11€
 
 const consegna1 = db.prepare(`
   INSERT INTO consegne (data, trovato_in_cassa, pagato_produttore, lasciato_in_cassa, note, discrepanza_cassa, discrepanza_trovata, discrepanza_pagato)
   VALUES (?, ?, ?, ?, ?, 0, 0, 0)
-`).run('2025-10-20', 0, 101, 4, 'Prima consegna di test');
+`).run('2025-10-20', 0, 101, 11, 'Prima consegna di test');
 
 const c1id = consegna1.lastInsertRowid;
 
@@ -97,7 +98,7 @@ console.log('  • Alessandra: paga 30€, lascia credito 5€ (conto produttore
 console.log('  • Fernanda: paga 28€, lascia debito 3€ (conto produttore: 31€) → saldo: -3€');
 console.log('  • Jeremy: paga 25€, in pari (conto produttore: 25€) → saldo: 0€');
 console.log('  • Rachele: paga 22€, lascia credito 2€ (conto produttore: 20€) → saldo: +2€');
-console.log('  • Trovato: 0€, Pagato produttore: 101€, Lasciato: 4€');
+console.log('  • Trovato: 0€, Pagato produttore: 101€, Incassato: 112€, Lasciato: 11€');
 
 // ==== GIORNO 2: 2025-10-21 ====
 console.log('\n📅 Day 2: 2025-10-21');
@@ -108,13 +109,14 @@ console.log('\n📅 Day 2: 2025-10-21');
 // Jeremy (saldo 0): paga 24€, lascia debito 1€ → conto produttore = 24+1 = 25€, saldo = 0-1 = -1€
 // Rachele (saldo +2): paga 22€, usa credito 2€, lascia credito 1€ → conto produttore = 22+2-1 = 23€, saldo = 2-2+1 = +1€
 // Pagato produttore = 23 + 28 + 25 + 23 = 99€
-// Incassato = 20 + 28 + 24 + 22 = 94€
-// Lasciato = Trovato(4) + Incassato(94) - Pagato(99) = -1€ (negativo = deficit)
+// Incassato = importo_saldato + debito_saldato + credito_lasciato
+// Incassato = (20+28+24+22) + 3 + (0+0+0+1) = 94 + 3 + 1 = 98€
+// Lasciato = Trovato(11) + Incassato(98) - Pagato(99) = 10€
 
 const consegna2 = db.prepare(`
   INSERT INTO consegne (data, trovato_in_cassa, pagato_produttore, lasciato_in_cassa, note, discrepanza_cassa, discrepanza_trovata, discrepanza_pagato)
   VALUES (?, ?, ?, ?, ?, 0, 0, 0)
-`).run('2025-10-21', 4, 99, -1, 'Seconda consegna di test');
+`).run('2025-10-21', 11, 99, 10, 'Seconda consegna di test');
 
 const c2id = consegna2.lastInsertRowid;
 
@@ -156,7 +158,7 @@ console.log('  • Alessandra: paga 20€, usa credito 3€ (conto produttore: 2
 console.log('  • Fernanda: paga 28€, salda debito 3€ (conto produttore: 28€) → saldo: 0€');
 console.log('  • Jeremy: paga 24€, lascia debito 1€ (conto produttore: 25€) → saldo: -1€');
 console.log('  • Rachele: paga 22€, usa credito 2€, lascia credito 1€ (conto produttore: 23€) → saldo: +1€');
-console.log('  • Trovato: 4€, Pagato produttore: 99€, Lasciato: -1€');
+console.log('  • Trovato: 11€, Pagato produttore: 99€, Incassato: 98€, Lasciato: 10€');
 
 console.log('\n✅ Test data created successfully!');
 console.log('\nFinal balances:');
