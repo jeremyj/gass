@@ -30,28 +30,28 @@
                 <div id="date-picker-container" class="date-picker-popup" style="display: none;"></div>
             </div>
             <div class="form-group">
-                <label>Trovato in cassa:</label>
-                <input type="text" inputmode="decimal" id="trovatoInCassa" placeholder="0.00" oninput="normalizeInputField(this); updateLasciatoInCassa()" onfocus="handleInputFocus(this)" readonly style="cursor: not-allowed; background: #f0f0f0;">
-            </div>
-            <div class="checkbox-group">
-                <input type="checkbox" id="discrepanzaCassaTrovata" onchange="toggleDiscrepanzaCassaTrovata()">
-                <label for="discrepanzaCassaTrovata">Discrepanza cassa trovata (abilita modifica manuale)</label>
-            </div>
-            <div class="form-group">
-                <label>Pagato Produttore:</label>
-                <input type="text" inputmode="decimal" id="pagatoProduttore" placeholder="0.00" oninput="normalizeInputField(this); updateLasciatoInCassa()" onfocus="handleInputFocus(this)" readonly style="cursor: not-allowed; background: #f0f0f0;">
-            </div>
-            <div class="checkbox-group">
-                <input type="checkbox" id="discrepanzaPagatoProduttore" onchange="toggleDiscrepanzaPagatoProduttore()">
-                <label for="discrepanzaPagatoProduttore">Discrepanza pagato produttore (abilita modifica manuale)</label>
+                <div class="input-label">
+                    <label>Trovato in cassa:</label>
+                    <span class="mode-badge auto" id="badge-trovato">AUTO</span>
+                </div>
+                <input type="text" inputmode="decimal" id="trovatoInCassa" class="smart-input auto" placeholder="0.00" oninput="normalizeInputField(this); updateLasciatoInCassa(); updateSmartInput(this, 'trovato')" onfocus="enableSmartInput(this, 'trovato')" onblur="checkSmartInputEmpty(this, 'trovato')" readonly>
             </div>
             <div class="form-group">
-                <label>Lasciato in cassa:</label>
-                <input type="text" inputmode="decimal" id="lasciatoInCassa" placeholder="0.00" oninput="normalizeInputField(this)" onfocus="handleInputFocus(this)" readonly style="cursor: not-allowed; background: #f0f0f0;">
+                <div class="input-label">
+                    <label>Pagato Produttore:</label>
+                    <span class="mode-badge auto" id="badge-pagato">AUTO</span>
+                </div>
+                <input type="text" inputmode="decimal" id="pagatoProduttore" class="smart-input auto" placeholder="0.00" oninput="normalizeInputField(this); updateLasciatoInCassa(); updateSmartInput(this, 'pagato')" onfocus="enableSmartInput(this, 'pagato')" onblur="checkSmartInputEmpty(this, 'pagato')" readonly>
             </div>
-            <div class="checkbox-group">
-                <input type="checkbox" id="discrepanzaCassa" onchange="toggleDiscrepanzaCassa()">
-                <label for="discrepanzaCassa">Discrepanza cassa lasciata (abilita modifica manuale)</label>
+            <div class="form-group">
+                <div class="input-label">
+                    <label>Lasciato in cassa:</label>
+                    <span class="mode-badge auto" id="badge-lasciato">AUTO</span>
+                </div>
+                <input type="text" inputmode="decimal" id="lasciatoInCassa" class="smart-input auto" placeholder="0.00" oninput="normalizeInputField(this); updateSmartInput(this, 'lasciato')" onfocus="enableSmartInput(this, 'lasciato')" onblur="checkSmartInputEmpty(this, 'lasciato')" readonly>
+            </div>
+            <div class="info-badge" style="margin-top: 15px;">
+                💡 Click sui campi per modificare manualmente
             </div>
             <div class="form-group">
                 <label>Note:</label>

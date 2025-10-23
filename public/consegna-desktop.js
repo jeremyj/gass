@@ -7,6 +7,19 @@ let discrepanzaCassaEnabled = false;
 let discrepanzaTrovataEnabled = false;
 let discrepanzaPagatoProduttoreEnabled = false;
 
+// Smart Override State
+let smartOverrides = {
+  trovato: false,
+  pagato: false,
+  lasciato: false
+};
+
+// Store original values when focusing on smart inputs
+let originalValues = {
+  trovato: null,
+  pagato: null,
+  lasciato: null
+};
 
 // ===== DATE HANDLING =====
 
@@ -401,8 +414,8 @@ function renderParticipant(nome) {
   const haDebito = saldo < 0;
 
   const saldoText = saldo < 0
-    ? `DEBITO: €${formatSaldo(saldo)}`
-    : saldo > 0 ? `CREDITO: €${formatSaldo(saldo)}` : 'IN PARI';
+    ? `€${formatSaldo(saldo)}`
+    : saldo > 0 ? `€${formatSaldo(saldo)}` : 'IN PARI';
   const saldoClass = saldo < 0 ? 'saldo-debito' : saldo > 0 ? 'saldo-credito' : '';
 
   const card = document.createElement('div');
@@ -421,7 +434,7 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
     </div>
 
     <div class="flow-section">
-      <div class="flow-section-title">1. PAGAMENTO OGGI</div>
+      <div class="flow-section-title">PAGAMENTO</div>
       <div class="form-group">
         <label>Conto Produttore:</label>
         <input type="text" inputmode="decimal" id="contoProduttore_${nome}" placeholder="0.00"
@@ -436,10 +449,10 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
       </div>
     </div>
 
-    ${haCredito ? buildCreditoSection(nome, saldo) : ''}
+    ${haCredito ? buildCreditoSection(nome, saldo, saldoText, saldoClass) : ''}
 
     <div class="flow-section">
-      <div class="flow-section-title">3. NUOVO SALDO</div>
+      <div class="flow-section-title">NUOVO SALDO</div>
       <div class="row">
         <div class="form-group">
           <label>Lascia credito:</label>
@@ -456,7 +469,7 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
       </div>
     </div>
 
-    ${haDebito ? buildDebitoSection(nome, saldo) : ''}
+    ${haDebito ? buildDebitoSection(nome, saldo, saldoText, saldoClass) : ''}
 
     <div class="flow-section">
       <div class="form-group">
@@ -467,16 +480,14 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
   `;
 }
 
-function buildCreditoSection(nome, saldo) {
+function buildCreditoSection(nome, saldo, saldoText, saldoClass) {
   return `
     <div class="flow-section flow-credito">
-      <div class="flow-section-title">2. USA SALDO PRECEDENTE</div>
-      <div class="checkbox-group">
-        <input type="checkbox" id="usaInteroCreditoCheckbox_${nome}" onchange="toggleUsaInteroCredito('${nome}', ${saldo})">
-        <label for="usaInteroCreditoCheckbox_${nome}">Usa intero credito €${formatSaldo(saldo)}</label>
+      <div class="flow-section-title">
+        <span>CREDITO <span class="saldo-info ${saldoClass}">${saldoText}</span></span>
       </div>
       <div class="form-group">
-        <label>Usa credito parziale:</label>
+        <label>Usa credito:</label>
         <input type="text" inputmode="decimal" id="usaCredito_${nome}" placeholder="0.00"
                oninput="normalizeInputField(this); validateCreditoMax('${nome}', ${saldo}); handleContoProduttoreInput('${nome}', ${saldo}); handleCreditoDebitoInput('${nome}', ${saldo})"
                onfocus="handleInputFocus(this)">
@@ -485,16 +496,14 @@ function buildCreditoSection(nome, saldo) {
   `;
 }
 
-function buildDebitoSection(nome, saldo) {
+function buildDebitoSection(nome, saldo, saldoText, saldoClass) {
   return `
     <div class="flow-section flow-debito">
-      <div class="flow-section-title">4. SALDA DEBITO PRECEDENTE</div>
-      <div class="checkbox-group">
-        <input type="checkbox" id="saldaDebito_${nome}" onchange="toggleSaldaDebito('${nome}', ${saldo})">
-        <label for="saldaDebito_${nome}">Salda intero debito €${formatSaldo(saldo)}</label>
+      <div class="flow-section-title">
+        <span>DEBITO <span class="saldo-info ${saldoClass}">${saldoText}</span></span>
       </div>
       <div class="form-group">
-        <label>Salda parziale:</label>
+        <label>Salda debito:</label>
         <input type="text" inputmode="decimal" id="debitoSaldato_${nome}" placeholder="0.00"
                oninput="normalizeInputField(this); handleContoProduttoreInput('${nome}', ${saldo}); handleCreditoDebitoInput('${nome}', ${saldo})"
                onfocus="handleInputFocus(this)">
@@ -506,10 +515,8 @@ function buildDebitoSection(nome, saldo) {
 function addHiddenFields(card, nome, haCredito, haDebito) {
   if (!haCredito) {
     card.appendChild(createHiddenInput(`usaCredito_${nome}`, '0'));
-    card.appendChild(createHiddenInput(`usaInteroCreditoCheckbox_${nome}`, 'false'));
   }
   if (!haDebito) {
-    card.appendChild(createHiddenInput(`saldaDebito_${nome}`, 'false'));
     card.appendChild(createHiddenInput(`debitoSaldato_${nome}`, '0'));
   }
 }
@@ -522,60 +529,66 @@ function createHiddenInput(id, value) {
   return input;
 }
 
-// ===== OVERRIDE TOGGLES =====
+// ===== SMART OVERRIDE FUNCTIONS =====
 
-function toggleDiscrepanzaCassa() {
-  toggleOverrideCheckbox('discrepanzaCassa', 'lasciatoInCassa',
-    enabled => discrepanzaCassaEnabled = enabled, updateLasciatoInCassa);
+function enableSmartInput(input, type) {
+  // Save the original value when focusing
+  originalValues[type] = input.value;
+
+  // When clicking on a smart input, make it editable
+  input.classList.remove('auto');
+  input.classList.add('manual');
+  input.removeAttribute('readonly');
+
+  const badge = document.getElementById(`badge-${type}`);
+  badge.classList.remove('auto');
+  badge.classList.add('manual');
+  badge.textContent = 'MANUALE';
+
+  smartOverrides[type] = true;
 }
 
-function toggleDiscrepanzaCassaTrovata() {
-  toggleOverrideCheckbox('discrepanzaCassaTrovata', 'trovatoInCassa',
-    enabled => discrepanzaTrovataEnabled = enabled);
-}
-
-function toggleDiscrepanzaPagatoProduttore() {
-  toggleOverrideCheckbox('discrepanzaPagatoProduttore', 'pagatoProduttore',
-    enabled => discrepanzaPagatoProduttoreEnabled = enabled, updatePagatoProduttore);
-}
-
-function toggleOverrideCheckbox(checkboxId, fieldId, setEnabled, recalculateFn) {
-  const checkbox = document.getElementById(checkboxId);
-  const field = document.getElementById(fieldId);
-
-  if (checkbox.checked) {
-    setEnabled(true);
-    field.readOnly = false;
-    field.style.cursor = 'text';
-    field.style.background = '#fff';
-    field.focus();
-  } else {
-    setEnabled(false);
-    field.readOnly = true;
-    field.style.cursor = 'not-allowed';
-    field.style.background = '#f0f0f0';
-    if (recalculateFn) recalculateFn();
+function updateSmartInput(input, type) {
+  // Keep the manual state while typing
+  if (input.value) {
+    smartOverrides[type] = true;
   }
+}
+
+function checkSmartInputEmpty(input, type) {
+  // If user clears the field OR value is unchanged, revert to AUTO
+  const isEmpty = !input.value || input.value.trim() === '';
+  const isUnchanged = input.value === originalValues[type];
+
+  if (isEmpty || isUnchanged) {
+    input.classList.remove('manual');
+    input.classList.add('auto');
+    input.setAttribute('readonly', 'readonly');
+
+    const badge = document.getElementById(`badge-${type}`);
+    badge.classList.remove('manual');
+    badge.classList.add('auto');
+    badge.textContent = 'AUTO';
+
+    smartOverrides[type] = false;
+
+    // Recalculate auto value
+    if (type === 'trovato') {
+      // Will be set from previous lasciato
+    } else if (type === 'pagato') {
+      updatePagatoProduttore();
+    } else if (type === 'lasciato') {
+      updateLasciatoInCassa();
+    }
+  }
+}
+
+function calculatePagatoProduttore() {
+  // Wrapper for compatibility
+  updatePagatoProduttore();
 }
 
 // ===== PARTICIPANT INTERACTION =====
-
-function toggleUsaInteroCredito(nome, saldo) {
-  const checkbox = document.getElementById(`usaInteroCreditoCheckbox_${nome}`);
-  const usaCreditoField = document.getElementById(`usaCredito_${nome}`);
-
-  if (checkbox && usaCreditoField) {
-    if (checkbox.checked) {
-      usaCreditoField.disabled = true;
-      usaCreditoField.value = saldo;
-    } else {
-      usaCreditoField.disabled = false;
-      usaCreditoField.value = '';
-    }
-  }
-
-  handleCreditoDebitoInput(nome, saldo);
-}
 
 function validateCreditoMax(nome, saldo) {
   const usaCreditoField = document.getElementById(`usaCredito_${nome}`);
@@ -588,47 +601,23 @@ function validateCreditoMax(nome, saldo) {
   }
 }
 
-function toggleSaldaDebito(nome, saldo) {
-  const checkbox = document.getElementById(`saldaDebito_${nome}`);
-  const debitoField = document.getElementById(`debitoSaldato_${nome}`);
-
-  if (checkbox && debitoField) {
-    if (checkbox.checked) {
-      debitoField.disabled = true;
-      debitoField.value = Math.abs(saldo);
-    } else {
-      debitoField.disabled = false;
-      debitoField.value = '';
-    }
-  }
-
-  if (!saldo) {
-    const p = participants.find(part => part.nome === nome);
-    saldo = saldiBefore[nome] !== undefined ? saldiBefore[nome] : (p ? p.saldo || 0 : 0);
-  }
-
-  handleCreditoDebitoInput(nome, saldo);
-}
-
 function handleCreditoDebitoInput(nome, saldo) {
   const creditoLasciato = document.getElementById(`credito_${nome}`);
   const debitoLasciato = document.getElementById(`debito_${nome}`);
   const debitoSaldato = document.getElementById(`debitoSaldato_${nome}`);
-  const saldaDebitoCheckbox = document.getElementById(`saldaDebito_${nome}`);
   const usaCredito = document.getElementById(`usaCredito_${nome}`);
 
   const creditoValue = creditoLasciato ? parseAmount(creditoLasciato.value) : 0;
   const debitoValue = debitoLasciato ? parseAmount(debitoLasciato.value) : 0;
   const usaCreditoValue = usaCredito ? parseAmount(usaCredito.value) : 0;
   const debitoSaldatoValue = debitoSaldato ? parseAmount(debitoSaldato.value) : 0;
-  const saldaDebitoChecked = saldaDebitoCheckbox && saldaDebitoCheckbox.checked;
 
   const creditoDisponibile = saldo > 0 ? saldo : 0;
   const usaCreditoParziale = usaCreditoValue > 0 && usaCreditoValue < creditoDisponibile;
-  const saldaDebito = saldaDebitoChecked || debitoSaldatoValue > 0;
+  const saldaDebito = debitoSaldatoValue > 0;
 
   // Reset: enable all fields
-  [creditoLasciato, debitoLasciato, debitoSaldato, saldaDebitoCheckbox].forEach(el => {
+  [creditoLasciato, debitoLasciato, debitoSaldato].forEach(el => {
     if (el) el.disabled = false;
   });
 

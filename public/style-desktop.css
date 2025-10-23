@@ -520,3 +520,76 @@ td input {
     border-radius: 3px;
     border: 1px solid #ddd;
 }
+
+/* Smart Input Styles */
+.input-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.smart-input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: all 0.3s;
+    cursor: text;
+}
+
+/* State: AUTO (readonly appearance but clickable) */
+.smart-input.auto {
+    background: #f0f0f0;
+    color: #7f8c8d;
+    border-color: #ddd;
+}
+
+.smart-input.auto::placeholder {
+    color: #95a5a6;
+}
+
+/* State: MANUAL (editing) */
+.smart-input.manual {
+    background: #fff5f5;
+    color: #2c3e50;
+    border: 2px solid #e74c3c;
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+}
+
+.smart-input:focus {
+    outline: none;
+}
+
+/* Badge */
+.mode-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    transition: all 0.3s;
+}
+
+.mode-badge.auto {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.mode-badge.manual {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Info Badge */
+.info-badge {
+    background: #d1ecf1;
+    border-left: 4px solid #17a2b8;
+    padding: 12px;
+    border-radius: 4px;
+    margin: 12px 0;
+    font-size: 13px;
+    color: #0c5460;
+    line-height: 1.5;
+}

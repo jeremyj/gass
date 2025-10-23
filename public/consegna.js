@@ -565,8 +565,8 @@ function renderParticipant(nome) {
   const haDebito = saldo < 0;
 
   const saldoText = saldo < 0
-    ? `DEBITO: €${formatSaldo(saldo)}`
-    : saldo > 0 ? `CREDITO: €${formatSaldo(saldo)}` : 'IN PARI';
+    ? `€${formatSaldo(saldo)}`
+    : saldo > 0 ? `€${formatSaldo(saldo)}` : 'IN PARI';
   const saldoClass = saldo < 0 ? 'saldo-debito' : saldo > 0 ? 'saldo-credito' : '';
 
   const card = document.createElement('div');
@@ -725,8 +725,7 @@ function buildCreditoSection(nome, saldo, saldoText, saldoClass) {
   return `
     <div class="flow-section flow-credito">
       <div class="flow-section-title">
-        <span>CREDITO</span>
-        <span class="saldo-info ${saldoClass}" style="margin-left: 10px;">${saldoText}</span>
+        <span>CREDITO <span class="saldo-info ${saldoClass}">${saldoText}</span></span>
       </div>
       <div class="checkbox-group">
         <input type="checkbox" id="usaInteroCreditoCheckbox_${nome}" onchange="toggleUsaInteroCredito('${nome}', ${saldo})">
@@ -746,8 +745,7 @@ function buildDebitoSection(nome, saldo, saldoText, saldoClass) {
   return `
     <div class="flow-section flow-debito">
       <div class="flow-section-title">
-        <span>DEBITO</span>
-        <span class="saldo-info ${saldoClass}" style="margin-left: 10px;">${saldoText}</span>
+        <span>DEBITO <span class="saldo-info ${saldoClass}">${saldoText}</span></span>
       </div>
       <div class="checkbox-group">
         <input type="checkbox" id="saldaDebito_${nome}" onchange="toggleSaldaDebito('${nome}', ${saldo})">
