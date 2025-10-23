@@ -451,6 +451,8 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
 
     ${haCredito ? buildCreditoSection(nome, saldo, saldoText, saldoClass) : ''}
 
+    ${haDebito ? buildDebitoSection(nome, saldo, saldoText, saldoClass) : ''}
+
     <div class="flow-section">
       <div class="flow-section-title">NUOVO SALDO</div>
       <div class="row">
@@ -468,8 +470,6 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
         </div>
       </div>
     </div>
-
-    ${haDebito ? buildDebitoSection(nome, saldo, saldoText, saldoClass) : ''}
 
     <div class="flow-section">
       <div class="form-group">
