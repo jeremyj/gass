@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAS Mobile - Proposta Finale</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f0f0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .mockups {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 25px;
+        }
+
+        .phone-mockup {
+            border: 8px solid #2c3e50;
+            border-radius: 30px;
+            background: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .screen-title {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .phone-screen {
+            background: #f8f9fa;
+            min-height: 750px;
+            max-height: 750px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .phone-header {
+            background: #3498db;
+            color: white;
+            padding: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .phone-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .phone-header-date {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .change-date-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .change-date-btn:active {
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(0.95);
+        }
+
+        .phone-header-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .phone-content {
+            padding: 15px;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: sticky;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 2px solid #ddd;
+            display: flex;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .bottom-nav-item {
+            flex: 1;
+            padding: 12px 8px;
+            text-align: center;
+            font-size: 11px;
+            color: #7f8c8d;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .bottom-nav-item.active {
+            color: #3498db;
+            background: #ebf5fb;
+        }
+
+        .bottom-nav-icon {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        /* Accordion */
+        .accordion-item {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .accordion-header {
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+        }
+
+        .accordion-header.cassa {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .accordion-header.partecipanti {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .accordion-arrow {
+            font-size: 20px;
+            transition: transform 0.3s;
+        }
+
+        .accordion-content {
+            padding: 18px;
+            background: white;
+        }
+
+        /* Smart Override Input */
+        .input-group {
+            margin-bottom: 18px;
+        }
+
+        .input-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+
+        .smart-input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+            cursor: text;
+            position: relative;
+        }
+
+        /* State: AUTO (readonly appearance but clickable) */
+        .smart-input.auto {
+            background: #f0f0f0;
+            color: #7f8c8d;
+            border-color: #ddd;
+        }
+
+        .smart-input.auto::placeholder {
+            color: #95a5a6;
+        }
+
+        /* State: MANUAL (editing) */
+        .smart-input.manual {
+            background: #fff5f5;
+            color: #2c3e50;
+            border: 2px solid #e74c3c;
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+        }
+
+        /* Focus state */
+        .smart-input:focus {
+            outline: none;
+        }
+
+        /* Badge */
+        .mode-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            transition: all 0.3s;
+        }
+
+        .mode-badge.auto {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .mode-badge.manual {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Participant Collapsed Card */
+        .participant-collapsed {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .participant-collapsed:hover {
+            border-color: #3498db;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+        }
+
+        .participant-collapsed.has-data {
+            border-left: 5px solid #2ecc71;
+            background: #f0fff4;
+        }
+
+        .participant-collapsed.new-entry {
+            border-left: 5px solid #ffc107;
+            background: #fffef0;
+        }
+
+        .participant-info {
+            flex: 1;
+        }
+
+        .participant-name-collapsed {
+            font-weight: bold;
+            font-size: 16px;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+
+        .participant-status {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .participant-saldo-collapsed {
+            font-size: 16px;
+            font-weight: bold;
+            padding: 8px 14px;
+            border-radius: 20px;
+            margin-left: 10px;
+        }
+
+        .saldo-credito {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .saldo-debito {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .saldo-pari {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        /* Participant Expanded Card */
+        .participant-expanded {
+            background: white;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 3px solid #3498db;
+        }
+
+        .participant-expanded.has-data {
+            border-color: #2ecc71;
+        }
+
+        .participant-expanded.new-entry {
+            border-color: #ffc107;
+        }
+
+        .participant-header-expanded {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #ecf0f1;
+        }
+
+        .participant-name-expanded {
+            font-weight: bold;
+            font-size: 18px;
+            color: #2c3e50;
+        }
+
+        .participant-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .participant-section-title {
+            font-weight: 600;
+            font-size: 13px;
+            color: #495057;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .input-field:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        /* Buttons */
+        .big-btn {
+            width: 100%;
+            padding: 16px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transition: all 0.2s;
+        }
+
+        .big-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        .big-btn-success {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+        }
+
+        .big-btn-secondary {
+            background: white;
+            color: #6c757d;
+            border: 2px solid #ddd;
+        }
+
+        .add-participant-btn {
+            width: 100%;
+            padding: 16px;
+            border: 3px dashed #3498db;
+            background: white;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #3498db;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .add-participant-btn:hover {
+            background: #ebf5fb;
+        }
+
+        /* Info badge */
+        .info-badge {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 12px 0;
+            font-size: 13px;
+            color: #0c5460;
+            line-height: 1.5;
+        }
+
+        /* Debiti/Crediti - Saldi Collapsed/Expanded */
+        .saldo-card-collapsed {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .saldo-card-collapsed:hover {
+            border-color: #3498db;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+        }
+
+        .saldo-card-collapsed.has-credito {
+            border-left: 5px solid #2ecc71;
+            background: #f0fff4;
+        }
+
+        .saldo-card-collapsed.has-debito {
+            border-left: 5px solid #e74c3c;
+            background: #fff5f5;
+        }
+
+        .saldo-card-collapsed.is-pari {
+            border-left: 5px solid #3498db;
+            background: #ebf5fb;
+        }
+
+        .saldo-info-left {
+            flex: 1;
+        }
+
+        .saldo-name {
+            font-weight: bold;
+            font-size: 16px;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+
+        .saldo-last-date {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .saldo-amount-badge {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin-left: 10px;
+        }
+
+        .saldo-card-expanded {
+            background: white;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 3px solid #3498db;
+        }
+
+        .saldo-card-expanded.has-credito {
+            border-color: #2ecc71;
+        }
+
+        .saldo-card-expanded.has-debito {
+            border-color: #e74c3c;
+        }
+
+        .saldo-header-expanded {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #ecf0f1;
+        }
+
+        .saldo-edit-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .saldo-edit-title {
+            font-weight: 600;
+            font-size: 13px;
+            color: #495057;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Storico */
+        .consegna-card {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .consegna-card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .consegna-date {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .consegna-expand-icon {
+            font-size: 20px;
+            transition: transform 0.3s;
+        }
+
+        .consegna-card-content {
+            padding: 15px;
+        }
+
+        .consegna-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .consegna-info-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .consegna-info-label {
+            font-size: 11px;
+            color: #6c757d;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .consegna-info-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .consegna-info-value.has-override {
+            color: #e74c3c;
+        }
+
+        .override-indicator {
+            display: inline-block;
+            background: #e74c3c;
+            color: white;
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
+            font-weight: 700;
+        }
+
+        .movimenti-list {
+            margin-top: 15px;
+        }
+
+        .movimenti-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .movimento-item {
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+        }
+
+        .movimento-item.credito {
+            border-left-color: #2ecc71;
+            background: #f0fff4;
+        }
+
+        .movimento-item.debito {
+            border-left-color: #e74c3c;
+            background: #fff5f5;
+        }
+
+        .movimento-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .movimento-name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+
+        .movimento-amount {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .movimento-details {
+            font-size: 12px;
+            color: #6c757d;
+            line-height: 1.5;
+        }
+
+        .debiti-name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        .debiti-date {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 3px;
+        }
+
+        .debiti-saldo {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 6px;
+        }
+
+        .status-saved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-new {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .collapse-btn {
+            background: #ecf0f1;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #7f8c8d;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .collapse-btn:hover {
+            background: #d5d8dc;
+        }
+
+        .explanation {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .explanation h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .explanation ul {
+            margin-left: 20px;
+            line-height: 1.8;
+            color: #555;
+        }
+
+        .explanation strong {
+            color: #e74c3c;
+        }
+
+        /* Confirmation Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 340px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-icon {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .modal-message {
+            font-size: 15px;
+            color: #6c757d;
+            text-align: center;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .modal-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .modal-btn {
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-btn-cancel {
+            background: #ecf0f1;
+            color: #6c757d;
+        }
+
+        .modal-btn-confirm {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .modal-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 GASS Torpignattara - Proposta Mobile</h1>
+
+        <div class="explanation">
+            <h2>🎯 Innovazioni Chiave</h2>
+            <ul>
+                <li><strong>Cambio Data:</strong> Pulsante "📅 Cambia Data" nell'header per caricare consegne precedenti</li>
+                <li><strong>Accordion Collapsed:</strong> Pagina Consegna mostra sezioni Cassa e Movimenti chiuse per default</li>
+                <li><strong>Smart Override:</strong> Click sul campo grigio → diventa rosso e editabile. Cancelli il testo → torna grigio con valore auto.</li>
+                <li><strong>Badge dinamici:</strong> AUTO (blu) ↔ MANUALE (rosso) si aggiornano automaticamente</li>
+                <li><strong>Movimenti collapsed:</strong> Lista compatta dei partecipanti, click per espandere</li>
+                <li><strong>Visual status:</strong> Bordo verde = dati salvati, bordo giallo = nuova entry</li>
+                <li><strong>Gestione Saldi:</strong> Solo modifica saldo (rimozione partecipanti riservata agli amministratori)</li>
+                <li><strong>Bottom Nav:</strong> Navigazione tra Consegna / Storico / Saldi</li>
+            </ul>
+        </div>
+
+        <div class="mockups">
+            <!-- SCREEN 1: Cassa con Smart Override -->
+            <div>
+                <div class="screen-title">Screen 1: Smart Override (Stato AUTO)</div>
+                <div class="phone-mockup">
+                    <div class="phone-screen">
+                        <div class="phone-header">
+                            <div class="phone-header-top">
+                                <div class="phone-header-date">2 Ottobre 2025</div>
+                                <button class="change-date-btn">📅 Cambia Data</button>
+                            </div>
+                            <div class="phone-header-title">GASS Torpignattara</div>
+                        </div>
+
+                        <div class="phone-content" style="padding-bottom: 80px;">
+                            <div class="accordion-item">
+                                <div class="accordion-header cassa">
+                                    <span>💰 CASSA</span>
+                                    <span class="accordion-arrow">▼</span>
+                                </div>
+                                <div class="accordion-content">
+                                    <!-- TROVATO IN CASSA - AUTO -->
+                                    <div class="input-group">
+                                        <div class="input-label">
+                                            <span>Trovato in Cassa</span>
+                                            <span class="mode-badge auto">AUTO</span>
+                                        </div>
+                                        <input type="text" class="smart-input auto" value="45.50 €" placeholder="Calcolato automaticamente">
+                                    </div>
+
+                                    <!-- PAGATO PRODUTTORE - AUTO -->
+                                    <div class="input-group">
+                                        <div class="input-label">
+                                            <span>Pagato Produttore</span>
+                                            <span class="mode-badge auto">AUTO</span>
+                                        </div>
+                                        <input type="text" class="smart-input auto" value="32.00 €" placeholder="Σ tutti i movimenti">
+                                    </div>
+
+                                    <!-- LASCIATO IN CASSA - AUTO -->
+                                    <div class="input-group">
+                                        <div class="input-label">
+                                            <span>Lasciato in Cassa</span>
+                                            <span class="mode-badge auto">AUTO</span>
+                                        </div>
+                                        <input type="text" class="smart-input auto" value="13.50 €" placeholder="Trovato - Pagato">
+                                    </div>
+
+                                    <div class="info-badge">
+                                        💡 Click sui campi per modificare manualmente
+                                    </div>
+
+                                    <!-- NOTE -->
+                                    <div class="input-group">
+                                        <div class="input-label">
+                                            <span>Note Giornata</span>
+                                        </div>
+                                        <input type="text" class="input-field" placeholder="Note opzionali...">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bottom-nav">
+                            <div class="bottom-nav-item active">
+                                <span class="bottom-nav-icon">📦</span>
+                                Consegna
+                            </div>
+                            <div class="bottom-nav-item">
+                                <span class="bottom-nav-icon">📋</span>
+                                Storico
+                            </div>
+                            <div class="bottom-nav-item">
+                                <span class="bottom-nav-icon">💰</span>
+                                Saldi
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SCREEN 2: Smart Override MANUAL -->
+            <div>
+                <div class="screen-title">Screen 2: Smart Override (Stato MANUAL)</div>
+                <div class="phone-mockup">
+                    <div class="phone-screen">
+                        <div class="phone-header">
+                            <div class="phone-header-top">
+                                <div class="phone-header-date">2 Ottobre 2025</div>
+                                <button class="change-date-btn">📅 Cambia Data</button>
+                            </div>
+                            <div class="phone-header-title">GASS Torpignattara</div>
+                        </div>
+
+                        <div class="phone-content" style="padding-bottom: 80px;">
+                            <div class="accordion-item">
+                                <div class="accordion-header cassa">
+                                    <span>💰 CASSA</span>
+                                    <span class="accordion-arrow">▼</span>
+                                </div>
+                                <div class="accordion-content">
+                                    <!-- TROVATO IN CASSA - MANUAL -->
+                                    <div class="input-group">
+                                        <div class="input-label">
+                                            <span>Trovato in Cassa</span>
+                                            <span class="mode-badge manual">MANUALE</span>
+                                        </div>
+                                        <input type="text" class="smart-input manual" value="47.00" inputmode="decimal">
+                                    </div>
+
+                                    <div class="info-badge" style="background: #fff3cd; border-color: #ffc107; color: #856404;">
+                                        ⚠️ Valore modificato manualmente. Cancella per ripristinare il calcolo automatico.
+                                    </div>
+
+                                    <!-- PAGATO PRODUTTORE - AUTO -->
+                                    <div class="input-group">
+                                        <div class="input-label">
+                                            <span>Pagato Produttore</span>
+                                            <span class="mode-badge auto">AUTO</span>
+                                        </div>
+                                        <input type="text" class="smart-input auto" value="32.00 €" placeholder="Σ tutti i movimenti">
+                                    </div>
+
+                                    <!-- LASCIATO IN CASSA - AUTO (aggiornato con nuovo Trovato) -->
+                                    <div class="input-group">
+                                        <div class="input-label">
+                                            <span>Lasciato in Cassa</span>
+                                            <span class="mode-badge auto">AUTO</span>
+                                        </div>
+                                        <input type="text" class="smart-input auto" value="15.00 €" placeholder="Trovato - Pagato">
+                                    </div>
+
+                                    <div class="info-badge">
+                                        💡 Click sui campi per modificare manualmente
+                                    </div>
+
+                                    <!-- NOTE -->
+                                    <div class="input-group">
+                                        <div class="input-label">
+                                            <span>Note Giornata</span>
+                                        </div>
+                                        <input type="text" class="input-field" placeholder="Note opzionali...">
+                                    </div>
+
+                                    <!-- PULSANTE SALVA CASSA - Solo visibile quando c'è override -->
+                                    <button class="big-btn big-btn-success" style="margin-top: 15px;">
+                                        💾 Salva Cassa
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bottom-nav">
+                            <div class="bottom-nav-item active">
+                                <span class="bottom-nav-icon">📦</span>
+                                Consegna
+                            </div>
+                            <div class="bottom-nav-item">
+                                <span class="bottom-nav-icon">📋</span>
+                                Storico
+                            </div>
+                            <div class="bottom-nav-item">
+                                <span class="bottom-nav-icon">💰</span>
+                                Saldi
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SCREEN 3: Movimenti Collapsed -->
+            <div>
+                <div class="screen-title">Screen 3: Consegna con Accordion Collapsed</div>
+                <div class="phone-mockup">
+                    <div class="phone-screen">
+                        <div class="phone-header">
+                            <div class="phone-header-top">
+                                <div class="phone-header-date">2 Ottobre 2025</div>
+                                <button class="change-date-btn">📅 Cambia Data</button>
+                            </div>
+                            <div class="phone-header-title">GASS Torpignattara</div>
+                        </div>
+
+                        <div class="phone-content" style="padding-bottom: 80px;">
+                            <!-- Cassa Section - Collapsed -->
+                            <div class="accordion-item">
+                                <div class="accordion-header cassa">
+                                    <span>💰 CASSA</span>
+                                    <span class="accordion-arrow">▶</span>
+                                </div>
+                            </div>
+
+                            <!-- Movimenti Section - Collapsed -->
+                            <div class="accordion-item">
+                                <div class="accordion-header partecipanti">
+                                    <span>📦 MOVIMENTI (2 salvati)</span>
+                                    <span class="accordion-arrow">▶</span>
+                                </div>
+                            </div>
+
+                            <div class="info-badge">
+                                💡 Click sulle sezioni per espanderle
+                            </div>
+                        </div>
+
+                        <div class="bottom-nav">
+                            <div class="bottom-nav-item active">
+                                <span class="bottom-nav-icon">📦</span>
+                                Consegna
+                            </div>
+                            <div class="bottom-nav-item">
+                                <span class="bottom-nav-icon">📋</span>
+                                Storico
+                            </div>
+                            <div class="bottom-nav-item">
+                                <span class="bottom-nav-icon">💰</span>
+                                Saldi
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SCREEN 4: Movimenti Expanded -->
+            <div>
+                <div class="screen-title">Screen 4: Movimenti (Expanded)</div>
+                <div class="phone-mockup">
+                    <div class="phone-screen">
+                        <div class="phone-header">
+                            <div class="phone-header-top">
+                                <div class="phone-header-date">2 Ottobre 2025</div>
+                                <button class="change-date-btn">📅 Cambia Data</button>
+                            </div>
+                            <div class="phone-header-title">GASS Torpignattara</div>
+                        </div>
+
+                        <div class="phone-content" style="padding-bottom: 80px;">
+                            <div class="accordion-item">
+                                <div class="accordion-header partecipanti">
+                                    <span>📦 MOVIMENTI (2 salvati)</span>
+                                    <span class="accordion-arrow">▼</span>
+                                </div>
+                                <div class="accordion-content">
+                                    <!-- Participant 1 - HAS DATA (saved) -->
+                                    <div class="participant-collapsed has-data">
+                                        <div class="participant-info">
+                                            <div class="participant-name-collapsed">👤 Alessandra</div>
+                                            <div class="participant-status">
+                                                <span class="status-indicator status-saved">✓ Salvato</span>
+                                            </div>
+                                        </div>
+                                        <div class="participant-saldo-collapsed saldo-credito">
+                                            +3.00 €
+                                        </div>
+                                    </div>
+
+                                    <!-- Participant 2 - HAS DATA (saved) -->
+                                    <div class="participant-collapsed has-data">
+                                        <div class="participant-info">
+                                            <div class="participant-name-collapsed">👤 Jeremy</div>
+                                            <div class="participant-status">
+                                                <span class="status-indicator status-saved">✓ Salvato</span>
+                                            </div>
+                                        </div>
+                                        <div class="participant-saldo-collapsed saldo-debito">
+                                            -5.50 €
+                                        </div>
+                                    </div>
+
+                                    <!-- Participant 3 - NEW ENTRY -->
+                                    <div class="participant-collapsed new-entry">
+                                        <div class="participant-info">
+                                            <div class="participant-name-collapsed">👤 Rachele</div>
+                                            <div class="participant-status">
+                                                <span class="status-indicator status-new">✏️ Nuova</span>
+                                            </div>
+                                        </div>
+                                        <div class="participant-saldo-collapsed saldo-debito">
+                                            -26.00 €
+                                        </div>
+                                    </div>
+
+                                    <div class="info-badge">
+                                        💡 Click su un partecipante per vedere/modificare i dati
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bottom-nav">
+                            <div class="bottom-nav-item active">
+                                <span class="bottom-nav-icon">📦</span>
+                                Consegna
+                            </div>
+                            <div class="bottom-nav-item">
+                                <span class="bottom-nav-icon">📋</span>
+                                Storico
+                            </div>
+                            <div class="bottom-nav-item">
+                                <span class="bottom-nav-icon">💰</span>
+                                Saldi
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SCREEN 5: Partecipante Expanded (HAS DATA) -->
+            <div>
+                <div class="screen-title">Screen 5: Modifica Dati Esistenti</div>
+                <div class="phone-mockup">
+                    <div class="phone-screen">
+                        <div class="phone-header">
+                            <div class="phone-header-top">
+                                <div class="phone-header-date">2 Ottobre 2025</div>
+                                <button class="change-date-btn">📅 Cambia Data</button>
+                            </div>
+                            <div class="phone-header-title">GASS Torpignattara</div>
+                        </div>
+
+                        <div class="phone-content" style="padding-bottom: 80px;">
+                            <div class="accordion-item">
+                                <div class="accordion-header partecipanti">
+                                    <span>📦 MOVIMENTI</span>
+                                    <span class="accordion-arrow">▼</span>
+                                </div>
+                                <div class="accordion-content">
+                                    <!-- EXPANDED - HAS DATA -->
+                                    <div class="participant-expanded has-data">
+                                        <div class="participant-header-expanded">
+                                            <div>
+                                                <div class="participant-name-expanded">👤 Alessandra</div>
+                                                <span class="status-indicator status-saved">✓ Dati Salvati - Modifica</span>
+                                            </div>
+                                            <div class="participant-saldo-collapsed saldo-credito">
+                                                +3.00 €
+                                            </div>
+                                        </div>
+
+                                        <!-- Section 1: Pagamento -->
+                                        <div class="participant-section">
+                                            <div class="participant-section-title">📦 Pagamento Oggi</div>
+                                            <input type="text" class="input-field" value="15.00" inputmode="decimal">
+                                        </div>
+
+                                        <!-- Section 2: Usa Credito -->
+                                        <div class="participant-section" style="background: #d4edda;">
+                                            <div class="participant-section-title">💰 Usa Credito</div>
+                                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                                <input type="checkbox" checked style="width: 20px; height: 20px;">
+                                                <label style="font-size: 14px; font-weight: 600;">Usa tutto</label>
+                                            </div>
+                                            <input type="text" class="input-field" value="3.00" disabled style="opacity: 0.6;">
+                                        </div>
+
+                                        <!-- Section 3: Nuovo Saldo -->
+                                        <div class="participant-section">
+                                            <div class="participant-section-title">➕ Nuovo Saldo</div>
+                                            <div class="input-row">
+                                                <input type="text" class="input-field" placeholder="Credito" value="2.00" inputmode="decimal">
+                                                <input type="text" class="input-field" placeholder="Debito" disabled style="opacity: 0.5;">
+                                            </div>
+                                        </div>
+
+                                        <!-- Note -->
+                                        <input type="text" class="input-field" placeholder="Note..." style="margin-top: 8px;">
+
+                                        <button class="big-btn big-btn-success" style="margin-top: 12px;">
+                                            💾 Salva Movimento
+                                        </button>
+
+                                        <button class="collapse-btn">
+                                            ▲ Chiudi
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bottom-nav">
+                            <div class="bottom-nav-item active">
+                                <span class="bottom-nav-icon">📦</span>
+                                Consegna
+                            </div>
+                            <div class="bottom-nav-item">
+                                <span class="bottom-nav-icon">📋</span>
+                                Storico
+                            </div>
+                            <div class="bottom-nav-item">
+                                <span class="bottom-nav-icon">💰</span>
+                                Saldi
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SCREEN 6: Partecipante Expanded (NEW ENTRY) -->
+            <div>
+                <div class="screen-title">Screen 6: Nuovo Inserimento</div>
+                <div class="phone-mockup">
+                    <div class="phone-screen">
+                        <div class="phone-header">
+                            <div class="phone-header-top">
+                                <div class="phone-header-date">2 Ottobre 2025</div>
+                                <button class="change-date-btn">📅 Cambia Data</button>
+                            </div>
+                            <div class="phone-header-title">GASS Torpignattara</div>
+                        </div>
+
+                        <div class="phone-content" style="padding-bottom: 80px;">
+                            <div class="accordion-item">
+                                <div class="accordion-header partecipanti">
+                                    <span>📦 MOVIMENTI</span>
+                                    <span class="accordion-arrow">▼</span>
+                                </div>
+                                <div class="accordion-content">
+                                    <!-- EXPANDED - NEW ENTRY -->
+                                    <div class="participant-expanded new-entry">
+                                        <div class="participant-header-expanded">
+                                            <div>
+                                                <div class="participant-name-expanded">👤 Rachele</div>
+                                                <span class="status-indicator status-new">✏️ Nuovo Inserimento</span>
+                                            </div>
+                                            <div class="participant-saldo-collapsed saldo-debito">
+                                                -26.00 €
+                                            </div>
+                                        </div>
+
+                                        <!-- Section 1: Pagamento -->
+                                        <div class="participant-section">
+                                            <div class="participant-section-title">📦 Pagamento Oggi</div>
+                                            <input type="text" class="input-field" placeholder="0.00" inputmode="decimal">
+                                        </div>
+
+                                        <!-- Section 2: Salda Debito -->
+                                        <div class="participant-section" style="background: #f8d7da;">
+                                            <div class="participant-section-title">✅ Salda Debito</div>
+                                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                                <input type="checkbox" style="width: 20px; height: 20px;">
+                                                <label style="font-size: 14px; font-weight: 600;">Salda tutto</label>
+                                            </div>
+                                            <input type="text" class="input-field" placeholder="Salda parziale" inputmode="decimal">
+                                        </div>
+
+                                        <!-- Section 3: Nuovo Saldo -->
+                                        <div class="participant-section">
+                                            <div class="participant-section-title">➕ Nuovo Saldo</div>
+                                            <div class="input-row">
+                                                <input type="text" class="input-field" placeholder="Credito" inputmode="decimal">
+                                                <input type="text" class="input-field" placeholder="Debito" inputmode="decimal">
+                                            </div>
+                                        </div>
+
+                                        <!-- Note -->
+                                        <input type="text" class="input-field" placeholder="Note..." style="margin-top: 8px;">
+
+                                        <button class="big-btn big-btn-success" style="margin-top: 12px;">
+                                            💾 Salva Movimento
+                                        </button>
+
+                                        <button class="collapse-btn">
+                                            ▲ Chiudi
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bottom-nav">
+                            <div class="bottom-nav-item active">
+                                <span class="bottom-nav-icon">📦</span>
+                                Consegna
+                            </div>
+                            <div class="bottom-nav-item">
+                                <span class="bottom-nav-icon">📋</span>
+                                Storico
+                            </div>
+                            <div class="bottom-nav-item">
+                                <span class="bottom-nav-icon">💰</span>
+                                Saldi
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SCREEN 7: Saldi - Tutti Collapsed -->
+            <div>
+                <div class="screen-title">Screen 7: Saldi - Lista Collapsed</div>
+                <div class="phone-mockup">
+                    <div class="phone-screen">
+                        <div class="phone-header">
+                            <div class="phone-header-title">💰 Saldi Partecipanti</div>
+                        </div>
+
+                        <div class="phone-content" style="padding-bottom: 80px;">
+                            <div class="info-badge">
+                                👥 Saldi aggiornati al 2 Ottobre 2025
+                            </div>
+
+                            <!-- Partecipante con Credito -->
+                            <div class="saldo-card-collapsed has-credito">
+                                <div class="saldo-info-left">
+                                    <div class="saldo-name">👤 Alessandra Solimene</div>
+                                    <div class="saldo-last-date">Ultimo movimento: 02/10/2025</div>
+                                </div>
+                                <div class="saldo-amount-badge saldo-credito">
+                                    +3.00 €
+                                </div>
+                            </div>
+
+                            <!-- Partecipante Pari (senza badge) -->
+                            <div class="saldo-card-collapsed is-pari">
+                                <div class="saldo-info-left">
+                                    <div class="saldo-name">👤 Fernanda Fischione</div>
+                                    <div class="saldo-last-date">Ultimo movimento: 25/09/2025</div>
+                                </div>
+                                <div class="saldo-amount-badge saldo-pari">
+                                    0.00 €
+                                </div>
+                            </div>
+
+                            <!-- Partecipante con Debito -->
+                            <div class="saldo-card-collapsed has-debito">
+                                <div class="saldo-info-left">
+                                    <div class="saldo-name">👤 Jeremy (Rossellino)</div>
+                                    <div class="saldo-last-date">Ultimo movimento: 02/10/2025</div>
+                                </div>
+                                <div class="saldo-amount-badge saldo-debito">
+                                    -5.50 €
+                                </div>
+                            </div>
+
+                            <!-- Partecipante con Debito -->
+                            <div class="saldo-card-collapsed has-debito">
+                                <div class="saldo-info-left">
+                                    <div class="saldo-name">👤 Rachele Brivio</div>
+                                    <div class="saldo-last-date">Ultimo movimento: 18/09/2025</div>
+                                </div>
+                                <div class="saldo-amount-badge saldo-debito">
+                                    -26.00 €
+                                </div>
+                            </div>
+
+                            <div class="info-badge" style="margin-top: 15px;">
+                                💡 Click su un partecipante per modificare il saldo
+                            </div>
+
+                            <!-- Riepilogo -->
+                            <div style="background: white; padding: 20px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                <h3 style="color: #2c3e50; margin-bottom: 15px; text-align: center;">📊 Riepilogo</h3>
+                                <div style="display: flex; justify-content: space-around; text-align: center;">
+                                    <div>
+                                        <div style="font-size: 12px; color: #6c757d; margin-bottom: 5px;">Crediti Totali</div>
+                                        <div style="font-size: 24px; font-weight: bold; color: #2ecc71;">+3.00 €</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 12px; color: #6c757d; margin-bottom: 5px;">Debiti Totali</div>
+                                        <div style="font-size: 24px; font-weight: bold; color: #e74c3c;">-31.50 €</div>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #ecf0f1; text-align: center;">
+                                    <div style="font-size: 12px; color: #6c757d; margin-bottom: 5px;">Bilancio</div>
+                                    <div style="font-size: 28px; font-weight: bold; color: #e74c3c;">-28.50 €</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bottom-nav">
+                            <div class="bottom-nav-item">
+                                <span class="bottom-nav-icon">📦</span>
+                                Consegna
+                            </div>
+                            <div class="bottom-nav-item">
+                                <span class="bottom-nav-icon">📋</span>
+                                Storico
+                            </div>
+                            <div class="bottom-nav-item active">
+                                <span class="bottom-nav-icon">💰</span>
+                                Saldi
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SCREEN 9: Saldi - Partecipante Expanded (Modifica Saldo) -->
+            <div>
+                <div class="screen-title">Screen 9: Modifica Saldo Partecipante</div>
+                <div class="phone-mockup">
+                    <div class="phone-screen">
+                        <div class="phone-header">
+                            <div class="phone-header-title">💰 Saldi Partecipanti</div>
+                        </div>
+
+                        <div class="phone-content" style="padding-bottom: 80px;">
+                            <div class="info-badge">
+                                👥 Saldi aggiornati al 2 Ottobre 2025
+                            </div>
+
+                            <!-- Altri collapsed -->
+                            <div class="saldo-card-collapsed has-debito">
+                                <div class="saldo-info-left">
+                                    <div class="saldo-name">👤 Jeremy (Rossellino)</div>
+                                    <div class="saldo-last-date">Ultimo movimento: 02/10/2025</div>
+                                </div>
+                                <div class="saldo-amount-badge saldo-debito">
+                                    -5.50 €
+                                </div>
+                            </div>
+
+                            <!-- EXPANDED - Alessandra -->
+                            <div class="saldo-card-expanded has-credito">
+                                <div class="saldo-header-expanded">
+                                    <div>
+                                        <div class="participant-name-expanded">👤 Alessandra Solimene</div>
+                                        <div class="saldo-last-date">Ultimo movimento: 02/10/2025</div>
+                                    </div>
+                                    <div class="saldo-amount-badge saldo-credito">
+                                        +3.00 €
+                                    </div>
+                                </div>
+
+                                <div class="saldo-edit-section">
+                                    <div class="saldo-edit-title">✏️ Modifica Saldo Attuale</div>
+                                    <div class="input-row">
+                                        <div>
+                                            <label style="font-size: 12px; color: #6c757d; margin-bottom: 5px; display: block;">Nuovo Credito</label>
+                                            <input type="text" class="input-field" placeholder="0.00" value="3.00" inputmode="decimal">
+                                        </div>
+                                        <div>
+                                            <label style="font-size: 12px; color: #6c757d; margin-bottom: 5px; display: block;">Nuovo Debito</label>
+                                            <input type="text" class="input-field" placeholder="0.00" disabled style="opacity: 0.5;">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="info-badge" style="background: #fff3cd; border-color: #ffc107; color: #856404;">
+                                    ⚠️ Modifica manuale del saldo. Usa con attenzione.
+                                </div>
+
+                                <button class="big-btn big-btn-success" style="margin-top: 12px;">
+                                    💾 Salva Modifiche
+                                </button>
+
+                                <button class="collapse-btn">
+                                    ▲ Chiudi
+                                </button>
+                            </div>
+
+                            <!-- Altri collapsed -->
+                            <div class="saldo-card-collapsed has-debito">
+                                <div class="saldo-info-left">
+                                    <div class="saldo-name">👤 Rachele Brivio</div>
+                                    <div class="saldo-last-date">Ultimo movimento: 18/09/2025</div>
+                                </div>
+                                <div class="saldo-amount-badge saldo-debito">
+                                    -26.00 €
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bottom-nav">
+                            <div class="bottom-nav-item">
+                                <span class="bottom-nav-icon">📦</span>
+                                Consegna
+                            </div>
+                            <div class="bottom-nav-item">
+                                <span class="bottom-nav-icon">📋</span>
+                                Storico
+                            </div>
+                            <div class="bottom-nav-item active">
+                                <span class="bottom-nav-icon">💰</span>
+                                Saldi
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SCREEN 8: Storico -->
+            <div>
+                <div class="screen-title">Screen 8: Storico Consegne</div>
+                <div class="phone-mockup">
+                    <div class="phone-screen">
+                        <div class="phone-header">
+                            <div class="phone-header-title">📋 Storico Consegne</div>
+                        </div>
+
+                        <div class="phone-content" style="padding-bottom: 80px;">
+                            <div class="info-badge">
+                                📝 Per modificare una consegna, vai alla tab Consegna e seleziona la data da modificare
+                            </div>
+
+                            <!-- Consegna 1 - Collapsed -->
+                            <div class="consegna-card">
+                                <div class="consegna-card-header">
+                                    <div class="consegna-date">📦 02/10/2025 - Mercoledì</div>
+                                    <div class="consegna-expand-icon">▼</div>
+                                </div>
+                            </div>
+
+                            <!-- Consegna 2 - Expanded -->
+                            <div class="consegna-card">
+                                <div class="consegna-card-header">
+                                    <div class="consegna-date">📦 25/09/2025 - Mercoledì</div>
+                                    <div class="consegna-expand-icon" style="transform: rotate(180deg);">▼</div>
+                                </div>
+                                <div class="consegna-card-content">
+                                    <!-- Info Grid -->
+                                    <div class="consegna-info-grid">
+                                        <div class="consegna-info-item">
+                                            <div class="consegna-info-label">Trovato in Cassa</div>
+                                            <div class="consegna-info-value has-override">
+                                                43.20 €
+                                                <span class="override-indicator">MANUALE</span>
+                                            </div>
+                                        </div>
+                                        <div class="consegna-info-item">
+                                            <div class="consegna-info-label">Pagato Produttore</div>
+                                            <div class="consegna-info-value has-override">
+                                                38.70 €
+                                                <span class="override-indicator">MANUALE</span>
+                                            </div>
+                                        </div>
+                                        <div class="consegna-info-item" style="grid-column: 1 / -1;">
+                                            <div class="consegna-info-label">Lasciato in Cassa</div>
+                                            <div class="consegna-info-value" style="color: #2ecc71;">4.50 €</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Movimenti -->
+                                    <div class="movimenti-list">
+                                        <div class="movimenti-title">👥 Movimenti (4 partecipanti)</div>
+
+                                        <div class="movimento-item credito">
+                                            <div class="movimento-header">
+                                                <div class="movimento-name">👤 Alessandra</div>
+                                                <div class="movimento-amount" style="color: #2ecc71;">+3.00 €</div>
+                                            </div>
+                                            <div class="movimento-details">
+                                                Pagato: 15.00 € • Credito precedente: 12.00 €
+                                            </div>
+                                        </div>
+
+                                        <div class="movimento-item debito">
+                                            <div class="movimento-header">
+                                                <div class="movimento-name">👤 Jeremy</div>
+                                                <div class="movimento-amount" style="color: #e74c3c;">-5.50 €</div>
+                                            </div>
+                                            <div class="movimento-details">
+                                                Pagato: 18.20 € • Debito precedente: 2.30 € • Saldato: 15.00 €
+                                            </div>
+                                        </div>
+
+                                        <div class="movimento-item">
+                                            <div class="movimento-header">
+                                                <div class="movimento-name">👤 Fernanda</div>
+                                                <div class="movimento-amount" style="color: #3498db;">0.00 €</div>
+                                            </div>
+                                            <div class="movimento-details">
+                                                Pagato: 5.50 € • Pari
+                                            </div>
+                                        </div>
+
+                                        <div class="movimento-item debito">
+                                            <div class="movimento-header">
+                                                <div class="movimento-name">👤 Rachele</div>
+                                                <div class="movimento-amount" style="color: #e74c3c;">-26.00 €</div>
+                                            </div>
+                                            <div class="movimento-details">
+                                                Non ha pagato • Debito accumulato: 26.00 €
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="info-badge" style="margin-top: 15px;">
+                                        📝 Note: Mancava prodotto X, riaccreditato a Alessandra
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Consegna 3 - Collapsed -->
+                            <div class="consegna-card">
+                                <div class="consegna-card-header">
+                                    <div class="consegna-date">📦 18/09/2025 - Mercoledì</div>
+                                    <div class="consegna-expand-icon">▼</div>
+                                </div>
+                            </div>
+
+                            <!-- Consegna 4 - Collapsed -->
+                            <div class="consegna-card">
+                                <div class="consegna-card-header">
+                                    <div class="consegna-date">📦 11/09/2025 - Mercoledì</div>
+                                    <div class="consegna-expand-icon">▼</div>
+                                </div>
+                            </div>
+
+                            <!-- Consegna 5 - Collapsed -->
+                            <div class="consegna-card">
+                                <div class="consegna-card-header">
+                                    <div class="consegna-date">📦 04/09/2025 - Mercoledì</div>
+                                    <div class="consegna-expand-icon">▼</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bottom-nav">
+                            <div class="bottom-nav-item">
+                                <span class="bottom-nav-icon">📦</span>
+                                Consegna
+                            </div>
+                            <div class="bottom-nav-item active">
+                                <span class="bottom-nav-icon">📋</span>
+                                Storico
+                            </div>
+                            <div class="bottom-nav-item">
+                                <span class="bottom-nav-icon">💰</span>
+                                Saldi
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
