@@ -115,10 +115,12 @@ async function loadParticipants() {
   try {
     const dateInput = document.getElementById('data');
     const date = dateInput ? dateInput.value : null;
+    const today = new Date().toISOString().split('T')[0];
 
     // Build URL with optional date parameter
+    // For today's date, don't pass date parameter to get current saldi from partecipanti table
     let url = '/api/participants';
-    if (date) {
+    if (date && date !== today) {
       url += `?date=${date}`;
     }
 
