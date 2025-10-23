@@ -28,30 +28,9 @@ function isMobile(userAgent) {
 }
 
 function shouldUseMobileView(req) {
-  // Check for manual override cookie
-  if (req.cookies.viewMode) {
-    return req.cookies.viewMode === 'mobile';
-  }
-
-  // Auto-detect from user agent
+  // Use only user-agent detection
   return isMobile(req.headers['user-agent'] || '');
 }
-
-// ===== VIEW MODE SWITCHING API =====
-
-app.post('/api/set-view-mode', (req, res) => {
-  const { mode } = req.body;
-
-  if (mode === 'mobile' || mode === 'desktop') {
-    res.cookie('viewMode', mode, {
-      maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
-      httpOnly: true
-    });
-    res.json({ success: true });
-  } else {
-    res.status(400).json({ success: false, error: 'Invalid mode' });
-  }
-});
 
 // ===== CONDITIONAL ROUTING FOR PAGES =====
 
