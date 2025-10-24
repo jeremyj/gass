@@ -474,6 +474,11 @@ function restoreOverrideCheckbox(checkboxId, fieldId, flagValue, enableFn, disab
   const checkbox = document.getElementById(checkboxId);
   const field = document.getElementById(fieldId);
 
+  // Return early if elements don't exist
+  if (!checkbox || !field) {
+    return;
+  }
+
   if (flagValue === 1) {
     checkbox.checked = true;
     enableFn();
@@ -1319,10 +1324,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const response = await fetch('/api/storico');
     const result = await response.json();
 
-    if (result.success && result.storico.length > 0) {
-      document.getElementById('data').value = result.storico[0].data;
+    if (result.success && result.consegne.length > 0) {
+      document.getElementById('data').value = result.consegne[0].data;
       // Set calendar to the month of the last consegna
-      const lastDate = new Date(result.storico[0].data);
+      const lastDate = new Date(result.consegne[0].data);
       currentCalendarYear = lastDate.getFullYear();
       currentCalendarMonth = lastDate.getMonth();
     } else {

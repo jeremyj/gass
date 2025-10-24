@@ -326,6 +326,11 @@ function restoreOverrideCheckbox(checkboxId, fieldId, flagValue, enableFn, disab
   const checkbox = document.getElementById(checkboxId);
   const field = document.getElementById(fieldId);
 
+  // Return early if elements don't exist
+  if (!checkbox || !field) {
+    return;
+  }
+
   if (flagValue === 1) {
     checkbox.checked = true;
     enableFn();
@@ -431,6 +436,38 @@ function renderParticipant(nome) {
   container.appendChild(card);
 
   addHiddenFields(card, nome, haCredito, haDebito);
+
+  // Populate fields with existing movimento data if editing
+  populateExistingMovimento(nome);
+}
+
+function populateExistingMovimento(nome) {
+  if (!existingConsegnaMovimenti || existingConsegnaMovimenti.length === 0) {
+    return;
+  }
+
+  const movimento = existingConsegnaMovimenti.find(m => m.nome === nome);
+  if (!movimento) {
+    return;
+  }
+
+  // Populate form fields with existing values
+  const fields = {
+    [`contoProduttore_${nome}`]: movimento.importo_saldato || '',
+    [`importo_${nome}`]: movimento.importo_saldato || '',
+    [`usaCredito_${nome}`]: movimento.usa_credito || '',
+    [`credito_${nome}`]: movimento.credito_lasciato || '',
+    [`debito_${nome}`]: movimento.debito_lasciato || '',
+    [`debitoSaldato_${nome}`]: movimento.debito_saldato || '',
+    [`note_${nome}`]: movimento.note || ''
+  };
+
+  for (const [id, value] of Object.entries(fields)) {
+    const field = document.getElementById(id);
+    if (field && value !== '') {
+      field.value = value;
+    }
+  }
 }
 
 function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito, haDebito) {
@@ -927,8 +964,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const response = await fetch('/api/storico');
     const result = await response.json();
 
-    if (result.success && result.storico.length > 0) {
-      setDateDisplay(result.storico[0].data);
+    if (result.success && result.consegne.length > 0) {
+      setDateDisplay(result.consegne[0].data);
     } else {
       const today = new Date().toISOString().split('T')[0];
       setDateDisplay(today);
