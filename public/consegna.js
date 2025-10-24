@@ -553,7 +553,7 @@ function loadExistingParticipantData(nome, saldo) {
   }
 
   // Check and set checkboxes if applicable
-  if (movimento.salda_tutto === 1) {
+  if (movimento.salda_debito_totale === 1) {
     const saldaCheckbox = document.getElementById(`saldaDebito_${nome}`);
     if (saldaCheckbox) {
       saldaCheckbox.checked = true;
