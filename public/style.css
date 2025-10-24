@@ -1457,12 +1457,22 @@ body {
         padding: 20px;
     }
 
-    /* Don't hide bottom-nav - let it show if present in HTML (mobile files) */
+    /* Keep bottom-nav centered and same width as content when present (mobile files) */
+    .bottom-nav {
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        max-width: 400px;
+    }
 
     .page-header {
         position: relative;
         max-width: 400px;
-        margin: 0 auto;
+        margin: 0 auto 20px auto;
+    }
+
+    body {
+        padding-bottom: 70px; /* Keep space for bottom-nav on mobile with wide viewport */
     }
 }
 
