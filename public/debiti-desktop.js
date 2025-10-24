@@ -3,109 +3,99 @@
 let participants = [];
 let editingId = null;
 
-let currentCalendarYear = new Date().getFullYear();
-let currentCalendarMonth = new Date().getMonth();
+let pickerYear = new Date().getFullYear();
+let pickerMonth = new Date().getMonth();
+let isPickerOpen = false;
 
-// ===== CALENDAR MODAL =====
+// ===== DATE PICKER =====
 
-function showCalendarModal() {
-  const calendar = document.getElementById('calendar-container');
-  calendar.classList.toggle('hidden');
-  if (!calendar.classList.contains('hidden')) {
-    renderCalendar();
+function toggleDatePicker() {
+  const container = document.getElementById('date-picker-container');
+  isPickerOpen = !isPickerOpen;
+
+  if (isPickerOpen) {
+    renderDatePicker();
+    container.style.display = 'block';
+  } else {
+    container.style.display = 'none';
   }
 }
 
-function selectDate(dateStr) {
-  document.getElementById('data').value = dateStr;
-  updateHeaderDate();
-  renderCalendar();
-  loadParticipants();
-}
-
-function updateHeaderDate() {
-  const dateInput = document.getElementById('data');
-  const headerDate = document.getElementById('header-date');
-
-  if (dateInput.value) {
-    const today = new Date().toISOString().split('T')[0];
-    if (dateInput.value === today) {
-      headerDate.textContent = 'Oggi';
-    } else {
-      headerDate.textContent = formatDateItalian(dateInput.value);
-    }
-  }
-}
-
-function renderCalendar() {
-  const container = document.getElementById('calendar-container');
+function renderDatePicker() {
+  const container = document.getElementById('date-picker-container');
   const monthNames = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
-                      'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+    'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
   const weekDays = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
 
+  const firstDay = new Date(pickerYear, pickerMonth, 1);
+  const lastDay = new Date(pickerYear, pickerMonth + 1, 0);
+  const daysInMonth = lastDay.getDate();
+  const startingDayOfWeek = (firstDay.getDay() + 6) % 7; // Convert to Monday=0
+
   const today = new Date();
-  const selectedDate = document.getElementById('data').value;
+  const selectedDateStr = document.getElementById('data').value;
 
-  // Get first and last day of month
-  const firstDay = new Date(currentCalendarYear, currentCalendarMonth, 1);
-  const lastDay = new Date(currentCalendarYear, currentCalendarMonth + 1, 0);
-
-  // Adjust firstDay to Monday (1 = Monday, 0 = Sunday)
-  let startDay = firstDay.getDay();
-  startDay = startDay === 0 ? 6 : startDay - 1; // Convert Sunday from 0 to 6
-
-  let html = '<div class="calendar">';
-
-  // Header
-  html += '<div class="calendar-header">';
-  html += `<button type="button" class="calendar-nav" onclick="changeMonth(-1)">◀</button>`;
-  html += `<h3>${monthNames[currentCalendarMonth]} ${currentCalendarYear}</h3>`;
-  html += `<button type="button" class="calendar-nav" onclick="changeMonth(1)">▶</button>`;
+  let html = '<div class="date-picker-header">';
+  html += `<button type="button" class="date-picker-nav" onclick="changePickerMonth(-1)">◀</button>`;
+  html += `<div class="date-picker-month">${monthNames[pickerMonth]} ${pickerYear}</div>`;
+  html += `<button type="button" class="date-picker-nav" onclick="changePickerMonth(1)">▶</button>`;
   html += '</div>';
 
-  // Weekdays
-  html += '<div class="calendar-weekdays">';
+  html += '<div class="date-picker-weekdays">';
   weekDays.forEach(day => {
-    html += `<div class="calendar-weekday">${day}</div>`;
+    html += `<div class="date-picker-weekday">${day}</div>`;
   });
   html += '</div>';
 
-  // Days
-  html += '<div class="calendar-days">';
-
-  // Empty cells before first day
-  for (let i = 0; i < startDay; i++) {
-    html += '<div class="calendar-day empty"></div>';
+  html += '<div class="date-picker-days">';
+  for (let i = 0; i < startingDayOfWeek; i++) {
+    html += '<div class="date-picker-day empty"></div>';
   }
 
-  // Days of month
-  for (let day = 1; day <= lastDay.getDate(); day++) {
-    const dateStr = `${currentCalendarYear}-${String(currentCalendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const isToday = dateStr === today.toISOString().split('T')[0];
-    const isSelected = dateStr === selectedDate;
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${pickerYear}-${String(pickerMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const isToday = today.getDate() === day && today.getMonth() === pickerMonth && today.getFullYear() === pickerYear;
+    const isSelected = dateStr === selectedDateStr;
 
-    let classes = 'calendar-day';
+    let classes = 'date-picker-day';
     if (isToday) classes += ' today';
     if (isSelected) classes += ' selected';
 
-    html += `<div class="${classes}" onclick="selectDate('${dateStr}')">${day}</div>`;
+    html += `<div class="${classes}" onclick="selectPickerDate('${dateStr}')">${day}</div>`;
   }
+  html += '</div>';
 
-  html += '</div>';
-  html += '</div>';
   container.innerHTML = html;
 }
 
-function changeMonth(delta) {
-  currentCalendarMonth += delta;
-  if (currentCalendarMonth > 11) {
-    currentCalendarMonth = 0;
-    currentCalendarYear++;
-  } else if (currentCalendarMonth < 0) {
-    currentCalendarMonth = 11;
-    currentCalendarYear--;
+function changePickerMonth(delta) {
+  pickerMonth += delta;
+  if (pickerMonth > 11) {
+    pickerMonth = 0;
+    pickerYear++;
+  } else if (pickerMonth < 0) {
+    pickerMonth = 11;
+    pickerYear--;
   }
-  renderCalendar();
+  renderDatePicker();
+}
+
+function selectPickerDate(dateStr) {
+  document.getElementById('data').value = dateStr;
+  const [year, month, day] = dateStr.split('-');
+  document.getElementById('data-display').value = `${day}-${month}-${year}`;
+  renderDatePicker();
+  loadParticipants();
+}
+
+function setDateDisplay(dateStr) {
+  const [year, month, day] = dateStr.split('-');
+  document.getElementById('data-display').value = `${day}-${month}-${year}`;
+  document.getElementById('data').value = dateStr;
+
+  // Set picker to the same month/year
+  pickerYear = parseInt(year);
+  pickerMonth = parseInt(month) - 1;
 }
 
 // ===== UI HELPERS =====
@@ -329,8 +319,7 @@ async function syncParticipants() {
 document.addEventListener('DOMContentLoaded', () => {
   // Set today's date
   const today = new Date().toISOString().split('T')[0];
-  document.getElementById('data').value = today;
-  updateHeaderDate();
+  setDateDisplay(today);
 
   loadParticipants();
 });
