@@ -11,6 +11,11 @@ let currentCalendarYear = new Date().getFullYear();
 let currentCalendarMonth = new Date().getMonth();
 let consegneDates = new Set(); // Store dates with saved consegne
 
+// Date picker state
+let pickerYear = new Date().getFullYear();
+let pickerMonth = new Date().getMonth();
+let isPickerOpen = false;
+
 // Track original values for unsaved changes detection
 let originalParticipantValues = {};
 
@@ -144,41 +149,131 @@ function showCalendarModal() {
   calendar.classList.toggle('hidden');
 }
 
-// ===== HEADER DATE UPDATE =====
-
-function updateHeaderDate() {
-  const dateInput = document.getElementById('data');
-  const headerDate = document.getElementById('header-date');
-
-  if (dateInput.value) {
-    const today = new Date().toISOString().split('T')[0];
-    if (dateInput.value === today) {
-      headerDate.textContent = 'Oggi';
-    } else {
-      headerDate.textContent = formatDateItalian(dateInput.value);
-    }
-  }
-}
-
 // ===== DATE HANDLING =====
 
-function formatDateItalian(dateStr) {
-  const [year, month, day] = dateStr.split('-');
-  return `${day}/${month}/${year}`;
+// formatDateItalian() is now in utils.js - removed duplicate
+
+function selectDate(dateStr) {
+  setDateDisplay(dateStr);
+  renderCalendar();
 }
 
-function updateDateDisplay() {
-  // Legacy function - now using updateHeaderDate()
-  updateHeaderDate();
-  if (document.getElementById('data').value) {
-    checkDateData();
+// ===== DATE PICKER =====
+
+function toggleDatePicker() {
+  const container = document.getElementById('date-picker-container');
+  isPickerOpen = !isPickerOpen;
+
+  if (isPickerOpen) {
+    renderDatePicker();
+    container.style.display = 'block';
+  } else {
+    container.style.display = 'none';
   }
 }
 
-function selectDate(dateStr) {
+function renderDatePicker() {
+  const container = document.getElementById('date-picker-container');
+  const monthNames = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
+    'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+  const weekDays = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
+
+  const firstDay = new Date(pickerYear, pickerMonth, 1);
+  const lastDay = new Date(pickerYear, pickerMonth + 1, 0);
+  const daysInMonth = lastDay.getDate();
+  const startingDayOfWeek = (firstDay.getDay() + 6) % 7; // Convert to Monday=0
+
+  const today = new Date();
+  const selectedDateStr = document.getElementById('data').value;
+
+  let html = '<div class="date-picker-header">';
+  html += `<button type="button" class="date-picker-nav" onclick="changePickerMonth(-1)">◀</button>`;
+  html += `<div class="date-picker-month">${monthNames[pickerMonth]} ${pickerYear}</div>`;
+  html += `<button type="button" class="date-picker-nav" onclick="changePickerMonth(1)">▶</button>`;
+  html += '</div>';
+
+  html += '<div class="date-picker-weekdays">';
+  weekDays.forEach(day => {
+    html += `<div class="date-picker-weekday">${day}</div>`;
+  });
+  html += '</div>';
+
+  html += '<div class="date-picker-days">';
+  for (let i = 0; i < startingDayOfWeek; i++) {
+    html += '<div class="date-picker-day empty"></div>';
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${pickerYear}-${String(pickerMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const isToday = today.getDate() === day && today.getMonth() === pickerMonth && today.getFullYear() === pickerYear;
+    const isSelected = dateStr === selectedDateStr;
+    const hasConsegna = consegneDates.has(dateStr);
+
+    let classes = 'date-picker-day';
+    if (isToday) classes += ' today';
+    if (isSelected) classes += ' selected';
+    if (hasConsegna) classes += ' has-consegna';
+
+    html += `<div class="${classes}" onclick="selectPickerDate('${dateStr}')">${day}</div>`;
+  }
+  html += '</div>';
+
+  // Legend
+  html += '<div class="date-picker-legend">';
+  html += '<div class="date-picker-legend-item">';
+  html += '<div class="date-picker-legend-color" style="background: #2ecc71;"></div>';
+  html += '<span>Con consegna</span>';
+  html += '</div>';
+  html += '<div class="date-picker-legend-item">';
+  html += '<div class="date-picker-legend-color" style="background: white; border: 1px solid #ddd;"></div>';
+  html += '<span>Senza consegna</span>';
+  html += '</div>';
+  html += '</div>';
+
+  container.innerHTML = html;
+}
+
+function changePickerMonth(delta) {
+  pickerMonth += delta;
+  if (pickerMonth > 11) {
+    pickerMonth = 0;
+    pickerYear++;
+  } else if (pickerMonth < 0) {
+    pickerMonth = 11;
+    pickerYear--;
+  }
+  renderDatePicker();
+}
+
+function selectPickerDate(dateStr) {
   document.getElementById('data').value = dateStr;
-  updateHeaderDate();
-  renderCalendar();
+  const [year, month, day] = dateStr.split('-');
+  document.getElementById('data-display').value = `${day}-${month}-${year}`;
+  renderDatePicker();
+  checkDateData();
+}
+
+function setDateDisplay(dateStr) {
+  const [year, month, day] = dateStr.split('-');
+  document.getElementById('data-display').value = `${day}-${month}-${year}`;
+  document.getElementById('data').value = dateStr;
+
+  // Update header date display
+  const today = new Date().toISOString().split('T')[0];
+  const headerDateDisplay = document.getElementById('header-date-display');
+  if (headerDateDisplay) {
+    if (dateStr === today) {
+      headerDateDisplay.textContent = 'Oggi';
+    } else {
+      headerDateDisplay.textContent = formatDateItalian(dateStr);
+    }
+  }
+
+  // Set picker to the same month/year
+  pickerYear = parseInt(year);
+  pickerMonth = parseInt(month) - 1;
+
+  // Load data for this date
   checkDateData();
 }
 
@@ -1336,34 +1431,30 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
 // ===== INITIALIZATION =====
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Load consegne dates for calendar
-  await loadConsegneDates();
-
   // Set initial date (last consegna or today)
   try {
     const response = await fetch('/api/storico');
     const result = await response.json();
 
     if (result.success && result.consegne.length > 0) {
-      document.getElementById('data').value = result.consegne[0].data;
-      // Set calendar to the month of the last consegna
+      // Populate consegneDates Set for calendar indicators
+      consegneDates = new Set(result.consegne.map(c => c.data));
+      setDateDisplay(result.consegne[0].data);
+
+      // Also set calendar to the month of the last consegna
       const lastDate = new Date(result.consegne[0].data);
       currentCalendarYear = lastDate.getFullYear();
       currentCalendarMonth = lastDate.getMonth();
     } else {
-      const today = new Date();
-      const todayStr = today.toISOString().split('T')[0];
-      document.getElementById('data').value = todayStr;
+      const today = new Date().toISOString().split('T')[0];
+      setDateDisplay(today);
     }
   } catch (error) {
     console.error('Error loading last date:', error);
-    const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
-    document.getElementById('data').value = todayStr;
+    const today = new Date().toISOString().split('T')[0];
+    setDateDisplay(today);
   }
 
   renderCalendar();
-  updateHeaderDate();
-  await checkDateData();
   loadData();
 });

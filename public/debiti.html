@@ -10,25 +10,23 @@
     <!-- Desktop Navigation -->
     <div class="desktop-nav">
         <a href="/consegna" class="desktop-nav-item">📦 Consegna</a>
-        <a href="/storico" class="desktop-nav-item">📋 Storico</a>
         <a href="/debiti" class="desktop-nav-item active">💰 Saldi</a>
-    </div>
-
-    <!-- Mobile Header -->
-    <div class="page-header">
-        <div class="header-top">
-            <div class="header-date" id="header-date">Oggi</div>
-            <button class="change-date-btn" onclick="showCalendarModal()">📅 Cambia Data</button>
-        </div>
-        <div class="header-title">💰 Saldi Partecipanti</div>
+        <a href="/storico" class="desktop-nav-item">📋 Storico</a>
     </div>
 
     <div class="container">
-        <div id="status" class="status"></div>
-
-        <!-- Hidden Calendar Container (shown in modal) -->
-        <div id="calendar-container" class="calendar hidden"></div>
+        <div class="page-header">
+            <h1>💰 Saldi Partecipanti</h1>
+            <div class="header-date-section">
+                <span id="header-date-display">Oggi</span>
+                <button type="button" class="change-date-btn" onclick="toggleDatePicker()">📅 Cambia Data</button>
+                <div id="date-picker-container" class="date-picker-popup" style="display: none;"></div>
+            </div>
+        </div>
         <input type="hidden" id="data" required>
+        <input type="hidden" id="data-display">
+
+        <div id="status" class="status"></div>
 
         <div id="saldi-list"></div>
 
@@ -45,13 +43,13 @@
             <span class="bottom-nav-icon">📦</span>
             Consegna
         </a>
-        <a href="/storico" class="bottom-nav-item">
-            <span class="bottom-nav-icon">📋</span>
-            Storico
-        </a>
         <a href="/debiti" class="bottom-nav-item active">
             <span class="bottom-nav-icon">💰</span>
             Saldi
+        </a>
+        <a href="/storico" class="bottom-nav-item">
+            <span class="bottom-nav-icon">📋</span>
+            Storico
         </a>
     </div>
 

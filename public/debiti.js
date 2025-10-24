@@ -7,6 +7,11 @@ let originalSaldoValues = {}; // Track original values when card is expanded
 let currentCalendarYear = new Date().getFullYear();
 let currentCalendarMonth = new Date().getMonth();
 
+// Date picker state
+let pickerYear = new Date().getFullYear();
+let pickerMonth = new Date().getMonth();
+let isPickerOpen = false;
+
 // ===== CALENDAR MODAL =====
 
 function showCalendarModal() {
@@ -18,24 +23,8 @@ function showCalendarModal() {
 }
 
 function selectDate(dateStr) {
-  document.getElementById('data').value = dateStr;
-  updateHeaderDate();
+  setDateDisplay(dateStr);
   renderCalendar();
-  loadParticipants();
-}
-
-function updateHeaderDate() {
-  const dateInput = document.getElementById('data');
-  const headerDate = document.getElementById('header-date');
-
-  if (dateInput.value) {
-    const today = new Date().toISOString().split('T')[0];
-    if (dateInput.value === today) {
-      headerDate.textContent = 'Oggi';
-    } else {
-      headerDate.textContent = formatDateItalian(dateInput.value);
-    }
-  }
 }
 
 function renderCalendar() {
@@ -108,6 +97,113 @@ function changeMonth(delta) {
   }
   renderCalendar();
 }
+
+// ===== DATE PICKER =====
+
+function toggleDatePicker() {
+  const container = document.getElementById('date-picker-container');
+  isPickerOpen = !isPickerOpen;
+
+  if (isPickerOpen) {
+    renderDatePicker();
+    container.style.display = 'block';
+  } else {
+    container.style.display = 'none';
+  }
+}
+
+function renderDatePicker() {
+  const container = document.getElementById('date-picker-container');
+  const monthNames = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
+    'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+  const weekDays = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
+
+  const firstDay = new Date(pickerYear, pickerMonth, 1);
+  const lastDay = new Date(pickerYear, pickerMonth + 1, 0);
+  const daysInMonth = lastDay.getDate();
+  const startingDayOfWeek = (firstDay.getDay() + 6) % 7; // Convert to Monday=0
+
+  const today = new Date();
+  const selectedDateStr = document.getElementById('data').value;
+
+  let html = '<div class="date-picker-header">';
+  html += `<button type="button" class="date-picker-nav" onclick="changePickerMonth(-1)">◀</button>`;
+  html += `<div class="date-picker-month">${monthNames[pickerMonth]} ${pickerYear}</div>`;
+  html += `<button type="button" class="date-picker-nav" onclick="changePickerMonth(1)">▶</button>`;
+  html += '</div>';
+
+  html += '<div class="date-picker-weekdays">';
+  weekDays.forEach(day => {
+    html += `<div class="date-picker-weekday">${day}</div>`;
+  });
+  html += '</div>';
+
+  html += '<div class="date-picker-days">';
+  for (let i = 0; i < startingDayOfWeek; i++) {
+    html += '<div class="date-picker-day empty"></div>';
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${pickerYear}-${String(pickerMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const isToday = today.getDate() === day && today.getMonth() === pickerMonth && today.getFullYear() === pickerYear;
+    const isSelected = dateStr === selectedDateStr;
+
+    let classes = 'date-picker-day';
+    if (isToday) classes += ' today';
+    if (isSelected) classes += ' selected';
+
+    html += `<div class="${classes}" onclick="selectPickerDate('${dateStr}')">${day}</div>`;
+  }
+  html += '</div>';
+
+  container.innerHTML = html;
+}
+
+function changePickerMonth(delta) {
+  pickerMonth += delta;
+  if (pickerMonth > 11) {
+    pickerMonth = 0;
+    pickerYear++;
+  } else if (pickerMonth < 0) {
+    pickerMonth = 11;
+    pickerYear--;
+  }
+  renderDatePicker();
+}
+
+function selectPickerDate(dateStr) {
+  document.getElementById('data').value = dateStr;
+  const [year, month, day] = dateStr.split('-');
+  document.getElementById('data-display').value = `${day}-${month}-${year}`;
+  renderDatePicker();
+  loadParticipants();
+}
+
+function setDateDisplay(dateStr) {
+  const [year, month, day] = dateStr.split('-');
+  document.getElementById('data-display').value = `${day}-${month}-${year}`;
+  document.getElementById('data').value = dateStr;
+
+  // Update header date display
+  const today = new Date().toISOString().split('T')[0];
+  const headerDateDisplay = document.getElementById('header-date-display');
+  if (headerDateDisplay) {
+    if (dateStr === today) {
+      headerDateDisplay.textContent = 'Oggi';
+    } else {
+      headerDateDisplay.textContent = formatDateItalian(dateStr);
+    }
+  }
+
+  // Set picker to the same month/year
+  pickerYear = parseInt(year);
+  pickerMonth = parseInt(month) - 1;
+
+  // Load data for this date
+  loadParticipants();
+}
+
+// formatDateItalian() is now in utils.js - removed duplicate
 
 // ===== DATA LOADING =====
 
@@ -476,8 +572,5 @@ async function deleteParticipant(id) {
 document.addEventListener('DOMContentLoaded', () => {
   // Set today's date
   const today = new Date().toISOString().split('T')[0];
-  document.getElementById('data').value = today;
-  updateHeaderDate();
-
-  loadParticipants();
+  setDateDisplay(today);
 });
