@@ -1471,3 +1471,19 @@ body {
         margin: 0 auto;
     }
 }
+
+/* Mobile-specific styles: align header fonts with accordion and info-badge */
+@media (max-width: 768px) {
+    .page-header h1 {
+        font-size: 16px; /* Match accordion-header font size */
+    }
+
+    .header-date-section #header-date-display {
+        font-size: 13px; /* Match info-badge font size */
+    }
+
+    .header-date-section .change-date-btn {
+        font-size: 13px; /* Match info-badge font size */
+        padding: 12px; /* Match info-badge padding */
+    }
+}
