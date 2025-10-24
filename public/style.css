@@ -1465,7 +1465,8 @@ body {
     }
 
     .header-date-section #header-date-display {
-        font-size: 13px;
+        font-size: 16px;
+        font-weight: 700;
     }
 
     .header-date-section .change-date-btn {
