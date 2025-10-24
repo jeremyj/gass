@@ -1457,13 +1457,7 @@ body {
         padding: 20px;
     }
 
-    .bottom-nav {
-        display: none;
-    }
-
-    body {
-        padding-bottom: 0;
-    }
+    /* Don't hide bottom-nav - let it show if present in HTML (mobile files) */
 
     .page-header {
         position: relative;
