@@ -132,6 +132,7 @@ function changePickerMonth(delta) {
 function selectPickerDate(dateStr) {
   const dataInput = document.getElementById('data');
   const dataDisplayInput = document.getElementById('data-display');
+  const headerDateDisplay = document.getElementById('header-date-display');
 
   if (dataInput) {
     dataInput.value = dateStr;
@@ -142,12 +143,26 @@ function selectPickerDate(dateStr) {
     dataDisplayInput.value = `${day}-${month}-${year}`;
   }
 
+  // Update header date display
+  if (headerDateDisplay) {
+    const today = new Date().toISOString().split('T')[0];
+    if (dateStr === today) {
+      headerDateDisplay.textContent = 'Oggi';
+    } else {
+      const [year, month, day] = dateStr.split('-');
+      headerDateDisplay.textContent = '⚠️ ' + `${day}/${month}/${year}`;
+    }
+  }
+
   renderDatePicker();
 
   // Call page-specific callback
   if (onDateSelected) {
     onDateSelected(dateStr);
   }
+
+  // Close the date picker after selection
+  toggleDatePicker();
 }
 
 // ===== CALENDAR (for modal) =====
@@ -272,7 +287,7 @@ function setDateDisplay(dateStr) {
     if (dateStr === today) {
       headerDateDisplay.textContent = 'Oggi';
     } else {
-      headerDateDisplay.textContent = formatDateItalian(dateStr);
+      headerDateDisplay.textContent = '⚠️ ' + formatDateItalian(dateStr);
     }
   }
 
@@ -311,3 +326,23 @@ function getSelectedDate() {
   const dataInput = document.getElementById('data');
   return dataInput ? dataInput.value : null;
 }
+
+// ===== CLICK OUTSIDE HANDLER =====
+
+// Close date picker when clicking outside
+document.addEventListener('click', function(event) {
+  if (!isPickerOpen) return;
+
+  const pickerContainer = document.getElementById('date-picker-container');
+  const dateButton = document.querySelector('.change-date-btn');
+
+  // Check if click is outside picker and not on the button
+  if (pickerContainer && dateButton) {
+    const isClickInsidePicker = pickerContainer.contains(event.target);
+    const isClickOnButton = dateButton.contains(event.target);
+
+    if (!isClickInsidePicker && !isClickOnButton) {
+      toggleDatePicker();
+    }
+  }
+});

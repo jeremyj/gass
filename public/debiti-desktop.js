@@ -84,8 +84,15 @@ function selectPickerDate(dateStr) {
   document.getElementById('data').value = dateStr;
   const [year, month, day] = dateStr.split('-');
   document.getElementById('data-display').value = `${day}-${month}-${year}`;
+
+  // Update header date display
+  setDateDisplay(dateStr);
+
   renderDatePicker();
   loadParticipants();
+
+  // Close the date picker after selection
+  toggleDatePicker();
 }
 
 function setDateDisplay(dateStr) {
@@ -100,7 +107,7 @@ function setDateDisplay(dateStr) {
     if (dateStr === today) {
       headerDateDisplay.textContent = 'Oggi';
     } else {
-      headerDateDisplay.textContent = formatDateItalian(dateStr);
+      headerDateDisplay.textContent = '⚠️ ' + formatDateItalian(dateStr);
     }
   }
 
@@ -333,4 +340,24 @@ document.addEventListener('DOMContentLoaded', () => {
   setDateDisplay(today);
 
   loadParticipants();
+});
+
+// ===== CLICK OUTSIDE HANDLER =====
+
+// Close date picker when clicking outside
+document.addEventListener('click', function(event) {
+  if (!isPickerOpen) return;
+
+  const pickerContainer = document.getElementById('date-picker-container');
+  const dateButton = document.querySelector('.change-date-btn');
+
+  // Check if click is outside picker and not on the button
+  if (pickerContainer && dateButton) {
+    const isClickInsidePicker = pickerContainer.contains(event.target);
+    const isClickOnButton = dateButton.contains(event.target);
+
+    if (!isClickInsidePicker && !isClickOnButton) {
+      toggleDatePicker();
+    }
+  }
 });
