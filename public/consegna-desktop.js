@@ -331,6 +331,7 @@ function loadExistingConsegna(result) {
   saldiBefore = result.saldiBefore || {};
 
   renderMovimentiGiorno();
+  updateSaveButtonVisibility();
 }
 
 function loadNewConsegna(result) {
@@ -346,6 +347,7 @@ function loadNewConsegna(result) {
 
   renderMovimentiGiorno();
   updatePagatoProduttore();
+  updateSaveButtonVisibility();
 }
 
 function restoreOverrideCheckbox(checkboxId, fieldId, flagValue, enableFn, disableFn) {
@@ -395,11 +397,13 @@ function showParticipantForm() {
 
   if (!nome) {
     updateLasciatoInCassa();
+    updateSaveButtonVisibility();
     return;
   }
 
   renderParticipant(nome);
   updateLasciatoInCassa();
+  updateSaveButtonVisibility();
 }
 
 function renderMovimentiGiorno() {
@@ -695,6 +699,7 @@ function enableSmartInput(input, type) {
   badge.textContent = 'MANUALE';
 
   smartOverrides[type] = true;
+  updateSaveButtonVisibility();
 }
 
 function updateSmartInput(input, type) {
@@ -729,6 +734,8 @@ function checkSmartInputEmpty(input, type) {
     } else if (type === 'lasciato') {
       updateLasciatoInCassa();
     }
+
+    updateSaveButtonVisibility();
   } else if (isUnchanged) {
     // If value unchanged, revert to AUTO but keep the same value (no recalculation)
     input.classList.remove('manual');
@@ -742,6 +749,8 @@ function checkSmartInputEmpty(input, type) {
 
     smartOverrides[type] = false;
     // Do NOT recalculate - keep the original value
+
+    updateSaveButtonVisibility();
   }
 }
 
@@ -1065,12 +1074,29 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
         document.getElementById('selected-participants').innerHTML = '';
         document.getElementById('participant-select').value = '';
         checkDateData();
+        updateSaveButtonVisibility();
       }, 1000);
     } else {
       showStatus('Errore: ' + result.error, 'error');
     }
   } catch (error) {
     showStatus('Errore durante il salvataggio: ' + error.message, 'error');
+  }
+}
+
+// ===== BUTTON VISIBILITY =====
+
+function updateSaveButtonVisibility() {
+  const saveBtn = document.getElementById('save-btn');
+  if (!saveBtn) return;
+
+  const hasManualCashInput = smartOverrides.trovato || smartOverrides.pagato || smartOverrides.lasciato;
+  const hasParticipantSelected = document.getElementById('participant-select')?.value !== '';
+
+  if (hasManualCashInput || hasParticipantSelected) {
+    saveBtn.style.display = 'block';
+  } else {
+    saveBtn.style.display = 'none';
   }
 }
 
