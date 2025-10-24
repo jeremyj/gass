@@ -118,6 +118,17 @@ function setDateDisplay(dateStr) {
   document.getElementById('data-display').value = `${day}-${month}-${year}`;
   document.getElementById('data').value = dateStr;
 
+  // Update header date display
+  const today = new Date().toISOString().split('T')[0];
+  const headerDateDisplay = document.getElementById('header-date-display');
+  if (headerDateDisplay) {
+    if (dateStr === today) {
+      headerDateDisplay.textContent = 'Oggi';
+    } else {
+      headerDateDisplay.textContent = formatDateItalian(dateStr);
+    }
+  }
+
   // Set picker to the same month/year
   pickerYear = parseInt(year);
   pickerMonth = parseInt(month) - 1;
