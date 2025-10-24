@@ -28,7 +28,8 @@ function isMobile(userAgent) {
 }
 
 function shouldUseMobileView(req) {
-  // Use only user-agent detection
+  // Check cookie first for testing, then user-agent
+  if (req.cookies.force_mobile === 'true') return true;
   return isMobile(req.headers['user-agent'] || '');
 }
 

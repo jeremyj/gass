@@ -109,13 +109,31 @@ function calculatePagatoProduttore() {
 }
 
 function checkShowSalvaCassaButton() {
-  const button = document.getElementById('btn-salva-cassa');
-  const hasOverride = smartOverrides.trovato || smartOverrides.pagato || smartOverrides.lasciato;
+  updateSaveButtonVisibility();
+}
 
-  if (hasOverride) {
-    button.classList.remove('hidden');
+function updateSaveButtonVisibility() {
+  const btnCassa = document.getElementById('btn-salva-cassa');
+  const btnPartecipante = document.getElementById('btn-salva-partecipante');
+
+  if (!btnCassa || !btnPartecipante) return;
+
+  const hasManualCashInput = smartOverrides.trovato || smartOverrides.pagato || smartOverrides.lasciato;
+  const hasParticipantSelected = document.getElementById('participant-select')?.value !== '';
+
+  // Show button in appropriate section
+  if (hasParticipantSelected) {
+    // Show button under participant section
+    btnCassa.classList.add('hidden');
+    btnPartecipante.classList.remove('hidden');
+  } else if (hasManualCashInput) {
+    // Show button under cash section
+    btnCassa.classList.remove('hidden');
+    btnPartecipante.classList.add('hidden');
   } else {
-    button.classList.add('hidden');
+    // Hide both buttons
+    btnCassa.classList.add('hidden');
+    btnPartecipante.classList.add('hidden');
   }
 }
 
@@ -520,12 +538,14 @@ function showParticipantForm() {
   if (!nome) {
     infoBadge.style.display = 'block';
     updateLasciatoInCassa();
+    updateSaveButtonVisibility();
     return;
   }
 
   infoBadge.style.display = 'none';
   renderParticipant(nome);
   updateLasciatoInCassa();
+  updateSaveButtonVisibility();
 }
 
 function renderMovimentiGiorno() {
