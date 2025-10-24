@@ -33,6 +33,7 @@ function formatDateItalian(dateStr) {
 let pickerYear = new Date().getFullYear();
 let pickerMonth = new Date().getMonth();
 let isPickerOpen = false;
+let consegneDates = new Set();
 
 function toggleDatePicker() {
   const container = document.getElementById('date-picker-container');
@@ -81,13 +82,27 @@ function renderDatePicker() {
     const dateStr = `${pickerYear}-${String(pickerMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const isToday = today.getDate() === day && today.getMonth() === pickerMonth && today.getFullYear() === pickerYear;
     const isSelected = dateStr === selectedDateStr;
+    const hasConsegna = consegneDates.has(dateStr);
 
     let classes = 'date-picker-day';
     if (isToday) classes += ' today';
     if (isSelected) classes += ' selected';
+    if (hasConsegna) classes += ' has-consegna';
 
     html += `<div class="${classes}" onclick="selectPickerDate('${dateStr}')">${day}</div>`;
   }
+  html += '</div>';
+
+  // Legend
+  html += '<div class="date-picker-legend">';
+  html += '<div class="date-picker-legend-item">';
+  html += '<div class="date-picker-legend-color" style="background: #2ecc71;"></div>';
+  html += '<span>Con consegna</span>';
+  html += '</div>';
+  html += '<div class="date-picker-legend-item">';
+  html += '<div class="date-picker-legend-color" style="background: white; border: 1px solid #ddd;"></div>';
+  html += '<span>Senza consegna</span>';
+  html += '</div>';
   html += '</div>';
 
   container.innerHTML = html;
