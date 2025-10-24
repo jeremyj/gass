@@ -53,46 +53,6 @@ function renderParticipants() {
     const card = createParticipantCard(p);
     container.appendChild(card);
   });
-
-  renderSaldiSummary();
-}
-
-function renderSaldiSummary() {
-  const summaryContainer = document.getElementById('saldi-summary');
-
-  let creditiTotali = 0;
-  let debitiTotali = 0;
-
-  participants.forEach(p => {
-    if (p.saldo > 0) {
-      creditiTotali += p.saldo;
-    } else if (p.saldo < 0) {
-      debitiTotali += p.saldo;
-    }
-  });
-
-  const bilancio = creditiTotali + debitiTotali;
-  const bilancioColor = bilancio < 0 ? '#e74c3c' : bilancio > 0 ? '#2ecc71' : '#3498db';
-
-  summaryContainer.innerHTML = `
-    <div style="background: white; padding: 20px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-      <h3 style="color: #2c3e50; margin-bottom: 15px; text-align: center;">📊 Riepilogo</h3>
-      <div style="display: flex; justify-content: space-around; text-align: center;">
-        <div>
-          <div style="font-size: 12px; color: #6c757d; margin-bottom: 5px;">Crediti Totali</div>
-          <div style="font-size: 24px; font-weight: bold; color: #2ecc71;">+${creditiTotali.toFixed(2)} €</div>
-        </div>
-        <div>
-          <div style="font-size: 12px; color: #6c757d; margin-bottom: 5px;">Debiti Totali</div>
-          <div style="font-size: 24px; font-weight: bold; color: #e74c3c;">${debitiTotali.toFixed(2)} €</div>
-        </div>
-      </div>
-      <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #ecf0f1; text-align: center;">
-        <div style="font-size: 12px; color: #6c757d; margin-bottom: 5px;">Bilancio</div>
-        <div style="font-size: 28px; font-weight: bold; color: ${bilancioColor};">${bilancio >= 0 ? '+' : ''}${bilancio.toFixed(2)} €</div>
-      </div>
-    </div>
-  `;
 }
 
 function createParticipantCard(p) {
