@@ -77,6 +77,7 @@ body {
     display: flex;
     align-items: center;
     gap: 15px;
+    position: relative;
 }
 
 .header-date-section #header-date-display {
@@ -730,7 +731,7 @@ td input {
 
 /* Storico Styles */
 .storico-section {
-    background: #FFF9C4 !important;
+    background: #ecf0f1 !important;
     margin-bottom: 20px;
 }
 
@@ -761,8 +762,12 @@ td input {
 }
 
 .storico-info-table thead tr {
-    background: #FFEB3B;
+    background: #34495e;
     color: white;
+}
+
+.storico-info-table tbody tr {
+    background: #E3F2FD;
 }
 
 .storico-movimenti-title {

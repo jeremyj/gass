@@ -10,8 +10,8 @@
     <nav class="nav-menu">
         <ul>
             <li><a href="/consegna">📦 Consegna</a></li>
-            <li><a href="/storico">📋 Storico</a></li>
             <li><a href="/debiti" class="active">💰 Saldi</a></li>
+            <li><a href="/storico">📋 Storico</a></li>
         </ul>
     </nav>
 
@@ -21,11 +21,11 @@
             <div class="header-date-section">
                 <span id="header-date-display">Oggi</span>
                 <button type="button" class="change-date-btn" onclick="toggleDatePicker()">📅 Cambia Data</button>
+                <div id="date-picker-container" class="date-picker-popup" style="display: none;"></div>
             </div>
         </div>
         <input type="hidden" id="data" required>
         <input type="hidden" id="data-display">
-        <div id="date-picker-container" class="date-picker-popup" style="display: none;"></div>
 
         <div id="status" class="status"></div>
 
