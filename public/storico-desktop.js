@@ -34,9 +34,7 @@ function renderStorico(storico) {
 
 function createConsegnaSection(consegna, index, storico) {
   const section = document.createElement('div');
-  section.className = 'section';
-  section.style.background = '#FFF9C4';
-  section.style.marginBottom = '20px';
+  section.className = 'section storico-section';
 
   const header = createConsegnaHeader(consegna, index, storico);
   const infoTable = createInfoTable(consegna);
@@ -56,16 +54,13 @@ function createConsegnaSection(consegna, index, storico) {
 
 function createConsegnaHeader(consegna, index, storico) {
   const header = document.createElement('div');
-  header.style.display = 'flex';
-  header.style.justifyContent = 'space-between';
-  header.style.alignItems = 'center';
-  header.style.marginBottom = '15px';
+  header.className = 'storico-header';
 
   const discrepanzaWarning = calculateDiscrepanzaWarning(consegna, index, storico);
 
   header.innerHTML = `
     <div>
-      <h3 style="margin: 0; color: #2c3e50; display: inline;">Data: ${formatDateItalian(consegna.data)}</h3>
+      <h3 class="storico-date">Data: ${formatDateItalian(consegna.data)}</h3>
       ${discrepanzaWarning}
     </div>
   `;
@@ -82,8 +77,8 @@ function calculateDiscrepanzaWarning(consegna, index, storico) {
     const discrepanzaImporto = consegna.lasciato_in_cassa - lasciatoCalcolato;
 
     const segno = discrepanzaImporto >= 0 ? '+' : '';
-    const color = discrepanzaImporto >= 0 ? '#2e7d32' : '#d32f2f';
-    warning = `<span style="color: ${color}; font-weight: bold; margin-left: 15px;">⚠️ DISCREPANZA CASSA LASCIATA ${segno}€${discrepanzaImporto.toFixed(2)}</span>`;
+    const className = discrepanzaImporto >= 0 ? 'discrepanza-positive' : 'discrepanza-negative';
+    warning = `<span class="discrepanza-warning ${className}">⚠️ DISCREPANZA CASSA LASCIATA ${segno}€${discrepanzaImporto.toFixed(2)}</span>`;
   }
 
   // Discrepanza Cassa Trovata
@@ -93,8 +88,8 @@ function calculateDiscrepanzaWarning(consegna, index, storico) {
 
     if (Math.abs(discrepanzaTrovata) > 0.01) {
       const segno = discrepanzaTrovata >= 0 ? '+' : '';
-      const color = discrepanzaTrovata >= 0 ? '#2e7d32' : '#d32f2f';
-      warning += `<span style="color: ${color}; font-weight: bold; margin-left: 15px;">⚠️ DISCREPANZA CASSA TROVATA ${segno}€${discrepanzaTrovata.toFixed(2)}</span>`;
+      const className = discrepanzaTrovata >= 0 ? 'discrepanza-positive' : 'discrepanza-negative';
+      warning += `<span class="discrepanza-warning ${className}">⚠️ DISCREPANZA CASSA TROVATA ${segno}€${discrepanzaTrovata.toFixed(2)}</span>`;
     }
   }
 
@@ -103,9 +98,10 @@ function calculateDiscrepanzaWarning(consegna, index, storico) {
 
 function createInfoTable(consegna) {
   const table = document.createElement('table');
+  table.className = 'storico-info-table';
   table.innerHTML = `
     <thead>
-      <tr style="background: #FFEB3B; color: white;">
+      <tr>
         <th>Trovato in Cassa</th>
         <th>Pagato Produttore</th>
         <th>Lasciato in Cassa</th>
@@ -124,17 +120,15 @@ function createInfoTable(consegna) {
 
 function createMovimentiTitle() {
   const title = document.createElement('h4');
+  title.className = 'storico-movimenti-title';
   title.textContent = 'Movimenti Partecipanti';
-  title.style.marginTop = '20px';
-  title.style.marginBottom = '10px';
   return title;
 }
 
 function createMovimentiTable(movimenti) {
   const rows = movimenti.map((m, idx) => {
-    const bgColor = idx % 2 === 0 ? '#FFFFFF' : '#E3F2FD';
     return `
-      <tr style="background: ${bgColor};">
+      <tr>
         <td><strong>${m.nome}</strong></td>
         <td>${m.importo_saldato ? '€' + m.importo_saldato.toFixed(2) : ''}</td>
         <td>${m.usa_credito ? '€' + m.usa_credito.toFixed(2) : ''}</td>
@@ -147,6 +141,7 @@ function createMovimentiTable(movimenti) {
   }).join('');
 
   const table = document.createElement('table');
+  table.className = 'storico-movimenti-table';
   table.innerHTML = `
     <thead>
       <tr>
