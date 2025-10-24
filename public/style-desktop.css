@@ -138,7 +138,14 @@ label {
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     padding: 15px;
     z-index: 1000;
-    margin-top: 5px;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    min-width: 300px;
+}
+
+.page-header {
+    position: relative;
 }
 
 .date-picker-header {
@@ -211,6 +218,42 @@ label {
 
 .date-picker-day.today {
     border: 2px solid #3498db;
+}
+
+.date-picker-day.has-consegna {
+    background: #2ecc71;
+    color: white;
+    font-weight: bold;
+}
+
+.date-picker-day.has-consegna:hover {
+    background: #27ae60;
+}
+
+.date-picker-day.selected.has-consegna {
+    background: #16a085;
+}
+
+.date-picker-legend {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #ecf0f1;
+    display: flex;
+    gap: 15px;
+    font-size: 11px;
+    color: #7f8c8d;
+}
+
+.date-picker-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.date-picker-legend-color {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
 }
 
 input[type="text"],
