@@ -10,12 +10,51 @@ body {
     padding-bottom: 70px; /* Space for bottom navigation */
 }
 
+/* Navigation Menu (hidden on mobile, shown on desktop) */
+.nav-menu {
+    background: #2c3e50;
+    padding: 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: none; /* Hidden on mobile by default */
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-menu ul {
+    list-style: none;
+    display: flex;
+    max-width: 1200px;
+    margin: 0;
+}
+
+.nav-menu li {
+    margin: 0;
+}
+
+.nav-menu a {
+    display: block;
+    padding: 15px 30px;
+    color: white;
+    text-decoration: none;
+    text-align: center;
+    transition: background 0.3s;
+    white-space: nowrap;
+}
+
+.nav-menu a:hover {
+    background: #34495e;
+}
+
+.nav-menu a.active {
+    background: #3498db;
+}
+
 /* Page Header */
 .page-header {
     background: #3498db;
-    padding: 20px 25px;
-    border-radius: 0;
-    margin-bottom: 0;
+    padding: 15px 25px;
+    border-radius: 8px;
+    margin-bottom: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -26,7 +65,7 @@ body {
 .page-header h1 {
     color: white;
     margin: 0;
-    font-size: 18px;
+    font-size: 22px;
     white-space: nowrap;
 }
 
@@ -1403,43 +1442,10 @@ body {
     margin-top: 18px;
 }
 
-/* Desktop Navigation (top tabs) */
-.desktop-nav {
-    display: none;
-}
-
+/* Desktop Navigation: Show nav-menu on desktop/tablet */
 @media (min-width: 769px) {
-    .desktop-nav {
-        display: flex;
-        background: #2c3e50;
-        padding: 0;
-        margin: 0 auto 20px auto;
-        border-radius: 8px;
-        overflow: hidden;
-        max-width: 400px;
-    }
-
-    .desktop-nav-item {
-        flex: 1;
-        padding: 15px;
-        text-align: center;
-        color: white;
-        text-decoration: none;
-        font-weight: 600;
-        transition: background 0.2s;
-        border-right: 1px solid #34495e;
-    }
-
-    .desktop-nav-item:last-child {
-        border-right: none;
-    }
-
-    .desktop-nav-item:hover {
-        background: #34495e;
-    }
-
-    .desktop-nav-item.active {
-        background: #3498db;
+    .nav-menu {
+        display: flex; /* Show on desktop/tablet */
     }
 }
 
