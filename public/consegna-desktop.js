@@ -836,8 +836,8 @@ function handleContoProduttoreInput(nome, saldo) {
   const usaCreditoValue = usaCredito ? parseAmount(usaCredito.value) : 0;
   const debitoSaldatoValue = debitoSaldato ? parseAmount(debitoSaldato.value) : 0;
 
-  // Only auto-calculate if we have a conto_produttore value
-  if (contoProduttoreValue === 0) {
+  // Only auto-calculate if we have an importo_saldato value
+  if (importoSaldatoValue === 0 && usaCreditoValue === 0 && debitoSaldatoValue === 0) {
     return;
   }
 
