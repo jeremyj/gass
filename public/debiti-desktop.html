@@ -16,19 +16,18 @@
     </nav>
 
     <div class="container">
-        <h1>Gestione Debiti/Crediti</h1>
-
-        <div id="status" class="status"></div>
-
-        <div class="section">
-            <h2>Visualizza Saldi</h2>
-            <div class="form-group">
-                <label>Data:</label>
-                <input type="text" id="data-display" readonly placeholder="DD-MM-YYYY" onclick="toggleDatePicker()" style="cursor: pointer; background: white;">
-                <input type="hidden" id="data" required>
-                <div id="date-picker-container" class="date-picker-popup" style="display: none;"></div>
+        <div class="page-header">
+            <h1>💰 Saldi Partecipanti</h1>
+            <div class="header-date-section">
+                <span id="header-date-display">Oggi</span>
+                <button type="button" class="change-date-btn" onclick="toggleDatePicker()">📅 Cambia Data</button>
             </div>
         </div>
+        <input type="hidden" id="data" required>
+        <input type="hidden" id="data-display">
+        <div id="date-picker-container" class="date-picker-popup" style="display: none;"></div>
+
+        <div id="status" class="status"></div>
 
         <div class="section">
             <h2>Partecipanti</h2>
