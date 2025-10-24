@@ -1472,18 +1472,28 @@ body {
     }
 }
 
-/* Mobile-specific styles: align header fonts with accordion and info-badge */
+/* Mobile-specific styles: apply accordion-header.cassa style to page-header */
 @media (max-width: 768px) {
+    .page-header {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        padding: 18px;
+        border-radius: 12px;
+    }
+
     .page-header h1 {
-        font-size: 16px; /* Match accordion-header font size */
+        font-size: 16px;
+        font-weight: 700;
     }
 
     .header-date-section #header-date-display {
-        font-size: 13px; /* Match info-badge font size */
+        font-size: 13px;
     }
 
     .header-date-section .change-date-btn {
-        font-size: 13px; /* Match info-badge font size */
-        padding: 12px; /* Match info-badge padding */
+        font-size: 20px;
+        padding: 8px 12px;
+        background: rgba(255, 255, 255, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 8px;
     }
 }
