@@ -705,11 +705,11 @@ function updateSmartInput(input, type) {
 }
 
 function checkSmartInputEmpty(input, type) {
-  // If user clears the field OR value is unchanged, revert to AUTO
   const isEmpty = !input.value || input.value.trim() === '';
   const isUnchanged = input.value === originalValues[type];
 
-  if (isEmpty || isUnchanged) {
+  if (isEmpty) {
+    // If field is empty, revert to AUTO and recalculate
     input.classList.remove('manual');
     input.classList.add('auto');
     input.setAttribute('readonly', 'readonly');
@@ -729,6 +729,19 @@ function checkSmartInputEmpty(input, type) {
     } else if (type === 'lasciato') {
       updateLasciatoInCassa();
     }
+  } else if (isUnchanged) {
+    // If value unchanged, revert to AUTO but keep the same value (no recalculation)
+    input.classList.remove('manual');
+    input.classList.add('auto');
+    input.setAttribute('readonly', 'readonly');
+
+    const badge = document.getElementById(`badge-${type}`);
+    badge.classList.remove('manual');
+    badge.classList.add('auto');
+    badge.textContent = 'AUTO';
+
+    smartOverrides[type] = false;
+    // Do NOT recalculate - keep the original value
   }
 }
 
