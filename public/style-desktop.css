@@ -727,3 +727,76 @@ td input {
     color: #0c5460;
     line-height: 1.5;
 }
+
+/* Storico Styles */
+.storico-section {
+    background: #FFF9C4 !important;
+    margin-bottom: 20px;
+}
+
+.storico-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.storico-date {
+    margin: 0;
+    color: #2c3e50;
+    display: inline;
+}
+
+.discrepanza-warning {
+    font-weight: bold;
+    margin-left: 15px;
+}
+
+.discrepanza-positive {
+    color: #2e7d32;
+}
+
+.discrepanza-negative {
+    color: #d32f2f;
+}
+
+.storico-info-table thead tr {
+    background: #FFEB3B;
+    color: white;
+}
+
+.storico-movimenti-title {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #2c3e50;
+}
+
+.storico-movimenti-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.storico-movimenti-table thead {
+    background: #34495e;
+    color: white;
+}
+
+.storico-movimenti-table th,
+.storico-movimenti-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.storico-movimenti-table tbody tr:nth-child(even) {
+    background: #E3F2FD;
+}
+
+.storico-movimenti-table tbody tr:nth-child(odd) {
+    background: #FFFFFF;
+}
+
+.storico-movimenti-table tbody tr:hover {
+    background: #f8f9fa;
+}
