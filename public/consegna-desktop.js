@@ -478,6 +478,10 @@ function populateExistingMovimento(nome) {
     return;
   }
 
+  // Get current saldo for this participant
+  const p = participants.find(part => part.nome === nome);
+  const saldo = saldiBefore[nome] !== undefined ? saldiBefore[nome] : (p ? p.saldo || 0 : 0);
+
   // Populate form fields with existing values
   const fields = {
     [`contoProduttore_${nome}`]: movimento.importo_saldato || '',
@@ -493,6 +497,31 @@ function populateExistingMovimento(nome) {
     const field = document.getElementById(id);
     if (field && value !== '') {
       field.value = value;
+    }
+  }
+
+  // Handle "usa intero credito" checkbox
+  const usaCreditoField = document.getElementById(`usaCredito_${nome}`);
+  const usaInteroCreditoCheckbox = document.getElementById(`usaInteroCreditoCheckbox_${nome}`);
+
+  if (usaCreditoField && movimento.usa_credito && usaInteroCreditoCheckbox && saldo > 0) {
+    // If usa_credito equals the full credit amount, check the checkbox
+    if (Math.abs(movimento.usa_credito - saldo) < 0.01) {
+      usaInteroCreditoCheckbox.checked = true;
+      usaCreditoField.disabled = true;
+    }
+  }
+
+  // Handle "salda intero debito" checkbox
+  if (movimento.salda_tutto === 1) {
+    const saldaCheckbox = document.getElementById(`saldaDebito_${nome}`);
+    if (saldaCheckbox) {
+      saldaCheckbox.checked = true;
+      // Also disable the partial debito field if checkbox is checked
+      const debitoSaldatoField = document.getElementById(`debitoSaldato_${nome}`);
+      if (debitoSaldatoField) {
+        debitoSaldatoField.disabled = true;
+      }
     }
   }
 }
@@ -557,8 +586,12 @@ function buildCreditoSection(nome, saldo, saldoText, saldoClass) {
       <div class="flow-section-title">
         <span>CREDITO <span class="saldo-info ${saldoClass}">${saldoText}</span></span>
       </div>
+      <div class="checkbox-group">
+        <input type="checkbox" id="usaInteroCreditoCheckbox_${nome}" onchange="toggleUsaInteroCredito('${nome}', ${saldo})">
+        <label for="usaInteroCreditoCheckbox_${nome}">Usa intero credito</label>
+      </div>
       <div class="form-group">
-        <label>Usa credito:</label>
+        <label>Usa credito parziale:</label>
         <input type="text" inputmode="decimal" id="usaCredito_${nome}" placeholder="0.00"
                oninput="normalizeInputField(this); validateCreditoMax('${nome}', ${saldo}); handleContoProduttoreInput('${nome}', ${saldo}); handleCreditoDebitoInput('${nome}', ${saldo})"
                onfocus="handleInputFocus(this)">
@@ -573,8 +606,12 @@ function buildDebitoSection(nome, saldo, saldoText, saldoClass) {
       <div class="flow-section-title">
         <span>DEBITO <span class="saldo-info ${saldoClass}">${saldoText}</span></span>
       </div>
+      <div class="checkbox-group">
+        <input type="checkbox" id="saldaDebito_${nome}" onchange="toggleSaldaDebito('${nome}', ${saldo})">
+        <label for="saldaDebito_${nome}">Salda intero debito</label>
+      </div>
       <div class="form-group">
-        <label>Salda debito:</label>
+        <label>Salda parziale:</label>
         <input type="text" inputmode="decimal" id="debitoSaldato_${nome}" placeholder="0.00"
                oninput="normalizeInputField(this); handleContoProduttoreInput('${nome}', ${saldo}); handleCreditoDebitoInput('${nome}', ${saldo})"
                onfocus="handleInputFocus(this)">
@@ -598,6 +635,47 @@ function createHiddenInput(id, value) {
   input.id = id;
   input.value = value;
   return input;
+}
+
+// ===== CHECKBOX TOGGLE FUNCTIONS =====
+
+function toggleUsaInteroCredito(nome, saldo) {
+  const checkbox = document.getElementById(`usaInteroCreditoCheckbox_${nome}`);
+  const usaCreditoField = document.getElementById(`usaCredito_${nome}`);
+
+  if (checkbox && usaCreditoField) {
+    if (checkbox.checked) {
+      usaCreditoField.disabled = true;
+      usaCreditoField.value = saldo;
+    } else {
+      usaCreditoField.disabled = false;
+      usaCreditoField.value = '';
+    }
+  }
+
+  handleCreditoDebitoInput(nome, saldo);
+}
+
+function toggleSaldaDebito(nome, saldo) {
+  const checkbox = document.getElementById(`saldaDebito_${nome}`);
+  const debitoField = document.getElementById(`debitoSaldato_${nome}`);
+
+  if (checkbox && debitoField) {
+    if (checkbox.checked) {
+      debitoField.disabled = true;
+      debitoField.value = Math.abs(saldo);
+    } else {
+      debitoField.disabled = false;
+      debitoField.value = '';
+    }
+  }
+
+  if (!saldo) {
+    const p = participants.find(part => part.nome === nome);
+    saldo = saldiBefore[nome] !== undefined ? saldiBefore[nome] : (p ? p.saldo || 0 : 0);
+  }
+
+  handleCreditoDebitoInput(nome, saldo);
 }
 
 // ===== SMART OVERRIDE FUNCTIONS =====
