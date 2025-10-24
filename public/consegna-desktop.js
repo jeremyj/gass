@@ -992,6 +992,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const result = await response.json();
 
     if (result.success && result.consegne.length > 0) {
+      // Populate consegneDates Set for calendar indicators
+      consegneDates = new Set(result.consegne.map(c => c.data));
       setDateDisplay(result.consegne[0].data);
     } else {
       const today = new Date().toISOString().split('T')[0];
