@@ -411,32 +411,33 @@ function renderMovimentiGiorno() {
   }
 
   const rows = existingConsegnaMovimenti.map((m, idx) => {
-    const bgColor = idx % 2 === 0 ? '#FFFFFF' : '#E3F2FD';
     return `
-      <tr style="background: ${bgColor};">
-        <td style="padding: 8px;"><strong>${m.nome}</strong></td>
-        <td style="padding: 8px; text-align: right;">${m.importo_saldato ? '€' + m.importo_saldato.toFixed(2) : ''}</td>
-        <td style="padding: 8px; text-align: right;">${m.usa_credito ? '€' + m.usa_credito.toFixed(2) : ''}</td>
-        <td style="padding: 8px; text-align: right;">${m.debito_lasciato ? '€' + m.debito_lasciato.toFixed(2) : ''}</td>
-        <td style="padding: 8px; text-align: right;">${m.credito_lasciato ? '€' + m.credito_lasciato.toFixed(2) : ''}</td>
-        <td style="padding: 8px; text-align: right;">${m.debito_saldato ? '€' + m.debito_saldato.toFixed(2) : ''}</td>
-        <td style="padding: 8px;">${m.note || ''}</td>
+      <tr>
+        <td><strong>${m.nome}</strong></td>
+        <td class="text-right">${m.importo_saldato ? '€' + m.importo_saldato.toFixed(2) : ''}</td>
+        <td class="text-right">${m.usa_credito ? '€' + m.usa_credito.toFixed(2) : ''}</td>
+        <td class="text-right">${m.debito_lasciato ? '€' + m.debito_lasciato.toFixed(2) : ''}</td>
+        <td class="text-right">${m.credito_lasciato ? '€' + m.credito_lasciato.toFixed(2) : ''}</td>
+        <td class="text-right">${m.debito_saldato ? '€' + m.debito_saldato.toFixed(2) : ''}</td>
+        <td>${m.note || ''}</td>
       </tr>
     `;
   }).join('');
 
   container.innerHTML = `
-    <h3 style="margin-bottom: 10px;">Movimenti del Giorno</h3>
-    <table style="width: 100%; border-collapse: collapse;">
-      <thead><tr style="background: #FFEB3B; color: white;">
-        <th style="padding: 10px; text-align: left;">Nome</th>
-        <th style="padding: 10px; text-align: right;">Importo Saldato</th>
-        <th style="padding: 10px; text-align: right;">Usa Credito</th>
-        <th style="padding: 10px; text-align: right;">Debito Lasciato</th>
-        <th style="padding: 10px; text-align: right;">Credito Lasciato</th>
-        <th style="padding: 10px; text-align: right;">Debito Saldato</th>
-        <th style="padding: 10px; text-align: left;">Note</th>
-      </tr></thead>
+    <h3>Movimenti del Giorno</h3>
+    <table class="movimenti-table">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th class="text-right">Importo Saldato</th>
+          <th class="text-right">Usa Credito</th>
+          <th class="text-right">Debito Lasciato</th>
+          <th class="text-right">Credito Lasciato</th>
+          <th class="text-right">Debito Saldato</th>
+          <th>Note</th>
+        </tr>
+      </thead>
       <tbody>${rows}</tbody>
     </table>
   `;

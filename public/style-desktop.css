@@ -118,6 +118,13 @@ h1 {
     font-size: 18px;
 }
 
+.section h3 {
+    color: #34495e;
+    margin-bottom: 15px;
+    margin-top: 20px;
+    font-size: 16px;
+}
+
 /* Forms */
 .form-group {
     margin-bottom: 15px;
@@ -278,6 +285,21 @@ input[type="checkbox"] {
     margin-bottom: 10px;
 }
 
+select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    background: white;
+    cursor: pointer;
+}
+
+select:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
 /* Buttons */
 button {
     background: #3498db;
@@ -350,6 +372,33 @@ td input {
     border: 1px solid #ddd;
     border-radius: 3px;
     width: 100%;
+}
+
+/* Movimenti Table */
+.movimenti-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.movimenti-table thead {
+    background: #34495e;
+    color: white;
+}
+
+.movimenti-table th,
+.movimenti-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.movimenti-table .text-right {
+    text-align: right;
+}
+
+.movimenti-table tbody tr:hover {
+    background: #f8f9fa;
 }
 
 /* Participant Cards */
