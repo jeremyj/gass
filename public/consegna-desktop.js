@@ -1087,16 +1087,27 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
 // ===== BUTTON VISIBILITY =====
 
 function updateSaveButtonVisibility() {
-  const saveBtn = document.getElementById('save-btn');
-  if (!saveBtn) return;
+  const saveBtnCassa = document.getElementById('save-btn-cassa');
+  const saveBtnParticipant = document.getElementById('save-btn-participant');
+
+  if (!saveBtnCassa || !saveBtnParticipant) return;
 
   const hasManualCashInput = smartOverrides.trovato || smartOverrides.pagato || smartOverrides.lasciato;
   const hasParticipantSelected = document.getElementById('participant-select')?.value !== '';
 
-  if (hasManualCashInput || hasParticipantSelected) {
-    saveBtn.style.display = 'block';
+  // Show button in appropriate section
+  if (hasParticipantSelected) {
+    // Show button under participant section
+    saveBtnCassa.style.display = 'none';
+    saveBtnParticipant.style.display = 'block';
+  } else if (hasManualCashInput) {
+    // Show button under cash section
+    saveBtnCassa.style.display = 'block';
+    saveBtnParticipant.style.display = 'none';
   } else {
-    saveBtn.style.display = 'none';
+    // Hide both buttons
+    saveBtnCassa.style.display = 'none';
+    saveBtnParticipant.style.display = 'none';
   }
 }
 
