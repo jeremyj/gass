@@ -484,19 +484,6 @@ function renderParticipant(nome) {
 
   addHiddenFields(card, nome, haCredito, haDebito);
 
-  // Add click handler to header to close card
-  setTimeout(() => {
-    const header = document.getElementById(`header-${nome.replace(/\s/g, '_')}`);
-    if (header) {
-      header.addEventListener('click', (e) => {
-        // Don't close if clicking on input fields or buttons
-        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
-          removeParticipant(nome);
-        }
-      });
-    }
-  }, 100);
-
   // Load existing data if available (with timeout to ensure DOM is ready)
   setTimeout(() => {
     loadExistingParticipantData(nome, saldo);
@@ -572,10 +559,6 @@ function loadExistingParticipantData(nome, saldo) {
 
 function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito, haDebito) {
   return `
-    <div class="flow-header" id="header-${nome.replace(/\s/g, '_')}" style="cursor: pointer;">
-      <div class="participant-name">${nome}</div>
-    </div>
-
     <div class="flow-section">
       <div class="flow-section-title">PAGAMENTO</div>
       <div class="form-group">

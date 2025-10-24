@@ -539,11 +539,6 @@ function populateExistingMovimento(nome) {
 
 function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito, haDebito) {
   return `
-    <div class="flow-header">
-      <div class="participant-name">${nome}</div>
-      <div class="saldo-info ${saldoClass}">${saldoText}</div>
-    </div>
-
     <div class="flow-section">
       <div class="flow-section-title">PAGAMENTO</div>
       <div class="form-group">
