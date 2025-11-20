@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  gass:
+    build: .
+    container_name: gass-app
+    restart: unless-stopped
+
+    # Environment variables for nginx-proxy and acme-companion
+    environment:
+      # Required for nginx-proxy to detect this container
+      - VIRTUAL_HOST=gass.yourdomain.com
+      - VIRTUAL_PORT=3000
+
+      # Required for Let's Encrypt SSL certificate
+      - LETSENCRYPT_HOST=gass.yourdomain.com
+      - LETSENCRYPT_EMAIL=your-email@example.com
+
+      # Optional: Node environment
+      - NODE_ENV=production
+      - PORT=3000
+
+    volumes:
+      # Persistent storage for SQLite database
+      - gass-data:/app/data
+
+      # Mount credentials.json (read-only)
+      # Make sure this file exists on your host before starting
+      - ./credentials.json:/app/credentials.json:ro
+
+    # Connect to nginx-proxy network
+    # Replace 'nginx-proxy' with your actual network name
+    networks:
+      - nginx-proxy
+
+    # Expose port (only accessible within Docker network)
+    expose:
+      - "3000"
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  # Named volume for persistent database storage
+  gass-data:
+    driver: local
+
+networks:
+  # Use existing nginx-proxy network
+  # This must match the network your nginx-proxy container is using
+  nginx-proxy:
+    external: true

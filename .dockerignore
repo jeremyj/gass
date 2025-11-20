@@ -1,0 +1,54 @@
+# Node modules (will be installed in container)
+node_modules
+npm-debug.log
+
+# Git
+.git
+.gitignore
+
+# Local database (use volume instead)
+gass.db
+gass.db-shm
+gass.db-wal
+*.db
+
+# Data directory (use volume instead)
+data/
+
+# Documentation
+*.md
+docs/
+
+# Screenshots
+*.png
+*.jpg
+*.jpeg
+
+# Environment files
+.env.local
+.env.development
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Docker files (not needed in image)
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Test and development files
+test/
+tests/
+*.test.js
+*.spec.js
+
+# Logs
+logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db

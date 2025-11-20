@@ -2,3 +2,14 @@ credentials.json
 .env
 gass.db
 node_modules/
+
+# Docker secrets and auth
+.htpasswd
+
+# Backups
+backups/
+
+# SQLite files
+*.db
+*.db-shm
+*.db-wal
