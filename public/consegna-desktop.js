@@ -1004,7 +1004,7 @@ async function saveCassaOnly() {
 
     if (result.success) {
       showStatus('Dati cassa salvati con successo!', 'success');
-      setTimeout(() => loadData(), 1000);
+      setTimeout(() => checkDateData(), 1000);
     } else {
       showStatus('Errore: ' + result.error, 'error');
     }

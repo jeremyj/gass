@@ -1089,7 +1089,7 @@ async function saveCassaOnly() {
     if (result.success) {
       showStatus('✓ Cassa salvata', 'success');
       await loadConsegneDates(); // Refresh calendar
-      setTimeout(() => loadData(), 1000);
+      setTimeout(() => checkDateData(), 1000);
     } else {
       showStatus('Errore: ' + result.error, 'error');
     }

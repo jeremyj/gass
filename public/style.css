@@ -5,12 +5,12 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #f8f9fa;
-    padding-bottom: 70px; /* Space for bottom navigation */
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: #f8f9fa; /* Mobile default */
+    padding-bottom: 70px; /* Space for bottom navigation on mobile */
 }
 
-/* Navigation Menu (hidden on mobile, shown on desktop) */
+/* Nav Menu (mobile - hidden by default, desktop - shown) */
 .nav-menu {
     background: #2c3e50;
     padding: 0;
@@ -23,7 +23,7 @@ body {
 .nav-menu ul {
     list-style: none;
     display: flex;
-    max-width: 1200px;
+    max-width: 1200px; /* Desktop */
     margin: 0;
 }
 
@@ -49,7 +49,13 @@ body {
     background: #3498db;
 }
 
-/* Page Header */
+/* Main Container (mobile) */
+.container {
+    padding: 15px;
+    max-width: 100%;
+}
+
+/* Page Header (mobile default) */
 .page-header {
     background: #3498db;
     padding: 15px 25px;
@@ -110,7 +116,7 @@ body {
     top: 100%;
     right: 0;
     margin-top: 8px;
-    min-width: 280px;
+    min-width: 280px; /* Mobile default */
 }
 
 .date-picker-header {
@@ -143,13 +149,13 @@ body {
 .date-picker-weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 3px;
+    gap: 3px; /* Mobile default */
     margin-bottom: 5px;
 }
 
 .date-picker-weekday {
     text-align: center;
-    font-size: 11px;
+    font-size: 11px; /* Mobile default */
     font-weight: bold;
     color: #666;
     padding: 4px;
@@ -158,7 +164,7 @@ body {
 .date-picker-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 3px;
+    gap: 3px; /* Mobile default */
 }
 
 .date-picker-day {
@@ -209,8 +215,8 @@ body {
     padding-top: 12px;
     border-top: 1px solid #ecf0f1;
     display: flex;
-    gap: 12px;
-    font-size: 10px;
+    gap: 12px; /* Mobile default */
+    font-size: 10px; /* Mobile default */
     color: #7f8c8d;
 }
 
@@ -248,13 +254,7 @@ body {
     transform: scale(0.95);
 }
 
-/* Main Container */
-.container {
-    padding: 15px;
-    max-width: 100%;
-}
-
-/* Bottom Navigation */
+/* Bottom Navigation (mobile only) */
 .bottom-nav {
     position: fixed;
     bottom: 0;
@@ -364,7 +364,7 @@ body {
 
 /* Smart Override Input */
 .input-group {
-    margin-bottom: 18px;
+    margin-bottom: 18px; /* Mobile default */
 }
 
 .input-label {
@@ -379,7 +379,7 @@ body {
 
 .smart-input {
     width: 100%;
-    padding: 16px;
+    padding: 16px; /* Mobile default */
     border: 2px solid #ddd;
     border-radius: 8px;
     font-size: 16px;
@@ -567,7 +567,7 @@ body {
     gap: 10px;
 }
 
-/* Buttons */
+/* Buttons (mobile specific - big-btn) */
 .big-btn {
     width: 100%;
     padding: 16px;
@@ -749,7 +749,7 @@ body {
 }
 
 .form-group {
-    margin-bottom: 12px;
+    margin-bottom: 12px; /* Mobile default */
 }
 
 .form-group label {
@@ -878,146 +878,185 @@ body {
     letter-spacing: 0.5px;
 }
 
-/* Storico */
-.consegna-card {
+/* Storico (mobile-specific card styles) */
+.storico-consegna-card {
     background: white;
     border-radius: 12px;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
 }
 
-.consegna-card-header {
+.storico-consegna-card.expanded {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.storico-consegna-header {
+    padding: 16px 18px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 15px;
     cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    transition: background 0.2s;
 }
 
-.consegna-date {
-    font-size: 18px;
+.storico-consegna-header:active {
+    background: linear-gradient(135deg, #5568d3 0%, #653a8a 100%);
+}
+
+.storico-consegna-date {
     font-weight: bold;
+    font-size: 14px;
+    color: white;
 }
 
-.consegna-expand-icon {
-    font-size: 20px;
-    transition: transform 0.3s;
+.storico-arrow {
+    font-size: 18px;
+    color: white;
 }
 
-.consegna-expand-icon.expanded {
-    transform: rotate(180deg);
+.storico-consegna-content {
+    padding: 18px;
+    background: white;
 }
 
-.consegna-card-content {
-    padding: 15px;
-    display: none;
-}
-
-.consegna-card-content.show {
-    display: block;
-}
-
-.consegna-info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 15px;
-}
-
-.consegna-info-item {
-    background: #f8f9fa;
-    padding: 12px;
+/* Sezione Cassa (mobile) */
+.storico-cassa-section {
+    background: white;
     border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 16px;
+    border: 2px solid #e9ecef;
 }
 
-.consegna-info-label {
+.storico-cassa-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f3f5;
+}
+
+.storico-cassa-item:last-child {
+    border-bottom: none;
+}
+
+.storico-cassa-label {
     font-size: 11px;
+    font-weight: 600;
     color: #6c757d;
-    margin-bottom: 4px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-.consegna-info-value {
+.storico-cassa-value {
     font-size: 16px;
     font-weight: bold;
-    color: #2c3e50;
-}
-
-.consegna-info-value.has-override {
     color: #e74c3c;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.override-indicator {
-    display: inline-block;
-    background: #e74c3c;
+.storico-cassa-value.lasciato {
+    color: #2ecc71;
+}
+
+/* Sezione Movimenti (mobile) */
+.storico-movimenti-section {
+    margin-top: 16px;
+}
+
+.storico-movimenti-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    border-radius: 8px;
     color: white;
-    font-size: 9px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin-left: 6px;
-    font-weight: 700;
 }
 
-.movimenti-list {
-    margin-top: 15px;
-}
-
-.movimenti-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: #495057;
-    margin-bottom: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.movimento-item {
-    background: #f8f9fa;
-    border-left: 4px solid #3498db;
+/* Participant Cards in Storico (mobile) */
+.storico-participant-card {
+    border-radius: 8px;
     padding: 12px;
     margin-bottom: 8px;
-    border-radius: 6px;
+    border-left: 4px solid;
 }
 
-.movimento-item.credito {
-    border-left-color: #2ecc71;
-    background: #f0fff4;
+.storico-participant-card.credito {
+    background: #d4edda;
+    border-left-color: #28a745;
 }
 
-.movimento-item.debito {
-    border-left-color: #e74c3c;
-    background: #fff5f5;
+.storico-participant-card.debito {
+    background: #f8d7da;
+    border-left-color: #dc3545;
 }
 
-.movimento-header {
+.storico-participant-card.pari {
+    background: #d1ecf1;
+    border-left-color: #17a2b8;
+}
+
+.storico-participant-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 6px;
 }
 
-.movimento-name {
-    font-weight: 600;
-    color: #2c3e50;
-    font-size: 14px;
-}
-
-.movimento-amount {
+.storico-participant-name {
     font-weight: bold;
     font-size: 14px;
+    color: #2c3e50;
 }
 
-.movimento-details {
+.storico-saldo-badge {
+    font-weight: bold;
+    font-size: 14px;
+    padding: 4px 10px;
+    border-radius: 12px;
+}
+
+.storico-saldo-badge.credito {
+    background: #28a745;
+    color: white;
+}
+
+.storico-saldo-badge.debito {
+    background: #dc3545;
+    color: white;
+}
+
+.storico-saldo-badge.pari {
+    background: #17a2b8;
+    color: white;
+}
+
+.storico-participant-details {
     font-size: 12px;
     color: #6c757d;
     line-height: 1.5;
 }
 
-/* Status Messages */
+/* Override indicator (mobile) */
+.override-indicator {
+    display: inline-block;
+    background: #e74c3c;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+/* Status Messages (common) */
 .status {
     padding: 10px;
     border-radius: 4px;
@@ -1056,7 +1095,7 @@ body {
     color: #856404;
 }
 
-/* Calendar Styles */
+/* Calendar Styles (common) */
 .calendar {
     background: white;
     border-radius: 8px;
@@ -1166,314 +1205,404 @@ body {
     color: #95a5a6;
 }
 
-/* Hide elements */
+/* Hide elements (common) */
 .hidden {
     display: none !important;
 }
 
-/* ===== STORICO PAGE ===== */
+/* ========================================================= */
+/*                   DESKTOP STYLES (min-width: 769px)       */
+/* ========================================================= */
 
-/* Consegna Card (Collapsed/Expanded) */
-.storico-consegna-card {
-    background: white;
-    border-radius: 12px;
-    margin-bottom: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-}
-
-.storico-consegna-card.expanded {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-}
-
-.storico-consegna-header {
-    padding: 16px 18px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: background 0.2s;
-}
-
-.storico-consegna-header:active {
-    background: linear-gradient(135deg, #5568d3 0%, #653a8a 100%);
-}
-
-.storico-consegna-date {
-    font-weight: bold;
-    font-size: 14px;
-    color: white;
-}
-
-.storico-arrow {
-    font-size: 18px;
-    color: white;
-}
-
-.storico-consegna-content {
-    padding: 18px;
-    background: white;
-}
-
-/* Sezione Cassa */
-.storico-cassa-section {
-    background: white;
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 16px;
-    border: 2px solid #e9ecef;
-}
-
-.storico-cassa-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #f1f3f5;
-}
-
-.storico-cassa-item:last-child {
-    border-bottom: none;
-}
-
-.storico-cassa-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: #6c757d;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.storico-cassa-value {
-    font-size: 16px;
-    font-weight: bold;
-    color: #e74c3c;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.storico-cassa-value.lasciato {
-    color: #2ecc71;
-}
-
-/* Sezione Movimenti */
-.storico-movimenti-section {
-    margin-top: 16px;
-}
-
-.storico-movimenti-title {
-    font-size: 13px;
-    font-weight: bold;
-    color: #2c3e50;
-    margin-bottom: 12px;
-    padding: 10px 12px;
-    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-    border-radius: 8px;
-    color: white;
-}
-
-/* Participant Cards in Storico */
-.storico-participant-card {
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 8px;
-    border-left: 4px solid;
-}
-
-.storico-participant-card.credito {
-    background: #d4edda;
-    border-left-color: #28a745;
-}
-
-.storico-participant-card.debito {
-    background: #f8d7da;
-    border-left-color: #dc3545;
-}
-
-.storico-participant-card.pari {
-    background: #d1ecf1;
-    border-left-color: #17a2b8;
-}
-
-.storico-participant-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
-}
-
-.storico-participant-name {
-    font-weight: bold;
-    font-size: 14px;
-    color: #2c3e50;
-}
-
-.storico-saldo-badge {
-    font-weight: bold;
-    font-size: 14px;
-    padding: 4px 10px;
-    border-radius: 12px;
-}
-
-.storico-saldo-badge.credito {
-    background: #28a745;
-    color: white;
-}
-
-.storico-saldo-badge.debito {
-    background: #dc3545;
-    color: white;
-}
-
-.storico-saldo-badge.pari {
-    background: #17a2b8;
-    color: white;
-}
-
-.storico-participant-details {
-    font-size: 12px;
-    color: #6c757d;
-    line-height: 1.5;
-}
-
-/* Override indicator */
-.override-indicator {
-    display: inline-block;
-    background: #e74c3c;
-    color: white;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: bold;
-    letter-spacing: 0.5px;
-}
-
-/* ===== SALDI/DEBITI PAGE ===== */
-
-.saldo-card {
-    background: white;
-    border-radius: 12px;
-    margin-bottom: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-}
-
-.saldo-card.expanded {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-}
-
-.saldo-card-header {
-    padding: 18px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: background 0.2s;
-}
-
-.saldo-card-header:active {
-    background: linear-gradient(135deg, #5568d3 0%, #653a8a 100%);
-}
-
-.saldo-card-info {
-    flex: 1;
-}
-
-.saldo-card-name {
-    font-size: 16px;
-    font-weight: bold;
-    color: white;
-    margin-bottom: 4px;
-}
-
-.saldo-card-date {
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.9);
-}
-
-.saldo-card-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.saldo-arrow {
-    color: white;
-    font-size: 18px;
-}
-
-.saldo-badge {
-    padding: 6px 12px;
-    border-radius: 16px;
-    font-weight: bold;
-    font-size: 14px;
-    white-space: nowrap;
-}
-
-.saldo-badge.debito {
-    background: #e74c3c;
-    color: white;
-}
-
-.saldo-badge.credito {
-    background: #2ecc71;
-    color: white;
-}
-
-.saldo-badge.zero {
-    background: #95a5a6;
-    color: white;
-}
-
-.saldo-card-content {
-    padding: 18px;
-    background: white;
-}
-
-.saldo-card-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 18px;
-}
-
-/* Desktop Navigation: Show nav-menu on desktop/tablet */
 @media (min-width: 769px) {
-    .nav-menu {
-        display: flex; /* Show on desktop/tablet */
+    body {
+        background: #f5f5f5; /* Desktop background */
+        padding-bottom: 0; /* No bottom navigation */
     }
-}
 
-/* Removed desktop-specific styles - let mobile expand freely on wide viewports */
+    .nav-menu {
+        display: flex; /* Show on desktop */
+    }
 
-/* Mobile-specific styles: apply accordion-header.cassa style to page-header */
-@media (max-width: 768px) {
+    .bottom-nav {
+        display: none; /* Hide bottom navigation on desktop */
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
     .page-header {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        padding: 18px;
-        border-radius: 12px;
+        /* Reset mobile-specific header background and padding */
+        background: #3498db;
+        padding: 15px 25px;
     }
 
     .page-header h1 {
-        font-size: 16px;
-        font-weight: 700;
+        font-size: 22px;
     }
 
     .header-date-section #header-date-display {
         font-size: 16px;
-        font-weight: 700;
     }
 
     .header-date-section .change-date-btn {
-        font-size: 20px;
-        padding: 8px 12px;
-        background: rgba(255, 255, 255, 0.3);
-        border: 1px solid rgba(255, 255, 255, 0.5);
+        padding: 8px 16px;
+        font-size: 14px;
+        border: none;
+        border-radius: 4px;
+        background: white;
+    }
+
+    .date-picker-popup {
+        min-width: 300px; /* Larger for desktop */
+    }
+
+    .date-picker-weekday {
+        font-size: 12px; /* Larger for desktop */
+    }
+
+    .date-picker-legend {
+        gap: 15px; /* Larger gap for desktop */
+        font-size: 11px; /* Larger font for desktop */
+    }
+
+    /* General desktop sections */
+    .section {
+        background: white;
+        padding: 20px;
         border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .section h2 {
+        color: #34495e;
+        margin-bottom: 15px;
+        font-size: 18px;
+    }
+
+    .section h3 {
+        color: #34495e;
+        margin-bottom: 15px;
+        margin-top: 20px;
+        font-size: 16px;
+    }
+
+    /* Form elements */
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+        color: #555;
+        font-weight: 500;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+
+    input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        margin-right: 10px;
+    }
+
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+        background: white;
+        cursor: pointer;
+    }
+
+    select:focus {
+        outline: none;
+        border-color: #3498db;
+    }
+
+    /* Generic buttons (desktop) */
+    button {
+        background: #3498db;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-right: 10px;
+    }
+
+    button:hover {
+        background: #2980b9;
+    }
+
+    button:disabled {
+        background: #bdc3c7;
+        cursor: not-allowed;
+    }
+
+    .btn-save {
+        background: #27ae60;
+    }
+
+    .btn-save:hover {
+        background: #229954;
+    }
+
+    .btn-delete {
+        background: #e74c3c;
+    }
+
+    .btn-delete:hover {
+        background: #c0392b;
+    }
+
+    .btn-add {
+        background: #f39c12;
+    }
+
+    .btn-add:hover {
+        background: #e67e22;
+    }
+
+    /* Tables (desktop) */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    thead {
+        background: #34495e;
+        color: white;
+    }
+
+    th, td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    tbody tr:hover {
+        background: #f8f9fa;
+    }
+
+    td input {
+        padding: 6px;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        width: 100%;
+    }
+
+    /* Movimenti Table (desktop) */
+    .movimenti-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+    }
+
+    .movimenti-table thead {
+        background: #34495e;
+        color: white;
+    }
+
+    .movimenti-table th,
+    .movimenti-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .movimenti-table .text-right {
+        text-align: right;
+    }
+
+    .movimenti-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+
+    /* Participant Cards (desktop version of flow) */
+    .participant-card {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 15px;
+        border-left: 4px solid #3498db;
+    }
+
+    .participant-name {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 10px;
+        font-size: 16px;
+    }
+
+    .saldo-info {
+        font-size: 14px;
+        color: #7f8c8d;
+        margin-bottom: 10px;
+    }
+
+    .saldo-debito { color: #e74c3c; }
+    .saldo-credito { color: #27ae60; }
+
+    /* Flow Layout desktop specific */
+    .participant-card-flow {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border-left: 4px solid #3498db;
+    }
+
+    .flow-header {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #ecf0f1;
+    }
+
+    .flow-section {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 15px;
+    }
+
+    .flow-section-title {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 10px;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .flow-credito {
+        background: #e8f5e9;
+        border-left: 3px solid #27ae60;
+    }
+
+    .flow-debito {
+        background: #ffebee;
+        border-left: 3px solid #e74c3c;
+    }
+
+    /* Storico Desktop Styles */
+    .storico-section {
+        background: #ecf0f1 !important;
+        margin-bottom: 20px;
+    }
+
+    .storico-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .storico-date {
+        margin: 0;
+        color: #2c3e50;
+        display: inline;
+    }
+
+    .discrepanza-warning {
+        font-weight: bold;
+        margin-left: 15px;
+    }
+
+    .discrepanza-positive {
+        color: #2e7d32;
+    }
+
+    .discrepanza-negative {
+        color: #d32f2f;
+    }
+
+    .storico-info-table thead tr {
+        background: #34495e;
+        color: white;
+    }
+
+    .storico-info-table tbody tr {
+        background: #E3F2FD;
+    }
+
+    .storico-movimenti-title {
+        margin-top: 20px;
+        margin-bottom: 10px;
+        color: #2c3e50;
+    }
+
+    .storico-movimenti-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    .storico-movimenti-table thead {
+        background: #34495e;
+        color: white;
+    }
+
+    .storico-movimenti-table th,
+    .storico-movimenti-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .storico-movimenti-table tbody tr:nth-child(even) {
+        background: #E3F2FD;
+    }
+
+    .storico-movimenti-table tbody tr:nth-child(odd) {
+        background: #FFFFFF;
+    }
+
+    .storico-movimenti-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+
+    /* Reset some mobile specific styles for desktop */
+    .big-btn {
+        width: auto;
+        padding: 12px 24px;
+        margin: 0 10px 0 0;
+        box-shadow: none;
+    }
+
+    .big-btn:active {
+        transform: none;
+        box-shadow: none;
+    }
+
+    .collapse-btn {
+        width: auto;
     }
 }
