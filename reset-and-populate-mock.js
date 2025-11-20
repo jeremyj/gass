@@ -70,13 +70,13 @@ console.log('\n📦 Creating mock deliveries...');
 console.log(`\n📅 Delivery 1: ${formatDate(date1)}`);
 const consegna1 = insertConsegna.run(
   formatDate(date1),
-  50.0,           // trovato_in_cassa
-  82.5,           // pagato_produttore (manual override)
-  17.5,           // lasciato_in_cassa
+  50.0,           // trovato_in_cassa (starting cash)
+  73.0,           // pagato_produttore (AUTO: 15+20+18+20)
+  47.0,           // lasciato_in_cassa (AUTO: 50+70-73)
   0,              // discrepanza_cassa
   0,              // discrepanza_trovata
-  1,              // discrepanza_pagato (MANUAL)
-  'Prima consegna - test override pagato'
+  0,              // discrepanza_pagato
+  'Prima consegna - calcoli automatici'
 );
 const consegna1Id = consegna1.lastInsertRowid;
 
@@ -140,13 +140,13 @@ console.log('   ✓ Giovanni: Simple payment → balance: 0€');
 console.log(`\n📅 Delivery 2: ${formatDate(date2)}`);
 const consegna2 = insertConsegna.run(
   formatDate(date2),
-  17.5,  // trovato_in_cassa (from previous lasciato)
-  67.0,  // pagato_produttore (auto-calculated)
-  30.5,  // lasciato_in_cassa (MANUAL override)
-  1,     // discrepanza_cassa (MANUAL)
+  47.0,  // trovato_in_cassa (AUTO: from previous lasciato)
+  73.0,  // pagato_produttore (AUTO: 18+20+13+22)
+  46.0,  // lasciato_in_cassa (AUTO: 47+72-73)
+  0,     // discrepanza_cassa
   0,     // discrepanza_trovata
   0,     // discrepanza_pagato
-  'Seconda consegna - override lasciato in cassa'
+  'Seconda consegna - calcoli automatici'
 );
 const consegna2Id = consegna2.lastInsertRowid;
 
@@ -210,13 +210,13 @@ console.log('   ✓ Giovanni: Full debt settlement flag → balance: 0€');
 console.log(`\n📅 Delivery 3: ${formatDate(date3)}`);
 const consegna3 = insertConsegna.run(
   formatDate(date3),
-  25.0,  // trovato_in_cassa (MANUAL override)
-  73.5,  // pagato_produttore (auto-calculated)
-  1.5,   // lasciato_in_cassa (auto-calculated)
+  46.0,  // trovato_in_cassa (AUTO: from previous lasciato)
+  64.5,  // pagato_produttore (AUTO: 20+14+21+9.5)
+  52.0,  // lasciato_in_cassa (AUTO: 46+70.5-64.5)
   0,     // discrepanza_cassa
-  1,     // discrepanza_trovata (MANUAL)
+  0,     // discrepanza_trovata
   0,     // discrepanza_pagato
-  'Terza consegna - override trovato (cassa persa)'
+  'Terza consegna - calcoli automatici'
 );
 const consegna3Id = consegna3.lastInsertRowid;
 
@@ -340,6 +340,6 @@ console.log('\n📊 Summary:');
 console.log(`   - 4 participants created`);
 console.log(`   - 3 deliveries created (${formatDate(date1)}, ${formatDate(date2)}, ${formatDate(date3)})`);
 console.log(`   - 12 movements created (edge cases covered)`);
-console.log(`   - Manual overrides: pagato (day 1), lasciato (day 2), trovato (day 3)`);
+console.log(`   - All cash calculations: AUTOMATIC (no manual overrides)`);
 
 db.close();
