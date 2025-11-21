@@ -900,30 +900,23 @@ function handleContoProduttoreInput(nome, saldo) {
   const debitoSaldatoIsManuallySet = debitoSaldato && debitoSaldatoValue > 0;
 
   if (shouldAutoCompensate && diff > 0 && debitoPreesistente > 0 && !debitoSaldatoIsManuallySet && debitoSaldatoValue === 0) {
-    // We have credit that can compensate existing debt
-    if (diff >= debitoPreesistente) {
-      // Credit fully covers debt - auto-check "Salda intero debito"
-      if (debitoSaldato) {
-        debitoSaldato.value = roundUpCents(debitoPreesistente);
-        debitoSaldato.disabled = true;
-      }
-      if (saldaDebitoCheckbox) {
-        saldaDebitoCheckbox.checked = true;
-      }
-      // Recalculate diff after debt compensation
-      diff = diff - debitoPreesistente;
-    } else {
-      // Credit partially covers debt - auto-populate partial payment
-      if (debitoSaldato) {
-        debitoSaldato.value = roundUpCents(diff);
-        debitoSaldato.disabled = false; // Allow manual adjustment for partial payment
-      }
-      if (saldaDebitoCheckbox) {
-        saldaDebitoCheckbox.checked = false;
-      }
-      // All credit used for debt payment
-      diff = 0;
+    const debitoSaldabile = Math.min(diff, debitoPreesistente);
+    const saldaTuttoIlDebito = debitoSaldabile === debitoPreesistente;
+
+    // Auto-populate debito_saldato field
+    if (debitoSaldato) {
+      debitoSaldato.value = roundUpCents(debitoSaldabile);
+      // Disable field only if paying ALL existing debt
+      debitoSaldato.disabled = saldaTuttoIlDebito;
     }
+
+    // Check "Salda intero debito" only if paying ALL existing debt
+    if (saldaDebitoCheckbox) {
+      saldaDebitoCheckbox.checked = saldaTuttoIlDebito;
+    }
+
+    // Recalculate diff after debt payment
+    diff = diff - debitoSaldabile;
   }
 
   // Case 2: Creating debt while participant has existing credit
@@ -935,30 +928,23 @@ function handleContoProduttoreInput(nome, saldo) {
 
   if (shouldAutoCompensate && diff < 0 && creditoPreesistente > 0 && !usaCreditoIsManuallySet && usaCreditoValue === 0) {
     const debitoDaCreare = Math.abs(diff);
-    // We have existing credit that can compensate new debt
-    if (creditoPreesistente >= debitoDaCreare) {
-      // Credit fully covers new debt - auto-check "Usa intero credito"
-      if (usaCredito) {
-        usaCredito.value = roundUpCents(debitoDaCreare);
-        usaCredito.disabled = true;
-      }
-      if (usaInteroCreditoCheckbox) {
-        usaInteroCreditoCheckbox.checked = true;
-      }
-      // Recalculate diff after credit usage
-      diff = diff + debitoDaCreare;
-    } else {
-      // Credit partially covers new debt - auto-populate partial usage
-      if (usaCredito) {
-        usaCredito.value = roundUpCents(creditoPreesistente);
-        usaCredito.disabled = false; // Allow manual adjustment for partial usage
-      }
-      if (usaInteroCreditoCheckbox) {
-        usaInteroCreditoCheckbox.checked = false;
-      }
-      // Recalculate diff after partial credit usage
-      diff = diff + creditoPreesistente;
+    const creditoUsato = Math.min(creditoPreesistente, debitoDaCreare);
+    const usaTuttoIlCredito = creditoUsato === creditoPreesistente;
+
+    // Auto-populate usa_credito field
+    if (usaCredito) {
+      usaCredito.value = roundUpCents(creditoUsato);
+      // Disable field only if using ALL available credit
+      usaCredito.disabled = usaTuttoIlCredito;
     }
+
+    // Check "Usa intero credito" only if using ALL available credit
+    if (usaInteroCreditoCheckbox) {
+      usaInteroCreditoCheckbox.checked = usaTuttoIlCredito;
+    }
+
+    // Recalculate diff after credit usage
+    diff = diff + creditoUsato;
   }
 
   // Auto-fill based on calculation - fields are ALWAYS disabled
