@@ -111,6 +111,10 @@
       diff = importoSaldato + usaCreditoForCalc - debitoSaldatoForCalc - contoProduttore;
       ```
     - **Critical fix**: Prevents simultaneous "Usa credito" + "Lascia credito" by calculating diff without old auto-values
+    - **Database load persistence fix**: When loading existing movement data from database, mark compensation fields with `dataset.autoPopulated = 'true'`
+      - **Issue**: Database-loaded values weren't marked, so system treated them as manually-entered, preventing recalculation
+      - **Solution**: Mobile (consegna.js:309, 332) and Desktop (consegna-desktop.js:556-558) now mark fields on load
+      - **Result**: Changing importo_saldato now dynamically updates usa_credito/debito_saldato from database values
 
-  - **Files**: `consegna.js:597-690`, `consegna-desktop.js:880-973`
+  - **Files**: `consegna.js:309,332,597-690`, `consegna-desktop.js:556-558,880-973`
   - **Rationale**: Credits and debts should automatically offset in both directions, with dynamic updates as user modifies values
