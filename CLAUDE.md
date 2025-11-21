@@ -40,3 +40,22 @@
 - **Location**: Buttons rendered at bottom of participant form in `buildParticipantForm()` function
 - **Global Buttons**: Avoid adding global action buttons outside participant forms - leads to duplicate/confusing UI
 - **Key Finding**: Previous implementation had redundant global "Salva Movimenti" button controlled by `updateSaveButtonVisibility()` - removed in commit c0915c5
+
+### Conto Produttore Field Implementation
+- **Purpose**: "Conto Produttore" is the total amount owed to the producer for goods received, independent of payment
+- **Database**: Added `conto_produttore` column to `movimenti` table (database.js:83-91)
+- **Persistence**: Field value is now saved and restored when switching tabs or reloading data
+- **Auto-calculation**: System auto-fills "Lascia credito" or "Lascia debito" based on formula:
+  ```
+  diff = importo_saldato + usa_credito - debito_saldato - conto_produttore
+  if diff > 0: credito_lasciato = diff
+  if diff < 0: debito_lasciato = abs(diff)
+  ```
+- **Pagato Produttore Calculation**: Changed from complex formula to simple sum of all `conto_produttore` values
+  - Old formula: `importo_saldato + usa_credito + debito_lasciato - credito_lasciato - debito_saldato`
+  - New formula: `Σ conto_produttore` for all movements
+  - Files updated: `public/consegna.js:31-40`, `public/consegna-desktop.js:754-763`, `server.js:348-357`
+- **Key Bug Fix**: Removed call to `handleCreditoDebitoInput()` at end of `handleContoProduttoreInput()` which was disabling auto-filled fields
+  - Issue: Field disable logic conflicted with auto-fill, preventing credito/debito from being populated
+  - Solution: Auto-fill logic already handles field states correctly, extra validation call was causing conflicts
+  - Files: `consegna.js:653-655`, `consegna-desktop.js:935-937`

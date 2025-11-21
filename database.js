@@ -80,6 +80,16 @@ try {
   }
 }
 
+// Add conto_produttore column to movimenti if it doesn't exist
+try {
+  db.exec(`ALTER TABLE movimenti ADD COLUMN conto_produttore REAL DEFAULT 0`);
+  console.log('Added conto_produttore column to movimenti table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) {
+    throw err;
+  }
+}
+
 // Initialize with participants list
 const count = db.prepare('SELECT COUNT(*) as count FROM partecipanti').get().count;
 if (count === 0) {

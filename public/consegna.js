@@ -32,11 +32,8 @@ function calculatePagatoProduttore() {
   let totalPagato = 0;
   if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
     existingConsegnaMovimenti.forEach(m => {
-      totalPagato += (m.importo_saldato || 0);
-      totalPagato += (m.usa_credito || 0);
-      totalPagato += (m.debito_lasciato || 0);
-      totalPagato -= (m.credito_lasciato || 0);
-      totalPagato -= (m.debito_saldato || 0);
+      // Pagato produttore = sum of all conto_produttore values
+      totalPagato += (m.conto_produttore || 0);
     });
   }
   return roundUpCents(totalPagato);
@@ -293,6 +290,11 @@ function loadExistingParticipantData(nome, saldo) {
   if (!movimento) return;
 
   // Populate fields with existing data
+  const contoProduttoreField = document.getElementById(`contoProduttore_${nome}`);
+  if (contoProduttoreField && movimento.conto_produttore) {
+    contoProduttoreField.value = movimento.conto_produttore;
+  }
+
   const importoField = document.getElementById(`importo_${nome}`);
   if (importoField && movimento.importo_saldato) {
     importoField.value = movimento.importo_saldato;
@@ -582,8 +584,9 @@ function handleContoProduttoreInput(nome, saldo) {
   const usaCreditoValue = usaCredito ? parseAmount(usaCredito.value) : 0;
   const debitoSaldatoValue = debitoSaldato ? parseAmount(debitoSaldato.value) : 0;
 
-  // Only auto-calculate if we have an importo_saldato value
-  if (importoSaldatoValue === 0 && usaCreditoValue === 0 && debitoSaldatoValue === 0) {
+  // Only auto-calculate if we have any payment-related value
+  // Skip only if ALL values are zero AND conto_produttore is also zero
+  if (importoSaldatoValue === 0 && usaCreditoValue === 0 && debitoSaldatoValue === 0 && contoProduttoreValue === 0) {
     return;
   }
 
@@ -596,8 +599,12 @@ function handleContoProduttoreInput(nome, saldo) {
   const diff = importoSaldatoValue + usaCreditoValue - debitoSaldatoValue - contoProduttoreValue;
 
   // Check if credito/debito fields have been manually modified by user (not auto-calculated)
-  const creditoIsManual = creditoLasciato && creditoLasciato.dataset.autoCalculated !== 'true' && creditoLasciato.value && !creditoLasciato.disabled;
-  const debitoIsManual = debitoLasciato && debitoLasciato.dataset.autoCalculated !== 'true' && debitoLasciato.value && !debitoLasciato.disabled;
+  // A field is manual if: has value AND was not auto-calculated AND is not disabled
+  const creditoValue = creditoLasciato ? parseAmount(creditoLasciato.value) : 0;
+  const debitoValue = debitoLasciato ? parseAmount(debitoLasciato.value) : 0;
+
+  const creditoIsManual = creditoLasciato && creditoValue > 0 && creditoLasciato.dataset.autoCalculated !== 'true' && !creditoLasciato.disabled;
+  const debitoIsManual = debitoLasciato && debitoValue > 0 && debitoLasciato.dataset.autoCalculated !== 'true' && !debitoLasciato.disabled;
 
   // Don't auto-fill if user has manually entered values
   if (creditoIsManual || debitoIsManual) {
@@ -637,8 +644,8 @@ function handleContoProduttoreInput(nome, saldo) {
     }
   }
 
-  // Trigger credito/debito validation
-  handleCreditoDebitoInput(nome, saldo);
+  // Don't call handleCreditoDebitoInput here - it would disable fields we just auto-filled
+  // The auto-fill logic above already handles the field states correctly
 }
 
 // ===== MOVEMENTS COUNTER =====
@@ -822,6 +829,7 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
     return;
   }
 
+  const contoProduttore = roundUpCents(parseAmount(document.getElementById(`contoProduttore_${currentNome}`).value));
   const importoSaldato = roundUpCents(parseAmount(document.getElementById(`importo_${currentNome}`).value));
   const usaCredito = roundUpCents(parseAmount(document.getElementById(`usaCredito_${currentNome}`)?.value || '0'));
   const debitoLasciato = roundUpCents(parseAmount(document.getElementById(`debito_${currentNome}`).value));
@@ -846,7 +854,7 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
   const partecipantiData = [{
     nome: currentNome,
     saldaTutto: false,
-    importoSaldato, usaCredito, debitoLasciato, creditoLasciato,
+    contoProduttore, importoSaldato, usaCredito, debitoLasciato, creditoLasciato,
     saldaDebitoTotale, debitoSaldato, note,
     nuovoSaldo: roundUpCents(saldoCorrente)
   }];

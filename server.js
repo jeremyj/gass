@@ -305,15 +305,15 @@ app.post('/api/consegna', (req, res) => {
         INSERT INTO movimenti (
           consegna_id, partecipante_id, salda_tutto, importo_saldato,
           usa_credito, debito_lasciato, credito_lasciato,
-          salda_debito_totale, debito_saldato, note
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          salda_debito_totale, debito_saldato, conto_produttore, note
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
 
       const updateMovimento = db.prepare(`
         UPDATE movimenti
         SET salda_tutto = ?, importo_saldato = ?, usa_credito = ?,
             debito_lasciato = ?, credito_lasciato = ?,
-            salda_debito_totale = ?, debito_saldato = ?, note = ?
+            salda_debito_totale = ?, debito_saldato = ?, conto_produttore = ?, note = ?
         WHERE consegna_id = ? AND partecipante_id = ?
       `);
 
@@ -332,7 +332,7 @@ app.post('/api/consegna', (req, res) => {
         const movimentoData = [
           p.saldaTutto ? 1 : 0, p.importoSaldato || 0, p.usaCredito || 0,
           p.debitoLasciato || 0, p.creditoLasciato || 0,
-          p.saldaDebitoTotale ? 1 : 0, p.debitoSaldato || 0, p.note || ''
+          p.saldaDebitoTotale ? 1 : 0, p.debitoSaldato || 0, p.contoProduttore || 0, p.note || ''
         ];
 
         if (existingMovimento) {
@@ -349,12 +349,8 @@ app.post('/api/consegna', (req, res) => {
         const movimenti = db.prepare('SELECT * FROM movimenti WHERE consegna_id = ?').all(consegna.id);
         let totalPagato = 0;
         movimenti.forEach(m => {
-          // conto_produttore = importo_saldato + usa_credito + debito_lasciato - credito_lasciato - debito_saldato
-          totalPagato += (m.importo_saldato || 0);
-          totalPagato += (m.usa_credito || 0);
-          totalPagato += (m.debito_lasciato || 0);
-          totalPagato -= (m.credito_lasciato || 0);
-          totalPagato -= (m.debito_saldato || 0);
+          // Pagato produttore = sum of all conto_produttore values
+          totalPagato += (m.conto_produttore || 0);
         });
 
         db.prepare('UPDATE consegne SET pagato_produttore = ? WHERE id = ?').run(totalPagato, consegna.id);
