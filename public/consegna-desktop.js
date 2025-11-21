@@ -895,7 +895,11 @@ function handleContoProduttoreInput(nome, saldo) {
   const usaInteroCreditoCheckbox = document.getElementById(`usaInteroCreditoCheckbox_${nome}`);
 
   // Case 1: Creating credit while participant has existing debt
-  if (shouldAutoCompensate && diff > 0 && debitoPreesistente > 0) {
+  // Skip if user has manually entered a value in debitoSaldato (including clearing it)
+  // Only auto-populate if field is empty (0)
+  const debitoSaldatoIsManuallySet = debitoSaldato && debitoSaldatoValue > 0;
+
+  if (shouldAutoCompensate && diff > 0 && debitoPreesistente > 0 && !debitoSaldatoIsManuallySet && debitoSaldatoValue === 0) {
     // We have credit that can compensate existing debt
     if (diff >= debitoPreesistente) {
       // Credit fully covers debt - auto-check "Salda intero debito"
@@ -923,7 +927,13 @@ function handleContoProduttoreInput(nome, saldo) {
   }
 
   // Case 2: Creating debt while participant has existing credit
-  if (shouldAutoCompensate && diff < 0 && creditoPreesistente > 0) {
+  // Skip if user has manually entered a value in usaCredito (including clearing it)
+  // Only auto-populate if field is empty (0) OR contains the exact auto-calculated value
+  const debitoDaCreare = diff < 0 ? Math.abs(diff) : 0;
+  const expectedUsaCredito = Math.min(creditoPreesistente, debitoDaCreare);
+  const usaCreditoIsManuallySet = usaCredito && usaCreditoValue > 0 && usaCreditoValue !== expectedUsaCredito;
+
+  if (shouldAutoCompensate && diff < 0 && creditoPreesistente > 0 && !usaCreditoIsManuallySet && usaCreditoValue === 0) {
     const debitoDaCreare = Math.abs(diff);
     // We have existing credit that can compensate new debt
     if (creditoPreesistente >= debitoDaCreare) {

@@ -105,7 +105,12 @@
     }
     ```
   - **Files**: `consegna.js:604-670`, `consegna-desktop.js:887-953`
-  - **Trigger Condition**: Auto-compensation only activates when `importo_saldato > 0` (user has entered payment amount)
-    - **Why**: Prevents premature compensation when user is still filling out the form
-    - **Example**: Entering only `conto_produttore=30€` won't trigger compensation until `importo_saldato` is also entered
+  - **Trigger Conditions**:
+    1. Auto-compensation only activates when `importo_saldato > 0` (user has entered payment amount)
+       - **Why**: Prevents premature compensation when user is still filling out the form
+       - **Example**: Entering only `conto_produttore=30€` won't trigger compensation until `importo_saldato` is also entered
+    2. Auto-population only occurs if target field is empty (value = 0)
+       - **Why**: Respects user's manual edits or clearing of auto-populated values
+       - **Example**: If system auto-populates "Usa credito = 5€", user can clear it and system won't re-populate
+       - Prevents "sticky" fields that can't be cleared
   - **Rationale**: Credits and debts should automatically offset in both directions - this matches expected financial behavior and prevents confusion
