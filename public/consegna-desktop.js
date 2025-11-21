@@ -822,6 +822,14 @@ function handleCreditoDebitoInput(nome, saldo) {
   const debitoSaldato = document.getElementById(`debitoSaldato_${nome}`);
   const usaCredito = document.getElementById(`usaCredito_${nome}`);
 
+  // Remove auto-populated flag when user manually modifies these fields
+  if (usaCredito && usaCredito.dataset.autoPopulated) {
+    delete usaCredito.dataset.autoPopulated;
+  }
+  if (debitoSaldato && debitoSaldato.dataset.autoPopulated) {
+    delete debitoSaldato.dataset.autoPopulated;
+  }
+
   const usaCreditoValue = usaCredito ? parseAmount(usaCredito.value) : 0;
   const debitoSaldatoValue = debitoSaldato ? parseAmount(debitoSaldato.value) : 0;
 
@@ -895,17 +903,19 @@ function handleContoProduttoreInput(nome, saldo) {
   const usaInteroCreditoCheckbox = document.getElementById(`usaInteroCreditoCheckbox_${nome}`);
 
   // Case 1: Creating credit while participant has existing debt
-  // Skip if user has manually entered a value in debitoSaldato (including clearing it)
-  // Only auto-populate if field is empty (0)
-  const debitoSaldatoIsManuallySet = debitoSaldato && debitoSaldatoValue > 0;
+  // Skip if user has manually entered a value in debitoSaldato
+  // Auto-populated fields can be recalculated, user-entered fields cannot
+  const debitoSaldatoIsAutoPopulated = debitoSaldato && debitoSaldato.dataset.autoPopulated === 'true';
+  const debitoSaldatoIsManuallySet = debitoSaldato && debitoSaldatoValue > 0 && !debitoSaldatoIsAutoPopulated;
 
-  if (shouldAutoCompensate && diff > 0 && debitoPreesistente > 0 && !debitoSaldatoIsManuallySet && debitoSaldatoValue === 0) {
+  if (shouldAutoCompensate && diff > 0 && debitoPreesistente > 0 && !debitoSaldatoIsManuallySet) {
     const debitoSaldabile = Math.min(diff, debitoPreesistente);
     const saldaTuttoIlDebito = debitoSaldabile === debitoPreesistente;
 
     // Auto-populate debito_saldato field
     if (debitoSaldato) {
       debitoSaldato.value = roundUpCents(debitoSaldabile);
+      debitoSaldato.dataset.autoPopulated = 'true'; // Mark as auto-populated
       // Disable field only if paying ALL existing debt
       debitoSaldato.disabled = saldaTuttoIlDebito;
     }
@@ -920,17 +930,19 @@ function handleContoProduttoreInput(nome, saldo) {
   }
 
   // Case 2: Creating debt while participant has existing credit
-  // Skip if user has manually entered a value in usaCredito (including clearing it)
-  // Only auto-populate if field is empty (0)
-  const usaCreditoIsManuallySet = usaCredito && usaCreditoValue > 0;
+  // Skip if user has manually entered a value in usaCredito
+  // Auto-populated fields can be recalculated, user-entered fields cannot
+  const usaCreditoIsAutoPopulated = usaCredito && usaCredito.dataset.autoPopulated === 'true';
+  const usaCreditoIsManuallySet = usaCredito && usaCreditoValue > 0 && !usaCreditoIsAutoPopulated;
 
-  if (shouldAutoCompensate && diff < 0 && creditoPreesistente > 0 && !usaCreditoIsManuallySet && usaCreditoValue === 0) {
+  if (shouldAutoCompensate && diff < 0 && creditoPreesistente > 0 && !usaCreditoIsManuallySet) {
     const creditoUsabile = Math.min(Math.abs(diff), creditoPreesistente);
     const usaTuttoIlCredito = creditoUsabile === creditoPreesistente;
 
     // Auto-populate usa_credito field
     if (usaCredito) {
       usaCredito.value = roundUpCents(creditoUsabile);
+      usaCredito.dataset.autoPopulated = 'true'; // Mark as auto-populated
       // Disable field only if using ALL available credit
       usaCredito.disabled = usaTuttoIlCredito;
     }
