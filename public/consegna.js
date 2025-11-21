@@ -68,18 +68,6 @@ function updateLasciatoInCassa() {
   lasciatoField.value = formatNumber(value);
 }
 
-function updateSaveButtonVisibility() {
-  const btnPartecipante = document.getElementById('btn-salva-partecipante');
-  if (!btnPartecipante) return;
-
-  const hasParticipantSelected = document.getElementById('participant-select')?.value !== '';
-
-  if (hasParticipantSelected) {
-    btnPartecipante.classList.remove('hidden');
-  } else {
-    btnPartecipante.classList.add('hidden');
-  }
-}
 
 // ===== CALENDAR AND DATE PICKER =====
 // Calendar and date picker functions are now in calendar.js
@@ -163,7 +151,6 @@ function loadExistingConsegna(result) {
   updatePagatoProduttore();
   updateLasciatoInCassa();
 
-  updateSaveButtonVisibility();
   updateMovimentiCounter();
   renderMovimentiGiorno();
 }
@@ -184,7 +171,6 @@ function loadNewConsegna(result) {
   updatePagatoProduttore();
   updateLasciatoInCassa();
 
-  updateSaveButtonVisibility();
   updateMovimentiCounter();
   renderMovimentiGiorno();
 }
@@ -222,14 +208,12 @@ function showParticipantForm() {
   if (!nome) {
     if (infoBadge) infoBadge.style.display = 'block';
     updateLasciatoInCassa();
-    updateSaveButtonVisibility();
     return;
   }
 
   if (infoBadge) infoBadge.style.display = 'none';
   renderParticipant(nome);
   updateLasciatoInCassa();
-  updateSaveButtonVisibility();
 }
 
 function renderMovimentiGiorno() {
