@@ -28,49 +28,46 @@
                 <span class="accordion-arrow" id="arrow-cassa">▼</span>
             </div>
             <div class="accordion-content" id="content-cassa">
-                <div class="info-badge">
-                    💡 Click sui campi per modificare manualmente
-                </div>
                 <!-- Trovato in Cassa -->
                 <div class="input-group">
                     <div class="input-label">
                         <span>Trovato in Cassa</span>
-                        <span class="mode-badge auto" id="badge-trovato">AUTO</span>
                     </div>
                     <input type="text"
                            inputmode="decimal"
                            id="trovatoInCassa"
-                           class="smart-input auto"
+                           class="input-field"
                            placeholder="Dal lasciato precedente"
-                           readonly>
+                           readonly
+                           style="background: #f0f0f0; cursor: not-allowed;">
                 </div>
 
                 <!-- Pagato Produttore -->
                 <div class="input-group">
                     <div class="input-label">
                         <span>Pagato Produttore</span>
-                        <span class="mode-badge auto" id="badge-pagato">AUTO</span>
                     </div>
                     <input type="text"
                            inputmode="decimal"
                            id="pagatoProduttore"
-                           class="smart-input auto"
+                           class="input-field"
                            placeholder="Σ tutti i movimenti"
-                           readonly>
+                           readonly
+                           style="background: #f0f0f0; cursor: not-allowed;">
                 </div>
 
                 <!-- Lasciato in Cassa -->
                 <div class="input-group">
                     <div class="input-label">
                         <span>Lasciato in Cassa</span>
-                        <span class="mode-badge auto" id="badge-lasciato">AUTO</span>
                     </div>
                     <input type="text"
                            inputmode="decimal"
                            id="lasciatoInCassa"
-                           class="smart-input auto"
+                           class="input-field"
                            placeholder="Trovato - Pagato"
-                           readonly>
+                           readonly
+                           style="background: #f0f0f0; cursor: not-allowed;">
                 </div>
 
                 <!-- Note Giornata -->
@@ -80,11 +77,6 @@
                     </div>
                     <input type="text" id="noteGiornata" class="input-field" placeholder="Note opzionali...">
                 </div>
-
-                <!-- Pulsante Salva Cassa (visibile solo con override) -->
-                <button class="big-btn big-btn-success hidden" id="btn-salva-cassa" onclick="saveCassaOnly()">
-                    💾 Salva Cassa
-                </button>
             </div>
         </div>
 
@@ -133,8 +125,7 @@
     </div>
 
     <script src="utils.js"></script>
-    <script src="smart-input.js"></script>
     <script src="calendar.js"></script>
-    <script src="consegna.js?v=13"></script>
+    <script src="consegna.js?v=14"></script>
 </body>
 </html>
