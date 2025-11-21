@@ -72,27 +72,37 @@
     - Modified `handleContoProduttoreInput()` to always set `disabled=true` when populating fields: `consegna.js:618-649`, `consegna-desktop.js:906-937`
     - Simplified `handleCreditoDebitoInput()` to enforce disabled state and only manage `debitoSaldato` field: `consegna.js:527-560`, `consegna-desktop.js:817-843`
   - **Rationale**: These fields are derived values from the formula, never user input. Disabling prevents confusion and ensures data integrity.
-- **Key Enhancement #2**: Automatic Credit/Debt Compensation
-  - **Problem**: When a payment created credit that could pay off existing debt, system showed "Lascia credito" instead of automatically compensating the debt
-  - **Example Scenario**: Participant has 7€ debt, conto_produttore=15€, importo_saldato=22€
-    - Old behavior: Shows "Lascia credito = 7€" (incorrect)
-    - New behavior: Auto-checks "Salda intero debito", populates "Debito saldato = 7€", shows participant as "in pari"
-  - **Implementation Logic** (in `handleContoProduttoreInput()`):
+- **Key Enhancement #2**: Bidirectional Automatic Credit/Debt Compensation
+  - **Problem**: System didn't automatically offset credits and debts in either direction
+  - **Solution**: Implemented bidirectional auto-compensation that works in both scenarios:
+
+  **Case 1: Creating credit while participant has existing debt**
+  - **Example**: Participant has 7€ debt, conto_produttore=15€, importo_saldato=22€
+    - Old: Shows "Lascia credito = 7€" (incorrect)
+    - New: Auto-checks "Salda intero debito", populates "Debito saldato = 7€", shows "in pari"
+  - **Logic**:
+    - If credit >= debt: Auto-checks "Salda intero debito", uses credit to fully pay debt
+    - If credit < debt: Populates partial debt payment with available credit
+
+  **Case 2: Creating debt while participant has existing credit**
+  - **Example**: Participant has 10€ credit, conto_produttore=18€, importo_saldato=5€
+    - Calculation: 5 - 18 = -13€ (would create 13€ debt)
+    - Old: Shows "Lascia debito = 13€" (incorrect - ignores existing credit)
+    - New: Auto-checks "Usa intero credito", populates "Usa credito = 10€", shows "Lascia debito = 3€"
+  - **Logic**:
+    - If credit >= new debt: Auto-checks "Usa intero credito", fully offsets debt
+    - If credit < new debt: Populates partial credit usage, reduces debt amount
+
+  - **Implementation** (in `handleContoProduttoreInput()`):
     ```javascript
-    // After calculating initial diff:
+    // Case 1: Creating credit + existing debt
     if (diff > 0 && debitoPreesistente > 0) {
-      if (diff >= debitoPreesistente) {
-        // Full compensation: auto-check checkbox, populate full debt amount
-        debitoSaldato.value = debitoPreesistente;
-        saldaDebitoCheckbox.checked = true;
-        diff = diff - debitoPreesistente; // Remaining credit
-      } else {
-        // Partial compensation: populate available credit amount
-        debitoSaldato.value = diff;
-        saldaDebitoCheckbox.checked = false;
-        diff = 0; // All credit used
-      }
+      // Use credit to pay debt, adjust diff
+    }
+    // Case 2: Creating debt + existing credit
+    if (diff < 0 && creditoPreesistente > 0) {
+      // Use credit to offset debt, adjust diff
     }
     ```
-  - **Files**: `consegna.js:604-633`, `consegna-desktop.js:887-916`
-  - **Rationale**: Credit should automatically compensate existing debt - this is the expected financial behavior and prevents user confusion
+  - **Files**: `consegna.js:604-665`, `consegna-desktop.js:887-948`
+  - **Rationale**: Credits and debts should automatically offset in both directions - this matches expected financial behavior and prevents confusion

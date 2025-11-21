@@ -884,10 +884,13 @@ function handleContoProduttoreInput(nome, saldo) {
     return;
   }
 
-  // AUTO-COMPENSATION: If we're leaving credit but participant has existing debt, auto-compensate
+  // AUTO-COMPENSATION: Bidirectional credit/debt compensation
   const debitoPreesistente = saldo < 0 ? Math.abs(saldo) : 0;
+  const creditoPreesistente = saldo > 0 ? saldo : 0;
   const saldaDebitoCheckbox = document.getElementById(`saldaDebito_${nome}`);
+  const usaInteroCreditoCheckbox = document.getElementById(`usaInteroCreditoCheckbox_${nome}`);
 
+  // Case 1: Creating credit while participant has existing debt
   if (diff > 0 && debitoPreesistente > 0) {
     // We have credit that can compensate existing debt
     if (diff >= debitoPreesistente) {
@@ -912,6 +915,35 @@ function handleContoProduttoreInput(nome, saldo) {
       }
       // All credit used for debt payment
       diff = 0;
+    }
+  }
+
+  // Case 2: Creating debt while participant has existing credit
+  if (diff < 0 && creditoPreesistente > 0) {
+    const debitoDaCreare = Math.abs(diff);
+    // We have existing credit that can compensate new debt
+    if (creditoPreesistente >= debitoDaCreare) {
+      // Credit fully covers new debt - auto-check "Usa intero credito"
+      if (usaCredito) {
+        usaCredito.value = roundUpCents(debitoDaCreare);
+        usaCredito.disabled = true;
+      }
+      if (usaInteroCreditoCheckbox) {
+        usaInteroCreditoCheckbox.checked = true;
+      }
+      // Recalculate diff after credit usage
+      diff = diff + debitoDaCreare;
+    } else {
+      // Credit partially covers new debt - auto-populate partial usage
+      if (usaCredito) {
+        usaCredito.value = roundUpCents(creditoPreesistente);
+        usaCredito.disabled = false; // Allow manual adjustment for partial usage
+      }
+      if (usaInteroCreditoCheckbox) {
+        usaInteroCreditoCheckbox.checked = false;
+      }
+      // Recalculate diff after partial credit usage
+      diff = diff + creditoPreesistente;
     }
   }
 
