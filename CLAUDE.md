@@ -93,24 +93,24 @@
     - If credit >= new debt: Auto-checks "Usa intero credito", fully offsets debt
     - If credit < new debt: Populates partial credit usage, reduces debt amount
 
-  - **Implementation** (in `handleContoProduttoreInput()`):
-    ```javascript
-    // Case 1: Creating credit + existing debt
-    if (diff > 0 && debitoPreesistente > 0) {
-      // Use credit to pay debt, adjust diff
-    }
-    // Case 2: Creating debt + existing credit
-    if (diff < 0 && creditoPreesistente > 0) {
-      // Use credit to offset debt, adjust diff
-    }
-    ```
-  - **Files**: `consegna.js:604-670`, `consegna-desktop.js:887-953`
   - **Trigger Conditions**:
-    1. Auto-compensation only activates when `importo_saldato > 0` (user has entered payment amount)
-       - **Why**: Prevents premature compensation when user is still filling out the form
-       - **Example**: Entering only `conto_produttore=30€` won't trigger compensation until `importo_saldato` is also entered
-    2. Auto-population only occurs if target field is empty (value = 0)
-       - **Why**: Respects user's manual edits or clearing of auto-populated values
-       - **Example**: If system auto-populates "Usa credito = 5€", user can clear it and system won't re-populate
-       - Prevents "sticky" fields that can't be cleared
-  - **Rationale**: Credits and debts should automatically offset in both directions - this matches expected financial behavior and prevents confusion
+    1. Requires BOTH `conto_produttore > 0` AND `importo_saldato > 0`
+       - **Why**: Prevents premature compensation while user is typing
+       - **Why both**: Ensures core transaction fields are complete before compensating
+    2. Checkboxes checked/fields disabled only when using/paying ALL available amount
+       - "Usa intero credito": checked when creditoUsato === creditoPreesistente
+       - "Salda intero debito": checked when debitoSaldato === debitoPreesistente
+
+  - **Dynamic Recalculation System**:
+    - **Auto-populated tracking**: Uses `dataset.autoPopulated` flag to distinguish system vs user values
+    - **Recalculation**: Changes to `importo_saldato` trigger recalculation of auto-populated fields
+    - **User override**: Manual modification removes flag, locks value from auto-updates
+    - **Clean diff calculation**: Excludes auto-populated values when calculating diff to prevent pollution:
+      ```javascript
+      const usaCreditoForCalc = usaCreditoIsManuallySet ? usaCreditoValue : 0;
+      diff = importoSaldato + usaCreditoForCalc - debitoSaldatoForCalc - contoProduttore;
+      ```
+    - **Critical fix**: Prevents simultaneous "Usa credito" + "Lascia credito" by calculating diff without old auto-values
+
+  - **Files**: `consegna.js:597-690`, `consegna-desktop.js:880-973`
+  - **Rationale**: Credits and debts should automatically offset in both directions, with dynamic updates as user modifies values
