@@ -38,6 +38,20 @@ async function loadParticipants() {
   }
 }
 
+async function loadConsegneDates() {
+  try {
+    const response = await fetch('/api/storico');
+    const result = await response.json();
+
+    if (result.success) {
+      const dates = result.consegne.map(c => c.data);
+      setConsegneDates(dates);
+    }
+  } catch (error) {
+    console.error('Error loading consegne dates:', error);
+  }
+}
+
 // ===== RENDERING =====
 
 function renderParticipants() {
@@ -339,7 +353,10 @@ document.addEventListener('DOMContentLoaded', () => {
     onDateSelected: loadParticipants
   });
 
-  // Set today's date
-  const today = new Date().toISOString().split('T')[0];
-  setDateDisplay(today);
+  // Load consegna dates for calendar indicators
+  loadConsegneDates();
+
+  // Restore date from localStorage or use today's date
+  const dateToLoad = restoreDateFromStorage();
+  setDateDisplay(dateToLoad);
 });

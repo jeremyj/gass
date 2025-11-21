@@ -1199,7 +1199,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     onDateSelected: checkDateData
   });
 
-  // Set initial date (last consegna or today)
+  // Restore date from localStorage or use last consegna or today
+  const savedDate = localStorage.getItem('gass_selected_date');
+
   try {
     const response = await fetch('/api/storico');
     const result = await response.json();
@@ -1208,15 +1210,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Populate consegneDates for calendar indicators
       const dates = result.consegne.map(c => c.data);
       setConsegneDates(dates);
-      setDateDisplay(result.consegne[0].data);
+
+      // Use saved date if available, otherwise use last consegna
+      const dateToLoad = savedDate || result.consegne[0].data;
+      setDateDisplay(dateToLoad);
     } else {
-      const today = new Date().toISOString().split('T')[0];
-      setDateDisplay(today);
+      const dateToLoad = savedDate || new Date().toISOString().split('T')[0];
+      setDateDisplay(dateToLoad);
     }
   } catch (error) {
     console.error('Error loading last date:', error);
-    const today = new Date().toISOString().split('T')[0];
-    setDateDisplay(today);
+    const dateToLoad = savedDate || new Date().toISOString().split('T')[0];
+    setDateDisplay(dateToLoad);
   }
 
   loadData();

@@ -157,6 +157,9 @@ function selectPickerDate(dateStr) {
     }
   }
 
+  // Persist selected date in localStorage
+  localStorage.setItem('gass_selected_date', dateStr);
+
   renderDatePicker();
 
   // Call page-specific callback
@@ -305,6 +308,9 @@ function setDateDisplay(dateStr) {
   currentCalendarYear = parseInt(year);
   currentCalendarMonth = parseInt(month) - 1;
 
+  // Persist selected date in localStorage
+  localStorage.setItem('gass_selected_date', dateStr);
+
   // Call page-specific callback
   if (onDateSelected) {
     onDateSelected(dateStr);
@@ -331,6 +337,14 @@ function setConsegneDates(dates) {
 function getSelectedDate() {
   const dataInput = document.getElementById('data');
   return dataInput ? dataInput.value : null;
+}
+
+function restoreDateFromStorage() {
+  const savedDate = localStorage.getItem('gass_selected_date');
+  if (savedDate) {
+    return savedDate;
+  }
+  return new Date().toISOString().split('T')[0];
 }
 
 // ===== CLICK OUTSIDE HANDLER =====

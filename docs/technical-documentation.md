@@ -43,7 +43,7 @@ DELETE /api/participants/:id    - Delete participant
 - `storico.html/js` (239 lines) - Historical records
 
 #### Shared Components
-- `calendar.js` (348 lines) - Date picker with delivery indicators
+- `calendar.js` (363 lines) - Date picker with delivery indicators and localStorage persistence
 - `utils.js` (67 lines) - Formatting and parsing utilities
 
 ## Data Models
@@ -320,6 +320,14 @@ Each movement tracks:
   - Selected date highlight
 - Quick date selection for all views
 - Shared component across mobile and desktop
+- Date persistence across tab navigation using localStorage
+
+#### Date Persistence
+The calendar component maintains the selected date across page navigation:
+- Selected dates are stored in `localStorage` with key `gass_selected_date`
+- On page load, the system checks for a saved date before defaulting
+- Ensures consistent date context when switching between tabs (Consegna, Saldi, Storico)
+- Falls back to page-specific defaults if no saved date exists
 
 ### 5. Responsive Design
 
