@@ -493,3 +493,9 @@ Database persisted in `/app/data/gass.db` volume.
 **Consistency**: Uniformed mobile header and info-badge interface
 - Aligned mobile and desktop UI components
 - Improved visual consistency across views
+
+### Commit: c0915c5
+**Bugfix**: Remove duplicate save button in mobile movimenti section
+- Removed redundant global "Salva Movimenti" button appearing outside participant forms
+- Each participant form already contains its own save button
+- Eliminated `updateSaveButtonVisibility()` function and all references

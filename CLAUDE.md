@@ -33,3 +33,9 @@
 - **Implementation**: `public/utils.js:67-73`
 - **Coverage**: Applied consistently across all views (consegna, storico, debiti) in both mobile and desktop layouts
 - **Rationale**: Cleaner UI presentation, reduces visual noise while maintaining precision where needed
+
+### Mobile UI Button Architecture (Consegna Page)
+- **Pattern**: Each participant form contains its own action buttons (Save/Close) embedded within the form
+- **Location**: Buttons rendered at bottom of participant form in `buildParticipantForm()` function
+- **Global Buttons**: Avoid adding global action buttons outside participant forms - leads to duplicate/confusing UI
+- **Key Finding**: Previous implementation had redundant global "Salva Movimenti" button controlled by `updateSaveButtonVisibility()` - removed in commit c0915c5
