@@ -256,10 +256,33 @@ function parseDecimal(value) {
 ### 1. Consegna (Delivery Entry)
 
 #### Smart Input System
-- **AUTO mode**: Fields are read-only and auto-calculated
-- **MANUALE mode**: User can click to override calculated values
-- Visual badge indicators show current mode
-- Fields revert to AUTO when value is cleared or unchanged
+Implemented via `SmartInputManager` class in `public/smart-input.js`.
+
+**Architecture:**
+- Event-driven state management with custom events
+- Single source of truth for field state
+- Debounced blur handling (150ms) prevents save button race conditions
+- Shared module used by both mobile and desktop versions
+
+**Modes:**
+- **AUTO mode**: Fields are read-only and display auto-calculated values
+- **MANUALE mode**: User clicks field to enable editing and override calculations
+
+**Features:**
+- Visual badge indicators (AUTO/MANUALE) show current mode
+- Fields automatically revert to AUTO when:
+  - Value is cleared (empty)
+  - Value matches the calculated value (within 0.01€ threshold)
+- Calculation functions provided per field during initialization
+- Recalculation triggered by state changes or explicit calls
+
+**State Management:**
+```javascript
+smartInputManager.initField(fieldId, element, calculationFn);
+smartInputManager.updateField(fieldId);  // Recalculate
+smartInputManager.resetAll();            // Reset all to AUTO
+smartInputManager.getManualOverrides();  // Get override status
+```
 
 #### Auto-Calculation Logic
 - `trovato_in_cassa`: Automatically set from previous delivery's `lasciato_in_cassa`

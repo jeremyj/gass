@@ -42,9 +42,7 @@
                            id="trovatoInCassa"
                            class="smart-input auto"
                            placeholder="Dal lasciato precedente"
-                           oninput="normalizeInputField(this); updateLasciatoInCassa(); updateSmartInput(this, 'trovato')"
-                           onfocus="enableSmartInput(this, 'trovato')"
-                           onblur="checkSmartInputEmpty(this, 'trovato')">
+                           readonly>
                 </div>
 
                 <!-- Pagato Produttore -->
@@ -58,9 +56,7 @@
                            id="pagatoProduttore"
                            class="smart-input auto"
                            placeholder="Σ tutti i movimenti"
-                           oninput="normalizeInputField(this); updateLasciatoInCassa(); updateSmartInput(this, 'pagato')"
-                           onfocus="enableSmartInput(this, 'pagato')"
-                           onblur="checkSmartInputEmpty(this, 'pagato')">
+                           readonly>
                 </div>
 
                 <!-- Lasciato in Cassa -->
@@ -74,9 +70,7 @@
                            id="lasciatoInCassa"
                            class="smart-input auto"
                            placeholder="Trovato - Pagato"
-                           oninput="normalizeInputField(this); updateSmartInput(this, 'lasciato')"
-                           onfocus="enableSmartInput(this, 'lasciato')"
-                           onblur="checkSmartInputEmpty(this, 'lasciato')">
+                           readonly>
                 </div>
 
                 <!-- Note Giornata -->
@@ -139,7 +133,8 @@
     </div>
 
     <script src="utils.js"></script>
+    <script src="smart-input.js"></script>
     <script src="calendar.js"></script>
-    <script src="consegna.js?v=12"></script>
+    <script src="consegna.js?v=13"></script>
 </body>
 </html>
