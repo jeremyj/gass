@@ -885,13 +885,17 @@ function handleContoProduttoreInput(nome, saldo) {
   }
 
   // AUTO-COMPENSATION: Bidirectional credit/debt compensation
+  // Only trigger auto-compensation if importo_saldato has a value (user has entered payment details)
+  // This prevents premature compensation when user is still filling out the form
+  const shouldAutoCompensate = importoSaldatoValue > 0;
+
   const debitoPreesistente = saldo < 0 ? Math.abs(saldo) : 0;
   const creditoPreesistente = saldo > 0 ? saldo : 0;
   const saldaDebitoCheckbox = document.getElementById(`saldaDebito_${nome}`);
   const usaInteroCreditoCheckbox = document.getElementById(`usaInteroCreditoCheckbox_${nome}`);
 
   // Case 1: Creating credit while participant has existing debt
-  if (diff > 0 && debitoPreesistente > 0) {
+  if (shouldAutoCompensate && diff > 0 && debitoPreesistente > 0) {
     // We have credit that can compensate existing debt
     if (diff >= debitoPreesistente) {
       // Credit fully covers debt - auto-check "Salda intero debito"
@@ -919,7 +923,7 @@ function handleContoProduttoreInput(nome, saldo) {
   }
 
   // Case 2: Creating debt while participant has existing credit
-  if (diff < 0 && creditoPreesistente > 0) {
+  if (shouldAutoCompensate && diff < 0 && creditoPreesistente > 0) {
     const debitoDaCreare = Math.abs(diff);
     // We have existing credit that can compensate new debt
     if (creditoPreesistente >= debitoDaCreare) {

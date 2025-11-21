@@ -104,5 +104,8 @@
       // Use credit to offset debt, adjust diff
     }
     ```
-  - **Files**: `consegna.js:604-665`, `consegna-desktop.js:887-948`
+  - **Files**: `consegna.js:604-670`, `consegna-desktop.js:887-953`
+  - **Trigger Condition**: Auto-compensation only activates when `importo_saldato > 0` (user has entered payment amount)
+    - **Why**: Prevents premature compensation when user is still filling out the form
+    - **Example**: Entering only `conto_produttore=30€` won't trigger compensation until `importo_saldato` is also entered
   - **Rationale**: Credits and debts should automatically offset in both directions - this matches expected financial behavior and prevents confusion
