@@ -306,6 +306,7 @@ function loadExistingParticipantData(nome, saldo) {
   let hasUsaCredito = false;
   if (usaCreditoField && movimento.usa_credito) {
     usaCreditoField.value = movimento.usa_credito;
+    usaCreditoField.dataset.autoPopulated = 'true'; // Mark as auto-populated for dynamic recalculation
     hasUsaCredito = true;
 
     // If usa_credito equals the full credit amount, check the "usa intero credito" checkbox
@@ -328,6 +329,7 @@ function loadExistingParticipantData(nome, saldo) {
   const debitoSaldatoField = document.getElementById(`debitoSaldato_${nome}`);
   if (debitoSaldatoField && movimento.debito_saldato) {
     debitoSaldatoField.value = movimento.debito_saldato;
+    debitoSaldatoField.dataset.autoPopulated = 'true'; // Mark as auto-populated for dynamic recalculation
   }
 
   const noteField = document.getElementById(`note_${nome}`);

@@ -552,6 +552,10 @@ function populateExistingMovimento(nome) {
     const field = document.getElementById(id);
     if (field && value !== '') {
       field.value = value;
+      // Mark usa_credito and debito_saldato as auto-populated for dynamic recalculation
+      if (id.includes('usaCredito_') || id.includes('debitoSaldato_')) {
+        field.dataset.autoPopulated = 'true';
+      }
     }
   }
 
