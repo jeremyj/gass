@@ -484,6 +484,8 @@ function toggleUsaInteroCredito(nome, saldo) {
     }
   }
 
+  // Trigger auto-calculation with new usaCredito value
+  handleContoProduttoreInput(nome, saldo);
   handleCreditoDebitoInput(nome, saldo);
 }
 
@@ -517,6 +519,8 @@ function toggleSaldaDebito(nome, saldo) {
     saldo = saldiBefore[nome] !== undefined ? saldiBefore[nome] : (p ? p.saldo || 0 : 0);
   }
 
+  // Trigger auto-calculation with new debitoSaldato value
+  handleContoProduttoreInput(nome, saldo);
   handleCreditoDebitoInput(nome, saldo);
 }
 
