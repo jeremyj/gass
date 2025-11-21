@@ -24,6 +24,7 @@
   - `consegna.js`: Modified initialization to prioritize localStorage over default "last consegna" date
   - All three pages now maintain consistent date context across navigation
 - **Benefits**: Improved UX in mobile view where tab switching is primary navigation method
+- **Empty Database Handling**: When database is empty, system ignores localStorage and defaults to today's date to prevent stale date selection (consegna.js:917-941)
 
 ### Currency Formatting Strategy
 - **Design**: `formatNumber()` utility function hides unnecessary `.00` decimals while preserving actual decimal values

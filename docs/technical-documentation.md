@@ -499,3 +499,9 @@ Database persisted in `/app/data/gass.db` volume.
 - Removed redundant global "Salva Movimenti" button appearing outside participant forms
 - Each participant form already contains its own save button
 - Eliminated `updateSaveButtonVisibility()` function and all references
+
+### Commit: 80939c8
+**Bugfix**: Improve empty database UX - default to today and format zero values
+- Empty database now defaults to today's date instead of stale localStorage date
+- Format `trovato_in_cassa` with `formatNumber()` to show "0" instead of "0.00"
+- Ensures clean initial state for new installations with consistent formatting
