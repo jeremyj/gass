@@ -469,11 +469,11 @@ function renderMovimentiGiorno() {
     return `
       <tr>
         <td><strong>${m.nome}</strong></td>
-        <td class="text-right">${m.importo_saldato ? '€' + m.importo_saldato.toFixed(2) : ''}</td>
-        <td class="text-right">${m.usa_credito ? '€' + m.usa_credito.toFixed(2) : ''}</td>
-        <td class="text-right">${m.debito_lasciato ? '€' + m.debito_lasciato.toFixed(2) : ''}</td>
-        <td class="text-right">${m.credito_lasciato ? '€' + m.credito_lasciato.toFixed(2) : ''}</td>
-        <td class="text-right">${m.debito_saldato ? '€' + m.debito_saldato.toFixed(2) : ''}</td>
+        <td class="text-right">${m.importo_saldato ? '€' + formatNumber(m.importo_saldato) : ''}</td>
+        <td class="text-right">${m.usa_credito ? '€' + formatNumber(m.usa_credito) : ''}</td>
+        <td class="text-right">${m.debito_lasciato ? '€' + formatNumber(m.debito_lasciato) : ''}</td>
+        <td class="text-right">${m.credito_lasciato ? '€' + formatNumber(m.credito_lasciato) : ''}</td>
+        <td class="text-right">${m.debito_saldato ? '€' + formatNumber(m.debito_saldato) : ''}</td>
         <td>${m.note || ''}</td>
       </tr>
     `;

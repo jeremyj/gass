@@ -78,7 +78,7 @@ function calculateDiscrepanzaWarning(consegna, index, storico) {
 
     const segno = discrepanzaImporto >= 0 ? '+' : '';
     const className = discrepanzaImporto >= 0 ? 'discrepanza-positive' : 'discrepanza-negative';
-    warning = `<span class="discrepanza-warning ${className}">⚠️ DISCREPANZA CASSA LASCIATA ${segno}€${discrepanzaImporto.toFixed(2)}</span>`;
+    warning = `<span class="discrepanza-warning ${className}">⚠️ DISCREPANZA CASSA LASCIATA ${segno}€${formatNumber(discrepanzaImporto)}</span>`;
   }
 
   // Discrepanza Cassa Trovata
@@ -89,7 +89,7 @@ function calculateDiscrepanzaWarning(consegna, index, storico) {
     if (Math.abs(discrepanzaTrovata) > 0.01) {
       const segno = discrepanzaTrovata >= 0 ? '+' : '';
       const className = discrepanzaTrovata >= 0 ? 'discrepanza-positive' : 'discrepanza-negative';
-      warning += `<span class="discrepanza-warning ${className}">⚠️ DISCREPANZA CASSA TROVATA ${segno}€${discrepanzaTrovata.toFixed(2)}</span>`;
+      warning += `<span class="discrepanza-warning ${className}">⚠️ DISCREPANZA CASSA TROVATA ${segno}€${formatNumber(discrepanzaTrovata)}</span>`;
     }
   }
 
@@ -109,9 +109,9 @@ function createInfoTable(consegna) {
     </thead>
     <tbody>
       <tr>
-        <td>€${consegna.trovato_in_cassa.toFixed(2)}</td>
-        <td>€${consegna.pagato_produttore.toFixed(2)}</td>
-        <td>€${consegna.lasciato_in_cassa.toFixed(2)}</td>
+        <td>€${formatNumber(consegna.trovato_in_cassa)}</td>
+        <td>€${formatNumber(consegna.pagato_produttore)}</td>
+        <td>€${formatNumber(consegna.lasciato_in_cassa)}</td>
       </tr>
     </tbody>
   `;
@@ -130,11 +130,11 @@ function createMovimentiTable(movimenti) {
     return `
       <tr>
         <td><strong>${m.nome}</strong></td>
-        <td>${m.importo_saldato ? '€' + m.importo_saldato.toFixed(2) : ''}</td>
-        <td>${m.usa_credito ? '€' + m.usa_credito.toFixed(2) : ''}</td>
-        <td>${m.debito_lasciato ? '€' + m.debito_lasciato.toFixed(2) : ''}</td>
-        <td>${m.credito_lasciato ? '€' + m.credito_lasciato.toFixed(2) : ''}</td>
-        <td>${m.debito_saldato ? '€' + m.debito_saldato.toFixed(2) : ''}</td>
+        <td>${m.importo_saldato ? '€' + formatNumber(m.importo_saldato) : ''}</td>
+        <td>${m.usa_credito ? '€' + formatNumber(m.usa_credito) : ''}</td>
+        <td>${m.debito_lasciato ? '€' + formatNumber(m.debito_lasciato) : ''}</td>
+        <td>${m.credito_lasciato ? '€' + formatNumber(m.credito_lasciato) : ''}</td>
+        <td>${m.debito_saldato ? '€' + formatNumber(m.debito_saldato) : ''}</td>
         <td>${m.note || ''}</td>
       </tr>
     `;

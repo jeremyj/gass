@@ -59,13 +59,13 @@ function calculateLasciatoInCassa() {
 function updatePagatoProduttore() {
   const pagatoField = document.getElementById('pagatoProduttore');
   const value = calculatePagatoProduttore();
-  pagatoField.value = value.toFixed(2);
+  pagatoField.value = formatNumber(value);
 }
 
 function updateLasciatoInCassa() {
   const lasciatoField = document.getElementById('lasciatoInCassa');
   const value = calculateLasciatoInCassa();
-  lasciatoField.value = value.toFixed(2);
+  lasciatoField.value = formatNumber(value);
 }
 
 function updateSaveButtonVisibility() {
@@ -246,11 +246,11 @@ function renderMovimentiGiorno() {
     return `
       <tr style="background: ${bgColor};">
         <td style="padding: 8px;"><strong>${m.nome}</strong></td>
-        <td style="padding: 8px; text-align: right;">${m.importo_saldato ? '€' + m.importo_saldato.toFixed(2) : ''}</td>
-        <td style="padding: 8px; text-align: right;">${m.usa_credito ? '€' + m.usa_credito.toFixed(2) : ''}</td>
-        <td style="padding: 8px; text-align: right;">${m.debito_lasciato ? '€' + m.debito_lasciato.toFixed(2) : ''}</td>
-        <td style="padding: 8px; text-align: right;">${m.credito_lasciato ? '€' + m.credito_lasciato.toFixed(2) : ''}</td>
-        <td style="padding: 8px; text-align: right;">${m.debito_saldato ? '€' + m.debito_saldato.toFixed(2) : ''}</td>
+        <td style="padding: 8px; text-align: right;">${m.importo_saldato ? '€' + formatNumber(m.importo_saldato) : ''}</td>
+        <td style="padding: 8px; text-align: right;">${m.usa_credito ? '€' + formatNumber(m.usa_credito) : ''}</td>
+        <td style="padding: 8px; text-align: right;">${m.debito_lasciato ? '€' + formatNumber(m.debito_lasciato) : ''}</td>
+        <td style="padding: 8px; text-align: right;">${m.credito_lasciato ? '€' + formatNumber(m.credito_lasciato) : ''}</td>
+        <td style="padding: 8px; text-align: right;">${m.debito_saldato ? '€' + formatNumber(m.debito_saldato) : ''}</td>
         <td style="padding: 8px;">${m.note || ''}</td>
       </tr>
     `;

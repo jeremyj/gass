@@ -93,7 +93,7 @@ function createCassaSection(consegna) {
   trovatoDiv.innerHTML = `
     <div class="storico-cassa-label">TROVATO IN CASSA</div>
     <div class="storico-cassa-value">
-      ${consegna.trovato_in_cassa.toFixed(2)} €
+      ${formatNumber(consegna.trovato_in_cassa)} €
       ${consegna.discrepanza_trovata === 1 ? '<span class="override-indicator">MANUALE</span>' : ''}
     </div>
   `;
@@ -105,7 +105,7 @@ function createCassaSection(consegna) {
   pagatoDiv.innerHTML = `
     <div class="storico-cassa-label">PAGATO PRODUTTORE</div>
     <div class="storico-cassa-value">
-      ${consegna.pagato_produttore.toFixed(2)} €
+      ${formatNumber(consegna.pagato_produttore)} €
       ${consegna.discrepanza_pagato === 1 ? '<span class="override-indicator">MANUALE</span>' : ''}
     </div>
   `;
@@ -117,7 +117,7 @@ function createCassaSection(consegna) {
   lasciatoDiv.innerHTML = `
     <div class="storico-cassa-label">LASCIATO IN CASSA</div>
     <div class="storico-cassa-value lasciato">
-      ${consegna.lasciato_in_cassa.toFixed(2)} €
+      ${formatNumber(consegna.lasciato_in_cassa)} €
       ${consegna.discrepanza_cassa === 1 ? '<span class="override-indicator">MANUALE</span>' : ''}
     </div>
   `;
@@ -156,15 +156,15 @@ function createParticipantMovimentoCard(m) {
   if (saldoFinale > 0) {
     cardClass += ' credito';
     saldoBadgeClass += ' credito';
-    saldoText = `+${saldoFinale.toFixed(2)} €`;
+    saldoText = `+${formatNumber(saldoFinale)} €`;
   } else if (saldoFinale < 0) {
     cardClass += ' debito';
     saldoBadgeClass += ' debito';
-    saldoText = `${saldoFinale.toFixed(2)} €`;
+    saldoText = `${formatNumber(saldoFinale)} €`;
   } else {
     cardClass += ' pari';
     saldoBadgeClass += ' pari';
-    saldoText = '0.00 €';
+    saldoText = '0 €';
   }
 
   card.className = cardClass;
@@ -174,9 +174,9 @@ function createParticipantMovimentoCard(m) {
       <div class="storico-participant-name">👤 ${m.nome}</div>
     </div>
     <div class="storico-participant-details">
-      ${m.importo_saldato ? `Pagato: ${m.importo_saldato.toFixed(2)} €` : ''}
-      ${m.usa_credito ? ` • Usa credito: ${m.usa_credito.toFixed(2)} €` : ''}
-      ${m.debito_saldato ? ` • Salda debito: ${m.debito_saldato.toFixed(2)} €` : ''}
+      ${m.importo_saldato ? `Pagato: ${formatNumber(m.importo_saldato)} €` : ''}
+      ${m.usa_credito ? ` • Usa credito: ${formatNumber(m.usa_credito)} €` : ''}
+      ${m.debito_saldato ? ` • Salda debito: ${formatNumber(m.debito_saldato)} €` : ''}
       ${!m.importo_saldato && !m.usa_credito && !m.debito_saldato ? 'Pari' : ''}
     </div>
   `;

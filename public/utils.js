@@ -64,4 +64,12 @@ function formatSaldo(val) {
   return formatted.endsWith('.0') ? formatted.slice(0, -2) : formatted;
 }
 
+// Format a number for display, hiding .00 decimals
+function formatNumber(value) {
+  if (value === null || value === undefined) return '';
+  const num = parseFloat(value);
+  if (isNaN(num)) return '';
+  return num % 1 === 0 ? num.toString() : num.toFixed(2);
+}
+
 // View mode switching removed - using only user-agent detection now

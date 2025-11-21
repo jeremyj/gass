@@ -82,15 +82,15 @@ function createParticipantCard(p) {
   if (p.saldo < 0) {
     cardClass += ' has-debito';
     saldoBadgeClass += ' saldo-debito';
-    saldoText = `${p.saldo.toFixed(2)} €`;
+    saldoText = `${formatNumber(p.saldo)} €`;
   } else if (p.saldo > 0) {
     cardClass += ' has-credito';
     saldoBadgeClass += ' saldo-credito';
-    saldoText = `+${p.saldo.toFixed(2)} €`;
+    saldoText = `+${formatNumber(p.saldo)} €`;
   } else {
     cardClass += ' is-pari';
     saldoBadgeClass += ' saldo-pari';
-    saldoText = '0.00 €';
+    saldoText = '0 €';
   }
 
   if (isExpanded) {

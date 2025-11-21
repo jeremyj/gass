@@ -177,7 +177,7 @@ function renderParticipants() {
 function createParticipantRow(p) {
   const row = document.createElement('tr');
   const saldoClass = p.saldo < 0 ? 'saldo-debito' : p.saldo > 0 ? 'saldo-credito' : '';
-  const saldoText = p.saldo.toFixed(2);
+  const saldoText = formatNumber(p.saldo);
 
   row.innerHTML = `
     <td><strong>${p.nome}</strong></td>
