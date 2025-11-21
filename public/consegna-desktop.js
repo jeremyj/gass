@@ -921,19 +921,16 @@ function handleContoProduttoreInput(nome, saldo) {
 
   // Case 2: Creating debt while participant has existing credit
   // Skip if user has manually entered a value in usaCredito (including clearing it)
-  // Only auto-populate if field is empty (0) OR contains the exact auto-calculated value
-  const debitoDaCreare = diff < 0 ? Math.abs(diff) : 0;
-  const expectedUsaCredito = Math.min(creditoPreesistente, debitoDaCreare);
-  const usaCreditoIsManuallySet = usaCredito && usaCreditoValue > 0 && usaCreditoValue !== expectedUsaCredito;
+  // Only auto-populate if field is empty (0)
+  const usaCreditoIsManuallySet = usaCredito && usaCreditoValue > 0;
 
   if (shouldAutoCompensate && diff < 0 && creditoPreesistente > 0 && !usaCreditoIsManuallySet && usaCreditoValue === 0) {
-    const debitoDaCreare = Math.abs(diff);
-    const creditoUsato = Math.min(creditoPreesistente, debitoDaCreare);
-    const usaTuttoIlCredito = creditoUsato === creditoPreesistente;
+    const creditoUsabile = Math.min(Math.abs(diff), creditoPreesistente);
+    const usaTuttoIlCredito = creditoUsabile === creditoPreesistente;
 
     // Auto-populate usa_credito field
     if (usaCredito) {
-      usaCredito.value = roundUpCents(creditoUsato);
+      usaCredito.value = roundUpCents(creditoUsabile);
       // Disable field only if using ALL available credit
       usaCredito.disabled = usaTuttoIlCredito;
     }
@@ -944,7 +941,7 @@ function handleContoProduttoreInput(nome, saldo) {
     }
 
     // Recalculate diff after credit usage
-    diff = diff + creditoUsato;
+    diff = diff + creditoUsabile;
   }
 
   // Auto-fill based on calculation - fields are ALWAYS disabled
