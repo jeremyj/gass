@@ -55,7 +55,13 @@
   - Old formula: `importo_saldato + usa_credito + debito_lasciato - credito_lasciato - debito_saldato`
   - New formula: `Σ conto_produttore` for all movements
   - Files updated: `public/consegna.js:31-40`, `public/consegna-desktop.js:754-763`, `server.js:348-357`
-- **Key Bug Fix**: Removed call to `handleCreditoDebitoInput()` at end of `handleContoProduttoreInput()` which was disabling auto-filled fields
+- **Key Bug Fix #1**: Removed call to `handleCreditoDebitoInput()` at end of `handleContoProduttoreInput()` which was disabling auto-filled fields
   - Issue: Field disable logic conflicted with auto-fill, preventing credito/debito from being populated
   - Solution: Auto-fill logic already handles field states correctly, extra validation call was causing conflicts
   - Files: `consegna.js:653-655`, `consegna-desktop.js:935-937`
+- **Key Bug Fix #2**: Checkbox toggles not triggering auto-calculation (commit 394ff77)
+  - Issue: `toggleUsaInteroCredito()` and `toggleSaldaDebito()` set field values programmatically but didn't trigger `handleContoProduttoreInput()`
+  - Effect: Programmatic value changes don't fire `oninput` events, so auto-calculation never ran with new values
+  - Symptom: "Lascia debito/credito" fields showed stale/incorrect values when using checkboxes
+  - Solution: Added explicit call to `handleContoProduttoreInput()` before `handleCreditoDebitoInput()` in both toggle functions
+  - Files: `consegna.js:473-490,503-525`, `consegna-desktop.js:692-709,711-733`
