@@ -877,8 +877,6 @@ function handleContoProduttoreInput(nome, saldo) {
   // If diff < 0: debito_lasciato = -diff
   // If diff = 0: in pari
 
-  let diff = importoSaldatoValue + usaCreditoValue - debitoSaldatoValue - contoProduttoreValue;
-
   // Check if credito/debito fields have been manually modified by user (not auto-calculated)
   // A field is manual if: has value AND was not auto-calculated AND is not disabled
   const creditoValue = creditoLasciato ? parseAmount(creditoLasciato.value) : 0;
@@ -908,6 +906,17 @@ function handleContoProduttoreInput(nome, saldo) {
   const debitoSaldatoIsAutoPopulated = debitoSaldato && debitoSaldato.dataset.autoPopulated === 'true';
   const debitoSaldatoIsManuallySet = debitoSaldato && debitoSaldatoValue > 0 && !debitoSaldatoIsAutoPopulated;
 
+  // Case 2: Creating debt while participant has existing credit
+  // Skip if user has manually entered a value in usaCredito
+  // Auto-populated fields can be recalculated, user-entered fields cannot
+  const usaCreditoIsAutoPopulated = usaCredito && usaCredito.dataset.autoPopulated === 'true';
+  const usaCreditoIsManuallySet = usaCredito && usaCreditoValue > 0 && !usaCreditoIsAutoPopulated;
+
+  // Calculate diff WITHOUT auto-populated values (so we can recalculate them)
+  const usaCreditoForCalc = usaCreditoIsManuallySet ? usaCreditoValue : 0;
+  const debitoSaldatoForCalc = debitoSaldatoIsManuallySet ? debitoSaldatoValue : 0;
+  let diff = importoSaldatoValue + usaCreditoForCalc - debitoSaldatoForCalc - contoProduttoreValue;
+
   if (shouldAutoCompensate && diff > 0 && debitoPreesistente > 0 && !debitoSaldatoIsManuallySet) {
     const debitoSaldabile = Math.min(diff, debitoPreesistente);
     const saldaTuttoIlDebito = debitoSaldabile === debitoPreesistente;
@@ -928,12 +937,6 @@ function handleContoProduttoreInput(nome, saldo) {
     // Recalculate diff after debt payment
     diff = diff - debitoSaldabile;
   }
-
-  // Case 2: Creating debt while participant has existing credit
-  // Skip if user has manually entered a value in usaCredito
-  // Auto-populated fields can be recalculated, user-entered fields cannot
-  const usaCreditoIsAutoPopulated = usaCredito && usaCredito.dataset.autoPopulated === 'true';
-  const usaCreditoIsManuallySet = usaCredito && usaCreditoValue > 0 && !usaCreditoIsAutoPopulated;
 
   if (shouldAutoCompensate && diff < 0 && creditoPreesistente > 0 && !usaCreditoIsManuallySet) {
     const creditoUsabile = Math.min(Math.abs(diff), creditoPreesistente);
