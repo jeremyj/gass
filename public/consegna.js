@@ -143,8 +143,8 @@ function loadExistingConsegna(result) {
   existingConsegnaMovimenti = result.movimenti || [];
   saldiBefore = result.saldiBefore || {};
 
-  // Set trovato from stored value
-  trovatoField.value = result.consegna.trovato_in_cassa || '0.00';
+  // Set trovato from stored value, formatted
+  trovatoField.value = formatNumber(result.consegna.trovato_in_cassa || 0);
   noteField.value = result.consegna.note || '';
 
   // Calculate and display pagato and lasciato
@@ -163,8 +163,8 @@ function loadNewConsegna(result) {
   existingConsegnaMovimenti = null;
   saldiBefore = {};
 
-  // Set trovato from previous lasciato
-  trovatoField.value = result.lasciatoPrecedente ?? '0.00';
+  // Set trovato from previous lasciato, formatted
+  trovatoField.value = formatNumber(result.lasciatoPrecedente ?? 0);
   noteField.value = '';
 
   // Calculate and display pagato and lasciato
@@ -914,7 +914,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     onDateSelected: checkDateData
   });
 
-  // Restore date from localStorage or use last consegna or today
+  // With empty database, always use today instead of potentially stale localStorage date
   const savedDate = localStorage.getItem('gass_selected_date');
 
   try {
@@ -930,13 +930,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       const dateToLoad = savedDate || result.consegne[0].data;
       setDateDisplay(dateToLoad);
     } else {
-      const dateToLoad = savedDate || new Date().toISOString().split('T')[0];
-      setDateDisplay(dateToLoad);
+      // Empty database: ignore saved date, always use today
+      const today = new Date().toISOString().split('T')[0];
+      setDateDisplay(today);
     }
   } catch (error) {
     console.error('Error loading last date:', error);
-    const dateToLoad = savedDate || new Date().toISOString().split('T')[0];
-    setDateDisplay(dateToLoad);
+    const today = new Date().toISOString().split('T')[0];
+    setDateDisplay(today);
   }
 
   loadData();
