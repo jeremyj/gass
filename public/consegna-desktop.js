@@ -885,9 +885,9 @@ function handleContoProduttoreInput(nome, saldo) {
   }
 
   // AUTO-COMPENSATION: Bidirectional credit/debt compensation
-  // Only trigger auto-compensation if importo_saldato has a value (user has entered payment details)
-  // This prevents premature compensation when user is still filling out the form
-  const shouldAutoCompensate = importoSaldatoValue > 0;
+  // Only trigger auto-compensation if BOTH conto_produttore AND importo_saldato have values
+  // This prevents premature compensation while user is still typing values
+  const shouldAutoCompensate = contoProduttoreValue > 0 && importoSaldatoValue > 0;
 
   const debitoPreesistente = saldo < 0 ? Math.abs(saldo) : 0;
   const creditoPreesistente = saldo > 0 ? saldo : 0;
