@@ -24,3 +24,12 @@
   - `consegna.js`: Modified initialization to prioritize localStorage over default "last consegna" date
   - All three pages now maintain consistent date context across navigation
 - **Benefits**: Improved UX in mobile view where tab switching is primary navigation method
+
+### Currency Formatting Strategy
+- **Design**: `formatNumber()` utility function hides unnecessary `.00` decimals while preserving actual decimal values
+- **Logic**: Uses modulo operation (`num % 1 === 0`) to detect whole numbers
+  - Whole numbers: Display without decimals (e.g., "42" not "42.00")
+  - Decimal values: Display with 2 decimal places (e.g., "42.50")
+- **Implementation**: `public/utils.js:67-73`
+- **Coverage**: Applied consistently across all views (consegna, storico, debiti) in both mobile and desktop layouts
+- **Rationale**: Cleaner UI presentation, reduces visual noise while maintaining precision where needed
