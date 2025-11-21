@@ -65,3 +65,10 @@
   - Symptom: "Lascia debito/credito" fields showed stale/incorrect values when using checkboxes
   - Solution: Added explicit call to `handleContoProduttoreInput()` before `handleCreditoDebitoInput()` in both toggle functions
   - Files: `consegna.js:473-490,503-525`, `consegna-desktop.js:692-709,711-733`
+- **Key Enhancement**: Credit/Debt Fields Always Disabled
+  - **Design Decision**: "Lascia credito" and "Lascia debito" fields are now **always disabled** as they are calculated values only
+  - **Implementation**:
+    - Added `disabled` attribute to form HTML templates: `consegna.js:382,388`, `consegna-desktop.js:611,617`
+    - Modified `handleContoProduttoreInput()` to always set `disabled=true` when populating fields: `consegna.js:618-649`, `consegna-desktop.js:906-937`
+    - Simplified `handleCreditoDebitoInput()` to enforce disabled state and only manage `debitoSaldato` field: `consegna.js:527-560`, `consegna-desktop.js:817-843`
+  - **Rationale**: These fields are derived values from the formula, never user input. Disabling prevents confusion and ensures data integrity.

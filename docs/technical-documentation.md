@@ -293,12 +293,21 @@ smartInputManager.getManualOverrides();  // Get override status
 #### Participant Movements
 Each movement tracks:
 - `salda_tutto`: Checkbox to settle entire balance to zero
+- `conto_produttore`: Total amount owed to producer for goods received
 - `importo_saldato`: Amount collected from participant
 - `usa_credito`: Use participant's existing credit
-- `debito_lasciato`: New debt to carry forward
-- `credito_lasciato`: New credit to carry forward
+- `debito_lasciato`: New debt to carry forward (auto-calculated, always disabled)
+- `credito_lasciato`: New credit to carry forward (auto-calculated, always disabled)
 - `salda_debito_totale`: Checkbox to settle all existing debt
 - `debito_saldato`: Partial debt settlement amount
+
+**Note**: The `credito_lasciato` and `debito_lasciato` fields are calculated values based on the formula:
+```
+diff = importo_saldato + usa_credito - debito_saldato - conto_produttore
+if diff > 0: credito_lasciato = diff
+if diff < 0: debito_lasciato = abs(diff)
+```
+These fields are always disabled to prevent manual editing and ensure data integrity.
 
 #### Transaction Processing
 1. User enters movement data for each participant

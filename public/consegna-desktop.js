@@ -608,13 +608,13 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
       <div class="row">
         <div class="form-group">
           <label>Lascia credito:</label>
-          <input type="text" inputmode="decimal" id="credito_${nome}" placeholder="0.00"
+          <input type="text" inputmode="decimal" id="credito_${nome}" placeholder="0.00" disabled
                  oninput="normalizeInputField(this); delete this.dataset.autoCalculated; handleCreditoDebitoInput('${nome}', ${saldo})"
                  onfocus="handleInputFocus(this)">
         </div>
         <div class="form-group">
           <label>Lascia debito:</label>
-          <input type="text" inputmode="decimal" id="debito_${nome}" placeholder="0.00"
+          <input type="text" inputmode="decimal" id="debito_${nome}" placeholder="0.00" disabled
                  oninput="normalizeInputField(this); delete this.dataset.autoCalculated; handleCreditoDebitoInput('${nome}', ${saldo})"
                  onfocus="handleInputFocus(this)">
         </div>
@@ -815,13 +815,13 @@ function validateCreditoMax(nome, saldo) {
 }
 
 function handleCreditoDebitoInput(nome, saldo) {
+  // Credit/debt fields are now always disabled and auto-calculated
+  // This function only manages debitoSaldato field state
   const creditoLasciato = document.getElementById(`credito_${nome}`);
   const debitoLasciato = document.getElementById(`debito_${nome}`);
   const debitoSaldato = document.getElementById(`debitoSaldato_${nome}`);
   const usaCredito = document.getElementById(`usaCredito_${nome}`);
 
-  const creditoValue = creditoLasciato ? parseAmount(creditoLasciato.value) : 0;
-  const debitoValue = debitoLasciato ? parseAmount(debitoLasciato.value) : 0;
   const usaCreditoValue = usaCredito ? parseAmount(usaCredito.value) : 0;
   const debitoSaldatoValue = debitoSaldato ? parseAmount(debitoSaldato.value) : 0;
 
@@ -829,35 +829,16 @@ function handleCreditoDebitoInput(nome, saldo) {
   const usaCreditoParziale = usaCreditoValue > 0 && usaCreditoValue < creditoDisponibile;
   const saldaDebito = debitoSaldatoValue > 0;
 
-  // Reset: enable all fields
-  [creditoLasciato, debitoLasciato, debitoSaldato].forEach(el => {
-    if (el) el.disabled = false;
-  });
+  // Ensure credit/debt fields are always disabled
+  if (creditoLasciato) creditoLasciato.disabled = true;
+  if (debitoLasciato) debitoLasciato.disabled = true;
 
-  // Apply business rules
-  if (usaCreditoValue > 0 && creditoLasciato) {
-    creditoLasciato.disabled = true;
-    creditoLasciato.value = '';
-  }
+  // Reset debitoSaldato
+  if (debitoSaldato) debitoSaldato.disabled = false;
 
-  if (usaCreditoParziale && debitoLasciato) {
-    debitoLasciato.disabled = true;
-    debitoLasciato.value = '';
-  }
-
-  if (saldaDebito && debitoLasciato) {
-    debitoLasciato.disabled = true;
-    debitoLasciato.value = '';
-  }
-
-  if (creditoValue > 0 && debitoLasciato) {
-    debitoLasciato.disabled = true;
-    debitoLasciato.value = '';
-  }
-
-  if (debitoValue > 0 && creditoLasciato) {
-    creditoLasciato.disabled = true;
-    creditoLasciato.value = '';
+  // Apply business rules for debitoSaldato
+  if (saldaDebito && debitoSaldato) {
+    debitoSaldato.disabled = true;
   }
 }
 
@@ -903,41 +884,38 @@ function handleContoProduttoreInput(nome, saldo) {
     return;
   }
 
-  // Auto-fill based on calculation
+  // Auto-fill based on calculation - fields are ALWAYS disabled
   if (diff > 0) {
     // Leaving credit
-    if (creditoLasciato && !creditoLasciato.disabled) {
+    if (creditoLasciato) {
       creditoLasciato.value = roundUpCents(diff);
-      creditoLasciato.dataset.autoCalculated = 'true';
+      creditoLasciato.disabled = true;
     }
-    if (debitoLasciato && !debitoLasciato.disabled) {
+    if (debitoLasciato) {
       debitoLasciato.value = '';
-      delete debitoLasciato.dataset.autoCalculated;
+      debitoLasciato.disabled = true;
     }
   } else if (diff < 0) {
     // Leaving debt
-    if (debitoLasciato && !debitoLasciato.disabled) {
+    if (debitoLasciato) {
       debitoLasciato.value = roundUpCents(-diff);
-      debitoLasciato.dataset.autoCalculated = 'true';
+      debitoLasciato.disabled = true;
     }
-    if (creditoLasciato && !creditoLasciato.disabled) {
+    if (creditoLasciato) {
       creditoLasciato.value = '';
-      delete creditoLasciato.dataset.autoCalculated;
+      creditoLasciato.disabled = true;
     }
   } else {
     // In pari
-    if (creditoLasciato && !creditoLasciato.disabled) {
+    if (creditoLasciato) {
       creditoLasciato.value = '';
-      delete creditoLasciato.dataset.autoCalculated;
+      creditoLasciato.disabled = true;
     }
-    if (debitoLasciato && !debitoLasciato.disabled) {
+    if (debitoLasciato) {
       debitoLasciato.value = '';
-      delete debitoLasciato.dataset.autoCalculated;
+      debitoLasciato.disabled = true;
     }
   }
-
-  // Don't call handleCreditoDebitoInput here - it would disable fields we just auto-filled
-  // The auto-fill logic above already handles the field states correctly
 }
 
 // ===== CALCULATIONS =====
