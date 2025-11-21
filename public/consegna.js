@@ -26,6 +26,13 @@ let originalValues = {
   lasciato: null
 };
 
+// Store calculated values for comparison
+let calculatedValues = {
+  trovato: null,
+  pagato: null,
+  lasciato: null
+};
+
 // ===== ACCORDION FUNCTIONS =====
 
 function toggleAccordion(section) {
@@ -72,11 +79,13 @@ function updateSmartInput(input, type) {
 }
 
 function checkSmartInputEmpty(input, type) {
-  // If user clears the field OR value is unchanged, revert to AUTO
+  // Revert to AUTO if field is empty OR if value matches the calculated value
   const isEmpty = !input.value || input.value.trim() === '';
-  const isUnchanged = input.value === originalValues[type];
+  const currentValue = parseAmount(input.value);
+  const calculatedValue = calculatedValues[type] !== null ? parseAmount(calculatedValues[type]) : null;
+  const matchesCalculated = calculatedValue !== null && Math.abs(currentValue - calculatedValue) < 0.01;
 
-  if (isEmpty || isUnchanged) {
+  if (isEmpty || matchesCalculated) {
     input.classList.remove('manual');
     input.classList.add('auto');
     input.setAttribute('readonly', 'readonly');
@@ -211,6 +220,11 @@ function loadExistingConsegna(result) {
   lasciatoField.value = result.consegna.lasciato_in_cassa || '';
   document.getElementById('noteGiornata').value = result.consegna.note || '';
 
+  // Store values as calculated if they were not manually overridden
+  calculatedValues.trovato = result.consegna.discrepanza_trovata === 1 ? null : (result.consegna.trovato_in_cassa || '');
+  calculatedValues.pagato = result.consegna.discrepanza_pagato === 1 ? null : (result.consegna.pagato_produttore || '');
+  calculatedValues.lasciato = result.consegna.discrepanza_cassa === 1 ? null : (result.consegna.lasciato_in_cassa || '');
+
   // First, reset ALL fields to AUTO state
   smartOverrides.trovato = false;
   smartOverrides.pagato = false;
@@ -296,6 +310,46 @@ function loadExistingConsegna(result) {
 
   updateMovimentiCounter();
   renderMovimentiGiorno();
+
+  // Recalculate the true calculated values based on movements
+  // This ensures calculatedValues reflect reality, not stored values
+  if (result.consegna.discrepanza_trovata !== 1) {
+    // For trovato, the calculated value is from previous lasciato (already set correctly above)
+  }
+
+  if (result.consegna.discrepanza_pagato !== 1) {
+    // Recalculate pagato from movements
+    let totalPagato = 0;
+    if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
+      existingConsegnaMovimenti.forEach(m => {
+        totalPagato += (m.importo_saldato || 0);
+        totalPagato += (m.usa_credito || 0);
+        totalPagato += (m.debito_lasciato || 0);
+        totalPagato -= (m.credito_lasciato || 0);
+        totalPagato -= (m.debito_saldato || 0);
+      });
+    }
+    const recalculated = roundUpCents(totalPagato);
+    calculatedValues.pagato = recalculated;
+    // Update the displayed value to match the recalculated one
+    pagatoField.value = recalculated;
+  }
+
+  if (result.consegna.discrepanza_cassa !== 1) {
+    // Recalculate lasciato from formula
+    const trovatoInCassa = parseAmount(trovatoField.value);
+    const pagatoProduttore = parseAmount(pagatoField.value);
+    let incassato = 0;
+    if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
+      existingConsegnaMovimenti.forEach(m => {
+        incassato += (m.importo_saldato || 0);
+      });
+    }
+    const recalculated = roundUpCents(trovatoInCassa + incassato - pagatoProduttore);
+    calculatedValues.lasciato = recalculated;
+    // Update the displayed value to match the recalculated one
+    lasciatoField.value = recalculated;
+  }
 }
 
 function loadNewConsegna(result) {
@@ -303,9 +357,13 @@ function loadNewConsegna(result) {
   const pagatoField = document.getElementById('pagatoProduttore');
   const lasciatoField = document.getElementById('lasciatoInCassa');
 
-  trovatoField.value = result.lasciatoPrecedente ?? '';
+  const trovatoValue = result.lasciatoPrecedente ?? '';
+  trovatoField.value = trovatoValue;
+  calculatedValues.trovato = trovatoValue;
   pagatoField.value = '';
+  calculatedValues.pagato = '';
   lasciatoField.value = '';
+  calculatedValues.lasciato = '';
   document.getElementById('noteGiornata').value = '';
 
   // Reset all smart override states to AUTO
@@ -900,7 +958,9 @@ function updatePagatoProduttore() {
     });
   }
 
-  document.getElementById('pagatoProduttore').value = roundUpCents(totalPagato);
+  const calculatedPagato = roundUpCents(totalPagato);
+  calculatedValues.pagato = calculatedPagato;
+  document.getElementById('pagatoProduttore').value = calculatedPagato;
   updateLasciatoInCassa();
 }
 
@@ -920,8 +980,9 @@ function updateLasciatoInCassa() {
   }
 
   // Formula: Lasciato = Trovato + Incassato - Pagato Produttore
-  const lasciatoInCassa = roundUpCents(trovatoInCassa + incassato - pagatoProduttore);
-  document.getElementById('lasciatoInCassa').value = lasciatoInCassa;
+  const calculatedLasciato = roundUpCents(trovatoInCassa + incassato - pagatoProduttore);
+  calculatedValues.lasciato = calculatedLasciato;
+  document.getElementById('lasciatoInCassa').value = calculatedLasciato;
 }
 
 // ===== MOVEMENTS COUNTER =====
@@ -1070,15 +1131,27 @@ async function saveCassaOnly() {
   // Always read from DOM - updateLasciatoInCassa() has already calculated the correct value
   let lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
 
+  // Only set discrepanza flags if values actually differ from calculated values
+  const trovatoCalc = calculatedValues.trovato !== null ? roundUpCents(parseAmount(calculatedValues.trovato)) : null;
+  const pagatoCalc = calculatedValues.pagato !== null ? roundUpCents(parseAmount(calculatedValues.pagato)) : null;
+  const lasciatoCalc = calculatedValues.lasciato !== null ? roundUpCents(parseAmount(calculatedValues.lasciato)) : null;
+
+  const discrepanzaTrovata = (smartOverrides.trovato || discrepanzaTrovataEnabled) &&
+                             (trovatoCalc === null || Math.abs(trovatoInCassa - trovatoCalc) >= 0.01);
+  const discrepanzaPagato = (smartOverrides.pagato || discrepanzaPagatoProduttoreEnabled) &&
+                            (pagatoCalc === null || Math.abs(pagatoProduttore - pagatoCalc) >= 0.01);
+  const discrepanzaCassa = (smartOverrides.lasciato || discrepanzaCassaEnabled) &&
+                           (lasciatoCalc === null || Math.abs(lasciatoInCassa - lasciatoCalc) >= 0.01);
+
   try {
     const response = await fetch('/api/consegna', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         data, trovatoInCassa, pagatoProduttore, lasciatoInCassa,
-        discrepanzaCassa: smartOverrides.lasciato || discrepanzaCassaEnabled,
-        discrepanzaTrovata: smartOverrides.trovato || discrepanzaTrovataEnabled,
-        discrepanzaPagato: smartOverrides.pagato || discrepanzaPagatoProduttoreEnabled,
+        discrepanzaCassa,
+        discrepanzaTrovata,
+        discrepanzaPagato,
         noteGiornata,
         partecipanti: [],
       }),
@@ -1139,15 +1212,27 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
   // Always read from DOM - updateLasciatoInCassa() has already calculated the correct value
   let lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
 
+  // Only set discrepanza flags if values actually differ from calculated values
+  const trovatoCalc = calculatedValues.trovato !== null ? roundUpCents(parseAmount(calculatedValues.trovato)) : null;
+  const pagatoCalc = calculatedValues.pagato !== null ? roundUpCents(parseAmount(calculatedValues.pagato)) : null;
+  const lasciatoCalc = calculatedValues.lasciato !== null ? roundUpCents(parseAmount(calculatedValues.lasciato)) : null;
+
+  const discrepanzaTrovata = (smartOverrides.trovato || discrepanzaTrovataEnabled) &&
+                             (trovatoCalc === null || Math.abs(trovatoInCassa - trovatoCalc) >= 0.01);
+  const discrepanzaPagato = (smartOverrides.pagato || discrepanzaPagatoProduttoreEnabled) &&
+                            (pagatoCalc === null || Math.abs(pagatoProduttore - pagatoCalc) >= 0.01);
+  const discrepanzaCassa = (smartOverrides.lasciato || discrepanzaCassaEnabled) &&
+                           (lasciatoCalc === null || Math.abs(lasciatoInCassa - lasciatoCalc) >= 0.01);
+
   try {
     const response = await fetch('/api/consegna', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         data, trovatoInCassa, pagatoProduttore, lasciatoInCassa,
-        discrepanzaCassa: smartOverrides.lasciato || discrepanzaCassaEnabled,
-        discrepanzaTrovata: smartOverrides.trovato || discrepanzaTrovataEnabled,
-        discrepanzaPagato: smartOverrides.pagato || discrepanzaPagatoProduttoreEnabled,
+        discrepanzaCassa,
+        discrepanzaTrovata,
+        discrepanzaPagato,
         noteGiornata,
         partecipanti: partecipantiData,
       }),
