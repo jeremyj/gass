@@ -869,7 +869,7 @@ function handleContoProduttoreInput(nome, saldo) {
   // If diff < 0: debito_lasciato = -diff
   // If diff = 0: in pari
 
-  const diff = importoSaldatoValue + usaCreditoValue - debitoSaldatoValue - contoProduttoreValue;
+  let diff = importoSaldatoValue + usaCreditoValue - debitoSaldatoValue - contoProduttoreValue;
 
   // Check if credito/debito fields have been manually modified by user (not auto-calculated)
   // A field is manual if: has value AND was not auto-calculated AND is not disabled
@@ -882,6 +882,37 @@ function handleContoProduttoreInput(nome, saldo) {
   // Don't auto-fill if user has manually entered values
   if (creditoIsManual || debitoIsManual) {
     return;
+  }
+
+  // AUTO-COMPENSATION: If we're leaving credit but participant has existing debt, auto-compensate
+  const debitoPreesistente = saldo < 0 ? Math.abs(saldo) : 0;
+  const saldaDebitoCheckbox = document.getElementById(`saldaDebito_${nome}`);
+
+  if (diff > 0 && debitoPreesistente > 0) {
+    // We have credit that can compensate existing debt
+    if (diff >= debitoPreesistente) {
+      // Credit fully covers debt - auto-check "Salda intero debito"
+      if (debitoSaldato) {
+        debitoSaldato.value = roundUpCents(debitoPreesistente);
+        debitoSaldato.disabled = true;
+      }
+      if (saldaDebitoCheckbox) {
+        saldaDebitoCheckbox.checked = true;
+      }
+      // Recalculate diff after debt compensation
+      diff = diff - debitoPreesistente;
+    } else {
+      // Credit partially covers debt - auto-populate partial payment
+      if (debitoSaldato) {
+        debitoSaldato.value = roundUpCents(diff);
+        debitoSaldato.disabled = false; // Allow manual adjustment for partial payment
+      }
+      if (saldaDebitoCheckbox) {
+        saldaDebitoCheckbox.checked = false;
+      }
+      // All credit used for debt payment
+      diff = 0;
+    }
   }
 
   // Auto-fill based on calculation - fields are ALWAYS disabled

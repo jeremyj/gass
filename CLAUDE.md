@@ -65,10 +65,34 @@
   - Symptom: "Lascia debito/credito" fields showed stale/incorrect values when using checkboxes
   - Solution: Added explicit call to `handleContoProduttoreInput()` before `handleCreditoDebitoInput()` in both toggle functions
   - Files: `consegna.js:473-490,503-525`, `consegna-desktop.js:692-709,711-733`
-- **Key Enhancement**: Credit/Debt Fields Always Disabled
+- **Key Enhancement #1**: Credit/Debt Fields Always Disabled
   - **Design Decision**: "Lascia credito" and "Lascia debito" fields are now **always disabled** as they are calculated values only
   - **Implementation**:
     - Added `disabled` attribute to form HTML templates: `consegna.js:382,388`, `consegna-desktop.js:611,617`
     - Modified `handleContoProduttoreInput()` to always set `disabled=true` when populating fields: `consegna.js:618-649`, `consegna-desktop.js:906-937`
     - Simplified `handleCreditoDebitoInput()` to enforce disabled state and only manage `debitoSaldato` field: `consegna.js:527-560`, `consegna-desktop.js:817-843`
   - **Rationale**: These fields are derived values from the formula, never user input. Disabling prevents confusion and ensures data integrity.
+- **Key Enhancement #2**: Automatic Credit/Debt Compensation
+  - **Problem**: When a payment created credit that could pay off existing debt, system showed "Lascia credito" instead of automatically compensating the debt
+  - **Example Scenario**: Participant has 7€ debt, conto_produttore=15€, importo_saldato=22€
+    - Old behavior: Shows "Lascia credito = 7€" (incorrect)
+    - New behavior: Auto-checks "Salda intero debito", populates "Debito saldato = 7€", shows participant as "in pari"
+  - **Implementation Logic** (in `handleContoProduttoreInput()`):
+    ```javascript
+    // After calculating initial diff:
+    if (diff > 0 && debitoPreesistente > 0) {
+      if (diff >= debitoPreesistente) {
+        // Full compensation: auto-check checkbox, populate full debt amount
+        debitoSaldato.value = debitoPreesistente;
+        saldaDebitoCheckbox.checked = true;
+        diff = diff - debitoPreesistente; // Remaining credit
+      } else {
+        // Partial compensation: populate available credit amount
+        debitoSaldato.value = diff;
+        saldaDebitoCheckbox.checked = false;
+        diff = 0; // All credit used
+      }
+    }
+    ```
+  - **Files**: `consegna.js:604-633`, `consegna-desktop.js:887-916`
+  - **Rationale**: Credit should automatically compensate existing debt - this is the expected financial behavior and prevents user confusion
