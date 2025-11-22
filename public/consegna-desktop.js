@@ -515,6 +515,7 @@ function renderParticipant(nome) {
   const card = document.createElement('div');
   card.className = 'participant-card-flow';
   card.innerHTML = buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito, haDebito);
+  addHiddenFields(card, nome, haCredito, haDebito);
   container.appendChild(card);
 
   // Populate fields with existing movimento data if editing
@@ -601,9 +602,9 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
       </div>
     </div>
 
-    ${buildCreditoSection(nome, saldo, saldoText, saldoClass)}
+    ${haCredito ? buildCreditoSection(nome, saldo, saldoText, saldoClass) : ''}
 
-    ${buildDebitoSection(nome, saldo, saldoText, saldoClass)}
+    ${haDebito ? buildDebitoSection(nome, saldo, saldoText, saldoClass) : ''}
 
     <div class="flow-section">
       <div class="flow-section-title">NUOVO SALDO</div>

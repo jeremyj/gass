@@ -589,3 +589,14 @@ Implemented comprehensive auto-compensation system that automatically offsets cr
 - Empty database now defaults to today's date instead of stale localStorage date
 - Format `trovato_in_cassa` with `formatNumber()` to show "0" instead of "0.00"
 - Ensures clean initial state for new installations with consistent formatting
+
+### Current Commit
+**Bugfix**: Conditional rendering of credit/debt sections
+- Fixed UI issue where both CREDITO and DEBITO sections were always visible
+- Implemented conditional rendering based on participant's existing balance:
+  - `saldo > 0`: Show only CREDITO section
+  - `saldo < 0`: Show only DEBITO section
+  - `saldo = 0`: Hide both sections
+- Added hidden input fields for non-visible sections to ensure form data integrity
+- Reverts unconditional rendering from commit 044e960 while preserving fix for saldoBefore=0 case
+- **Files Modified**: `consegna.js:273-274,373-374`, `consegna-desktop.js:518,604-606`

@@ -135,3 +135,17 @@
       - Fields now always appear in form (disabled) regardless of participant's starting balance
     - **Files**: `consegna.js:375-376,274`, `consegna-desktop.js:606-608,518`
     - **Benefit**: Users can now always see compensation calculations updating in real-time as they enter transaction values
+
+### Conditional Rendering of Credit/Debt Sections (Current Implementation)
+- **Problem**: Commit 044e960 made both CREDITO and DEBITO sections always visible, creating UI clutter
+- **Solution**: Restored conditional rendering while preserving fix for saldoBefore=0 case
+- **Logic**:
+  - `saldo > 0`: Show CREDITO section only, add hidden fields for DEBITO
+  - `saldo < 0`: Show DEBITO section only, add hidden fields for CREDITO
+  - `saldo = 0`: Hide both sections, add hidden fields for both
+- **Implementation**:
+  - Template uses ternary operators: `${haCredito ? buildCreditoSection(...) : ''}`
+  - Restored `addHiddenFields(card, nome, haCredito, haDebito)` calls in `renderParticipant()`
+  - Function `addHiddenFields()` creates hidden inputs for non-visible compensation fields
+- **Files**: `consegna.js:273-274,373-374`, `consegna-desktop.js:518,604-606`
+- **Benefit**: Cleaner UI showing only relevant sections while maintaining form data integrity
