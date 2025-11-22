@@ -148,6 +148,18 @@
     - **Files**: `consegna.js:375-376,274`, `consegna-desktop.js:606-608,518`
     - **Benefit**: Users can now always see compensation calculations updating in real-time as they enter transaction values
 
+### Note Field Save Button Implementation
+- **Problem**: Users couldn't save notes without also saving participant data
+- **Solution**: Added dedicated save button that appears when noteGiornata field is edited
+- **Implementation**:
+  - **Mobile**: New "Salva Note" button in DATI GIORNATA section, hidden by default
+  - **Desktop**: Reuses existing save-btn-cassa button, shows when note modified
+  - Track original note value (`originalNoteGiornata`) for change detection
+  - `oninput` listener on noteGiornata field triggers visibility update
+  - Button hidden when note matches original or after successful save
+- **Files**: `consegna.html:78,82-84`, `consegna.js:11-12,149-151,173-176,187-253`, `consegna-desktop.html:49`, `consegna-desktop.js:6-7,322-324,347-350,1042-1046,1056-1065`
+- **Benefit**: Users can save daily notes independently of participant transactions
+
 ### Conditional Rendering of Credit/Debt Sections (Current Implementation)
 - **Problem**: Commit 044e960 made both CREDITO and DEBITO sections always visible, creating UI clutter
 - **Solution**: Restored conditional rendering while preserving fix for saldoBefore=0 case
