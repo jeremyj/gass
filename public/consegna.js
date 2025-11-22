@@ -8,6 +8,8 @@ let saldiBefore = {};
 
 // Track original values for unsaved changes detection
 let originalParticipantValues = {};
+let noteGiornataModified = false;
+let originalNoteGiornata = '';
 
 // ===== ACCORDION FUNCTIONS =====
 
@@ -142,7 +144,11 @@ function loadExistingConsegna(result) {
 
   // Set trovato from stored value, formatted
   trovatoField.value = formatNumber(result.consegna.trovato_in_cassa || 0);
-  noteField.value = result.consegna.note || '';
+
+  // Store original note value for change detection
+  originalNoteGiornata = result.consegna.note || '';
+  noteField.value = originalNoteGiornata;
+  noteGiornataModified = false;
 
   // Calculate and display pagato and lasciato
   updatePagatoProduttore();
@@ -150,6 +156,7 @@ function loadExistingConsegna(result) {
 
   updateMovimentiCounter();
   renderMovimentiGiorno();
+  updateNoteButtonVisibility();
 }
 
 function loadNewConsegna(result) {
@@ -162,7 +169,11 @@ function loadNewConsegna(result) {
 
   // Set trovato from previous lasciato, formatted
   trovatoField.value = formatNumber(result.lasciatoPrecedente ?? 0);
+
+  // Reset note tracking
+  originalNoteGiornata = '';
   noteField.value = '';
+  noteGiornataModified = false;
 
   // Calculate and display pagato and lasciato
   updatePagatoProduttore();
@@ -170,8 +181,76 @@ function loadNewConsegna(result) {
 
   updateMovimentiCounter();
   renderMovimentiGiorno();
+  updateNoteButtonVisibility();
 }
 
+// ===== NOTE MANAGEMENT =====
+
+function onNoteGiornataChange() {
+  const currentNote = document.getElementById('noteGiornata').value || '';
+  noteGiornataModified = (currentNote !== originalNoteGiornata);
+  updateNoteButtonVisibility();
+}
+
+function updateNoteButtonVisibility() {
+  const saveNoteBtn = document.getElementById('save-note-btn');
+  if (!saveNoteBtn) return;
+
+  if (noteGiornataModified) {
+    saveNoteBtn.style.display = 'block';
+  } else {
+    saveNoteBtn.style.display = 'none';
+  }
+}
+
+async function saveNoteOnly() {
+  const data = getSelectedDate();
+  const trovatoInCassa = parseAmount(document.getElementById('trovatoInCassa').value);
+  const pagatoProduttore = calculatePagatoProduttore();
+  const lasciatoInCassa = calculateLasciatoInCassa();
+  const noteGiornata = document.getElementById('noteGiornata').value || '';
+
+  if (!data) {
+    showStatus('Errore: data non valida', 'error');
+    return;
+  }
+
+  showStatus('Salvataggio note in corso...', 'success');
+
+  try {
+    const response = await fetch('/api/consegna', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        data,
+        trovatoInCassa,
+        pagatoProduttore,
+        lasciatoInCassa,
+        discrepanzaCassa: 0,
+        discrepanzaTrovata: 0,
+        discrepanzaPagato: 0,
+        noteGiornata,
+        partecipanti: [],
+      }),
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      showStatus('Note salvate con successo!', 'success');
+      // Reset note modified flag
+      originalNoteGiornata = noteGiornata;
+      noteGiornataModified = false;
+      updateNoteButtonVisibility();
+      // Reload to get fresh data
+      setTimeout(() => checkDateData(), 1000);
+    } else {
+      showStatus('Errore: ' + result.error, 'error');
+    }
+  } catch (error) {
+    showStatus('Errore durante il salvataggio: ' + error.message, 'error');
+  }
+}
 
 // ===== RENDERING =====
 

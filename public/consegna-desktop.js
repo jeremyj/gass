@@ -3,6 +3,8 @@
 let participants = [];
 let existingConsegnaMovimenti = null;
 let saldiBefore = {};
+let noteGiornataModified = false;
+let originalNoteGiornata = '';
 
 // ===== DATE HANDLING =====
 
@@ -315,7 +317,11 @@ function loadExistingConsegna(result) {
   trovatoField.value = formatNumber(result.consegna.trovato_in_cassa || 0);
   pagatoField.value = formatNumber(result.consegna.pagato_produttore || 0);
   lasciatoField.value = formatNumber(result.consegna.lasciato_in_cassa || 0);
-  document.getElementById('noteGiornata').value = result.consegna.note || '';
+
+  // Store original note value for change detection
+  originalNoteGiornata = result.consegna.note || '';
+  document.getElementById('noteGiornata').value = originalNoteGiornata;
+  noteGiornataModified = false;
 
   renderMovimentiGiorno();
   updateSaveButtonVisibility();
@@ -337,7 +343,11 @@ function loadNewConsegna(result) {
   // Initialize other fields to 0
   pagatoField.value = formatNumber(0);
   lasciatoField.value = formatNumber(trovatoValue); // lasciato = trovato when no movements
+
+  // Reset note tracking
+  originalNoteGiornata = '';
   document.getElementById('noteGiornata').value = '';
+  noteGiornataModified = false;
 
   renderMovimentiGiorno();
   updateSaveButtonVisibility();
@@ -939,6 +949,9 @@ async function saveCassaOnly() {
 
     if (result.success) {
       showStatus('Dati cassa salvati con successo!', 'success');
+      // Reset note modified flag
+      originalNoteGiornata = document.getElementById('noteGiornata').value || '';
+      noteGiornataModified = false;
       setTimeout(() => checkDateData(), 1000);
     } else {
       showStatus('Errore: ' + result.error, 'error');
@@ -1029,6 +1042,12 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
 
 // ===== BUTTON VISIBILITY =====
 
+function onNoteGiornataChange() {
+  const currentNote = document.getElementById('noteGiornata').value || '';
+  noteGiornataModified = (currentNote !== originalNoteGiornata);
+  updateSaveButtonVisibility();
+}
+
 function updateSaveButtonVisibility() {
   const saveBtnCassa = document.getElementById('save-btn-cassa');
   const saveBtnParticipant = document.getElementById('save-btn-participant');
@@ -1037,10 +1056,17 @@ function updateSaveButtonVisibility() {
 
   const hasParticipantSelected = document.getElementById('participant-select')?.value !== '';
 
-  // Show button only when participant is selected (cassa fields are auto-calculated, never need manual save)
+  // Show button when:
+  // 1. Participant is selected, OR
+  // 2. Note has been modified
   if (hasParticipantSelected) {
     saveBtnCassa.style.display = 'none';
     saveBtnParticipant.style.display = 'block';
+    saveBtnParticipant.textContent = 'Salva Movimenti';
+  } else if (noteGiornataModified) {
+    saveBtnCassa.style.display = 'block';
+    saveBtnCassa.textContent = '💾 Salva Note';
+    saveBtnParticipant.style.display = 'none';
   } else {
     // Hide both buttons
     saveBtnCassa.style.display = 'none';
