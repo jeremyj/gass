@@ -3,12 +3,6 @@
 let participants = [];
 let existingConsegnaMovimenti = null;
 let saldiBefore = {};
-let discrepanzaCassaEnabled = false;
-let discrepanzaTrovataEnabled = false;
-let discrepanzaPagatoProduttoreEnabled = false;
-
-// Smart Input Manager - replaces old smart override state
-let smartInputManager = null;
 
 // ===== DATE HANDLING =====
 
@@ -317,52 +311,11 @@ function loadExistingConsegna(result) {
   existingConsegnaMovimenti = result.movimenti || [];
   saldiBefore = result.saldiBefore || {};
 
-  // Reset all fields to AUTO mode first
-  smartInputManager.resetAll();
-
-  // Set stored values
-  trovatoField.value = result.consegna.trovato_in_cassa || '';
-  pagatoField.value = result.consegna.pagato_produttore || '';
-  lasciatoField.value = result.consegna.lasciato_in_cassa || '';
+  // Set stored values with formatting
+  trovatoField.value = formatNumber(result.consegna.trovato_in_cassa || 0);
+  pagatoField.value = formatNumber(result.consegna.pagato_produttore || 0);
+  lasciatoField.value = formatNumber(result.consegna.lasciato_in_cassa || 0);
   document.getElementById('noteGiornata').value = result.consegna.note || '';
-
-  // Restore desktop override checkboxes (legacy support)
-  restoreOverrideCheckbox('discrepanzaCassa', 'lasciatoInCassa',
-    result.consegna.discrepanza_cassa, () => discrepanzaCassaEnabled = true, () => discrepanzaCassaEnabled = false);
-
-  restoreOverrideCheckbox('discrepanzaCassaTrovata', 'trovatoInCassa',
-    result.consegna.discrepanza_trovata, () => discrepanzaTrovataEnabled = true, () => discrepanzaTrovataEnabled = false);
-
-  restoreOverrideCheckbox('discrepanzaPagatoProduttore', 'pagatoProduttore',
-    result.consegna.discrepanza_pagato, () => discrepanzaPagatoProduttoreEnabled = true, () => discrepanzaPagatoProduttoreEnabled = false);
-
-  // Apply MANUAL state for smart inputs where overridden
-  if (result.consegna.discrepanza_trovata === 1) {
-    const state = smartInputManager.getFieldState('trovato');
-    if (state) {
-      state.mode = 'manual';
-      state.isManualOverride = true;
-      state.currentValue = parseAmount(trovatoField.value);
-    }
-  }
-
-  if (result.consegna.discrepanza_pagato === 1) {
-    const state = smartInputManager.getFieldState('pagato');
-    if (state) {
-      state.mode = 'manual';
-      state.isManualOverride = true;
-      state.currentValue = parseAmount(pagatoField.value);
-    }
-  }
-
-  if (result.consegna.discrepanza_cassa === 1) {
-    const state = smartInputManager.getFieldState('lasciato');
-    if (state) {
-      state.mode = 'manual';
-      state.isManualOverride = true;
-      state.currentValue = parseAmount(lasciatoField.value);
-    }
-  }
 
   renderMovimentiGiorno();
   updateSaveButtonVisibility();
@@ -370,60 +323,26 @@ function loadExistingConsegna(result) {
 
 function loadNewConsegna(result) {
   const trovatoField = document.getElementById('trovatoInCassa');
+  const pagatoField = document.getElementById('pagatoProduttore');
+  const lasciatoField = document.getElementById('lasciatoInCassa');
 
   // Clear movements
-  existingConsegnaMovimenti = null;
-  saldiBefore = {};
-
-  // Reset all fields to AUTO mode
-  smartInputManager.resetAll();
+  existingConsegnaMovimenti = [];
+  saldiBefore = result.saldiBefore || {};
 
   // Set trovato from previous lasciato
-  const trovatoValue = result.lasciatoPrecedente ?? '';
-  trovatoField.value = trovatoValue;
+  const trovatoValue = result.lasciatoPrecedente ?? 0;
+  trovatoField.value = formatNumber(trovatoValue);
 
-  // Store calculated value for trovato
-  const trovatoState = smartInputManager.getFieldState('trovato');
-  if (trovatoState) {
-    trovatoState.calculatedValue = parseAmount(trovatoValue);
-    trovatoState.currentValue = parseAmount(trovatoValue);
-  }
-
-  // Clear other fields
-  document.getElementById('pagatoProduttore').value = '0.00';
-  document.getElementById('lasciatoInCassa').value = '0.00';
+  // Initialize other fields to 0
+  pagatoField.value = formatNumber(0);
+  lasciatoField.value = formatNumber(trovatoValue); // lasciato = trovato when no movements
   document.getElementById('noteGiornata').value = '';
 
   renderMovimentiGiorno();
   updateSaveButtonVisibility();
-
-  // Recalculate all auto fields
-  smartInputManager.recalculateAll();
 }
 
-function restoreOverrideCheckbox(checkboxId, fieldId, flagValue, enableFn, disableFn) {
-  const checkbox = document.getElementById(checkboxId);
-  const field = document.getElementById(fieldId);
-
-  // Return early if elements don't exist
-  if (!checkbox || !field) {
-    return;
-  }
-
-  if (flagValue === 1) {
-    checkbox.checked = true;
-    enableFn();
-    field.readOnly = false;
-    field.style.cursor = 'text';
-    field.style.background = '#fff';
-  } else {
-    checkbox.checked = false;
-    disableFn();
-    field.readOnly = true;
-    field.style.cursor = 'not-allowed';
-    field.style.background = '#f0f0f0';
-  }
-}
 
 // ===== RENDERING =====
 
@@ -735,73 +654,42 @@ function toggleSaldaDebito(nome, saldo) {
   handleCreditoDebitoInput(nome, saldo);
 }
 
-// ===== SMART INPUT MANAGER SETUP =====
+// ===== CASSA CALCULATIONS =====
 
-function initSmartInputs() {
-  // Create smart input manager instance
-  smartInputManager = new SmartInputManager({
-    blurDebounceMs: 150,
-    comparisonThreshold: 0.01
-  });
+function calculatePagatoProduttore() {
+  let totalPagato = 0;
+  if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
+    existingConsegnaMovimenti.forEach(m => {
+      totalPagato += (m.conto_produttore || 0);
+    });
+  }
+  return roundUpCents(totalPagato);
+}
 
-  // Initialize three cash fields
-  smartInputManager.initField(
-    'trovato',
-    document.getElementById('trovatoInCassa'),
-    () => {
-      // Trovato calculation: from previous lasciato (set externally)
-      const state = smartInputManager.getFieldState('trovato');
-      return state ? state.calculatedValue : null;
-    }
-  );
+function calculateLasciatoInCassa() {
+  const trovatoInCassa = parseAmount(document.getElementById('trovatoInCassa').value);
+  const pagatoProduttore = parseAmount(document.getElementById('pagatoProduttore').value);
 
-  smartInputManager.initField(
-    'pagato',
-    document.getElementById('pagatoProduttore'),
-    () => {
-      // Pagato calculation: sum of all conto_produttore values
-      let totalPagato = 0;
-      if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
-        existingConsegnaMovimenti.forEach(m => {
-          totalPagato += (m.conto_produttore || 0);
-        });
-      }
-      return roundUpCents(totalPagato);
-    }
-  );
+  let incassato = 0;
+  if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
+    existingConsegnaMovimenti.forEach(m => {
+      incassato += (m.importo_saldato || 0);
+    });
+  }
 
-  smartInputManager.initField(
-    'lasciato',
-    document.getElementById('lasciatoInCassa'),
-    () => {
-      // Lasciato calculation: trovato + incassato - pagato
-      const trovatoInCassa = parseAmount(document.getElementById('trovatoInCassa').value);
-      const pagatoProduttore = parseAmount(document.getElementById('pagatoProduttore').value);
+  return roundUpCents(trovatoInCassa + incassato - pagatoProduttore);
+}
 
-      let incassato = 0;
-      if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
-        existingConsegnaMovimenti.forEach(m => {
-          incassato += (m.importo_saldato || 0);
-        });
-      }
+function updatePagatoProduttore() {
+  const pagatoField = document.getElementById('pagatoProduttore');
+  const calculatedValue = calculatePagatoProduttore();
+  pagatoField.value = formatNumber(calculatedValue);
+}
 
-      return roundUpCents(trovatoInCassa + incassato - pagatoProduttore);
-    }
-  );
-
-  // Listen to save button visibility events
-  smartInputManager.on('saveRequired', (data) => {
-    updateSaveButtonVisibility();
-  });
-
-  // Listen to state changes for recalculation triggers
-  smartInputManager.on('stateChange', (data) => {
-    if (data.fieldId === 'trovato') {
-      smartInputManager.updateField('lasciato');
-    } else if (data.fieldId === 'pagato') {
-      smartInputManager.updateField('lasciato');
-    }
-  });
+function updateLasciatoInCassa() {
+  const lasciatoField = document.getElementById('lasciatoInCassa');
+  const calculatedValue = calculateLasciatoInCassa();
+  lasciatoField.value = formatNumber(calculatedValue);
 }
 
 // ===== PARTICIPANT INTERACTION =====
@@ -977,22 +865,7 @@ function handleContoProduttoreInput(nome, saldo) {
 }
 
 // ===== CALCULATIONS =====
-
-function updatePagatoProduttore() {
-  // Recalculate pagato field using smart input manager
-  if (discrepanzaPagatoProduttoreEnabled) return;
-  if (smartInputManager) {
-    smartInputManager.updateField('pagato');
-  }
-}
-
-function updateLasciatoInCassa() {
-  // Recalculate lasciato field using smart input manager
-  if (discrepanzaCassaEnabled) return;
-  if (smartInputManager) {
-    smartInputManager.updateField('lasciato');
-  }
-}
+// Note: updatePagatoProduttore() and updateLasciatoInCassa() are defined earlier in CASSA CALCULATIONS section
 
 // ===== SAVE DATA =====
 
@@ -1043,10 +916,10 @@ async function saveCassaOnly() {
   // Always read from DOM
   let lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
 
-  // Check for overrides using smart input manager OR legacy checkboxes
-  const discrepanzaTrovata = (smartInputManager.hasSignificantOverride('trovato') || discrepanzaTrovataEnabled);
-  const discrepanzaPagato = (smartInputManager.hasSignificantOverride('pagato') || discrepanzaPagatoProduttoreEnabled);
-  const discrepanzaCassa = (smartInputManager.hasSignificantOverride('lasciato') || discrepanzaCassaEnabled);
+  // Discrepanze are always 0 - cassa fields are readonly calculated values
+  const discrepanzaTrovata = 0;
+  const discrepanzaPagato = 0;
+  const discrepanzaCassa = 0;
 
   try {
     const response = await fetch('/api/consegna', {
@@ -1117,10 +990,10 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
   // Always read from DOM
   let lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
 
-  // Check for overrides using smart input manager OR legacy checkboxes
-  const discrepanzaTrovata = (smartInputManager.hasSignificantOverride('trovato') || discrepanzaTrovataEnabled);
-  const discrepanzaPagato = (smartInputManager.hasSignificantOverride('pagato') || discrepanzaPagatoProduttoreEnabled);
-  const discrepanzaCassa = (smartInputManager.hasSignificantOverride('lasciato') || discrepanzaCassaEnabled);
+  // Discrepanze are always 0 - cassa fields are readonly calculated values
+  const discrepanzaTrovata = 0;
+  const discrepanzaPagato = 0;
+  const discrepanzaCassa = 0;
 
   try {
     const response = await fetch('/api/consegna', {
@@ -1162,19 +1035,12 @@ function updateSaveButtonVisibility() {
 
   if (!saveBtnCassa || !saveBtnParticipant) return;
 
-  const hasManualCashInput = smartInputManager &&
-    Object.keys(smartInputManager.getManualOverrides()).length > 0;
   const hasParticipantSelected = document.getElementById('participant-select')?.value !== '';
 
-  // Show button in appropriate section
+  // Show button only when participant is selected (cassa fields are auto-calculated, never need manual save)
   if (hasParticipantSelected) {
-    // Show button under participant section
     saveBtnCassa.style.display = 'none';
     saveBtnParticipant.style.display = 'block';
-  } else if (hasManualCashInput) {
-    // Show button under cash section
-    saveBtnCassa.style.display = 'block';
-    saveBtnParticipant.style.display = 'none';
   } else {
     // Hide both buttons
     saveBtnCassa.style.display = 'none';
@@ -1185,9 +1051,6 @@ function updateSaveButtonVisibility() {
 // ===== INITIALIZATION =====
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Initialize smart input manager
-  initSmartInputs();
-
   // Set initial date (last consegna or today)
   try {
     const response = await fetch('/api/storico');
