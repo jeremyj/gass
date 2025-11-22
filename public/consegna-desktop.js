@@ -517,8 +517,6 @@ function renderParticipant(nome) {
   card.innerHTML = buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito, haDebito);
   container.appendChild(card);
 
-  addHiddenFields(card, nome, haCredito, haDebito);
-
   // Populate fields with existing movimento data if editing
   populateExistingMovimento(nome);
 }
@@ -603,9 +601,9 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
       </div>
     </div>
 
-    ${haCredito ? buildCreditoSection(nome, saldo, saldoText, saldoClass) : ''}
+    ${buildCreditoSection(nome, saldo, saldoText, saldoClass)}
 
-    ${haDebito ? buildDebitoSection(nome, saldo, saldoText, saldoClass) : ''}
+    ${buildDebitoSection(nome, saldo, saldoText, saldoClass)}
 
     <div class="flow-section">
       <div class="flow-section-title">NUOVO SALDO</div>
@@ -886,6 +884,22 @@ function handleContoProduttoreInput(nome, saldo) {
   // Compensation fields are always system-managed (always recalculated)
   // Calculate diff without any compensation values (they will be auto-populated)
   let diff = importoSaldatoValue - contoProduttoreValue;
+
+  // Reset compensation fields first (will be repopulated if needed)
+  if (usaCredito) {
+    usaCredito.value = '';
+    usaCredito.disabled = true;
+  }
+  if (usaInteroCreditoCheckbox) {
+    usaInteroCreditoCheckbox.checked = false;
+  }
+  if (debitoSaldato) {
+    debitoSaldato.value = '';
+    debitoSaldato.disabled = true;
+  }
+  if (saldaDebitoCheckbox) {
+    saldaDebitoCheckbox.checked = false;
+  }
 
   // Case 1: Creating credit while participant has existing debt - auto-compensate
   if (shouldAutoCompensate && diff > 0 && debitoPreesistente > 0) {
