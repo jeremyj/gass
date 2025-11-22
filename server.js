@@ -222,33 +222,42 @@ app.get('/api/consegna/:date', (req, res) => {
 
     // Calculate saldo before this consegna for each participant
     const saldiBefore = {};
-    movimenti.forEach(m => {
-      const participant = db.prepare('SELECT saldo FROM partecipanti WHERE id = ?').get(m.partecipante_id);
-      let saldoBefore = participant?.saldo || 0;
 
-      // Reverse the effects of this movimento
-      if (m.credito_lasciato > 0) saldoBefore -= m.credito_lasciato;
-      if (m.debito_lasciato > 0) saldoBefore += m.debito_lasciato;
-      if (m.usa_credito > 0) saldoBefore += m.usa_credito;
-      if (m.debito_saldato > 0) saldoBefore -= m.debito_saldato;
+    // If this is the first consegna ever, all participants start from 0
+    if (!previousConsegna) {
+      movimenti.forEach(m => {
+        saldiBefore[m.nome] = 0;
+      });
+    } else {
+      // Calculate saldoBefore by reversing this consegna's effects
+      movimenti.forEach(m => {
+        const participant = db.prepare('SELECT saldo FROM partecipanti WHERE id = ?').get(m.partecipante_id);
+        let saldoBefore = participant?.saldo || 0;
 
-      if (m.salda_debito_totale || m.salda_tutto) {
-        const prevMovimenti = db.prepare(`
-          SELECT m2.*
-          FROM movimenti m2
-          JOIN consegne c2 ON m2.consegna_id = c2.id
-          WHERE m2.partecipante_id = ? AND c2.data < ?
-          ORDER BY c2.data DESC
-          LIMIT 1
-        `).get(m.partecipante_id, date);
+        // Reverse the effects of this movimento
+        if (m.credito_lasciato > 0) saldoBefore -= m.credito_lasciato;
+        if (m.debito_lasciato > 0) saldoBefore += m.debito_lasciato;
+        if (m.usa_credito > 0) saldoBefore += m.usa_credito;
+        if (m.debito_saldato > 0) saldoBefore -= m.debito_saldato;
 
-        if (prevMovimenti) {
-          saldoBefore = prevMovimenti.credito_lasciato - prevMovimenti.debito_lasciato;
+        if (m.salda_debito_totale || m.salda_tutto) {
+          const prevMovimenti = db.prepare(`
+            SELECT m2.*
+            FROM movimenti m2
+            JOIN consegne c2 ON m2.consegna_id = c2.id
+            WHERE m2.partecipante_id = ? AND c2.data < ?
+            ORDER BY c2.data DESC
+            LIMIT 1
+          `).get(m.partecipante_id, date);
+
+          if (prevMovimenti) {
+            saldoBefore = prevMovimenti.credito_lasciato - prevMovimenti.debito_lasciato;
+          }
         }
-      }
 
-      saldiBefore[m.nome] = saldoBefore;
-    });
+        saldiBefore[m.nome] = saldoBefore;
+      });
+    }
 
     // Apply dynamic calculations
     const processedConsegna = applyDynamicCalculations(consegna, previousConsegna?.lasciato_in_cassa);
