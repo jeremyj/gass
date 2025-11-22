@@ -101,20 +101,23 @@
        - "Usa intero credito": checked when creditoUsato === creditoPreesistente
        - "Salda intero debito": checked when debitoSaldato === debitoPreesistente
 
-  - **Dynamic Recalculation System**:
-    - **Auto-populated tracking**: Uses `dataset.autoPopulated` flag to distinguish system vs user values
-    - **Recalculation**: Changes to `importo_saldato` trigger recalculation of auto-populated fields
-    - **User override**: Manual modification removes flag, locks value from auto-updates
-    - **Clean diff calculation**: Excludes auto-populated values when calculating diff to prevent pollution:
-      ```javascript
-      const usaCreditoForCalc = usaCreditoIsManuallySet ? usaCreditoValue : 0;
-      diff = importoSaldato + usaCreditoForCalc - debitoSaldatoForCalc - contoProduttore;
-      ```
-    - **Critical fix**: Prevents simultaneous "Usa credito" + "Lascia credito" by calculating diff without old auto-values
-    - **Database load persistence fix**: When loading existing movement data from database, mark compensation fields with `dataset.autoPopulated = 'true'`
-      - **Issue**: Database-loaded values weren't marked, so system treated them as manually-entered, preventing recalculation
-      - **Solution**: Mobile (consegna.js:309, 332) and Desktop (consegna-desktop.js:556-558) now mark fields on load
-      - **Result**: Changing importo_saldato now dynamically updates usa_credito/debito_saldato from database values
+  - **Compensation Fields Architecture** (Refactored):
+    - **Design Decision**: Compensation fields (`usa_credito`, `debito_saldato`) are **always disabled** - system-managed only, never user-modifiable
+    - **Simplified Logic**: Removed all manual/auto tracking complexity (`dataset.autoPopulated`, `isManuallySet`, etc.)
+    - **Clean Diff Calculation**: Simplified from complex formula to just `importoSaldato - contoProduttore`
+      - Old: `importoSaldato + usaCreditoForCalc - debitoSaldatoForCalc - contoProduttore` (with manual tracking)
+      - New: `importoSaldato - contoProduttore` (compensation values calculated after, not included in diff)
+    - **Implementation**:
+      - Added `disabled` attribute to HTML templates: `consegna.js:425,445`, `consegna-desktop.js:649,669`
+      - Simplified `handleCreditoDebitoInput()`: Now only enforces disabled state on all 4 fields
+      - Simplified `handleContoProduttoreInput()`: Removed all tracking logic, always recalculates compensation
+      - Database load: Simply sets `.disabled = true`, no flag tracking needed
+    - **Code Reduction**: Removed 114 lines of complex tracking code, added 36 lines of simple enforcement
+    - **Benefits**:
+      - Clearer UX: users see fields are system-calculated
+      - Simpler code: no complex state tracking
+      - Prevents errors: impossible to create inconsistent states
+      - Always recalculates: compensation always reflects current transaction values
 
-  - **Files**: `consegna.js:309,332,597-690`, `consegna-desktop.js:556-558,880-973`
-  - **Rationale**: Credits and debts should automatically offset in both directions, with dynamic updates as user modifies values
+  - **Files**: `consegna.js:309,331,425,445,538-544,596-638`, `consegna-desktop.js:531,649,669,821-827,836-878`
+  - **Rationale**: Compensation should be fully automatic and transparent, with no manual override capability to ensure data integrity
