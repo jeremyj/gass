@@ -121,3 +121,17 @@
 
   - **Files**: `consegna.js:309,331,425,445,538-544,596-638`, `consegna-desktop.js:531,649,669,821-827,836-878`
   - **Rationale**: Compensation should be fully automatic and transparent, with no manual override capability to ensure data integrity
+
+  - **Key Bug Fix #3**: Compensation fields not appearing when saldoBefore=0 (commit 044e960)
+    - **Root Cause**: Compensation sections (buildCreditoSection/buildDebitoSection) were conditionally rendered based on `haCredito` and `haDebito` flags
+    - **Problem**: When participant's `saldoBefore` was 0 (started day with zero balance), both flags were false, causing hidden fields to be added instead of visible disabled inputs
+    - **Symptom**: Compensation fields completely missing from UI, preventing users from seeing automatic compensation calculations
+    - **Investigation**: API correctly calculates `saldoBefore` by reversing current day's movements from DB saldo
+      - Example: Giovanni DB saldo = -20, movement has debito_lasciato=20, so saldoBefore = -20 + 20 = 0 ✓
+      - All participants started today at 0 balance, current saldi (-20, 10, 20, -10) are results of today's movements
+    - **Solution**:
+      - Removed conditional rendering: Always call `buildCreditoSection()` and `buildDebitoSection()`
+      - Removed `addHiddenFields()` calls from both mobile and desktop versions
+      - Fields now always appear in form (disabled) regardless of participant's starting balance
+    - **Files**: `consegna.js:375-376,274`, `consegna-desktop.js:606-608,518`
+    - **Benefit**: Users can now always see compensation calculations updating in real-time as they enter transaction values
