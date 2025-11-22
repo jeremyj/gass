@@ -1,7 +1,11 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Install dependencies for building native modules and proper signal handling
+RUN apk add --no-cache \
+    dumb-init \
+    python3 \
+    make \
+    g++
 
 # Create app directory
 WORKDIR /app
@@ -14,7 +18,7 @@ RUN addgroup -g 1001 -S gass && \
 COPY package*.json ./
 
 # Install production dependencies only
-RUN npm ci --only=production && \
+RUN npm ci --omit=dev && \
     npm cache clean --force
 
 # Copy application files
