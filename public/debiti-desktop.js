@@ -36,9 +36,9 @@ function renderDatePicker() {
   const selectedDateStr = document.getElementById('data').value;
 
   let html = '<div class="date-picker-header">';
-  html += `<button type="button" class="date-picker-nav" onclick="changePickerMonth(-1)">◀</button>`;
+  html += `<button type="button" class="date-picker-nav" onclick="changePickerMonth(-1, event)">◀</button>`;
   html += `<div class="date-picker-month">${monthNames[pickerMonth]} ${pickerYear}</div>`;
-  html += `<button type="button" class="date-picker-nav" onclick="changePickerMonth(1)">▶</button>`;
+  html += `<button type="button" class="date-picker-nav" onclick="changePickerMonth(1, event)">▶</button>`;
   html += '</div>';
 
   html += '<div class="date-picker-weekdays">';
@@ -68,7 +68,10 @@ function renderDatePicker() {
   container.innerHTML = html;
 }
 
-function changePickerMonth(delta) {
+function changePickerMonth(delta, event) {
+  if (event) {
+    event.stopPropagation();
+  }
   pickerMonth += delta;
   if (pickerMonth > 11) {
     pickerMonth = 0;

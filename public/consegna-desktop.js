@@ -47,9 +47,9 @@ function renderDatePicker() {
   const selectedDateStr = document.getElementById('data').value;
 
   let html = '<div class="date-picker-header">';
-  html += `<button type="button" class="date-picker-nav" onclick="changePickerMonth(-1)">◀</button>`;
+  html += `<button type="button" class="date-picker-nav" onclick="changePickerMonth(-1, event)">◀</button>`;
   html += `<div class="date-picker-month">${monthNames[pickerMonth]} ${pickerYear}</div>`;
-  html += `<button type="button" class="date-picker-nav" onclick="changePickerMonth(1)">▶</button>`;
+  html += `<button type="button" class="date-picker-nav" onclick="changePickerMonth(1, event)">▶</button>`;
   html += '</div>';
 
   html += '<div class="date-picker-weekdays">';
@@ -78,22 +78,23 @@ function renderDatePicker() {
   }
   html += '</div>';
 
-  // Legend
-  html += '<div class="date-picker-legend">';
-  html += '<div class="date-picker-legend-item">';
-  html += '<div class="date-picker-legend-color" style="background: #2ecc71;"></div>';
-  html += '<span>Con consegna</span>';
-  html += '</div>';
-  html += '<div class="date-picker-legend-item">';
-  html += '<div class="date-picker-legend-color" style="background: white; border: 1px solid #ddd;"></div>';
-  html += '<span>Senza consegna</span>';
-  html += '</div>';
-  html += '</div>';
+  // Legend (only show if we have consegne dates)
+  if (consegneDates.size > 0) {
+    html += '<div class="date-picker-legend">';
+    html += '<div class="date-picker-legend-item">';
+    html += '<div class="date-picker-legend-color" style="background: #2ecc71;"></div>';
+    html += '<span>Con consegna</span>';
+    html += '</div>';
+    html += '</div>';
+  }
 
   container.innerHTML = html;
 }
 
-function changePickerMonth(delta) {
+function changePickerMonth(delta, event) {
+  if (event) {
+    event.stopPropagation();
+  }
   pickerMonth += delta;
   if (pickerMonth > 11) {
     pickerMonth = 0;
@@ -209,10 +210,6 @@ function renderCalendar() {
   html += '<div class="calendar-legend-item">';
   html += '<div class="calendar-legend-color" style="background: #2ecc71;"></div>';
   html += '<span>Con consegna</span>';
-  html += '</div>';
-  html += '<div class="calendar-legend-item">';
-  html += '<div class="calendar-legend-color" style="background: white;"></div>';
-  html += '<span>Senza consegna</span>';
   html += '</div>';
   html += '</div>';
 
