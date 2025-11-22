@@ -13,3 +13,7 @@ backups/
 *.db
 *.db-shm
 *.db-wal
+
+# Database directory (bind mount)
+/data/*
+!/data/.gitkeep

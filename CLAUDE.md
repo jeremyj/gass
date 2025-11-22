@@ -2,6 +2,21 @@
 
 ## Technical Notes
 
+### Database Storage Architecture
+- **Database Engine**: SQLite3 via `better-sqlite3` npm package
+- **File Location**:
+  - **Docker**: `/app/data/gass.db` (bind-mounted to host `./data/`)
+  - **Local Dev**: `./gass.db` (project root)
+- **Path Detection**: `database.js` automatically detects environment
+  - Checks if `/app/data` exists → uses Docker path
+  - Otherwise → uses local development path (`__dirname`)
+- **Docker Configuration**:
+  - `docker-compose.yml`: Bind mount `./data:/app/data`
+  - `Dockerfile`: Creates `/app/data` with correct ownership (gass:gass user)
+  - Database persists on host filesystem for easy backup and portability
+- **Startup Logging**: Logs database path on initialization for verification
+- **Gitignore**: `/data/` directory excluded, only `.gitkeep` tracked for structure
+
 ### Cassa Field Architecture (Current Implementation)
 - **Design Decision**: Cassa fields (trovato, pagato, lasciato) are **readonly calculated values only**
 - **No Manual Override**: Previous SmartInputManager-based override system has been completely removed from both mobile and desktop

@@ -21,8 +21,8 @@ services:
       - PORT=3000
 
     volumes:
-      # Persistent storage for SQLite database
-      - gass-data:/app/data
+      # Persistent storage for SQLite database (bind mount to host)
+      - ./data:/app/data
 
       # Mount credentials.json (read-only)
       # Make sure this file exists on your host before starting
@@ -44,11 +44,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-
-volumes:
-  # Named volume for persistent database storage
-  gass-data:
-    driver: local
 
 networks:
   # Use existing nginx-proxy network

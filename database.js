@@ -4,7 +4,11 @@ const fs = require('fs');
 
 // Use /app/data for Docker volume, or current directory for local dev
 const dbDir = fs.existsSync('/app/data') ? '/app/data' : __dirname;
-const db = new Database(path.join(dbDir, 'gass.db'));
+const dbPath = path.join(dbDir, 'gass.db');
+const db = new Database(dbPath);
+
+// Log database path for verification
+console.log(`Database initialized at: ${dbPath}`);
 
 // Enable foreign keys
 db.pragma('foreign_keys = ON');
