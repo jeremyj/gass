@@ -295,19 +295,26 @@ Each movement tracks:
 - `salda_tutto`: Checkbox to settle entire balance to zero
 - `conto_produttore`: Total amount owed to producer for goods received
 - `importo_saldato`: Amount collected from participant
-- `usa_credito`: Use participant's existing credit (auto-compensates with debts)
-- `debito_lasciato`: New debt to carry forward (auto-calculated, always disabled)
-- `credito_lasciato`: New credit to carry forward (auto-calculated, always disabled)
+- `usa_credito`: Use participant's existing credit (system-managed, always disabled, always visible)
+- `debito_lasciato`: New debt to carry forward (system-calculated, always disabled)
+- `credito_lasciato`: New credit to carry forward (system-calculated, always disabled)
 - `salda_debito_totale`: Checkbox to settle all existing debt
-- `debito_saldato`: Partial debt settlement amount (auto-compensates with credits)
+- `debito_saldato`: Partial debt settlement amount (system-managed, always disabled, always visible)
 
 **Auto-Calculation**: The `credito_lasciato` and `debito_lasciato` fields are calculated values based on the formula:
 ```
-diff = importo_saldato + usa_credito - debito_saldato - conto_produttore
+diff = importo_saldato - conto_produttore
+// Compensation (usa_credito, debito_saldato) applied before final balance calculation
 if diff > 0: credito_lasciato = diff
 if diff < 0: debito_lasciato = abs(diff)
 ```
 These fields are always disabled to prevent manual editing and ensure data integrity.
+
+**Compensation Fields Architecture**: The `usa_credito` and `debito_saldato` fields are **always disabled and always visible** regardless of participant's existing balance. They are system-managed only with no manual override capability:
+- Fields appear in every transaction form (disabled state)
+- System automatically populates values when compensation is applicable
+- Values update in real-time as user enters transaction details
+- Transparency: users can always see when and how compensation is applied
 
 **Bidirectional Auto-Compensation**: The system automatically offsets credits and debts in both directions:
 
@@ -323,11 +330,11 @@ These fields are always disabled to prevent manual editing and ensure data integ
    - If credit >= debt: Full debt offset
    - If credit < debt: Partial debt reduction
 
-**Dynamic Recalculation**: Compensation fields are marked with `dataset.autoPopulated` flag:
-- User changes to `importo_saldato` trigger automatic recalculation
-- Auto-populated values update dynamically based on new transaction amounts
-- Manual user modifications lock the field value from auto-updates
-- Database-loaded compensation values are marked as auto-populated for recalculation support
+**Automatic Recalculation**: Compensation fields recalculate automatically on every input change:
+- Changes to `conto_produttore` or `importo_saldato` trigger immediate recalculation
+- Fields are reset and repopulated based on current transaction values
+- No manual override capability - values are purely system-calculated
+- Simple, predictable behavior ensures data integrity
 
 #### Transaction Processing
 1. User enters movement data for each participant
@@ -498,30 +505,53 @@ Database persisted in `/app/data/gass.db` volume.
 
 ## Recent Technical Changes
 
-### Commits: aa1c516 through 3a95cc9
-**Feature**: Bidirectional automatic credit/debt compensation with dynamic recalculation
+### Commit: 044e960
+**Bugfix**: Always show compensation fields regardless of existing balance
 
-Implemented a comprehensive auto-compensation system that automatically offsets credits and debts in both directions:
+Fixed issue where compensation fields (usa_credito, debito_saldato) were missing from UI when participant's saldoBefore was 0.
 
-**Implementation Details**:
-- **Case 1 - Debt → Credit compensation**: When a transaction creates credit but participant has existing debt, system auto-populates "Debito saldato" field and checks "Salda intero debito" if credit covers full debt
-- **Case 2 - Credit → Debt compensation**: When a transaction creates debt but participant has existing credit, system auto-populates "Usa credito" field and checks "Usa intero credito" if credit covers full debt
-- **Trigger conditions**: Compensation only activates when BOTH `conto_produttore > 0` AND `importo_saldato > 0` to prevent premature calculation during typing
-- **Dynamic recalculation**: Uses `dataset.autoPopulated` flag to track system vs user values, allowing auto-populated fields to recalculate when user changes `importo_saldato`
-- **User override**: Manual field modification removes autoPopulated flag, preventing future auto-updates
-- **Clean diff calculation**: Excludes auto-populated values when calculating diff to prevent pollution and impossible states
-- **Database persistence**: When loading existing movements, compensation fields are marked with autoPopulated flag for recalculation support
+**Problem**: Compensation sections were conditionally rendered based on haCredito/haDebito flags. When participant started the day with zero balance, hidden fields were added instead of visible disabled inputs.
 
-**Key Fixes**:
-- Prevented premature triggering during partial input (commit e114bbf)
-- Enabled field clearing without sticky values (commit 52ce087)
-- Unified credit/debt logic for symmetrical behavior (commit 6372738)
-- Fixed non-dynamic updates when changing importo_saldato (commit 864d485)
-- Prevented simultaneous "Usa credito" + "Lascia credito" states (commit 705c50d)
-- Fixed database-loaded values not updating dynamically (commit 3a95cc9)
+**Solution**:
+- Removed conditional rendering - always include buildCreditoSection() and buildDebitoSection()
+- Removed addHiddenFields() calls
+- Fields now always appear (disabled) and update in real-time
+
+**Impact**: Users can now always see compensation calculations, improving transparency.
 
 **Files Modified**: `consegna.js`, `consegna-desktop.js`
-**Testing**: Verified with Chrome DevTools across multiple scenarios
+
+### Commits: 4717827, e76b48d
+**Refactor**: Simplified compensation fields to always-disabled system-managed architecture
+
+Removed complex manual/auto tracking system in favor of simple always-disabled fields:
+
+**Changes**:
+- Removed dataset.autoPopulated tracking (114 lines of complex code)
+- Compensation fields now always disabled with no manual override
+- Simplified diff calculation from complex formula to just `importo_saldato - conto_produttore`
+- Added field reset logic to ensure clean recalculation on every input change
+
+**Benefits**:
+- Clearer UX: users know fields are system-calculated
+- Simpler code: no state tracking needed
+- Better data integrity: impossible to create inconsistent states
+- Predictable behavior: always recalculates based on current values
+
+**Files Modified**: `consegna.js`, `consegna-desktop.js`
+
+### Commits: aa1c516 through 3a95cc9
+**Feature**: Bidirectional automatic credit/debt compensation
+
+Implemented comprehensive auto-compensation system that automatically offsets credits and debts:
+
+**Cases**:
+- **Debt → Credit compensation**: Transaction creates credit but participant has existing debt
+- **Credit → Debt compensation**: Transaction creates debt but participant has existing credit
+
+**Trigger conditions**: Compensation activates when BOTH `conto_produttore > 0` AND `importo_saldato > 0`
+
+**Files Modified**: `consegna.js`, `consegna-desktop.js`
 
 ### Commit: ec1527d
 **Feature**: Calculate credit/debit even without producer account
