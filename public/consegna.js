@@ -306,13 +306,12 @@ function loadExistingParticipantData(nome, saldo) {
   let hasUsaCredito = false;
   if (usaCreditoField && movimento.usa_credito) {
     usaCreditoField.value = movimento.usa_credito;
-    usaCreditoField.dataset.autoPopulated = 'true'; // Mark as auto-populated for dynamic recalculation
+    usaCreditoField.disabled = true; // Always disabled - system-managed
     hasUsaCredito = true;
 
     // If usa_credito equals the full credit amount, check the "usa intero credito" checkbox
     if (usaInteroCreditoCheckbox && saldo > 0 && Math.abs(movimento.usa_credito - saldo) < 0.01) {
       usaInteroCreditoCheckbox.checked = true;
-      usaCreditoField.disabled = true;
     }
   }
 
@@ -329,7 +328,7 @@ function loadExistingParticipantData(nome, saldo) {
   const debitoSaldatoField = document.getElementById(`debitoSaldato_${nome}`);
   if (debitoSaldatoField && movimento.debito_saldato) {
     debitoSaldatoField.value = movimento.debito_saldato;
-    debitoSaldatoField.dataset.autoPopulated = 'true'; // Mark as auto-populated for dynamic recalculation
+    debitoSaldatoField.disabled = true; // Always disabled - system-managed
   }
 
   const noteField = document.getElementById(`note_${nome}`);
@@ -422,7 +421,7 @@ function buildCreditoSection(nome, saldo, saldoText, saldoClass) {
       </div>
       <div class="form-group">
         <label>Usa credito parziale:</label>
-        <input type="text" inputmode="decimal" id="usaCredito_${nome}" placeholder="0.00"
+        <input type="text" inputmode="decimal" id="usaCredito_${nome}" placeholder="0.00" disabled
                oninput="normalizeInputField(this); validateCreditoMax('${nome}', ${saldo}); handleContoProduttoreInput('${nome}', ${saldo}); handleCreditoDebitoInput('${nome}', ${saldo})"
                onfocus="handleInputFocus(this)">
       </div>
@@ -442,7 +441,7 @@ function buildDebitoSection(nome, saldo, saldoText, saldoClass) {
       </div>
       <div class="form-group">
         <label>Salda parziale:</label>
-        <input type="text" inputmode="decimal" id="debitoSaldato_${nome}" placeholder="0.00"
+        <input type="text" inputmode="decimal" id="debitoSaldato_${nome}" placeholder="0.00" disabled
                oninput="normalizeInputField(this); handleContoProduttoreInput('${nome}', ${saldo}); handleCreditoDebitoInput('${nome}', ${saldo})"
                onfocus="handleInputFocus(this)">
       </div>
@@ -535,38 +534,12 @@ function handleCreditoDebitoInput(nome, saldo) {
   const saldaDebitoCheckbox = document.getElementById(`saldaDebito_${nome}`);
   const usaCredito = document.getElementById(`usaCredito_${nome}`);
 
-  // Remove auto-populated flag when user manually modifies these fields
-  if (usaCredito && usaCredito.dataset.autoPopulated) {
-    delete usaCredito.dataset.autoPopulated;
-  }
-  if (debitoSaldato && debitoSaldato.dataset.autoPopulated) {
-    delete debitoSaldato.dataset.autoPopulated;
-  }
-
-  const usaCreditoValue = usaCredito ? parseAmount(usaCredito.value) : 0;
-  const debitoSaldatoValue = debitoSaldato ? parseAmount(debitoSaldato.value) : 0;
-  const saldaDebitoChecked = saldaDebitoCheckbox && saldaDebitoCheckbox.checked;
-
-  const creditoDisponibile = saldo > 0 ? saldo : 0;
-  const usaCreditoParziale = usaCreditoValue > 0 && usaCreditoValue < creditoDisponibile;
-  const saldaDebito = saldaDebitoChecked || debitoSaldatoValue > 0;
-
-  // Ensure credit/debt fields are always disabled
+  // Compensation fields (usa_credito, debito_saldato) are always disabled - managed by system only
+  // Result fields (credito_lasciato, debito_lasciato) are also always disabled
   if (creditoLasciato) creditoLasciato.disabled = true;
   if (debitoLasciato) debitoLasciato.disabled = true;
-
-  // Reset debitoSaldato and checkbox
-  if (debitoSaldato) debitoSaldato.disabled = false;
-  if (saldaDebitoCheckbox) saldaDebitoCheckbox.disabled = false;
-
-  // Apply business rules for debitoSaldato
-  if (usaCreditoParziale && saldaDebitoCheckbox) {
-    saldaDebitoCheckbox.disabled = true;
-  }
-
-  if (saldaDebito && debitoSaldato) {
-    debitoSaldato.disabled = true;
-  }
+  if (usaCredito) usaCredito.disabled = true;
+  if (debitoSaldato) debitoSaldato.disabled = true;
 }
 
 function handleContoProduttoreInput(nome, saldo) {
@@ -619,32 +592,18 @@ function handleContoProduttoreInput(nome, saldo) {
   const saldaDebitoCheckbox = document.getElementById(`saldaDebito_${nome}`);
   const usaInteroCreditoCheckbox = document.getElementById(`usaInteroCreditoCheckbox_${nome}`);
 
-  // Case 1: Creating credit while participant has existing debt
-  // Skip if user has manually entered a value in debitoSaldato
-  // Auto-populated fields can be recalculated, user-entered fields cannot
-  const debitoSaldatoIsAutoPopulated = debitoSaldato && debitoSaldato.dataset.autoPopulated === 'true';
-  const debitoSaldatoIsManuallySet = debitoSaldato && debitoSaldatoValue > 0 && !debitoSaldatoIsAutoPopulated;
+  // Compensation fields are always system-managed (always recalculated)
+  // Calculate diff without any compensation values (they will be auto-populated)
+  let diff = importoSaldatoValue - contoProduttoreValue;
 
-  // Case 2: Creating debt while participant has existing credit
-  // Skip if user has manually entered a value in usaCredito
-  // Auto-populated fields can be recalculated, user-entered fields cannot
-  const usaCreditoIsAutoPopulated = usaCredito && usaCredito.dataset.autoPopulated === 'true';
-  const usaCreditoIsManuallySet = usaCredito && usaCreditoValue > 0 && !usaCreditoIsAutoPopulated;
-
-  // Calculate diff WITHOUT auto-populated values (so we can recalculate them)
-  const usaCreditoForCalc = usaCreditoIsManuallySet ? usaCreditoValue : 0;
-  const debitoSaldatoForCalc = debitoSaldatoIsManuallySet ? debitoSaldatoValue : 0;
-  let diff = importoSaldatoValue + usaCreditoForCalc - debitoSaldatoForCalc - contoProduttoreValue;
-
-  if (shouldAutoCompensate && diff > 0 && debitoPreesistente > 0 && !debitoSaldatoIsManuallySet) {
+  // Case 1: Creating credit while participant has existing debt - auto-compensate
+  if (shouldAutoCompensate && diff > 0 && debitoPreesistente > 0) {
     const debitoSaldabile = Math.min(diff, debitoPreesistente);
     const saldaTuttoIlDebito = debitoSaldabile === debitoPreesistente;
 
-    // Auto-populate debito_saldato field
+    // Auto-populate debito_saldato field (always disabled, system-managed)
     if (debitoSaldato) {
       debitoSaldato.value = roundUpCents(debitoSaldabile);
-      debitoSaldato.dataset.autoPopulated = 'true'; // Mark as auto-populated
-      // Always disable auto-populated compensation fields
       debitoSaldato.disabled = true;
     }
 
@@ -657,15 +616,14 @@ function handleContoProduttoreInput(nome, saldo) {
     diff = diff - debitoSaldabile;
   }
 
-  if (shouldAutoCompensate && diff < 0 && creditoPreesistente > 0 && !usaCreditoIsManuallySet) {
+  // Case 2: Creating debt while participant has existing credit - auto-compensate
+  if (shouldAutoCompensate && diff < 0 && creditoPreesistente > 0) {
     const creditoUsabile = Math.min(Math.abs(diff), creditoPreesistente);
     const usaTuttoIlCredito = creditoUsabile === creditoPreesistente;
 
-    // Auto-populate usa_credito field
+    // Auto-populate usa_credito field (always disabled, system-managed)
     if (usaCredito) {
       usaCredito.value = roundUpCents(creditoUsabile);
-      usaCredito.dataset.autoPopulated = 'true'; // Mark as auto-populated
-      // Always disable auto-populated compensation fields
       usaCredito.disabled = true;
     }
 
