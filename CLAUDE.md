@@ -203,3 +203,21 @@
   - **Behavior**: Preserves participant selection across date changes, updates all transaction fields, balances, and movements to reflect new date
   - **Files**: `consegna.js:115-160`
   - **Benefit**: Users can quickly compare same participant's transactions across different dates without closing/reopening form
+
+### Code Cleanup (2025-11-22)
+- **Removed Unused Files**:
+  - `public/smart-input.js` (409 lines) - SmartInputManager system completely removed per design decision
+  - `mobile-layout-final.html` (1,683 lines) - Design mockup/prototype, not production code
+- **Removed Unused NPM Dependencies**:
+  - `googleapis` - No references found in codebase
+  - `dotenv` - No references found in codebase
+  - `node-fetch` - No references found in codebase
+  - Result: Removed 26 npm packages from node_modules
+- **Simplified Discrepanza Logic**:
+  - **server.js**: Removed manual override checks from `calculateTrovatoInCassa()` function (discrepanza_trovata always 0)
+  - **server.js**: Removed discrepanza parameters from `/api/consegna` endpoint (discrepanzaCassa, discrepanzaTrovata, discrepanzaPagato)
+  - **server.js**: Simplified INSERT/UPDATE queries to exclude discrepanza columns (kept in schema for backward compatibility)
+  - **storico.js**: Removed "MANUALE" override indicator badges from cassa fields display (3 occurrences)
+  - **storico-desktop.js**: Removed entire `calculateDiscrepanzaWarning()` function body, now returns empty string
+- **Impact**: ~2,150 lines removed, 3 dependencies cleaned up, simplified backend logic
+- **Rationale**: Discrepanza system was deprecated when cassa fields became readonly calculated values. Keeping DB columns for backward compatibility but removing all related UI/logic.

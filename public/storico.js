@@ -94,7 +94,6 @@ function createCassaSection(consegna) {
     <div class="storico-cassa-label">TROVATO IN CASSA</div>
     <div class="storico-cassa-value">
       ${formatNumber(consegna.trovato_in_cassa)} €
-      ${consegna.discrepanza_trovata === 1 ? '<span class="override-indicator">MANUALE</span>' : ''}
     </div>
   `;
   section.appendChild(trovatoDiv);
@@ -106,7 +105,6 @@ function createCassaSection(consegna) {
     <div class="storico-cassa-label">PAGATO PRODUTTORE</div>
     <div class="storico-cassa-value">
       ${formatNumber(consegna.pagato_produttore)} €
-      ${consegna.discrepanza_pagato === 1 ? '<span class="override-indicator">MANUALE</span>' : ''}
     </div>
   `;
   section.appendChild(pagatoDiv);
@@ -118,7 +116,6 @@ function createCassaSection(consegna) {
     <div class="storico-cassa-label">LASCIATO IN CASSA</div>
     <div class="storico-cassa-value lasciato">
       ${formatNumber(consegna.lasciato_in_cassa)} €
-      ${consegna.discrepanza_cassa === 1 ? '<span class="override-indicator">MANUALE</span>' : ''}
     </div>
   `;
   section.appendChild(lasciatoDiv);

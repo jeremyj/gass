@@ -69,31 +69,8 @@ function createConsegnaHeader(consegna, index, storico) {
 }
 
 function calculateDiscrepanzaWarning(consegna, index, storico) {
-  let warning = '';
-
-  // Discrepanza Cassa Lasciata
-  if (consegna.discrepanza_cassa === 1) {
-    const lasciatoCalcolato = consegna.trovato_in_cassa - consegna.pagato_produttore;
-    const discrepanzaImporto = consegna.lasciato_in_cassa - lasciatoCalcolato;
-
-    const segno = discrepanzaImporto >= 0 ? '+' : '';
-    const className = discrepanzaImporto >= 0 ? 'discrepanza-positive' : 'discrepanza-negative';
-    warning = `<span class="discrepanza-warning ${className}">⚠️ DISCREPANZA CASSA LASCIATA ${segno}€${formatNumber(discrepanzaImporto)}</span>`;
-  }
-
-  // Discrepanza Cassa Trovata
-  if (consegna.discrepanza_trovata === 1 && index < storico.length - 1) {
-    const consegnaPrecedente = storico[index + 1];
-    const discrepanzaTrovata = consegna.trovato_in_cassa - consegnaPrecedente.lasciato_in_cassa;
-
-    if (Math.abs(discrepanzaTrovata) > 0.01) {
-      const segno = discrepanzaTrovata >= 0 ? '+' : '';
-      const className = discrepanzaTrovata >= 0 ? 'discrepanza-positive' : 'discrepanza-negative';
-      warning += `<span class="discrepanza-warning ${className}">⚠️ DISCREPANZA CASSA TROVATA ${segno}€${formatNumber(discrepanzaTrovata)}</span>`;
-    }
-  }
-
-  return warning;
+  // Discrepanza system removed - cassa fields are now readonly calculated values
+  return '';
 }
 
 function createInfoTable(consegna) {

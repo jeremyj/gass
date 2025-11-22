@@ -64,16 +64,11 @@ app.get('/', (req, res) => {
 const roundToCents = (num) => Math.round(num * 10) / 10;
 
 // Calculate trovato_in_cassa dynamically from previous consegna's lasciato
-// Returns calculated value UNLESS manual override flag is set
 function calculateTrovatoInCassa(consegna, previousLasciato) {
-  if (consegna.discrepanza_trovata === 1) {
-    return consegna.trovato_in_cassa; // Manual override
-  }
   return previousLasciato !== undefined ? roundToCents(previousLasciato) : consegna.trovato_in_cassa;
 }
 
 // Calculate lasciato_in_cassa dynamically: trovato - pagato
-// Returns calculated value UNLESS manual override flag is set
 function calculateLasciatoInCassa(consegna, trovato) {
   // Always use the value from database - it's calculated correctly when saving
   return consegna.lasciato_in_cassa;
@@ -279,32 +274,25 @@ app.get('/api/consegna/:date', (req, res) => {
 app.post('/api/consegna', (req, res) => {
   try {
     const { data, trovatoInCassa, pagatoProduttore, lasciatoInCassa,
-            discrepanzaCassa, discrepanzaTrovata, discrepanzaPagato,
             noteGiornata, partecipanti } = req.body;
 
     const transaction = db.transaction(() => {
       let consegna = db.prepare('SELECT * FROM consegne WHERE data = ?').get(data);
 
-      // Only set override flags if explicitly requested by user
-      const discrepanzaFlag = discrepanzaCassa ? 1 : 0;
-
       const consegnaData = [
-        trovatoInCassa, pagatoProduttore, lasciatoInCassa, discrepanzaFlag,
-        discrepanzaTrovata ? 1 : 0, discrepanzaPagato ? 1 : 0, noteGiornata || ''
+        trovatoInCassa, pagatoProduttore, lasciatoInCassa, noteGiornata || ''
       ];
 
       if (consegna) {
         db.prepare(`
           UPDATE consegne
-          SET trovato_in_cassa = ?, pagato_produttore = ?, lasciato_in_cassa = ?,
-              discrepanza_cassa = ?, discrepanza_trovata = ?, discrepanza_pagato = ?, note = ?
+          SET trovato_in_cassa = ?, pagato_produttore = ?, lasciato_in_cassa = ?, note = ?
           WHERE id = ?
         `).run(...consegnaData, consegna.id);
       } else {
         const result = db.prepare(`
-          INSERT INTO consegne (data, trovato_in_cassa, pagato_produttore, lasciato_in_cassa,
-                                discrepanza_cassa, discrepanza_trovata, discrepanza_pagato, note)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO consegne (data, trovato_in_cassa, pagato_produttore, lasciato_in_cassa, note)
+          VALUES (?, ?, ?, ?, ?)
         `).run(data, ...consegnaData);
         consegna = { id: result.lastInsertRowid };
       }
