@@ -929,8 +929,8 @@ function handleContoProduttoreInput(nome, saldo) {
     if (debitoSaldato) {
       debitoSaldato.value = roundUpCents(debitoSaldabile);
       debitoSaldato.dataset.autoPopulated = 'true'; // Mark as auto-populated
-      // Disable field only if paying ALL existing debt
-      debitoSaldato.disabled = saldaTuttoIlDebito;
+      // Always disable auto-populated compensation fields
+      debitoSaldato.disabled = true;
     }
 
     // Check "Salda intero debito" only if paying ALL existing debt
@@ -950,8 +950,8 @@ function handleContoProduttoreInput(nome, saldo) {
     if (usaCredito) {
       usaCredito.value = roundUpCents(creditoUsabile);
       usaCredito.dataset.autoPopulated = 'true'; // Mark as auto-populated
-      // Disable field only if using ALL available credit
-      usaCredito.disabled = usaTuttoIlCredito;
+      // Always disable auto-populated compensation fields
+      usaCredito.disabled = true;
     }
 
     // Check "Usa intero credito" only if using ALL available credit
