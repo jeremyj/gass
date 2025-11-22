@@ -4,16 +4,28 @@
 
 ### Cassa Field Architecture (Current Implementation)
 - **Design Decision**: Cassa fields (trovato, pagato, lasciato) are **readonly calculated values only**
-- **No Manual Override**: Previous SmartInputManager-based override system has been removed
+- **No Manual Override**: Previous SmartInputManager-based override system has been completely removed from both mobile and desktop
 - **Calculation Logic**:
   - `trovato_in_cassa`: Populated from previous consegna's `lasciato_in_cassa` value
-  - `pagato_produttore`: Auto-calculated sum from all movement records for the day
+  - `pagato_produttore`: Auto-calculated sum from all movement records for the day (`Σ conto_produttore`)
   - `lasciato_in_cassa`: Auto-calculated as `trovato + incassato - pagato`
 - **Implementation Files**:
-  - `consegna.js`: Functions `calculatePagatoProduttore()`, `calculateLasciatoInCassa()`, `updatePagatoProduttore()`, `updateLasciatoInCassa()`
-  - `consegna.html`: All cassa input fields have `readonly` attribute with disabled styling
+  - **Mobile**: `consegna.js`, `consegna.html`
+    - Functions: `calculatePagatoProduttore()`, `calculateLasciatoInCassa()`, `updatePagatoProduttore()`, `updateLasciatoInCassa()`
+    - All cassa input fields have `readonly` attribute with disabled styling
+  - **Desktop**: `consegna-desktop.js`, `consegna-desktop.html`
+    - Same calculation functions as mobile
+    - Inline styles: `readonly`, `cursor: not-allowed`, `background: #f0f0f0`
+    - No AUTO badges, no click hints, no SmartInputManager dependency
+    - Removed smart-input.js script reference (commit b1c6aa6)
+- **Display Formatting**: Uses `formatNumber()` to hide unnecessary `.00` decimals on whole numbers
+- **New Consegna Initialization**:
+  - `trovato` = previous `lasciato` value (or 0 if first consegna)
+  - `pagato` = 0
+  - `lasciato` = `trovato` (no movements yet)
+  - `existingConsegnaMovimenti = []` (empty array, not null)
 - **Database**: Always saves with `discrepanza_cassa=0`, `discrepanza_trovata=0`, `discrepanza_pagato=0`
-- **Rationale**: Simplifies UX and ensures data integrity by preventing manual adjustments that could cause calculation mismatches
+- **Rationale**: Simplifies UX and ensures data integrity by preventing manual adjustments that could cause calculation mismatches. Consistent behavior across mobile and desktop platforms.
 
 ### Date Persistence Implementation
 - **Challenge**: Selected date was resetting to default when switching between mobile tabs (Consegna/Saldi/Storico)

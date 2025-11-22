@@ -135,41 +135,26 @@ function applySaldoChanges(currentSaldo, movimento) {
 
 ### 2. Cash Calculation Algorithm
 
-Cash flow calculation for each delivery:
+Cash flow calculation for each delivery (readonly, no manual overrides):
 
 ```javascript
 // Trovato in cassa (cash found)
-if (discrepanza_trovata) {
-  trovato = manual_trovato_value;
-} else {
-  trovato = previous_lasciato_in_cassa || 0;
-}
+trovato = previous_lasciato_in_cassa || 0;
 
 // Pagato produttore (paid to producer)
-if (discrepanza_pagato) {
-  pagato = manual_pagato_value;
-} else {
-  pagato = SUM(
-    importo_saldato +
-    usa_credito +
-    debito_lasciato -
-    credito_lasciato -
-    debito_saldato
-  );
-}
+// Simplified to just sum of conto_produttore values
+pagato = SUM(conto_produttore);
 
 // Lasciato in cassa (cash left)
-if (discrepanza_cassa) {
-  lasciato = manual_lasciato_value;
-} else {
-  lasciato = trovato + incassato - pagato;
-}
+lasciato = trovato + incassato - pagato;
 ```
 
 Where `incassato` (cash collected) is:
 ```javascript
-incassato = SUM(importo_saldato + debito_saldato)
+incassato = SUM(importo_saldato);
 ```
+
+**Note**: The `discrepanza_*` flags are legacy fields kept for backward compatibility but are always set to 0. Manual overrides of cash fields have been removed to ensure data integrity.
 
 ### 3. Dynamic Recalculation Algorithm
 
@@ -255,40 +240,39 @@ function parseDecimal(value) {
 
 ### 1. Consegna (Delivery Entry)
 
-#### Smart Input System
-Implemented via `SmartInputManager` class in `public/smart-input.js`.
+#### Cash Fields (Cassa) - Readonly Architecture
 
-**Architecture:**
-- Event-driven state management with custom events
-- Single source of truth for field state
-- Debounced blur handling (150ms) prevents save button race conditions
-- Shared module used by both mobile and desktop versions
+Cash fields are **always readonly** - no manual override capability in mobile or desktop versions.
 
-**Modes:**
-- **AUTO mode**: Fields are read-only and display auto-calculated values
-- **MANUALE mode**: User clicks field to enable editing and override calculations
+**Fields:**
+- `trovato_in_cassa`: Cash found (from previous delivery's lasciato)
+- `pagato_produttore`: Total paid to producer (sum of all conto_produttore values)
+- `lasciato_in_cassa`: Cash left (trovato + incassato - pagato)
 
-**Features:**
-- Visual badge indicators (AUTO/MANUALE) show current mode
-- Fields automatically revert to AUTO when:
-  - Value is cleared (empty)
-  - Value matches the calculated value (within 0.01€ threshold)
-- Calculation functions provided per field during initialization
-- Recalculation triggered by state changes or explicit calls
+**Implementation:**
+- **Mobile** (`consegna.js`, `consegna.html`):
+  - Fields have `readonly` attribute with disabled styling
+  - Functions: `calculatePagatoProduttore()`, `calculateLasciatoInCassa()`, `updatePagatoProduttore()`, `updateLasciatoInCassa()`
 
-**State Management:**
-```javascript
-smartInputManager.initField(fieldId, element, calculationFn);
-smartInputManager.updateField(fieldId);  // Recalculate
-smartInputManager.resetAll();            // Reset all to AUTO
-smartInputManager.getManualOverrides();  // Get override status
-```
+- **Desktop** (`consegna-desktop.js`, `consegna-desktop.html`):
+  - Same calculation functions as mobile
+  - Inline styles: `readonly`, `cursor: not-allowed`, `background: #f0f0f0`
+  - No SmartInputManager dependency
+  - No AUTO badges or click hints
 
-#### Auto-Calculation Logic
-- `trovato_in_cassa`: Automatically set from previous delivery's `lasciato_in_cassa`
-- `pagato_produttore`: Sum of all participant transactions
+**Calculation Logic:**
+- `trovato_in_cassa`: Previous delivery's `lasciato_in_cassa` value (or 0 if first)
+- `pagato_produttore`: `Σ conto_produttore` from all movements
 - `lasciato_in_cassa`: `trovato + incassato - pagato`
-- Recalculates on any movement change
+  - `incassato = Σ importo_saldato` from all movements
+
+**Display Formatting:**
+- Uses `formatNumber()` to hide unnecessary `.00` decimals on whole numbers
+- Shows "42" instead of "42.00" for cleaner UI
+
+**Database:**
+- Always saves with `discrepanza_cassa=0`, `discrepanza_trovata=0`, `discrepanza_pagato=0`
+- Legacy discrepanza flags kept for backward compatibility but never set to 1
 
 #### Participant Movements
 Each movement tracks:
@@ -590,7 +574,7 @@ Implemented comprehensive auto-compensation system that automatically offsets cr
 - Format `trovato_in_cassa` with `formatNumber()` to show "0" instead of "0.00"
 - Ensures clean initial state for new installations with consistent formatting
 
-### Current Commit
+### Commit: c5846be
 **Bugfix**: Conditional rendering of credit/debt sections
 - Fixed UI issue where both CREDITO and DEBITO sections were always visible
 - Implemented conditional rendering based on participant's existing balance:
@@ -600,3 +584,19 @@ Implemented comprehensive auto-compensation system that automatically offsets cr
 - Added hidden input fields for non-visible sections to ensure form data integrity
 - Reverts unconditional rendering from commit 044e960 while preserving fix for saldoBefore=0 case
 - **Files Modified**: `consegna.js:273-274,373-374`, `consegna-desktop.js:518,604-606`
+
+### Commit: b1c6aa6
+**Refactor**: Align desktop cassa fields with mobile readonly implementation
+- Removed SmartInputManager dependency from desktop version
+- Made all cassa fields permanently readonly with inline styles
+- Removed AUTO badges and manual override hints from UI
+- Simplified cassa calculations with dedicated functions (matching mobile)
+- Fixed cassa values display on new consegna initialization
+- Always save `discrepanze=0` (no manual overrides allowed)
+- Reduced code complexity: -150 lines of SmartInputManager integration code
+- **Benefits**:
+  - Consistent UX between mobile and desktop
+  - Simpler codebase with less state management
+  - Better data integrity (impossible to create discrepancies)
+  - Cleaner UI without confusing override hints
+- **Files Modified**: `consegna-desktop.html`, `consegna-desktop.js`
