@@ -31,6 +31,12 @@ function initCalendar(config = {}) {
 function showCalendarModal() {
   const calendar = document.getElementById('calendar-container');
   if (calendar) {
+    // Reset to current month when opening
+    const today = new Date();
+    currentCalendarYear = today.getFullYear();
+    currentCalendarMonth = today.getMonth();
+
+    renderCalendar();
     calendar.classList.toggle('hidden');
   }
 }
@@ -44,6 +50,11 @@ function toggleDatePicker() {
   isPickerOpen = !isPickerOpen;
 
   if (isPickerOpen) {
+    // Reset to current month when opening
+    const today = new Date();
+    pickerYear = today.getFullYear();
+    pickerMonth = today.getMonth();
+
     renderDatePicker();
     container.style.display = 'block';
   } else {
@@ -106,10 +117,6 @@ function renderDatePicker() {
     html += '<div class="date-picker-legend-item">';
     html += '<div class="date-picker-legend-color" style="background: #2ecc71;"></div>';
     html += '<span>Con consegna</span>';
-    html += '</div>';
-    html += '<div class="date-picker-legend-item">';
-    html += '<div class="date-picker-legend-color" style="background: white; border: 1px solid #ddd;"></div>';
-    html += '<span>Senza consegna</span>';
     html += '</div>';
     html += '</div>';
   }
@@ -240,10 +247,6 @@ function renderCalendar() {
   html += '<div class="calendar-legend-item">';
   html += '<div class="calendar-legend-color" style="background: #2ecc71;"></div>';
   html += '<span>Con consegna</span>';
-  html += '</div>';
-  html += '<div class="calendar-legend-item">';
-  html += '<div class="calendar-legend-color" style="background: white;"></div>';
-  html += '<span>Senza consegna</span>';
   html += '</div>';
   html += '</div>';
 

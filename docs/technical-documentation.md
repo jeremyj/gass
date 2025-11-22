@@ -365,12 +365,27 @@ These fields are always disabled to prevent manual editing and ensure data integ
 - Shared component across mobile and desktop
 - Date persistence across tab navigation using localStorage
 
+#### Calendar Behavior
+- **Opens to Current Month**: Calendar always opens showing today's month
+  - Mobile date picker: Resets to current month via `toggleDatePicker()`
+  - Desktop modal calendar: Resets to current month via `showCalendarModal()`
+- **Simplified Legend**: Shows only "Con consegna" indicator
+  - Removed redundant "Senza consegna" legend item for cleaner UI
+  - All dates without deliveries appear in standard styling (white background)
+
 #### Date Persistence
 The calendar component maintains the selected date across page navigation:
 - Selected dates are stored in `localStorage` with key `gass_selected_date`
 - On page load, the system checks for a saved date before defaulting
 - Ensures consistent date context when switching between tabs (Consegna, Saldi, Storico)
 - Falls back to page-specific defaults if no saved date exists
+
+#### Dynamic Participant Updates
+When a participant is open in the Consegna form:
+- Date changes automatically reload the participant's data for the new date
+- System preserves the selected participant across date changes
+- Ensures transaction data, balances, and movements reflect the newly selected date
+- Implementation: `checkDateData()` in `consegna.js` remembers and re-renders current participant after loading new date data
 
 ### 5. Responsive Design
 

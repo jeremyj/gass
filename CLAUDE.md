@@ -188,3 +188,18 @@
   - Function `addHiddenFields()` creates hidden inputs for non-visible compensation fields
 - **Files**: `consegna.js:273-274,373-374`, `consegna-desktop.js:518,604-606`
 - **Benefit**: Cleaner UI showing only relevant sections while maintaining form data integrity
+
+### Calendar Component UX Improvements
+- **Always Open to Current Month**: Calendar (both mobile date picker and desktop modal) now resets to today's month when opened
+  - **Mobile**: `toggleDatePicker()` resets `pickerYear` and `pickerMonth` to current date
+  - **Desktop**: `showCalendarModal()` resets `currentCalendarYear` and `currentCalendarMonth` to current date
+  - **Rationale**: Most common use case is selecting today or nearby dates, navigating from last-viewed month was confusing
+- **Simplified Legend**: Removed "Senza consegna" legend item
+  - Only shows "Con consegna" indicator (green background)
+  - Dates without deliveries appear in standard white background
+  - **Rationale**: Redundant legend item added visual noise without providing useful information
+- **Dynamic Participant Data on Date Change**: When changing date with a participant form open, system automatically reloads participant's data for new date
+  - **Implementation**: `checkDateData()` remembers current participant selection, reloads consegna data, then re-renders same participant
+  - **Behavior**: Preserves participant selection across date changes, updates all transaction fields, balances, and movements to reflect new date
+  - **Files**: `consegna.js:115-160`
+  - **Benefit**: Users can quickly compare same participant's transactions across different dates without closing/reopening form

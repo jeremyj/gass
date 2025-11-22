@@ -117,6 +117,10 @@ async function checkDateData() {
   if (!dateValue) return;
 
   try {
+    // Remember currently selected participant (if any)
+    const select = document.getElementById('participant-select');
+    const currentParticipant = select ? select.value : '';
+
     // Reload participants with saldi for the selected date
     await loadData(dateValue);
 
@@ -128,6 +132,27 @@ async function checkDateData() {
       loadExistingConsegna(result);
     } else {
       loadNewConsegna(result);
+    }
+
+    // If a participant was selected, reload their data for the new date
+    if (currentParticipant) {
+      // Clear the current participant display
+      const container = document.getElementById('selected-participants');
+      container.innerHTML = '';
+
+      // Re-render the same participant with new date's data
+      renderParticipant(currentParticipant);
+
+      // Update the select to show the participant as selected
+      if (select) {
+        select.value = currentParticipant;
+      }
+
+      // Hide the info badge since a participant is selected
+      const infoBadge = document.getElementById('participant-info-badge');
+      if (infoBadge) {
+        infoBadge.style.display = 'none';
+      }
     }
   } catch (error) {
     console.error('Error checking date data:', error);
