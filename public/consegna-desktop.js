@@ -923,20 +923,12 @@ async function saveCassaOnly() {
   // Always read from DOM
   let lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
 
-  // Discrepanze are always 0 - cassa fields are readonly calculated values
-  const discrepanzaTrovata = 0;
-  const discrepanzaPagato = 0;
-  const discrepanzaCassa = 0;
-
   try {
     const response = await fetch('/api/consegna', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         data, trovatoInCassa, pagatoProduttore, lasciatoInCassa,
-        discrepanzaCassa,
-        discrepanzaTrovata,
-        discrepanzaPagato,
         noteGiornata,
         partecipanti: [],
       }),
@@ -1000,20 +992,12 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
   // Always read from DOM
   let lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
 
-  // Discrepanze are always 0 - cassa fields are readonly calculated values
-  const discrepanzaTrovata = 0;
-  const discrepanzaPagato = 0;
-  const discrepanzaCassa = 0;
-
   try {
     const response = await fetch('/api/consegna', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         data, trovatoInCassa, pagatoProduttore, lasciatoInCassa,
-        discrepanzaCassa,
-        discrepanzaTrovata,
-        discrepanzaPagato,
         noteGiornata,
         partecipanti: partecipantiData,
       }),
