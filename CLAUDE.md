@@ -10,15 +10,17 @@
   - Path detection uses `path.join(__dirname, '../..')` to reach project root from nested location
   - Requiring: Use `require('../config/database')` from routes/services, or `require('./server/config/database')` from server.js
 - **Routes**: `server/routes/` - Express route handlers separated by domain
-  - `pages.js` - HTML page routing with mobile/desktop detection
-  - `consegna.js` - Delivery API endpoints (GET/:date, POST, DELETE/:id)
-  - `participants.js` - Participant API endpoints (GET, POST, PUT/:id, DELETE/:id)
-  - `storico.js` - History API endpoints (GET, GET/dettaglio)
+  - `pages.js` - HTML page routing with mobile/desktop detection, auth protection
+  - `auth.js` - Authentication endpoints (login, logout, session check)
+  - `consegna.js` - Delivery API endpoints (GET/:date, POST, DELETE/:id) - protected
+  - `participants.js` - Participant API endpoints (GET, POST, PUT/:id, DELETE/:id) - protected
+  - `storico.js` - History API endpoints (GET, GET/dettaglio) - protected
 - **Services**: `server/services/calculations.js` - Business logic layer
   - Cassa calculations: `calculateTrovatoInCassa()`, `calculateLasciatoInCassa()`
   - Saldo calculations: `applySaldoChanges()`, `processConsegneWithDynamicValues()`
   - Utility: `roundToCents()`
 - **Middleware**: `server/middleware/userAgent.js` - Device detection for mobile/desktop routing
+  - `auth.js` - Authentication middleware (`requireAuth`, `attachUser`)
 
 **Client-Side Structure**
 - **Base**: All JavaScript files in `public/js/` (not `public/` root)
@@ -29,6 +31,7 @@
     - Pattern: Use `API.*` methods instead of direct `fetch()` calls
   - `utils.js` - Formatting (`formatNumber`, `formatDateItalian`), validation (`parseAmount`, `normalizeInputField`), UI (`showStatus`)
   - `calendar.js` - Date picker and calendar functionality (mobile pages only)
+  - `auth.js` - Session checking and logout handler for all pages
 - **Page-Specific**: `public/js/` root - One file per page variant
   - Mobile: `consegna.js`, `debiti.js`, `storico.js`
   - Desktop: `consegna-desktop.js`, `debiti-desktop.js`, `storico-desktop.js`
@@ -55,6 +58,62 @@
 - Express serves `public/` as static root
 - Browser path `/js/file.js` maps to filesystem `public/js/file.js`
 - No `/public/` prefix needed in HTML `<script src>` attributes
+
+### Authentication System (Phase 1 - Implemented)
+- **Architecture**: Session-based authentication using express-session with SQLite storage
+- **Password Security**: bcrypt hashing with 12 rounds (salt auto-generated)
+- **Session Storage**: connect-sqlite3 stores sessions in database `sessions` table
+- **Cookie Configuration**:
+  - Max age: 7 days (7 * 24 * 60 * 60 * 1000 ms)
+  - httpOnly: true (prevents XSS access)
+  - secure: true in production (HTTPS only)
+  - Secret: Environment variable SESSION_SECRET (fallback: 'gass-secret-change-in-production')
+- **Database Schema**:
+  - `users` table: id, username (unique), password_hash, display_name, created_at
+  - Audit columns added to `consegne` and `movimenti`: user_id, updated_by
+  - Default user: username=admin, password=admin (created on first run if no users exist)
+- **Middleware**:
+  - `requireAuth`: Protects routes, returns 401 if not authenticated
+  - `attachUser`: Attaches user info to req.user for authenticated requests
+  - `requireAuthForPages`: Redirects unauthenticated users to /login for page routes
+- **API Endpoints**:
+  - POST /api/auth/login - Authenticates user, creates session
+  - POST /api/auth/logout - Destroys session
+  - GET /api/auth/session - Checks authentication status, returns user info
+- **Client-Side**:
+  - `public/js/shared/auth.js`: checkSession(), handleLogout() functions
+  - `public/js/shared/api-client.js`: Automatic redirect to /login on 401 responses
+  - `public/login.html`: Login page with username/password form
+  - All pages show username and logout button in header (mobile) or nav (desktop)
+- **User Tracking**: All consegna and movimenti saves record user_id and updated_by
+- **Protected Routes**: All API endpoints and page routes except /login and /api/auth/*
+- **Files**:
+  - Backend: `server/config/database.js`, `server/middleware/auth.js`, `server/routes/auth.js`, `server.js`
+  - Frontend: `public/login.html`, `public/js/login.js`, `public/js/shared/auth.js`
+  - Modified: All 6 HTML pages, all route files for protection and user tracking
+
+### Mobile Responsive Layout Fixes
+- **Problem #1 - Header Layout Broken**:
+  - Issue: `.page-header` had horizontal flex causing elements to overlap on one line
+  - Solution: Changed to vertical flex (`flex-direction: column`) with `gap: 10px`
+  - Impact: Header now properly displays title/user controls on first line, date section on second line
+- **Problem #2 - Horizontal Scrolling on Small Screens**:
+  - Issue: Excessive padding (container 15px + header 25px = 80px total) caused overflow
+  - Solutions:
+    - Reduced `.container` padding from 15px to 10px
+    - Reduced `.page-header` padding from "15px 25px" to "15px" uniformly
+    - Added `overflow-x: hidden` and `width: 100%` to body element
+  - Impact: No horizontal scrolling on any viewport width, including 412px mobile screens
+- **CSS Changes** (`public/style.css`):
+  - Line 11-12: Added `overflow-x: hidden; width: 100%;` to body
+  - Line 54: Changed `.container` padding to 10px
+  - Line 61: Changed `.page-header` padding to 15px (was 15px 25px)
+  - Line 65-66: Added `flex-direction: column; gap: 10px;` to `.page-header`
+- **Testing Verified**:
+  - No horizontal scroll on desktop (1920px) or mobile (412px) viewports
+  - User controls properly positioned and responsive across all pages
+  - Desktop version unaffected (uses different CSS)
+- **Pages Fixed**: All 3 mobile HTML pages (consegna, debiti, storico)
 
 ### Database Storage Architecture
 - **Database Engine**: SQLite3 via `better-sqlite3` npm package
