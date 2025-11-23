@@ -346,6 +346,17 @@ button:disabled {
     background: #e67e22;
 }
 
+.btn-secondary {
+    background: white;
+    color: #6c757d;
+    border: 2px solid #ddd;
+}
+
+.btn-secondary:hover {
+    background: #f8f9fa;
+    border-color: #adb5bd;
+}
+
 /* Tables */
 table {
     width: 100%;

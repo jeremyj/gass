@@ -556,6 +556,12 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
         <input type="text" id="note_${nome}" placeholder="Note aggiuntive">
       </div>
     </div>
+
+    <div class="flow-section" style="text-align: center;">
+      <button type="button" class="btn-secondary" onclick="clearParticipantForm()">
+        Annulla
+      </button>
+    </div>
   `;
 }
 
@@ -1053,6 +1059,12 @@ function updateSaveButtonVisibility() {
     saveBtnCassa.style.display = 'none';
     saveBtnParticipant.style.display = 'none';
   }
+}
+
+function clearParticipantForm() {
+  const select = document.getElementById('participant-select');
+  select.value = '';
+  showParticipantForm();
 }
 
 // ===== INITIALIZATION =====

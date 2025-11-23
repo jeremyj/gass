@@ -107,6 +107,7 @@ function createMovimentiTable(movimenti) {
     return `
       <tr>
         <td><strong>${m.nome}</strong></td>
+        <td>${m.conto_produttore ? '€' + formatNumber(m.conto_produttore) : ''}</td>
         <td>${m.importo_saldato ? '€' + formatNumber(m.importo_saldato) : ''}</td>
         <td>${m.usa_credito ? '€' + formatNumber(m.usa_credito) : ''}</td>
         <td>${m.debito_lasciato ? '€' + formatNumber(m.debito_lasciato) : ''}</td>
@@ -123,6 +124,7 @@ function createMovimentiTable(movimenti) {
     <thead>
       <tr>
         <th>Nome</th>
+        <th>Conto Produttore</th>
         <th>Importo Saldato</th>
         <th>Usa Credito</th>
         <th>Debito Lasciato</th>

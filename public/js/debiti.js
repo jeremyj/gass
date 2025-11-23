@@ -167,8 +167,8 @@ function createParticipantCard(p) {
         💾 Salva Modifiche
       </button>
 
-      <button class="collapse-btn" onclick="toggleParticipantCard(${p.id})">
-        ▲ Chiudi
+      <button class="big-btn big-btn-secondary" onclick="toggleParticipantCard(${p.id})">
+        ✖️ Chiudi
       </button>
     `;
 
