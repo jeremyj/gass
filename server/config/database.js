@@ -2,8 +2,9 @@ const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
 
-// Use /app/data for Docker volume, or current directory for local dev
-const dbDir = fs.existsSync('/app/data') ? '/app/data' : __dirname;
+// Use /app/data for Docker volume, or project root for local dev
+const projectRoot = path.join(__dirname, '../..');
+const dbDir = fs.existsSync('/app/data') ? '/app/data' : projectRoot;
 const dbPath = path.join(dbDir, 'gass.db');
 const db = new Database(dbPath);
 
