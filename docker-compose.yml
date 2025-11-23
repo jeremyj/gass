@@ -24,10 +24,6 @@ services:
       # Persistent storage for SQLite database (bind mount to host)
       - ./data:/app/data
 
-      # Mount credentials.json (read-only)
-      # Make sure this file exists on your host before starting
-      - ./credentials.json:/app/credentials.json:ro
-
     # Connect to nginx-proxy network
     # Replace 'nginx-proxy' with your actual network name
     networks:
