@@ -352,3 +352,33 @@
   - (pending) - Complete server-side cleanup by removing conditional checks
 - always allow chrom-devtools commands
 - always develop features and bug fixes for mobile AND desktop versions
+
+### UI Consistency Improvements (2025-11-23)
+- **Conto Produttore Visibility Enhancement**:
+  - **Storico Mobile** (`public/js/storico.js:174`): Added conto produttore as first field in movement details
+    - Format: "Conto produttore: X €" with bullet separator
+    - Positioned before "Pagato" field for logical flow (what's owed before what's paid)
+  - **Storico Desktop** (`public/js/storico-desktop.js:110,127`): Added "Conto Produttore" column to movements table
+    - Positioned after "Nome", before "Importo Saldato"
+  - **Consegna Desktop** (`public/js/consegna-desktop.js:398,415`): Added "Conto Produttore" column to "Movimenti del Giorno" table
+    - Same structure and positioning as Storico Desktop for consistency
+  - **Rationale**: Conto produttore is core business data that should be visible in all movement summaries
+- **Button Styling Unification**:
+  - **Saldi Mobile** (`public/js/debiti.js:170-171`): Changed "Chiudi" button to match Consegna pattern
+    - Changed class from `collapse-btn` to `big-btn big-btn-secondary`
+    - Changed icon from "▲" to "✖️"
+    - Ensures consistent UX across all mobile pages
+- **Desktop Form Action Buttons**:
+  - **Consegna Desktop Participant Form** (`public/js/consegna-desktop.js:560-567`):
+    - Added inline "Salva Movimento" and "Annulla" buttons side-by-side at bottom of form
+    - Removed global `save-btn-participant` from HTML (`consegna-desktop.html:69`)
+    - Both buttons displayed in flexbox layout with 10px gap
+    - Simplified `updateSaveButtonVisibility()` to only manage cassa button (note saves)
+  - **Desktop CSS** (`public/style-desktop.css:349-358`): Added `btn-secondary` class
+    - White background with gray border (#6c757d text, #ddd border)
+    - Hover state: light gray background (#f8f9fa), darker border (#adb5bd)
+    - Matches mobile `big-btn-secondary` styling for consistency
+  - **Rationale**: Inline buttons provide clearer action scope (save/cancel applies to current form), matches mobile pattern where each form has its own action buttons
+- **Commits**:
+  - `e17825b` - UI consistency and conto produttore visibility
+  - `26adbaa` - Consegna desktop layout improvements
