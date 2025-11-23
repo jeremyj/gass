@@ -292,3 +292,4 @@
   - `fe9694e` - Fix client-side API calls to match updated server endpoint
   - (pending) - Complete server-side cleanup by removing conditional checks
 - always allow chrom-devtools commands
+- always develop features and bug fixes for mobile AND desktop versions

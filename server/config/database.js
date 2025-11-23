@@ -16,6 +16,14 @@ db.pragma('foreign_keys = ON');
 
 // Create tables
 db.exec(`
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    display_name TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
   CREATE TABLE IF NOT EXISTS partecipanti (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome TEXT UNIQUE NOT NULL,
@@ -95,6 +103,46 @@ try {
   }
 }
 
+// Add user_id column to consegne if it doesn't exist
+try {
+  db.exec(`ALTER TABLE consegne ADD COLUMN user_id INTEGER REFERENCES users(id)`);
+  console.log('Added user_id column to consegne table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) {
+    throw err;
+  }
+}
+
+// Add updated_by column to consegne if it doesn't exist
+try {
+  db.exec(`ALTER TABLE consegne ADD COLUMN updated_by INTEGER REFERENCES users(id)`);
+  console.log('Added updated_by column to consegne table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) {
+    throw err;
+  }
+}
+
+// Add user_id column to movimenti if it doesn't exist
+try {
+  db.exec(`ALTER TABLE movimenti ADD COLUMN user_id INTEGER REFERENCES users(id)`);
+  console.log('Added user_id column to movimenti table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) {
+    throw err;
+  }
+}
+
+// Add updated_by column to movimenti if it doesn't exist
+try {
+  db.exec(`ALTER TABLE movimenti ADD COLUMN updated_by INTEGER REFERENCES users(id)`);
+  console.log('Added updated_by column to movimenti table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) {
+    throw err;
+  }
+}
+
 // Initialize with participants list
 const count = db.prepare('SELECT COUNT(*) as count FROM partecipanti').get().count;
 if (count === 0) {
@@ -111,6 +159,17 @@ if (count === 0) {
   });
 
   console.log(`Initialized database with ${participants.length} participants`);
+}
+
+// Initialize with admin user if no users exist
+const bcrypt = require('bcrypt');
+const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
+if (userCount === 0) {
+  const passwordHash = bcrypt.hashSync('admin', 12);
+  const insertUser = db.prepare('INSERT INTO users (username, password_hash, display_name) VALUES (?, ?, ?)');
+  insertUser.run('admin', passwordHash, 'Administrator');
+  console.log('Created default admin user (username: admin, password: admin)');
+  console.log('IMPORTANT: Change the default password immediately!');
 }
 
 module.exports = db;

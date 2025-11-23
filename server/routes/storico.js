@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../config/database');
+const { requireAuth } = require('../middleware/auth');
 const {
   calculateTrovatoInCassa,
   calculateLasciatoInCassa,
@@ -7,6 +8,9 @@ const {
 } = require('../services/calculations');
 
 const router = express.Router();
+
+// Require authentication for all storico routes
+router.use(requireAuth);
 
 // Get all consegne (storico)
 router.get('/', (req, res) => {

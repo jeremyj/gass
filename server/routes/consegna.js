@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../config/database');
+const { requireAuth } = require('../middleware/auth');
 const {
   calculateTrovatoInCassa,
   calculateLasciatoInCassa,
@@ -8,6 +9,9 @@ const {
 } = require('../services/calculations');
 
 const router = express.Router();
+
+// Require authentication for all consegna routes
+router.use(requireAuth);
 
 // Get consegna data for a specific date
 router.get('/:date', (req, res) => {
@@ -102,6 +106,7 @@ router.post('/', (req, res) => {
     const transaction = db.transaction(() => {
       let consegna = db.prepare('SELECT * FROM consegne WHERE data = ?').get(data);
 
+      const userId = req.session.userId;
       const consegnaData = [
         trovatoInCassa, pagatoProduttore, lasciatoInCassa, noteGiornata || ''
       ];
@@ -109,14 +114,14 @@ router.post('/', (req, res) => {
       if (consegna) {
         db.prepare(`
           UPDATE consegne
-          SET trovato_in_cassa = ?, pagato_produttore = ?, lasciato_in_cassa = ?, note = ?
+          SET trovato_in_cassa = ?, pagato_produttore = ?, lasciato_in_cassa = ?, note = ?, updated_by = ?
           WHERE id = ?
-        `).run(...consegnaData, consegna.id);
+        `).run(...consegnaData, userId, consegna.id);
       } else {
         const result = db.prepare(`
-          INSERT INTO consegne (data, trovato_in_cassa, pagato_produttore, lasciato_in_cassa, note)
-          VALUES (?, ?, ?, ?, ?)
-        `).run(data, ...consegnaData);
+          INSERT INTO consegne (data, trovato_in_cassa, pagato_produttore, lasciato_in_cassa, note, user_id)
+          VALUES (?, ?, ?, ?, ?, ?)
+        `).run(data, ...consegnaData, userId);
         consegna = { id: result.lastInsertRowid };
       }
 
@@ -125,15 +130,15 @@ router.post('/', (req, res) => {
         INSERT INTO movimenti (
           consegna_id, partecipante_id, salda_tutto, importo_saldato,
           usa_credito, debito_lasciato, credito_lasciato,
-          salda_debito_totale, debito_saldato, conto_produttore, note
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          salda_debito_totale, debito_saldato, conto_produttore, note, user_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
 
       const updateMovimento = db.prepare(`
         UPDATE movimenti
         SET salda_tutto = ?, importo_saldato = ?, usa_credito = ?,
             debito_lasciato = ?, credito_lasciato = ?,
-            salda_debito_totale = ?, debito_saldato = ?, conto_produttore = ?, note = ?
+            salda_debito_totale = ?, debito_saldato = ?, conto_produttore = ?, note = ?, updated_by = ?
         WHERE consegna_id = ? AND partecipante_id = ?
       `);
 
@@ -156,9 +161,9 @@ router.post('/', (req, res) => {
         ];
 
         if (existingMovimento) {
-          updateMovimento.run(...movimentoData, consegna.id, partecipante.id);
+          updateMovimento.run(...movimentoData, userId, consegna.id, partecipante.id);
         } else {
-          insertMovimento.run(consegna.id, partecipante.id, ...movimentoData);
+          insertMovimento.run(consegna.id, partecipante.id, ...movimentoData, userId);
         }
 
         updateSaldo.run(p.nuovoSaldo, data, partecipante.id);

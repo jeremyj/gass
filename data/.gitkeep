@@ -1,2 +1,0 @@
-# This file ensures the data directory is tracked in git
-# The directory itself is excluded via .gitignore, but we want the structure to exist

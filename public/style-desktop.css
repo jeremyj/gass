@@ -805,3 +805,26 @@ td input {
 .storico-movimenti-table tbody tr:hover {
     background: #f8f9fa;
 }
+
+/* Desktop Nav Menu Auth Controls */
+.nav-menu {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-menu #user-display {
+    color: #ecf0f1;
+}
+
+.nav-menu button {
+    transition: background 0.3s;
+}
+
+.nav-menu button:hover {
+    background: #d32f2f !important;
+}
+
+.nav-menu button:active {
+    background: #c62828 !important;
+}

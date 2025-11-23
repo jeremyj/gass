@@ -6,6 +6,14 @@ const API = {
   async request(url, options = {}) {
     try {
       const response = await fetch(url, options);
+
+      // Handle 401 Unauthorized - redirect to login
+      if (response.status === 401) {
+        console.warn('Authentication required, redirecting to login...');
+        window.location.href = '/login';
+        throw new Error('Authentication required');
+      }
+
       const result = await response.json();
 
       if (!result.success) {

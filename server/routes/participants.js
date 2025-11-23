@@ -1,7 +1,11 @@
 const express = require('express');
 const db = require('../config/database');
+const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
+
+// Require authentication for all participant routes
+router.use(requireAuth);
 
 // Get all participants with their balances
 router.get('/', (req, res) => {
