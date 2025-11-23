@@ -219,5 +219,11 @@
   - **server.js**: Simplified INSERT/UPDATE queries to exclude discrepanza columns (kept in schema for backward compatibility)
   - **storico.js**: Removed "MANUALE" override indicator badges from cassa fields display (3 occurrences)
   - **storico-desktop.js**: Removed entire `calculateDiscrepanzaWarning()` function body, now returns empty string
+  - **consegna.js**: Removed discrepanza parameters from client-side API calls (3 locations: saveNoteOnly, saveCassaOnly, saveWithParticipant)
+  - **consegna-desktop.js**: Removed discrepanza parameters from client-side API calls (2 locations: saveCassaOnly, saveWithParticipant)
+- **Bug Fix**: Client code was still sending discrepanza parameters after server endpoint was updated, causing "discrepanzaPagato is not defined" error on save operations
 - **Impact**: ~2,150 lines removed, 3 dependencies cleaned up, simplified backend logic
 - **Rationale**: Discrepanza system was deprecated when cassa fields became readonly calculated values. Keeping DB columns for backward compatibility but removing all related UI/logic.
+- **Commits**:
+  - `46b737c` - Initial cleanup (files, dependencies, server/storico logic)
+  - `fe9694e` - Fix client-side API calls to match updated server endpoint
