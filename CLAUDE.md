@@ -221,9 +221,16 @@
   - **storico-desktop.js**: Removed entire `calculateDiscrepanzaWarning()` function body, now returns empty string
   - **consegna.js**: Removed discrepanza parameters from client-side API calls (3 locations: saveNoteOnly, saveCassaOnly, saveWithParticipant)
   - **consegna-desktop.js**: Removed discrepanza parameters from client-side API calls (2 locations: saveCassaOnly, saveWithParticipant)
-- **Bug Fix**: Client code was still sending discrepanza parameters after server endpoint was updated, causing "discrepanzaPagato is not defined" error on save operations
+- **Bug Fix #1**: Client code was still sending discrepanza parameters after server endpoint was updated, causing "discrepanzaPagato is not defined" error on save operations (commit fe9694e)
+- **Bug Fix #2**: Server-side conditional checks still referenced undefined discrepanza variables
+  - **Issue**: Lines 345 and 356 in `server.js` checked `if (!discrepanzaPagato)` and `if (!discrepanzaCassa)` before running calculations
+  - **Symptom**: "discrepanzaPagato is not defined" error when saving notes or movimenti
+  - **Root Cause**: Incomplete cleanup - removed parameters from endpoint but not conditional logic
+  - **Solution**: Removed conditional checks, calculations now always run unconditionally (as they should for readonly calculated fields)
+  - **Files**: `server.js:344-360`
 - **Impact**: ~2,150 lines removed, 3 dependencies cleaned up, simplified backend logic
 - **Rationale**: Discrepanza system was deprecated when cassa fields became readonly calculated values. Keeping DB columns for backward compatibility but removing all related UI/logic.
 - **Commits**:
   - `46b737c` - Initial cleanup (files, dependencies, server/storico logic)
   - `fe9694e` - Fix client-side API calls to match updated server endpoint
+  - (pending) - Complete server-side cleanup by removing conditional checks

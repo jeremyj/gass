@@ -341,30 +341,23 @@ app.post('/api/consegna', (req, res) => {
         updateSaldo.run(p.nuovoSaldo, data, partecipante.id);
       });
 
-      // Recalculate totals from movements if not manually overridden
-      if (!discrepanzaPagato) {
-        const movimenti = db.prepare('SELECT * FROM movimenti WHERE consegna_id = ?').all(consegna.id);
-        let totalPagato = 0;
-        movimenti.forEach(m => {
-          // Pagato produttore = sum of all conto_produttore values
-          totalPagato += (m.conto_produttore || 0);
-        });
+      // Recalculate pagato_produttore from movements
+      const movimenti = db.prepare('SELECT * FROM movimenti WHERE consegna_id = ?').all(consegna.id);
+      let totalPagato = 0;
+      movimenti.forEach(m => {
+        // Pagato produttore = sum of all conto_produttore values
+        totalPagato += (m.conto_produttore || 0);
+      });
+      db.prepare('UPDATE consegne SET pagato_produttore = ? WHERE id = ?').run(totalPagato, consegna.id);
 
-        db.prepare('UPDATE consegne SET pagato_produttore = ? WHERE id = ?').run(totalPagato, consegna.id);
-      }
-
-      if (!discrepanzaCassa) {
-        const movimenti = db.prepare('SELECT * FROM movimenti WHERE consegna_id = ?').all(consegna.id);
-        const currentConsegna = db.prepare('SELECT * FROM consegne WHERE id = ?').get(consegna.id);
-
-        let incassato = 0;
-        movimenti.forEach(m => {
-          incassato += (m.importo_saldato || 0);
-        });
-
-        const lasciato = currentConsegna.trovato_in_cassa + incassato - currentConsegna.pagato_produttore;
-        db.prepare('UPDATE consegne SET lasciato_in_cassa = ? WHERE id = ?').run(lasciato, consegna.id);
-      }
+      // Recalculate lasciato_in_cassa from movements
+      const currentConsegna = db.prepare('SELECT * FROM consegne WHERE id = ?').get(consegna.id);
+      let incassato = 0;
+      movimenti.forEach(m => {
+        incassato += (m.importo_saldato || 0);
+      });
+      const lasciato = currentConsegna.trovato_in_cassa + incassato - currentConsegna.pagato_produttore;
+      db.prepare('UPDATE consegne SET lasciato_in_cassa = ? WHERE id = ?').run(lasciato, consegna.id);
     });
 
     transaction();
