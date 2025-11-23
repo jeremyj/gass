@@ -52,3 +52,17 @@ logs
 # OS files
 .DS_Store
 Thumbs.db
+CLAUDE.md
+database.db
+DEPLOYMENT.md
+fix-misaligned-values.js
+generate-htpasswd.sh
+README.md
+reset-and-populate.js
+reset-and-populate-mock.js
+reset-db.js
+Screenshot_20251024_100951.png
+Screenshot_20251024_123901.png
+Screenshot_20251024_123917.png
+Screenshot_20251024_123924.png
+Screenshot_20251024_123941.png

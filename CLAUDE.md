@@ -121,9 +121,11 @@
     - If credit < new debt: Populates partial credit usage, reduces debt amount
 
   - **Trigger Conditions**:
-    1. Requires BOTH `conto_produttore > 0` AND `importo_saldato > 0`
-       - **Why**: Prevents premature compensation while user is typing
-       - **Why both**: Ensures core transaction fields are complete before compensating
+    1. Requires only `conto_produttore > 0` to trigger auto-compensation
+       - **Why**: Allows compensation even when `importo_saldato = 0` (e.g., using existing credit to offset goods received with no cash payment)
+       - **Examples**:
+         - Credit=20€, Conto=15€, Importo=0€ → Auto-uses 15€ credit, leaves 5€ credit
+         - Debt=10€, Conto=15€, Importo=0€ → Creates 15€ debt (no compensation without payment)
     2. Checkboxes checked/fields disabled only when using/paying ALL available amount
        - "Usa intero credito": checked when creditoUsato === creditoPreesistente
        - "Salda intero debito": checked when debitoSaldato === debitoPreesistente
