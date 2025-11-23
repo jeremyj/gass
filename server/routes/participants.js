@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('../config/database');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, getAuditFields } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -62,8 +62,9 @@ router.put('/:id', (req, res) => {
     const current = db.prepare('SELECT saldo FROM partecipanti WHERE id = ?').get(id);
 
     if (current && current.saldo !== saldo) {
-      db.prepare('UPDATE partecipanti SET saldo = ?, ultima_modifica = DATE() WHERE id = ?')
-        .run(saldo, id);
+      const audit = getAuditFields(req, 'update');
+      db.prepare('UPDATE partecipanti SET saldo = ?, ultima_modifica = DATE(), updated_by = ?, updated_at = ? WHERE id = ?')
+        .run(saldo, audit.updated_by, audit.updated_at, id);
     }
 
     res.json({ success: true });
@@ -76,7 +77,9 @@ router.put('/:id', (req, res) => {
 router.post('/', (req, res) => {
   try {
     const { nome } = req.body;
-    const result = db.prepare('INSERT INTO partecipanti (nome, saldo) VALUES (?, 0)').run(nome);
+    const audit = getAuditFields(req, 'create');
+    const result = db.prepare('INSERT INTO partecipanti (nome, saldo, created_by, created_at, updated_by, updated_at) VALUES (?, 0, ?, ?, ?, ?)')
+      .run(nome, audit.created_by, audit.created_at, audit.updated_by, audit.updated_at);
     res.json({ success: true, id: result.lastInsertRowid });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('../config/database');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, getAuditFields } = require('../middleware/auth');
 const {
   calculateTrovatoInCassa,
   calculateLasciatoInCassa,
@@ -106,22 +106,26 @@ router.post('/', (req, res) => {
     const transaction = db.transaction(() => {
       let consegna = db.prepare('SELECT * FROM consegne WHERE data = ?').get(data);
 
-      const userId = req.session.userId;
       const consegnaData = [
         trovatoInCassa, pagatoProduttore, lasciatoInCassa, noteGiornata || ''
       ];
 
       if (consegna) {
+        const updateAudit = getAuditFields(req, 'update');
         db.prepare(`
           UPDATE consegne
-          SET trovato_in_cassa = ?, pagato_produttore = ?, lasciato_in_cassa = ?, note = ?, updated_by = ?
+          SET trovato_in_cassa = ?, pagato_produttore = ?, lasciato_in_cassa = ?, note = ?,
+              updated_by = ?, updated_at = ?
           WHERE id = ?
-        `).run(...consegnaData, userId, consegna.id);
+        `).run(...consegnaData, updateAudit.updated_by, updateAudit.updated_at, consegna.id);
       } else {
+        const createAudit = getAuditFields(req, 'create');
         const result = db.prepare(`
-          INSERT INTO consegne (data, trovato_in_cassa, pagato_produttore, lasciato_in_cassa, note, user_id)
-          VALUES (?, ?, ?, ?, ?, ?)
-        `).run(data, ...consegnaData, userId);
+          INSERT INTO consegne (data, trovato_in_cassa, pagato_produttore, lasciato_in_cassa, note,
+                                created_by, created_at, updated_by, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(data, ...consegnaData, createAudit.created_by, createAudit.created_at,
+               createAudit.updated_by, createAudit.updated_at);
         consegna = { id: result.lastInsertRowid };
       }
 
@@ -130,20 +134,22 @@ router.post('/', (req, res) => {
         INSERT INTO movimenti (
           consegna_id, partecipante_id, salda_tutto, importo_saldato,
           usa_credito, debito_lasciato, credito_lasciato,
-          salda_debito_totale, debito_saldato, conto_produttore, note, user_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          salda_debito_totale, debito_saldato, conto_produttore, note,
+          created_by, created_at, updated_by, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
 
       const updateMovimento = db.prepare(`
         UPDATE movimenti
         SET salda_tutto = ?, importo_saldato = ?, usa_credito = ?,
             debito_lasciato = ?, credito_lasciato = ?,
-            salda_debito_totale = ?, debito_saldato = ?, conto_produttore = ?, note = ?, updated_by = ?
+            salda_debito_totale = ?, debito_saldato = ?, conto_produttore = ?, note = ?,
+            updated_by = ?, updated_at = ?
         WHERE consegna_id = ? AND partecipante_id = ?
       `);
 
       const updateSaldo = db.prepare(`
-        UPDATE partecipanti SET saldo = ?, ultima_modifica = ? WHERE id = ?
+        UPDATE partecipanti SET saldo = ?, ultima_modifica = ?, updated_by = ?, updated_at = ? WHERE id = ?
       `);
 
       partecipanti.forEach(p => {
@@ -161,12 +167,18 @@ router.post('/', (req, res) => {
         ];
 
         if (existingMovimento) {
-          updateMovimento.run(...movimentoData, userId, consegna.id, partecipante.id);
+          const updateAudit = getAuditFields(req, 'update');
+          updateMovimento.run(...movimentoData, updateAudit.updated_by, updateAudit.updated_at,
+                              consegna.id, partecipante.id);
         } else {
-          insertMovimento.run(consegna.id, partecipante.id, ...movimentoData, userId);
+          const createAudit = getAuditFields(req, 'create');
+          insertMovimento.run(consegna.id, partecipante.id, ...movimentoData,
+                             createAudit.created_by, createAudit.created_at,
+                             createAudit.updated_by, createAudit.updated_at);
         }
 
-        updateSaldo.run(p.nuovoSaldo, data, partecipante.id);
+        const saldoAudit = getAuditFields(req, 'update');
+        updateSaldo.run(p.nuovoSaldo, data, saldoAudit.updated_by, saldoAudit.updated_at, partecipante.id);
       });
 
       // Recalculate pagato_produttore from movements
@@ -176,7 +188,9 @@ router.post('/', (req, res) => {
         // Pagato produttore = sum of all conto_produttore values
         totalPagato += (m.conto_produttore || 0);
       });
-      db.prepare('UPDATE consegne SET pagato_produttore = ? WHERE id = ?').run(totalPagato, consegna.id);
+      const pagatoAudit = getAuditFields(req, 'update');
+      db.prepare('UPDATE consegne SET pagato_produttore = ?, updated_by = ?, updated_at = ? WHERE id = ?')
+        .run(totalPagato, pagatoAudit.updated_by, pagatoAudit.updated_at, consegna.id);
 
       // Recalculate lasciato_in_cassa from movements
       const currentConsegna = db.prepare('SELECT * FROM consegne WHERE id = ?').get(consegna.id);
@@ -185,7 +199,9 @@ router.post('/', (req, res) => {
         incassato += (m.importo_saldato || 0);
       });
       const lasciato = currentConsegna.trovato_in_cassa + incassato - currentConsegna.pagato_produttore;
-      db.prepare('UPDATE consegne SET lasciato_in_cassa = ? WHERE id = ?').run(lasciato, consegna.id);
+      const lasciatoAudit = getAuditFields(req, 'update');
+      db.prepare('UPDATE consegne SET lasciato_in_cassa = ?, updated_by = ?, updated_at = ? WHERE id = ?')
+        .run(lasciato, lasciatoAudit.updated_by, lasciatoAudit.updated_at, consegna.id);
     });
 
     transaction();
@@ -202,7 +218,10 @@ router.delete('/:id', (req, res) => {
 
     const transaction = db.transaction(() => {
       db.prepare('DELETE FROM consegne WHERE id = ?').run(id);
-      db.prepare('UPDATE partecipanti SET saldo = 0').run();
+
+      const resetAudit = getAuditFields(req, 'update');
+      db.prepare('UPDATE partecipanti SET saldo = 0, updated_by = ?, updated_at = ? WHERE 1=1')
+        .run(resetAudit.updated_by, resetAudit.updated_at);
 
       const consegne = db.prepare('SELECT * FROM consegne ORDER BY data ASC').all();
 
@@ -216,7 +235,9 @@ router.delete('/:id', (req, res) => {
 
         movimenti.forEach(m => {
           const nuovoSaldo = applySaldoChanges(m.current_saldo || 0, m);
-          db.prepare('UPDATE partecipanti SET saldo = ? WHERE id = ?').run(nuovoSaldo, m.partecipante_id);
+          const saldoAudit = getAuditFields(req, 'update');
+          db.prepare('UPDATE partecipanti SET saldo = ?, updated_by = ?, updated_at = ? WHERE id = ?')
+            .run(nuovoSaldo, saldoAudit.updated_by, saldoAudit.updated_at, m.partecipante_id);
         });
       });
     });

@@ -76,6 +76,7 @@
   - `requireAuth`: Protects routes, returns 401 if not authenticated
   - `attachUser`: Attaches user info to req.user for authenticated requests
   - `requireAuthForPages`: Redirects unauthenticated users to /login for page routes
+  - `getAuditFields(req, operation)`: Helper function to generate audit fields for database operations (v1.4+)
 - **API Endpoints**:
   - POST /api/auth/login - Authenticates user, creates session
   - POST /api/auth/logout - Destroys session
@@ -91,6 +92,44 @@
   - Backend: `server/config/database.js`, `server/middleware/auth.js`, `server/routes/auth.js`, `server.js`
   - Frontend: `public/login.html`, `public/js/login.js`, `public/js/shared/auth.js`
   - Modified: All 6 HTML pages, all route files for protection and user tracking
+
+### Audit Tracking System (v1.4 - Implemented November 2025)
+- **Purpose**: Track who created/modified every database record and when
+- **Architecture**: Standardized audit columns across all tables with helper function for consistent implementation
+- **Database Schema**:
+  - **users** table: `created_by`, `created_at`, `updated_by`, `updated_at`
+  - **partecipanti** table: `created_by`, `created_at`, `updated_by`, `updated_at`
+  - **consegne** table: `created_by`, `created_at`, `updated_by`, `updated_at` (migrated from `user_id`)
+  - **movimenti** table: `created_by`, `created_at`, `updated_by`, `updated_at` (migrated from `user_id`)
+  - All audit columns are nullable INTEGER/DATETIME (NULL for system operations or pre-migration data)
+- **Performance**:
+  - Indexes created on all audit columns for efficient reporting queries
+  - `idx_consegne_created_by`, `idx_consegne_updated_by`, `idx_movimenti_created_by`, `idx_movimenti_updated_by`, `idx_partecipanti_updated_by`
+- **Migration Strategy**:
+  - v1.3 → v1.4: Automatic migration on startup via `database.js`
+  - Existing `user_id` values copied to new `created_by` columns (consegne: 2 records, movimenti: 8 records)
+  - Legacy `user_id` columns kept for backward compatibility, new code uses `created_by`
+  - All new records get complete audit tracking, existing records have partial data (acceptable)
+- **Implementation**:
+  - **Helper Function** (`server/middleware/auth.js:getAuditFields()`):
+    - `getAuditFields(req, 'create')` → `{created_by, created_at, updated_by, updated_at}`
+    - `getAuditFields(req, 'update')` → `{updated_by, updated_at}`
+    - Extracts user ID from session, generates ISO timestamp
+  - **Updated Routes**:
+    - `server/routes/consegna.js`: 11 INSERT/UPDATE operations updated
+    - `server/routes/participants.js`: 2 INSERT/UPDATE operations updated
+  - **Pattern**: All database writes now include audit fields via spread operator
+    ```javascript
+    const audit = getAuditFields(req, 'create');
+    db.prepare('INSERT INTO table (..., created_by, created_at, updated_by, updated_at) VALUES (..., ?, ?, ?, ?)')
+      .run(...data, audit.created_by, audit.created_at, audit.updated_by, audit.updated_at);
+    ```
+- **Benefits**:
+  - Complete audit trail for compliance and debugging
+  - Consistent implementation across all database operations
+  - Supports future user management and reporting features
+  - No breaking changes to existing functionality
+- **Tag**: Pre-migration state tagged as `v1.4` (2025-11-23)
 
 ### Mobile Responsive Layout Fixes
 - **Problem #1 - Header Layout Broken**:

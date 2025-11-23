@@ -143,6 +143,130 @@ try {
   }
 }
 
+// ===== AUDIT TRACKING COLUMNS MIGRATION (v1.4) =====
+
+// Users table audit columns
+try {
+  db.exec(`ALTER TABLE users ADD COLUMN created_by INTEGER REFERENCES users(id)`);
+  console.log('Added created_by column to users table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) throw err;
+}
+
+try {
+  db.exec(`ALTER TABLE users ADD COLUMN updated_by INTEGER REFERENCES users(id)`);
+  console.log('Added updated_by column to users table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) throw err;
+}
+
+try {
+  db.exec(`ALTER TABLE users ADD COLUMN updated_at DATETIME`);
+  console.log('Added updated_at column to users table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) throw err;
+}
+
+// Partecipanti table audit columns
+try {
+  db.exec(`ALTER TABLE partecipanti ADD COLUMN created_by INTEGER REFERENCES users(id)`);
+  console.log('Added created_by column to partecipanti table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) throw err;
+}
+
+try {
+  db.exec(`ALTER TABLE partecipanti ADD COLUMN created_at DATETIME`);
+  console.log('Added created_at column to partecipanti table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) throw err;
+}
+
+try {
+  db.exec(`ALTER TABLE partecipanti ADD COLUMN updated_by INTEGER REFERENCES users(id)`);
+  console.log('Added updated_by column to partecipanti table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) throw err;
+}
+
+try {
+  db.exec(`ALTER TABLE partecipanti ADD COLUMN updated_at DATETIME`);
+  console.log('Added updated_at column to partecipanti table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) throw err;
+}
+
+// Consegne table audit columns (rename user_id to created_by conceptually, add created_at and updated_at)
+try {
+  db.exec(`ALTER TABLE consegne ADD COLUMN created_by INTEGER REFERENCES users(id)`);
+  console.log('Added created_by column to consegne table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) throw err;
+}
+
+try {
+  db.exec(`ALTER TABLE consegne ADD COLUMN updated_at DATETIME`);
+  console.log('Added updated_at column to consegne table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) throw err;
+}
+
+// Copy user_id to created_by for existing consegne records (one-time migration)
+try {
+  const existingRecords = db.prepare('SELECT COUNT(*) as count FROM consegne WHERE created_by IS NULL AND user_id IS NOT NULL').get().count;
+  if (existingRecords > 0) {
+    db.exec(`UPDATE consegne SET created_by = user_id WHERE created_by IS NULL AND user_id IS NOT NULL`);
+    console.log(`Migrated ${existingRecords} consegne records: copied user_id to created_by`);
+  }
+} catch (err) {
+  console.error('Error migrating consegne user_id to created_by:', err.message);
+}
+
+// Movimenti table audit columns (rename user_id to created_by conceptually, add created_at and updated_at)
+try {
+  db.exec(`ALTER TABLE movimenti ADD COLUMN created_by INTEGER REFERENCES users(id)`);
+  console.log('Added created_by column to movimenti table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) throw err;
+}
+
+try {
+  db.exec(`ALTER TABLE movimenti ADD COLUMN created_at DATETIME`);
+  console.log('Added created_at column to movimenti table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) throw err;
+}
+
+try {
+  db.exec(`ALTER TABLE movimenti ADD COLUMN updated_at DATETIME`);
+  console.log('Added updated_at column to movimenti table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) throw err;
+}
+
+// Copy user_id to created_by for existing movimenti records (one-time migration)
+try {
+  const existingRecords = db.prepare('SELECT COUNT(*) as count FROM movimenti WHERE created_by IS NULL AND user_id IS NOT NULL').get().count;
+  if (existingRecords > 0) {
+    db.exec(`UPDATE movimenti SET created_by = user_id WHERE created_by IS NULL AND user_id IS NOT NULL`);
+    console.log(`Migrated ${existingRecords} movimenti records: copied user_id to created_by`);
+  }
+} catch (err) {
+  console.error('Error migrating movimenti user_id to created_by:', err.message);
+}
+
+// Create performance indexes for audit queries
+try {
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_consegne_created_by ON consegne(created_by)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_consegne_updated_by ON consegne(updated_by)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_movimenti_created_by ON movimenti(created_by)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_movimenti_updated_by ON movimenti(updated_by)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_partecipanti_updated_by ON partecipanti(updated_by)`);
+  console.log('Created audit tracking indexes');
+} catch (err) {
+  console.error('Error creating audit indexes:', err.message);
+}
+
 // Initialize with participants list
 const count = db.prepare('SELECT COUNT(*) as count FROM partecipanti').get().count;
 if (count === 0) {
