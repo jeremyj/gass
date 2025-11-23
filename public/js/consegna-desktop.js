@@ -395,6 +395,7 @@ function renderMovimentiGiorno() {
     return `
       <tr>
         <td><strong>${m.nome}</strong></td>
+        <td class="text-right">${m.conto_produttore ? '€' + formatNumber(m.conto_produttore) : ''}</td>
         <td class="text-right">${m.importo_saldato ? '€' + formatNumber(m.importo_saldato) : ''}</td>
         <td class="text-right">${m.usa_credito ? '€' + formatNumber(m.usa_credito) : ''}</td>
         <td class="text-right">${m.debito_lasciato ? '€' + formatNumber(m.debito_lasciato) : ''}</td>
@@ -411,6 +412,7 @@ function renderMovimentiGiorno() {
       <thead>
         <tr>
           <th>Nome</th>
+          <th class="text-right">Conto Produttore</th>
           <th class="text-right">Importo Saldato</th>
           <th class="text-right">Usa Credito</th>
           <th class="text-right">Debito Lasciato</th>
@@ -557,7 +559,10 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
       </div>
     </div>
 
-    <div class="flow-section" style="text-align: center;">
+    <div class="flow-section" style="text-align: center; display: flex; gap: 10px; justify-content: center;">
+      <button type="submit" class="btn-save" id="save-btn-participant-inline">
+        💾 Salva Movimento
+      </button>
       <button type="button" class="btn-secondary" onclick="clearParticipantForm()">
         Annulla
       </button>
@@ -1037,27 +1042,14 @@ function onNoteGiornataChange() {
 
 function updateSaveButtonVisibility() {
   const saveBtnCassa = document.getElementById('save-btn-cassa');
-  const saveBtnParticipant = document.getElementById('save-btn-participant');
+  if (!saveBtnCassa) return;
 
-  if (!saveBtnCassa || !saveBtnParticipant) return;
-
-  const hasParticipantSelected = document.getElementById('participant-select')?.value !== '';
-
-  // Show button when:
-  // 1. Participant is selected, OR
-  // 2. Note has been modified
-  if (hasParticipantSelected) {
-    saveBtnCassa.style.display = 'none';
-    saveBtnParticipant.style.display = 'block';
-    saveBtnParticipant.textContent = 'Salva Movimenti';
-  } else if (noteGiornataModified) {
+  // Show cassa save button only when note has been modified
+  if (noteGiornataModified) {
     saveBtnCassa.style.display = 'block';
     saveBtnCassa.textContent = '💾 Salva Note';
-    saveBtnParticipant.style.display = 'none';
   } else {
-    // Hide both buttons
     saveBtnCassa.style.display = 'none';
-    saveBtnParticipant.style.display = 'none';
   }
 }
 
