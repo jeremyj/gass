@@ -2,6 +2,60 @@
 
 ## Technical Notes
 
+### Codebase Architecture (v1.3 Reorganization - November 2025)
+
+**Server-Side Structure (MVC Pattern)**
+- **Entry Point**: `server.js` (30 lines) - minimal bootstrap, loads routes and starts server
+- **Database**: `server/config/database.js` - moved from project root
+  - Path detection uses `path.join(__dirname, '../..')` to reach project root from nested location
+  - Requiring: Use `require('../config/database')` from routes/services, or `require('./server/config/database')` from server.js
+- **Routes**: `server/routes/` - Express route handlers separated by domain
+  - `pages.js` - HTML page routing with mobile/desktop detection
+  - `consegna.js` - Delivery API endpoints (GET/:date, POST, DELETE/:id)
+  - `participants.js` - Participant API endpoints (GET, POST, PUT/:id, DELETE/:id)
+  - `storico.js` - History API endpoints (GET, GET/dettaglio)
+- **Services**: `server/services/calculations.js` - Business logic layer
+  - Cassa calculations: `calculateTrovatoInCassa()`, `calculateLasciatoInCassa()`
+  - Saldo calculations: `applySaldoChanges()`, `processConsegneWithDynamicValues()`
+  - Utility: `roundToCents()`
+- **Middleware**: `server/middleware/userAgent.js` - Device detection for mobile/desktop routing
+
+**Client-Side Structure**
+- **Base**: All JavaScript files in `public/js/` (not `public/` root)
+- **Shared Modules**: `public/js/shared/` - Reusable code across all pages
+  - **`api-client.js`** (NEW) - **ALWAYS use for server communication**
+    - Methods: `API.getConsegna(date)`, `API.saveConsegna(data)`, `API.getParticipants(date?)`, `API.getStorico()`, etc.
+    - Provides consistent error handling and standardized request/response format
+    - Pattern: Use `API.*` methods instead of direct `fetch()` calls
+  - `utils.js` - Formatting (`formatNumber`, `formatDateItalian`), validation (`parseAmount`, `normalizeInputField`), UI (`showStatus`)
+  - `calendar.js` - Date picker and calendar functionality (mobile pages only)
+- **Page-Specific**: `public/js/` root - One file per page variant
+  - Mobile: `consegna.js`, `debiti.js`, `storico.js`
+  - Desktop: `consegna-desktop.js`, `debiti-desktop.js`, `storico-desktop.js`
+- **Components**: `public/js/components/` - Reserved for future UI component extraction (currently empty)
+
+**HTML Script Loading Order** (CRITICAL)
+```html
+<script src="js/shared/utils.js"></script>          <!-- Load utilities first -->
+<script src="js/shared/calendar.js"></script>       <!-- Calendar (mobile only) -->
+<script src="js/shared/api-client.js"></script>     <!-- API client -->
+<script src="js/[page-name].js"></script>           <!-- Page-specific code last -->
+```
+
+**Development Conventions**
+- **Adding Business Logic**: Place in `server/services/` (NOT in routes) - keeps routes thin
+- **Adding API Routes**: Create in `server/routes/`, import and mount in `server.js`
+- **Adding Shared Client Code**: Place in `public/js/shared/` if used by multiple pages
+- **Adding UI Components**: Extract to `public/js/components/` when reused across pages
+- **Path Imports**: Always use relative paths from current file location
+  - From routes: `require('../config/database')`, `require('../services/calculations')`
+  - From server.js: `require('./server/config/database')`, `require('./server/routes/pages')`
+
+**Static File Serving**
+- Express serves `public/` as static root
+- Browser path `/js/file.js` maps to filesystem `public/js/file.js`
+- No `/public/` prefix needed in HTML `<script src>` attributes
+
 ### Database Storage Architecture
 - **Database Engine**: SQLite3 via `better-sqlite3` npm package
 - **File Location**:
@@ -25,10 +79,10 @@
   - `pagato_produttore`: Auto-calculated sum from all movement records for the day (`Σ conto_produttore`)
   - `lasciato_in_cassa`: Auto-calculated as `trovato + incassato - pagato`
 - **Implementation Files**:
-  - **Mobile**: `consegna.js`, `consegna.html`
+  - **Mobile**: `public/js/consegna.js`, `public/consegna.html`
     - Functions: `calculatePagatoProduttore()`, `calculateLasciatoInCassa()`, `updatePagatoProduttore()`, `updateLasciatoInCassa()`
     - All cassa input fields have `readonly` attribute with disabled styling
-  - **Desktop**: `consegna-desktop.js`, `consegna-desktop.html`
+  - **Desktop**: `public/js/consegna-desktop.js`, `public/consegna-desktop.html`
     - Same calculation functions as mobile
     - Inline styles: `readonly`, `cursor: not-allowed`, `background: #f0f0f0`
     - No AUTO badges, no click hints, no SmartInputManager dependency
@@ -46,9 +100,9 @@
 - **Challenge**: Selected date was resetting to default when switching between mobile tabs (Consegna/Saldi/Storico)
 - **Solution**: Implemented localStorage-based persistence using key `gass_selected_date`
 - **Implementation Details**:
-  - `calendar.js`: Added `restoreDateFromStorage()` function and localStorage writes in `selectPickerDate()` and `setDateDisplay()`
-  - `debiti.js`: Modified initialization to call `restoreDateFromStorage()` instead of defaulting to today
-  - `consegna.js`: Modified initialization to prioritize localStorage over default "last consegna" date
+  - `public/js/shared/calendar.js`: Added `restoreDateFromStorage()` function and localStorage writes in `selectPickerDate()` and `setDateDisplay()`
+  - `public/js/debiti.js`: Modified initialization to call `restoreDateFromStorage()` instead of defaulting to today
+  - `public/js/consegna.js`: Modified initialization to prioritize localStorage over default "last consegna" date
   - All three pages now maintain consistent date context across navigation
 - **Benefits**: Improved UX in mobile view where tab switching is primary navigation method
 - **Empty Database Handling**: When database is empty, system ignores localStorage and defaults to today's date to prevent stale date selection (consegna.js:917-941)
@@ -60,6 +114,7 @@
   - Decimal values: Display with 2 decimal places (e.g., "42.50")
 - **Implementation**: `public/utils.js:67-73`
 - **Coverage**: Applied consistently across all views (consegna, storico, debiti) in both mobile and desktop layouts
+- **Implementation**: `public/js/shared/utils.js:formatNumber()`
 - **Rationale**: Cleaner UI presentation, reduces visual noise while maintaining precision where needed
 
 ### Mobile UI Button Architecture (Consegna Page)
@@ -203,7 +258,7 @@
 - **Dynamic Participant Data on Date Change**: When changing date with a participant form open, system automatically reloads participant's data for new date
   - **Implementation**: `checkDateData()` remembers current participant selection, reloads consegna data, then re-renders same participant
   - **Behavior**: Preserves participant selection across date changes, updates all transaction fields, balances, and movements to reflect new date
-  - **Files**: `consegna.js:115-160`
+  - **Files**: `public/js/consegna.js:115-160`
   - **Benefit**: Users can quickly compare same participant's transactions across different dates without closing/reopening form
 
 ### Code Cleanup (2025-11-22)
@@ -236,3 +291,4 @@
   - `46b737c` - Initial cleanup (files, dependencies, server/storico logic)
   - `fe9694e` - Fix client-side API calls to match updated server endpoint
   - (pending) - Complete server-side cleanup by removing conditional checks
+- always allow chrom-devtools commands
