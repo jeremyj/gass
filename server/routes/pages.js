@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const { shouldUseMobileView } = require('../middleware/userAgent');
+const packageJson = require('../../package.json');
 
 const router = express.Router();
 
@@ -44,6 +45,11 @@ router.get('/debiti', (req, res) => {
 // Redirect root to consegna
 router.get('/', (req, res) => {
   res.redirect('/consegna');
+});
+
+// API endpoint to get app version (public, no auth required)
+router.get('/api/version', (req, res) => {
+  res.json({ version: packageJson.version });
 });
 
 module.exports = router;
