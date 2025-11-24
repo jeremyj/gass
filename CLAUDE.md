@@ -2,6 +2,30 @@
 
 ## Technical Notes
 
+### Dynamic Version Display (November 2025)
+- **Implementation**: Dynamic version footer displaying package.json version on all pages
+- **Backend** (`server/routes/pages.js:51-53`):
+  - Public API endpoint `/api/version` returns `{version: "1.0.0"}` from package.json
+  - No authentication required (public endpoint)
+- **Frontend** (`public/js/shared/version.js`):
+  - Shared module fetches version from API on page load
+  - Updates `#app-version` element with "v{version}" format
+  - Gracefully handles fetch failures with console error logging
+- **UI Integration**:
+  - Footer added to all 6 pages (consegna, debiti, storico × mobile/desktop)
+  - HTML: `<footer class="app-footer"><span id="app-version"></span></footer>`
+  - Script loading: version.js loaded before page-specific scripts
+- **CSS Styling**:
+  - Mobile (`style.css:1676-1681`): 15px top/side padding, 80px bottom (clears bottom nav), gray text, 12px font
+  - Desktop (`style-desktop.css:876-882`): 30px top padding, 40px top margin, centered gray text
+- **Login Page Cleanup**: Removed default credentials warning box (lines 112-117)
+- **Benefits**:
+  - No hardcoded versions in HTML files
+  - Single source of truth (package.json)
+  - Automatic version updates when package.json changes
+  - Consistent display across all pages
+- **Commit**: `f3762bd`
+
 ### Documentation Reorganization (November 2025)
 - **Purpose**: Separate user-facing documentation from AI-specific technical notes
 - **Structure**:
