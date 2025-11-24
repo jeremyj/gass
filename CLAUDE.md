@@ -2,6 +2,22 @@
 
 ## Technical Notes
 
+### Trust Proxy Configuration for Production (November 2025)
+- **Issue**: Authentication failed in Docker deployment behind nginx-proxy - session cookies not being set
+- **Root Cause**: Express app missing `trust proxy` setting required when behind reverse proxy
+  - Without it, Express doesn't recognize HTTPS connection from proxy
+  - Secure cookies require HTTPS, but Express sees HTTP from proxy
+  - Session cookies fail to set, breaking authentication
+- **Solution**: Added `app.set('trust proxy', 1)` in `server.js:30`
+- **Impact**:
+  - Enables secure cookies to work properly with HTTPS
+  - Fixes `req.ip` and `req.protocol` to reflect actual client values
+  - Required for any deployment behind nginx-proxy, HAProxy, or similar reverse proxies
+- **Configuration**: Set to `1` to trust first proxy in chain (nginx-proxy)
+- **Testing**: Verified session cookies now set correctly at https://gass.x86.it
+- **Documentation**: Critical setting for production - must be present in all proxy deployments
+- **Commit**: `890ab1a` (v1.6.0)
+
 ### Dynamic Version Display (November 2025)
 - **Implementation**: Dynamic version footer displaying package.json version on all pages
 - **Backend** (`server/routes/pages.js:51-53`):
@@ -53,10 +69,11 @@
 
 ### Console Logging System (November 2025)
 - **Implementation**: Comprehensive logging throughout application for debugging and monitoring
+- **Problem Solved**: Removed hardcoded network URL `http://192.168.178.21:3000` that was incorrect in production
 - **Server Startup Logging** (`server.js`):
   - Enhanced startup banner with database path, port, environment
   - Dynamic network interface detection using `os.networkInterfaces()`
-  - Displays all available network URLs (replaces hardcoded IP address)
+  - Displays all available network URLs automatically (adapts to any environment)
   - Request logging middleware: logs every HTTP request with timestamp, method, URL, and authenticated user
   - Error logging middleware: catches and logs uncaught errors with stack traces
 - **Database Initialization Logging** (`server/config/database.js`):
