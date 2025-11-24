@@ -34,6 +34,7 @@ GET    /api/storico/dettaglio   - Retrieve all deliveries with detailed movement
 PUT    /api/participants/:id    - Update participant balance
 POST   /api/participants        - Create new participant
 DELETE /api/participants/:id    - Delete participant
+GET    /api/version             - Get application version from package.json (public, no auth)
 ```
 
 ### Frontend Structure
@@ -51,6 +52,9 @@ DELETE /api/participants/:id    - Delete participant
 #### Shared Components
 - `calendar.js` (363 lines) - Date picker with delivery indicators and localStorage persistence
 - `utils.js` (67 lines) - Formatting and parsing utilities
+- `version.js` - Dynamic version display from package.json
+- `api-client.js` - Centralized API communication layer
+- `auth.js` - Session management and authentication checks
 
 ## Data Models
 
