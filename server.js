@@ -22,6 +22,13 @@ const authRouter = require('./server/routes/auth');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy when behind nginx-proxy or other reverse proxy
+// This is required for:
+// - Secure cookies to work properly with HTTPS
+// - req.ip and req.protocol to work correctly
+// - Session cookies to be set properly
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
