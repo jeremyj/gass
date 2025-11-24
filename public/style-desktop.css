@@ -15,15 +15,17 @@ body {
     padding: 0;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: center;
+    position: relative;
+    min-height: 49px;
 }
 
 .nav-menu ul {
     list-style: none;
     display: flex;
-    max-width: 1200px;
     margin: 0;
+    padding: 0;
 }
 
 .nav-menu li {
@@ -46,6 +48,22 @@ body {
 
 .nav-menu a.active {
     background: #3498db;
+}
+
+.nav-user-tab {
+    display: block;
+    padding: 15px 30px;
+    color: white;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.nav-logout-tab {
+    background: #e74c3c;
+}
+
+.nav-logout-tab:hover {
+    background: #c0392b !important;
 }
 
 /* Main Container */
@@ -403,6 +421,11 @@ td input {
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid #ddd;
+}
+
+.movimenti-table th {
+    text-align: center;
+    vertical-align: middle;
 }
 
 .movimenti-table .text-right {
@@ -777,6 +800,11 @@ td input {
     color: white;
 }
 
+.storico-info-table thead th {
+    text-align: center;
+    vertical-align: middle;
+}
+
 .storico-info-table tbody tr {
     background: #E3F2FD;
 }
@@ -805,6 +833,11 @@ td input {
     border-bottom: 1px solid #ddd;
 }
 
+.storico-movimenti-table th {
+    text-align: center;
+    vertical-align: middle;
+}
+
 .storico-movimenti-table tbody tr:nth-child(even) {
     background: #E3F2FD;
 }
@@ -818,9 +851,8 @@ td input {
 }
 
 /* Desktop Nav Menu Auth Controls */
-.nav-menu {
+.nav-menu > div {
     display: flex;
-    justify-content: space-between;
     align-items: center;
 }
 

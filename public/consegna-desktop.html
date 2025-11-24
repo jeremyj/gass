@@ -12,11 +12,9 @@
             <li><a href="/consegna" class="active">📦 Consegna</a></li>
             <li><a href="/debiti">💰 Saldi</a></li>
             <li><a href="/storico">📋 Storico</a></li>
+            <li style="margin-left: 30px;"><span class="nav-user-tab"><span id="user-display"></span></span></li>
+            <li><a href="#" class="nav-logout-tab" onclick="handleLogout(); return false;">Esci</a></li>
         </ul>
-        <div style="display: flex; align-items: center; gap: 15px; margin-right: 20px;">
-            <span id="user-display" style="font-size: 14px; color: #666;"></span>
-            <button type="button" onclick="handleLogout()" style="padding: 8px 16px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">Esci</button>
-        </div>
     </nav>
 
     <div class="container">

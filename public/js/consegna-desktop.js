@@ -397,9 +397,9 @@ function renderMovimentiGiorno() {
         <td><strong>${m.nome}</strong></td>
         <td class="text-right">${m.conto_produttore ? '€' + formatNumber(m.conto_produttore) : ''}</td>
         <td class="text-right">${m.importo_saldato ? '€' + formatNumber(m.importo_saldato) : ''}</td>
-        <td class="text-right">${m.usa_credito ? '€' + formatNumber(m.usa_credito) : ''}</td>
-        <td class="text-right">${m.debito_lasciato ? '€' + formatNumber(m.debito_lasciato) : ''}</td>
         <td class="text-right">${m.credito_lasciato ? '€' + formatNumber(m.credito_lasciato) : ''}</td>
+        <td class="text-right">${m.debito_lasciato ? '€' + formatNumber(m.debito_lasciato) : ''}</td>
+        <td class="text-right">${m.usa_credito ? '€' + formatNumber(m.usa_credito) : ''}</td>
         <td class="text-right">${m.debito_saldato ? '€' + formatNumber(m.debito_saldato) : ''}</td>
         <td>${m.note || ''}</td>
       </tr>
@@ -414,9 +414,9 @@ function renderMovimentiGiorno() {
           <th>Nome</th>
           <th class="text-right">Conto Produttore</th>
           <th class="text-right">Importo Saldato</th>
-          <th class="text-right">Usa Credito</th>
-          <th class="text-right">Lascia Debito</th>
           <th class="text-right">Lascia Credito</th>
+          <th class="text-right">Lascia Debito</th>
+          <th class="text-right">Usa Credito</th>
           <th class="text-right">Salda Debito</th>
           <th>Note</th>
         </tr>

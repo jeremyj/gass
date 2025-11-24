@@ -956,14 +956,10 @@ body {
 .storico-cassa-value {
     font-size: 16px;
     font-weight: bold;
-    color: #e74c3c;
+    color: #000;
     display: flex;
     align-items: center;
     gap: 8px;
-}
-
-.storico-cassa-value.lasciato {
-    color: #2ecc71;
 }
 
 /* Sezione Movimenti (mobile) */
