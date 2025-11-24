@@ -447,3 +447,21 @@
 - **Commits**:
   - `e17825b` - UI consistency and conto produttore visibility
   - `26adbaa` - Consegna desktop layout improvements
+
+### UI Label Standardization (2025-11-24)
+- **Field Label Consistency**:
+  - **Desktop Tables** (storico and consegna): Standardized movement field labels
+    - "Debito Lasciato" → "Lascia Debito"
+    - "Credito Lasciato" → "Lascia Credito"
+    - "Debito Saldato" → "Salda Debito" (consegna table)
+    - Applied in: `storico-desktop.js:130-132`, `consegna-desktop.js:418-420`
+  - **Rationale**: Matches mobile terminology and action-oriented language ("Lascia" vs "Lasciato")
+- **Section Title Cleanup**:
+  - Removed "NUOVO SALDO" section title from participant forms (mobile and desktop)
+  - Files: `consegna-desktop.js:537-538`, `consegna.js:478-479`
+  - Benefit: Cleaner UI, field labels are self-explanatory
+- **Username Color Enhancement**:
+  - Changed from gray to white for better contrast against blue header/nav background
+  - Mobile: `style.css:1634` (.user-name: #666 → white)
+  - Desktop: `style-desktop.css:828` (#user-display: #ecf0f1 → white)
+- **Commit**: `e701f3b`
