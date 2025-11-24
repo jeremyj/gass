@@ -17,3 +17,6 @@ backups/
 # Database directory (bind mount)
 /data/*
 !/data/.gitkeep
+
+# Password management scripts
+update-admin-password.js

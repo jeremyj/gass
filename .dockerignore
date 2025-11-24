@@ -52,6 +52,7 @@ reset-and-populate-mock.js
 reset-db.js
 recalculate-saldi.js
 populate-test-data.js
+update-admin-password.js
 test/
 tests/
 *.test.js
