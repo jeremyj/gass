@@ -168,7 +168,7 @@ function createParticipantMovimentoCard(m) {
 
   card.innerHTML = `
     <div class="storico-participant-header">
-      <div class="storico-participant-name">👤 ${m.nome}</div>
+      <div class="storico-participant-name">👤 ${m.nome}${m.note ? ' ℹ️' : ''}</div>
     </div>
     <div class="storico-participant-details">
       ${m.conto_produttore ? `Conto: ${formatNumber(m.conto_produttore)} €` : ''}

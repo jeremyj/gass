@@ -2,6 +2,14 @@
 
 ## Technical Notes
 
+### Note Indicator in Storico Mobile (November 2025)
+- **Feature**: Visual indicator for participant notes in mobile storico view
+- **Implementation**: When a movement has a note in the `note` field, displays ℹ️ emoji next to participant name
+- **Location**: `public/js/storico.js:171` - `createParticipantMovimentoCard()` function
+- **Logic**: `${m.note ? ' ℹ️' : ''}` - checks for truthy value in movement's `note` field
+- **Display**: "👤 Nome ℹ️" when note exists, "👤 Nome" when no note
+- **Database Column**: `movimenti.note` (TEXT, nullable)
+
 ### Password Management (November 2025)
 - **Tool**: `update-admin-password.js` - Utility script for updating admin user password
 - **Implementation**:
