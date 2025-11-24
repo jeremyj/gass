@@ -2,6 +2,19 @@
 
 ## Technical Notes
 
+### Password Management (November 2025)
+- **Tool**: `update-admin-password.js` - Utility script for updating admin user password
+- **Implementation**:
+  - Uses bcrypt with 12 rounds for password hashing (consistent with database.js)
+  - Connects directly to SQLite database using same path detection logic as main application
+  - Updates `password_hash` field in `users` table for admin user
+- **Security**:
+  - Script excluded from git via `.gitignore` (contains plain-text passwords during execution)
+  - Script excluded from Docker builds via `.dockerignore`
+  - Database password hashes stored securely using bcrypt
+- **Usage**: `node update-admin-password.js` (modify password constant in script before running)
+- **Location**: Project root (not in version control or Docker images)
+
 ### Historical Saldo Calculation Fix (November 2025)
 - **Issue**: When editing past consegne, participant saldo displayed was incorrect - showed sum of historical saldo + all future movements
 - **Root Cause**: Backend (`server/routes/consegna.js` GET /:date) calculated `saldoBefore` by taking current saldo from `partecipanti` table and reversing current consegna effects - didn't account for movements after the selected date
