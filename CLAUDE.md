@@ -465,3 +465,34 @@
   - Mobile: `style.css:1634` (.user-name: #666 → white)
   - Desktop: `style-desktop.css:828` (#user-display: #ecf0f1 → white)
 - **Commit**: `e701f3b`
+
+### UI Consistency Improvements (2025-11-24)
+- **Desktop Table Column Order Standardization**:
+  - Reordered columns across consegna and storico pages: Conto Produttore, Importo Saldato, Lascia Credito, Lascia Debito, Usa Credito, Salda Debito
+  - Applied in: `consegna-desktop.js:400-403,417-420`, `storico-desktop.js:112-115,129-132`
+  - Rationale: Logical flow matching business process
+- **Desktop Table Header Alignment**:
+  - All table headers center-aligned both horizontally and vertically
+  - Applied to: `.movimenti-table th`, `.storico-movimenti-table th`, `.storico-info-table thead th`
+  - CSS: `style-desktop.css:426-429,831-834,803-806`
+- **Desktop Navigation Improvements**:
+  - **Centered Navigation**: All tabs (Consegna, Saldi, Storico, User, Esci) centered using flexbox
+  - **Tab-Style User Section**: User display and logout styled as matching navigation tabs
+  - **Fixed Height Issue**: Navigation bar now stretches to match tab height (49px) using `align-items: stretch` and `min-height: 49px`
+  - **User/Logout Positioning**: Moved after Storico tab with 30px left margin for visual separation
+  - HTML structure: User and logout now in `<li>` elements within nav `<ul>`
+  - CSS classes: `.nav-user-tab` (plain text tab), `.nav-logout-tab` (red background, darker hover)
+  - Files: `consegna-desktop.html:15-16`, `debiti-desktop.html:15-16`, `storico-desktop.html:15-16`, `style-desktop.css:13-67`
+- **Mobile Storico Participant Bubbles**:
+  - Simplified field display order: Conto, Pagato, Salda debito, Usa credito
+  - Changed "Conto produttore" label to "Conto" for brevity
+  - File: `storico.js:174-177`
+- **Mobile Storico Cassa Fields**:
+  - Changed color from conditional red/green to consistent black (`#000`)
+  - Removed `.storico-cassa-value.lasciato` color override
+  - File: `style.css:956-963`
+- **Mobile Consegna Cassa Labels**:
+  - "Note Giornata" → "Note:"
+  - Placeholder "Note opzionali..." → "Note aggiuntive"
+  - File: `consegna.html:82,84`
+- **Commit**: `03451cb`
