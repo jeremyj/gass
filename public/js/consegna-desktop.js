@@ -415,9 +415,9 @@ function renderMovimentiGiorno() {
           <th class="text-right">Conto Produttore</th>
           <th class="text-right">Importo Saldato</th>
           <th class="text-right">Usa Credito</th>
-          <th class="text-right">Debito Lasciato</th>
-          <th class="text-right">Credito Lasciato</th>
-          <th class="text-right">Debito Saldato</th>
+          <th class="text-right">Lascia Debito</th>
+          <th class="text-right">Lascia Credito</th>
+          <th class="text-right">Salda Debito</th>
           <th>Note</th>
         </tr>
       </thead>
@@ -535,7 +535,6 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
     ${haDebito ? buildDebitoSection(nome, saldo, saldoText, saldoClass) : ''}
 
     <div class="flow-section">
-      <div class="flow-section-title">NUOVO SALDO</div>
       <div class="row">
         <div class="form-group">
           <label>Lascia credito:</label>

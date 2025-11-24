@@ -127,8 +127,8 @@ function createMovimentiTable(movimenti) {
         <th>Conto Produttore</th>
         <th>Importo Saldato</th>
         <th>Usa Credito</th>
-        <th>Debito Lasciato</th>
-        <th>Credito Lasciato</th>
+        <th>Lascia Debito</th>
+        <th>Lascia Credito</th>
         <th>Salda Debito</th>
         <th>Note</th>
       </tr>

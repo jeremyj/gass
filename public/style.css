@@ -1631,7 +1631,7 @@ body {
 
 .user-name {
     font-size: 12px;
-    color: #666;
+    color: white;
     white-space: nowrap;
     display: none; /* Hide on very small screens */
 }
