@@ -2,6 +2,36 @@
 
 ## Technical Notes
 
+### Console Logging System (November 2025)
+- **Implementation**: Comprehensive logging throughout application for debugging and monitoring
+- **Server Startup Logging** (`server.js`):
+  - Enhanced startup banner with database path, port, environment
+  - Dynamic network interface detection using `os.networkInterfaces()`
+  - Displays all available network URLs (replaces hardcoded IP address)
+  - Request logging middleware: logs every HTTP request with timestamp, method, URL, and authenticated user
+  - Error logging middleware: catches and logs uncaught errors with stack traces
+- **Database Initialization Logging** (`server/config/database.js`):
+  - Categorized sections: base tables, migrations, audit tracking, data initialization, statistics
+  - Migration logs use `[MIGRATION]` prefix for schema changes
+  - Audit tracking logs use `[AUDIT]` prefix for v1.4 migration operations
+  - Data initialization logs use `[INIT]` prefix for default data creation
+  - Statistics summary shows counts: users, participants, consegne, movimenti
+- **Route Handler Logging**:
+  - **Authentication** (`server/routes/auth.js`): Login attempts, success/failure, logout, session checks with `[AUTH]` prefix
+  - **Consegna** (`server/routes/consegna.js`): GET/POST/DELETE operations with `[CONSEGNA]` prefix
+    - Logs movimenti counts, calculations (pagato_produttore, lasciato_in_cassa), saldo updates
+  - **Participants** (`server/routes/participants.js`): GET/PUT/POST/DELETE operations with `[PARTICIPANTS]` prefix
+    - Logs participant names, saldo changes, creation/deletion events
+  - **Storico** (`server/routes/storico.js`): Consegne and movimenti retrieval with `[STORICO]` prefix
+    - Logs counts of consegne and total movimenti processed
+- **Log Format**: `[CATEGORY] ISO_TIMESTAMP - message` for easy filtering and debugging
+- **Benefits**:
+  - Complete visibility into server operations
+  - Easy troubleshooting with categorized, timestamped logs
+  - Production-ready logging that works in both Docker and local environments
+  - Can filter logs by category using grep (e.g., `grep "\[AUTH\]"`)
+- **Commit**: `acd53a1`
+
 ### Note Indicator in Storico Mobile (November 2025)
 - **Implementation**: When a movement has a note in the `note` field, displays ℹ️ emoji next to participant name
 - **Location**: `public/js/storico.js:171` - `createParticipantMovimentoCard()` function
