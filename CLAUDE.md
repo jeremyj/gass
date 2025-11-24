@@ -2,6 +2,31 @@
 
 ## Technical Notes
 
+### Documentation Reorganization (November 2025)
+- **Purpose**: Separate user-facing documentation from AI-specific technical notes
+- **Structure**:
+  - **README.md**: Project overview and quick start (replaces obsolete Google Sheets setup)
+  - **docs/MANUALE_UTENTE.md**: Italian user manual for end users
+    - Complete feature guide (Consegna, Saldi, Storico)
+    - Explanation of automatic calculations and compensations
+    - Troubleshooting section
+  - **docs/TECHNICAL.md**: Developer reference (renamed from technical-documentation.md)
+    - Architecture overview
+    - Data models and algorithms
+    - API reference
+  - **DEPLOYMENT.md**: Docker deployment guide (unchanged, added cross-refs)
+  - **CLAUDE.md**: AI-specific notes (cleaned of user-facing content)
+    - Implementation details with file paths and line numbers
+    - Bug fixes with commit references
+    - Architecture decisions and conventions
+- **Cross-References**: All documentation files link to each other for easy navigation
+- **Benefits**:
+  - Clear separation of concerns (users vs developers vs AI)
+  - Italian user manual matches application language
+  - Eliminates redundancy between documentation files
+  - Easier maintenance with focused documentation
+- **Commit**: `acd53a1` (bundled with console logging feature)
+
 ### Console Logging System (November 2025)
 - **Implementation**: Comprehensive logging throughout application for debugging and monitoring
 - **Server Startup Logging** (`server.js`):
