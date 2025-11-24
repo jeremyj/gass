@@ -89,17 +89,23 @@
 - **Database Column**: `movimenti.note` (TEXT, nullable)
 
 ### Password Management (November 2025)
-- **Tool**: `update-admin-password.js` - Utility script for updating admin user password
+- **Tool**: `change-password.js` - Command-line utility for updating user passwords
 - **Implementation**:
+  - Command-line arguments: `node change-password.js <username> <new-password>`
   - Uses bcrypt with 12 rounds for password hashing (consistent with database.js)
   - Connects directly to SQLite database using same path detection logic as main application
-  - Updates `password_hash` field in `users` table for admin user
+  - Updates `password_hash` and `updated_at` fields in `users` table
+  - Validates user existence before attempting password change
+  - Lists available users if username not found
 - **Security**:
-  - Script excluded from git via `.gitignore` (contains plain-text passwords during execution)
-  - Script excluded from Docker builds via `.dockerignore`
+  - Password must be at least 4 characters (validates before hashing)
+  - Password passed as command-line argument (consider using environment variable in production scripts)
   - Database password hashes stored securely using bcrypt
-- **Usage**: `node update-admin-password.js` (modify password constant in script before running)
-- **Location**: Project root (not in version control or Docker images)
+- **Usage**:
+  - Local: `node change-password.js admin NewPassword123`
+  - Docker: `docker exec gass node change-password.js admin NewPassword123`
+- **Location**: Project root, included in Docker image
+- **Commit**: `v1.6` (replaces old update-admin-password.js script)
 
 ### Historical Saldo Calculation Fix (November 2025)
 - **Issue**: When editing past consegne, participant saldo displayed was incorrect - showed sum of historical saldo + all future movements

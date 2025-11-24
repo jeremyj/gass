@@ -69,6 +69,28 @@ Il database sarà persistito in `./data/gass.db`.
 
 Per dettagli completi, vedere [DEPLOYMENT.md](DEPLOYMENT.md).
 
+### Gestione Password
+
+Per cambiare la password dell'utente admin (o altri utenti):
+
+**Locale**:
+```bash
+node change-password.js admin NuovaPassword123
+```
+
+**Docker**:
+```bash
+docker exec gass node change-password.js admin NuovaPassword123
+```
+
+Lo script:
+- Valida l'esistenza dell'utente
+- Genera hash bcrypt sicuro (12 rounds)
+- Aggiorna il database
+- Mostra conferma dell'operazione
+
+⚠️ **Sicurezza**: Utilizzare sempre password forti in produzione.
+
 ## Stack Tecnologico
 
 ### Backend
