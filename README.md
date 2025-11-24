@@ -69,27 +69,51 @@ Il database sarà persistito in `./data/gass.db`.
 
 Per dettagli completi, vedere [DEPLOYMENT.md](DEPLOYMENT.md).
 
-### Gestione Password
+### Gestione Utenti
 
-Per cambiare la password dell'utente admin (o altri utenti):
+Utility completa per la gestione degli utenti da linea di comando:
 
-**Locale**:
+**Comandi disponibili**:
 ```bash
-node change-password.js admin NuovaPassword123
+# Elencare tutti gli utenti
+node manage-users.js list
+
+# Aggiungere nuovo utente
+node manage-users.js add <username> <password> "<Nome Completo>"
+
+# Cambiare password
+node manage-users.js password <username> <nuova-password>
+
+# Eliminare utente
+node manage-users.js delete <username>
+
+# Aiuto
+node manage-users.js help
 ```
 
-**Docker**:
+**Esempi Docker**:
 ```bash
-docker exec gass node change-password.js admin NuovaPassword123
+# Elencare utenti
+docker exec gass node manage-users.js list
+
+# Aggiungere utente
+docker exec gass node manage-users.js add john MyPass123 "John Smith"
+
+# Cambiare password admin
+docker exec gass node manage-users.js password admin NuovaPassword123
+
+# Eliminare utente
+docker exec gass node manage-users.js delete john
 ```
 
-Lo script:
-- Valida l'esistenza dell'utente
-- Genera hash bcrypt sicuro (12 rounds)
-- Aggiorna il database
-- Mostra conferma dell'operazione
+**Caratteristiche**:
+- Validazione utenti esistenti
+- Hash bcrypt sicuro (12 rounds)
+- Protezione eliminazione ultimo utente
+- Tabella formattata per listing utenti
+- Messaggi di conferma chiari
 
-⚠️ **Sicurezza**: Utilizzare sempre password forti in produzione.
+⚠️ **Sicurezza**: Utilizzare sempre password forti in produzione (minimo 4 caratteri).
 
 ## Stack Tecnologico
 

@@ -88,24 +88,32 @@
 - **Display**: "👤 Nome ℹ️" when note exists, "👤 Nome" when no note
 - **Database Column**: `movimenti.note` (TEXT, nullable)
 
-### Password Management (November 2025)
-- **Tool**: `change-password.js` - Command-line utility for updating user passwords
+### User Management Utility (November 2025)
+- **Tool**: `manage-users.js` - Comprehensive command-line utility for user management
+- **Commands**:
+  - `list` - Display all users in tabular format (ID, username, display name, created date)
+  - `add <username> <password> <displayName>` - Create new user with validation
+  - `password <username> <newPassword>` - Change user password
+  - `delete <username>` - Remove user (protects last user deletion)
+  - `help` - Show usage information
 - **Implementation**:
-  - Command-line arguments: `node change-password.js <username> <new-password>`
   - Uses bcrypt with 12 rounds for password hashing (consistent with database.js)
   - Connects directly to SQLite database using same path detection logic as main application
-  - Updates `password_hash` and `updated_at` fields in `users` table
-  - Validates user existence before attempting password change
-  - Lists available users if username not found
+  - Updates `password_hash`, `updated_at`, and `created_at` fields appropriately
+  - Validates user existence before operations
+  - Prevents deleting last user in system
+  - Checks for duplicate usernames on creation
 - **Security**:
   - Password must be at least 4 characters (validates before hashing)
-  - Password passed as command-line argument (consider using environment variable in production scripts)
+  - Password passed as command-line argument
   - Database password hashes stored securely using bcrypt
+  - Proper audit trail with timestamps
 - **Usage**:
-  - Local: `node change-password.js admin NewPassword123`
-  - Docker: `docker exec gass node change-password.js admin NewPassword123`
-- **Location**: Project root, included in Docker image
-- **Commit**: `v1.6` (replaces old update-admin-password.js script)
+  - Local: `node manage-users.js list`, `node manage-users.js add john Pass123 "John Smith"`
+  - Docker: `docker exec gass node manage-users.js list`, `docker exec gass node manage-users.js password admin NewPass`
+- **Output**: Formatted table with borders, clear success/error messages, displays credentials after creation/change
+- **Location**: Project root (`manage-users.js`), included in Docker image
+- **Commit**: `v1.6` (renamed from change-password.js with expanded functionality)
 
 ### Historical Saldo Calculation Fix (November 2025)
 - **Issue**: When editing past consegne, participant saldo displayed was incorrect - showed sum of historical saldo + all future movements
