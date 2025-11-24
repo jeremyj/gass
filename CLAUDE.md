@@ -2,6 +2,19 @@
 
 ## Technical Notes
 
+### Historical Saldo Calculation Fix (November 2025)
+- **Issue**: When editing past consegne, participant saldo displayed was incorrect - showed sum of historical saldo + all future movements
+- **Root Cause**: Backend (`server/routes/consegna.js` GET /:date) calculated `saldoBefore` by taking current saldo from `partecipanti` table and reversing current consegna effects - didn't account for movements after the selected date
+- **Solution**: Completely replaced calculation logic to rebuild historical saldo by querying all movements **before** the target date and summing their effects chronologically
+- **Implementation Details**:
+  - Query: `SELECT m.* FROM movimenti m JOIN consegne c ON m.consegna_id = c.id WHERE m.partecipante_id = ? AND c.data < ? ORDER BY c.data ASC`
+  - Sum effects: `credito_lasciato` adds to saldo, `debito_lasciato` subtracts, `usa_credito` subtracts, `debito_saldato` adds
+  - Result: Accurate point-in-time saldo for any historical date
+- **Code Change**: Lines 48-71 in `server/routes/consegna.js` (reduced from 38 lines to 24 lines of simpler logic)
+- **Impact**: Both mobile and desktop versions fixed (shared backend endpoint)
+- **Testing**: Verified with real data - Fernanda Fischione 11/11 correctly shows 2€ instead of 9.5€ (previous bug: 2€ historical + 7.5€ from 18/11)
+- **Commit**: 0cee7b2
+
 ### Codebase Architecture (v1.3 Reorganization - November 2025)
 
 **Server-Side Structure (MVC Pattern)**
