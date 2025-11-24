@@ -16,8 +16,12 @@ const router = express.Router();
  */
 router.post('/login', (req, res) => {
   const { username, password } = req.body;
+  const timestamp = new Date().toISOString();
+
+  console.log(`[AUTH] ${timestamp} - Login attempt for user: ${username}`);
 
   if (!username || !password) {
+    console.log(`[AUTH] ${timestamp} - Login failed: Missing credentials`);
     return res.status(400).json({
       error: 'Missing credentials',
       message: 'Username and password are required'
@@ -29,6 +33,7 @@ router.post('/login', (req, res) => {
     const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
 
     if (!user) {
+      console.log(`[AUTH] ${timestamp} - Login failed: User not found - ${username}`);
       return res.status(401).json({
         error: 'Invalid credentials',
         message: 'Username or password is incorrect'
@@ -39,6 +44,7 @@ router.post('/login', (req, res) => {
     const passwordMatch = bcrypt.compareSync(password, user.password_hash);
 
     if (!passwordMatch) {
+      console.log(`[AUTH] ${timestamp} - Login failed: Invalid password - ${username}`);
       return res.status(401).json({
         error: 'Invalid credentials',
         message: 'Username or password is incorrect'
@@ -50,6 +56,8 @@ router.post('/login', (req, res) => {
     req.session.username = user.username;
     req.session.displayName = user.display_name;
 
+    console.log(`[AUTH] ${timestamp} - Login successful: ${username} (ID: ${user.id})`);
+
     res.json({
       success: true,
       user: {
@@ -60,7 +68,7 @@ router.post('/login', (req, res) => {
     });
 
   } catch (error) {
-    console.error('Login error:', error);
+    console.error(`[AUTH] ${timestamp} - Login error for ${username}:`, error);
     res.status(500).json({
       error: 'Server error',
       message: 'An error occurred during login'
@@ -73,14 +81,21 @@ router.post('/login', (req, res) => {
  * Destroy session and log out user
  */
 router.post('/logout', (req, res) => {
+  const username = req.session?.username || 'unknown';
+  const timestamp = new Date().toISOString();
+
+  console.log(`[AUTH] ${timestamp} - Logout request from user: ${username}`);
+
   req.session.destroy((err) => {
     if (err) {
-      console.error('Logout error:', err);
+      console.error(`[AUTH] ${timestamp} - Logout error for ${username}:`, err);
       return res.status(500).json({
         error: 'Server error',
         message: 'An error occurred during logout'
       });
     }
+
+    console.log(`[AUTH] ${timestamp} - Logout successful: ${username}`);
 
     res.json({
       success: true,
@@ -94,7 +109,10 @@ router.post('/logout', (req, res) => {
  * Check current session status and return user info
  */
 router.get('/session', (req, res) => {
+  const timestamp = new Date().toISOString();
+
   if (req.session && req.session.userId) {
+    console.log(`[AUTH] ${timestamp} - Session check: Authenticated - ${req.session.username}`);
     res.json({
       authenticated: true,
       user: {
@@ -104,6 +122,7 @@ router.get('/session', (req, res) => {
       }
     });
   } else {
+    console.log(`[AUTH] ${timestamp} - Session check: Not authenticated`);
     res.json({
       authenticated: false
     });

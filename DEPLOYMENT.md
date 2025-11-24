@@ -2,6 +2,12 @@
 
 This guide explains how to deploy the GASS application using Docker with your existing `nginx-proxy` and `acme-companion` setup.
 
+## Documentazione Correlata
+
+- **[README](README.md)** - Panoramica progetto e quick start
+- **[Manuale Utente](docs/MANUALE_UTENTE.md)** - Guida all'utilizzo dell'applicazione
+- **[Documentazione Tecnica](docs/TECHNICAL.md)** - Architettura e riferimento sviluppatori
+
 ## Prerequisites
 
 - Docker and Docker Compose installed

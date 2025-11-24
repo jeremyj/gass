@@ -1,121 +1,166 @@
-# GAS Pagamenti - Local Server Setup
+# GASS Pagamenti
 
-## Prerequisites
+Sistema di gestione finanziaria per gruppi di acquisto solidale (GAS).
 
-- Node.js (v14 or higher)
-- Google Cloud Project with Sheets API enabled
-- Service Account credentials
+## Panoramica
 
-## Setup Instructions
+GASS Pagamenti è un'applicazione web completa per la gestione di:
+- Registrazione consegne e transazioni
+- Tracciamento saldi partecipanti (crediti e debiti)
+- Storico completo delle operazioni
+- Calcolo automatico cassa e compensazioni
+- Audit trail completo delle modifiche
 
-### 1. Install Dependencies
+## Caratteristiche
+
+- **Responsive Design**: Interfaccia ottimizzata per mobile e desktop
+- **Calcoli Automatici**: Cassa e compensazioni gestiti automaticamente
+- **Sicurezza**: Autenticazione con sessioni, password cifrate
+- **Tracciabilità**: Registrazione di tutte le modifiche (chi, quando)
+- **Database Locale**: SQLite, nessuna dipendenza cloud
+- **Deploy Semplice**: Container Docker ready
+
+## Documentazione
+
+- **[Manuale Utente](docs/MANUALE_UTENTE.md)** - Guida completa per utilizzatori
+- **[Documentazione Tecnica](docs/TECHNICAL.md)** - Riferimento per sviluppatori
+- **[Guida Deploy](DEPLOYMENT.md)** - Istruzioni per installazione e configurazione
+
+## Quick Start
+
+### Requisiti
+
+- Node.js v18 o superiore
+- Docker (opzionale, consigliato per produzione)
+
+### Installazione Locale
 
 ```bash
+# Clona il repository
+git clone <repository-url>
+cd gass
+
+# Installa dipendenze
 npm install
-```
 
-### 2. Google Cloud Setup
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select an existing one
-3. Enable the **Google Sheets API**:
-   - Go to "APIs & Services" → "Library"
-   - Search for "Google Sheets API"
-   - Click "Enable"
-
-4. Create a **Service Account**:
-   - Go to "APIs & Services" → "Credentials"
-   - Click "Create Credentials" → "Service Account"
-   - Fill in the details and click "Create"
-   - Skip optional steps and click "Done"
-
-5. Create a **Service Account Key**:
-   - Click on the service account you just created
-   - Go to "Keys" tab
-   - Click "Add Key" → "Create new key"
-   - Choose "JSON" format
-   - Download the file and save it as `credentials.json` in the project root
-
-6. **Share your Google Sheets** with the service account email:
-   - Open the service account details
-   - Copy the email (looks like: `name@project-id.iam.gserviceaccount.com`)
-   - Open each of your 3 Google Sheets
-   - Click "Share" and paste the service account email
-   - Give "Editor" permission
-
-### 3. Environment Configuration
-
-1. Copy `.env.example` to `.env`:
-```bash
-cp .env.example .env
-```
-
-2. Edit `.env` if needed (default values should work)
-
-### 4. Run the Server
-
-Development mode (auto-restart on changes):
-```bash
+# Avvia in modalità sviluppo
 npm run dev
 ```
 
-Production mode:
+L'applicazione sarà disponibile su http://localhost:3000
+
+**Credenziali predefinite**:
+- Username: `admin`
+- Password: `admin`
+
+⚠️ **IMPORTANTE**: Cambiare la password predefinita al primo accesso.
+
+### Deploy con Docker
+
 ```bash
-npm start
+# Build immagine
+docker-compose build
+
+# Avvia il servizio
+docker-compose up -d
 ```
 
-The app will be available at: http://localhost:3000
+Il database sarà persistito in `./data/gass.db`.
 
-## Project Structure
+Per dettagli completi, vedere [DEPLOYMENT.md](DEPLOYMENT.md).
+
+## Stack Tecnologico
+
+### Backend
+- **Runtime**: Node.js 18
+- **Framework**: Express.js
+- **Database**: SQLite3 (better-sqlite3)
+- **Autenticazione**: express-session + bcrypt
+- **Architettura**: MVC pattern
+
+### Frontend
+- **Linguaggio**: Vanilla JavaScript (ES6+)
+- **Design**: CSS responsive (mobile-first)
+- **Pattern**: Component-based senza framework
+
+## Struttura Progetto
 
 ```
 gass/
-├── server.js              # Express server with Google Sheets API
+├── server/
+│   ├── config/          # Database e configurazione
+│   ├── routes/          # API endpoints
+│   ├── services/        # Business logic
+│   └── middleware/      # Auth, user agent detection
 ├── public/
-│   └── index.html        # Frontend application
-├── credentials.json      # Google service account credentials (not in git)
-├── .env                  # Environment variables (not in git)
-├── package.json          # Node.js dependencies
-└── README.md            # This file
+│   ├── js/
+│   │   ├── shared/      # Codice condiviso
+│   │   ├── consegna.js  # Mobile views
+│   │   └── *-desktop.js # Desktop views
+│   ├── *.html           # Pagine HTML
+│   └── style*.css       # Fogli di stile
+├── docs/                # Documentazione
+├── data/                # Database SQLite (gitignored)
+└── server.js            # Entry point
 ```
 
-## Deployment
+## Sviluppo
 
-### Deploy to a VPS/Server
+### Comandi Disponibili
 
-1. Copy all files to your server
-2. Install Node.js on the server
-3. Run `npm install --production`
-4. Use a process manager like PM2:
-   ```bash
-   npm install -g pm2
-   pm2 start server.js --name gas-pagamenti
-   pm2 save
-   pm2 startup
-   ```
-
-### Deploy with Docker
-
-Create a `Dockerfile`:
-```dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm install --production
-COPY . .
-EXPOSE 3000
-CMD ["node", "server.js"]
-```
-
-Build and run:
 ```bash
-docker build -t gas-pagamenti .
-docker run -p 3000:3000 -v $(pwd)/credentials.json:/app/credentials.json gas-pagamenti
+npm run dev        # Sviluppo con auto-restart (nodemon)
+npm start          # Produzione
+npm test           # Esegui test (se configurati)
 ```
 
-## Security Notes
+### Convenzioni
 
-- **Never commit** `credentials.json` or `.env` to git
-- Keep your service account key secure
-- Use HTTPS in production
-- Consider adding authentication for the web interface
+- I campi cassa sono **sempre readonly** - valori calcolati automaticamente
+- I campi compensazione sono **system-managed** - no override manuale
+- Sviluppare sempre per **mobile E desktop** contemporaneamente
+- Test su viewports mobile (412px) e desktop (1920px)
+
+## Sicurezza
+
+- ✅ Password cifrate con bcrypt (12 rounds)
+- ✅ Sessioni sicure (httpOnly, secure in produzione)
+- ✅ Audit trail completo (created_by, updated_by, timestamps)
+- ✅ Protezione API con middleware autenticazione
+- ✅ Gestione transazioni database per integrità dati
+
+⚠️ **Mai committare**:
+- `data/` (database con dati sensibili)
+- `update-admin-password.js` (script con password in chiaro)
+- Credenziali o secrets
+
+## Contribuire
+
+Per contribuire al progetto:
+
+1. Leggere [TECHNICAL.md](docs/TECHNICAL.md) per l'architettura
+2. Seguire le convenzioni di sviluppo in [CLAUDE.md](CLAUDE.md)
+3. Testare su mobile e desktop
+4. Commit con messaggi semantici: `feat:`, `fix:`, `docs:`, `refactor:`
+
+## Versione
+
+**Versione Corrente**: 1.4
+
+**Changelog Recente**:
+- v1.4 (Nov 2025): Sistema audit tracking completo
+- v1.3 (Nov 2025): Riorganizzazione architettura MVC
+- v1.2 (Nov 2025): Sistema autenticazione e sessioni
+- v1.1 (Nov 2025): Compensazione automatica bidirezionale
+- v1.0 (Nov 2025): Release iniziale con SQLite
+
+## Licenza
+
+[Specificare licenza]
+
+## Supporto
+
+Per problemi o domande:
+- Consultare [Manuale Utente](docs/MANUALE_UTENTE.md)
+- Vedere [Documentazione Tecnica](docs/TECHNICAL.md)
+- Aprire una issue su GitHub

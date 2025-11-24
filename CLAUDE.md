@@ -3,7 +3,6 @@
 ## Technical Notes
 
 ### Note Indicator in Storico Mobile (November 2025)
-- **Feature**: Visual indicator for participant notes in mobile storico view
 - **Implementation**: When a movement has a note in the `note` field, displays ℹ️ emoji next to participant name
 - **Location**: `public/js/storico.js:171` - `createParticipantMovimentoCard()` function
 - **Logic**: `${m.note ? ' ℹ️' : ''}` - checks for truthy value in movement's `note` field
@@ -422,7 +421,6 @@
 - **Commits**:
   - `46b737c` - Initial cleanup (files, dependencies, server/storico logic)
   - `fe9694e` - Fix client-side API calls to match updated server endpoint
-  - (pending) - Complete server-side cleanup by removing conditional checks
 - always allow chrom-devtools commands
 - always develop features and bug fixes for mobile AND desktop versions
 

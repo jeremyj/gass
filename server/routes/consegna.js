@@ -15,9 +15,12 @@ router.use(requireAuth);
 
 // Get consegna data for a specific date
 router.get('/:date', (req, res) => {
-  try {
-    const { date } = req.params;
+  const timestamp = new Date().toISOString();
+  const { date } = req.params;
 
+  console.log(`[CONSEGNA] ${timestamp} - GET request for date: ${date}`);
+
+  try {
     const consegna = db.prepare('SELECT * FROM consegne WHERE data = ?').get(date);
 
     const previousConsegna = db.prepare(`
@@ -28,6 +31,7 @@ router.get('/:date', (req, res) => {
     `).get(date);
 
     if (!consegna) {
+      console.log(`[CONSEGNA] ${timestamp} - No consegna found for ${date}`);
       return res.json({
         success: true,
         found: false,
@@ -35,12 +39,16 @@ router.get('/:date', (req, res) => {
       });
     }
 
+    console.log(`[CONSEGNA] ${timestamp} - Found consegna for ${date} (ID: ${consegna.id})`);
+
     const movimenti = db.prepare(`
       SELECT m.*, p.nome, p.id as partecipante_id
       FROM movimenti m
       JOIN partecipanti p ON m.partecipante_id = p.id
       WHERE m.consegna_id = ?
     `).all(consegna.id);
+
+    console.log(`[CONSEGNA] ${timestamp} - Retrieved ${movimenti.length} movimenti for consegna ${consegna.id}`);
 
     // Calculate saldo before this consegna for each participant
     const saldiBefore = {};
@@ -73,6 +81,8 @@ router.get('/:date', (req, res) => {
     // Apply dynamic calculations
     const processedConsegna = applyDynamicCalculations(consegna, previousConsegna?.lasciato_in_cassa);
 
+    console.log(`[CONSEGNA] ${timestamp} - Successfully processed consegna for ${date}`);
+
     res.json({
       success: true,
       found: true,
@@ -82,16 +92,21 @@ router.get('/:date', (req, res) => {
       lasciatoPrecedente: previousConsegna?.lasciato_in_cassa ?? null
     });
   } catch (error) {
+    console.error(`[CONSEGNA] ${timestamp} - Error fetching consegna for ${date}:`, error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
 
 // Save consegna data
 router.post('/', (req, res) => {
-  try {
-    const { data, trovatoInCassa, pagatoProduttore, lasciatoInCassa,
-            noteGiornata, partecipanti } = req.body;
+  const timestamp = new Date().toISOString();
+  const { data, trovatoInCassa, pagatoProduttore, lasciatoInCassa,
+          noteGiornata, partecipanti } = req.body;
 
+  console.log(`[CONSEGNA] ${timestamp} - POST request for date: ${data}`);
+  console.log(`[CONSEGNA] ${timestamp} - Saving ${partecipanti?.length || 0} participant movements`);
+
+  try {
     const transaction = db.transaction(() => {
       let consegna = db.prepare('SELECT * FROM consegne WHERE data = ?').get(data);
 
@@ -100,6 +115,7 @@ router.post('/', (req, res) => {
       ];
 
       if (consegna) {
+        console.log(`[CONSEGNA] ${timestamp} - Updating existing consegna ID: ${consegna.id}`);
         const updateAudit = getAuditFields(req, 'update');
         db.prepare(`
           UPDATE consegne
@@ -116,6 +132,7 @@ router.post('/', (req, res) => {
         `).run(data, ...consegnaData, createAudit.created_by, createAudit.created_at,
                createAudit.updated_by, createAudit.updated_at);
         consegna = { id: result.lastInsertRowid };
+        console.log(`[CONSEGNA] ${timestamp} - Created new consegna ID: ${consegna.id}`);
       }
 
       // Upsert movimenti and update saldi
@@ -141,6 +158,9 @@ router.post('/', (req, res) => {
         UPDATE partecipanti SET saldo = ?, ultima_modifica = ?, updated_by = ?, updated_at = ? WHERE id = ?
       `);
 
+      let movimentiCreated = 0;
+      let movimentiUpdated = 0;
+
       partecipanti.forEach(p => {
         const partecipante = db.prepare('SELECT * FROM partecipanti WHERE nome = ?').get(p.nome);
         if (!partecipante) return;
@@ -159,16 +179,20 @@ router.post('/', (req, res) => {
           const updateAudit = getAuditFields(req, 'update');
           updateMovimento.run(...movimentoData, updateAudit.updated_by, updateAudit.updated_at,
                               consegna.id, partecipante.id);
+          movimentiUpdated++;
         } else {
           const createAudit = getAuditFields(req, 'create');
           insertMovimento.run(consegna.id, partecipante.id, ...movimentoData,
                              createAudit.created_by, createAudit.created_at,
                              createAudit.updated_by, createAudit.updated_at);
+          movimentiCreated++;
         }
 
         const saldoAudit = getAuditFields(req, 'update');
         updateSaldo.run(p.nuovoSaldo, data, saldoAudit.updated_by, saldoAudit.updated_at, partecipante.id);
       });
+
+      console.log(`[CONSEGNA] ${timestamp} - Movimenti: ${movimentiCreated} created, ${movimentiUpdated} updated`);
 
       // Recalculate pagato_produttore from movements
       const movimenti = db.prepare('SELECT * FROM movimenti WHERE consegna_id = ?').all(consegna.id);
@@ -181,6 +205,8 @@ router.post('/', (req, res) => {
       db.prepare('UPDATE consegne SET pagato_produttore = ?, updated_by = ?, updated_at = ? WHERE id = ?')
         .run(totalPagato, pagatoAudit.updated_by, pagatoAudit.updated_at, consegna.id);
 
+      console.log(`[CONSEGNA] ${timestamp} - Calculated pagato_produttore: ${totalPagato}€`);
+
       // Recalculate lasciato_in_cassa from movements
       const currentConsegna = db.prepare('SELECT * FROM consegne WHERE id = ?').get(consegna.id);
       let incassato = 0;
@@ -191,19 +217,31 @@ router.post('/', (req, res) => {
       const lasciatoAudit = getAuditFields(req, 'update');
       db.prepare('UPDATE consegne SET lasciato_in_cassa = ?, updated_by = ?, updated_at = ? WHERE id = ?')
         .run(lasciato, lasciatoAudit.updated_by, lasciatoAudit.updated_at, consegna.id);
+
+      console.log(`[CONSEGNA] ${timestamp} - Calculated lasciato_in_cassa: ${lasciato}€ (trovato: ${currentConsegna.trovato_in_cassa}€ + incassato: ${incassato}€ - pagato: ${currentConsegna.pagato_produttore}€)`);
     });
 
     transaction();
+    console.log(`[CONSEGNA] ${timestamp} - Successfully saved consegna for ${data}`);
     res.json({ success: true });
   } catch (error) {
+    console.error(`[CONSEGNA] ${timestamp} - Error saving consegna for ${data}:`, error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
 
 // Delete consegna and recalculate all saldi
 router.delete('/:id', (req, res) => {
+  const timestamp = new Date().toISOString();
+  const { id } = req.params;
+
+  console.log(`[CONSEGNA] ${timestamp} - DELETE request for consegna ID: ${id}`);
+
   try {
-    const { id } = req.params;
+    const consegna = db.prepare('SELECT * FROM consegne WHERE id = ?').get(id);
+    if (consegna) {
+      console.log(`[CONSEGNA] ${timestamp} - Deleting consegna for date: ${consegna.data}`);
+    }
 
     const transaction = db.transaction(() => {
       db.prepare('DELETE FROM consegne WHERE id = ?').run(id);
@@ -212,7 +250,10 @@ router.delete('/:id', (req, res) => {
       db.prepare('UPDATE partecipanti SET saldo = 0, updated_by = ?, updated_at = ? WHERE 1=1')
         .run(resetAudit.updated_by, resetAudit.updated_at);
 
+      console.log(`[CONSEGNA] ${timestamp} - Reset all participant saldi to 0`);
+
       const consegne = db.prepare('SELECT * FROM consegne ORDER BY data ASC').all();
+      console.log(`[CONSEGNA] ${timestamp} - Recalculating saldi for ${consegne.length} remaining consegne`);
 
       consegne.forEach(consegna => {
         const movimenti = db.prepare(`
@@ -232,8 +273,10 @@ router.delete('/:id', (req, res) => {
     });
 
     transaction();
+    console.log(`[CONSEGNA] ${timestamp} - Successfully deleted consegna ID: ${id} and recalculated saldi`);
     res.json({ success: true });
   } catch (error) {
+    console.error(`[CONSEGNA] ${timestamp} - Error deleting consegna ID ${id}:`, error);
     res.status(500).json({ success: false, error: error.message });
   }
 });

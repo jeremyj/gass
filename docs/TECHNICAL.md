@@ -1,5 +1,11 @@
 # GASS Pagamenti - Technical Documentation
 
+## Documentazione Correlata
+
+- **[README](../README.md)** - Panoramica progetto e quick start
+- **[Manuale Utente](MANUALE_UTENTE.md)** - Guida all'utilizzo dell'applicazione
+- **[Guida Deploy](../DEPLOYMENT.md)** - Istruzioni per installazione Docker
+
 ## Overview
 
 GASS Pagamenti is a financial management system for tracking deliveries, cash movements, and participant balances in a solidarity purchasing group (GAS - Gruppo di Acquisto Solidale). The system records transactions between participants and a producer, calculates balances, and maintains historical records.

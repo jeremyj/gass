@@ -6,15 +6,20 @@ const fs = require('fs');
 const projectRoot = path.join(__dirname, '../..');
 const dbDir = fs.existsSync('/app/data') ? '/app/data' : projectRoot;
 const dbPath = path.join(dbDir, 'gass.db');
+const dbExists = fs.existsSync(dbPath);
 const db = new Database(dbPath);
 
-// Log database path for verification
-console.log(`Database initialized at: ${dbPath}`);
+console.log('\n=== Database Initialization ===');
+console.log(`Path: ${dbPath}`);
+console.log(`Mode: ${dbExists ? 'Existing database' : 'New database'}`);
+console.log(`Environment: ${fs.existsSync('/app/data') ? 'Docker' : 'Local'}`);
 
 // Enable foreign keys
 db.pragma('foreign_keys = ON');
+console.log('Foreign keys: ENABLED');
 
 // Create tables
+console.log('\n--- Creating base tables ---');
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,11 +66,14 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_movimenti_consegna ON movimenti(consegna_id);
   CREATE INDEX IF NOT EXISTS idx_movimenti_partecipante ON movimenti(partecipante_id);
 `);
+console.log('Base tables created/verified');
+
+console.log('\n--- Running schema migrations ---');
 
 // Add note column to consegne if it doesn't exist
 try {
   db.exec(`ALTER TABLE consegne ADD COLUMN note TEXT`);
-  console.log('Added note column to consegne table');
+  console.log('[MIGRATION] Added note column to consegne table');
 } catch (err) {
   // Column already exists, ignore
   if (!err.message.includes('duplicate column')) {
@@ -76,7 +84,7 @@ try {
 // Add discrepanza_trovata column if it doesn't exist
 try {
   db.exec(`ALTER TABLE consegne ADD COLUMN discrepanza_trovata BOOLEAN DEFAULT 0`);
-  console.log('Added discrepanza_trovata column to consegne table');
+  console.log('[MIGRATION] Added discrepanza_trovata column to consegne table');
 } catch (err) {
   if (!err.message.includes('duplicate column')) {
     throw err;
@@ -86,7 +94,7 @@ try {
 // Add discrepanza_pagato column if it doesn't exist
 try {
   db.exec(`ALTER TABLE consegne ADD COLUMN discrepanza_pagato BOOLEAN DEFAULT 0`);
-  console.log('Added discrepanza_pagato column to consegne table');
+  console.log('[MIGRATION] Added discrepanza_pagato column to consegne table');
 } catch (err) {
   if (!err.message.includes('duplicate column')) {
     throw err;
@@ -96,7 +104,7 @@ try {
 // Add conto_produttore column to movimenti if it doesn't exist
 try {
   db.exec(`ALTER TABLE movimenti ADD COLUMN conto_produttore REAL DEFAULT 0`);
-  console.log('Added conto_produttore column to movimenti table');
+  console.log('[MIGRATION] Added conto_produttore column to movimenti table');
 } catch (err) {
   if (!err.message.includes('duplicate column')) {
     throw err;
@@ -106,7 +114,7 @@ try {
 // Add user_id column to consegne if it doesn't exist
 try {
   db.exec(`ALTER TABLE consegne ADD COLUMN user_id INTEGER REFERENCES users(id)`);
-  console.log('Added user_id column to consegne table');
+  console.log('[MIGRATION] Added user_id column to consegne table');
 } catch (err) {
   if (!err.message.includes('duplicate column')) {
     throw err;
@@ -116,7 +124,7 @@ try {
 // Add updated_by column to consegne if it doesn't exist
 try {
   db.exec(`ALTER TABLE consegne ADD COLUMN updated_by INTEGER REFERENCES users(id)`);
-  console.log('Added updated_by column to consegne table');
+  console.log('[MIGRATION] Added updated_by column to consegne table');
 } catch (err) {
   if (!err.message.includes('duplicate column')) {
     throw err;
@@ -126,7 +134,7 @@ try {
 // Add user_id column to movimenti if it doesn't exist
 try {
   db.exec(`ALTER TABLE movimenti ADD COLUMN user_id INTEGER REFERENCES users(id)`);
-  console.log('Added user_id column to movimenti table');
+  console.log('[MIGRATION] Added user_id column to movimenti table');
 } catch (err) {
   if (!err.message.includes('duplicate column')) {
     throw err;
@@ -136,33 +144,33 @@ try {
 // Add updated_by column to movimenti if it doesn't exist
 try {
   db.exec(`ALTER TABLE movimenti ADD COLUMN updated_by INTEGER REFERENCES users(id)`);
-  console.log('Added updated_by column to movimenti table');
+  console.log('[MIGRATION] Added updated_by column to movimenti table');
 } catch (err) {
   if (!err.message.includes('duplicate column')) {
     throw err;
   }
 }
 
-// ===== AUDIT TRACKING COLUMNS MIGRATION (v1.4) =====
+console.log('\n--- Audit tracking migration (v1.4) ---');
 
 // Users table audit columns
 try {
   db.exec(`ALTER TABLE users ADD COLUMN created_by INTEGER REFERENCES users(id)`);
-  console.log('Added created_by column to users table');
+  console.log('[AUDIT] Added created_by column to users table');
 } catch (err) {
   if (!err.message.includes('duplicate column')) throw err;
 }
 
 try {
   db.exec(`ALTER TABLE users ADD COLUMN updated_by INTEGER REFERENCES users(id)`);
-  console.log('Added updated_by column to users table');
+  console.log('[AUDIT] Added updated_by column to users table');
 } catch (err) {
   if (!err.message.includes('duplicate column')) throw err;
 }
 
 try {
   db.exec(`ALTER TABLE users ADD COLUMN updated_at DATETIME`);
-  console.log('Added updated_at column to users table');
+  console.log('[AUDIT] Added updated_at column to users table');
 } catch (err) {
   if (!err.message.includes('duplicate column')) throw err;
 }
@@ -170,28 +178,28 @@ try {
 // Partecipanti table audit columns
 try {
   db.exec(`ALTER TABLE partecipanti ADD COLUMN created_by INTEGER REFERENCES users(id)`);
-  console.log('Added created_by column to partecipanti table');
+  console.log('[AUDIT] Added created_by column to partecipanti table');
 } catch (err) {
   if (!err.message.includes('duplicate column')) throw err;
 }
 
 try {
   db.exec(`ALTER TABLE partecipanti ADD COLUMN created_at DATETIME`);
-  console.log('Added created_at column to partecipanti table');
+  console.log('[AUDIT] Added created_at column to partecipanti table');
 } catch (err) {
   if (!err.message.includes('duplicate column')) throw err;
 }
 
 try {
   db.exec(`ALTER TABLE partecipanti ADD COLUMN updated_by INTEGER REFERENCES users(id)`);
-  console.log('Added updated_by column to partecipanti table');
+  console.log('[AUDIT] Added updated_by column to partecipanti table');
 } catch (err) {
   if (!err.message.includes('duplicate column')) throw err;
 }
 
 try {
   db.exec(`ALTER TABLE partecipanti ADD COLUMN updated_at DATETIME`);
-  console.log('Added updated_at column to partecipanti table');
+  console.log('[AUDIT] Added updated_at column to partecipanti table');
 } catch (err) {
   if (!err.message.includes('duplicate column')) throw err;
 }
@@ -199,14 +207,14 @@ try {
 // Consegne table audit columns (rename user_id to created_by conceptually, add created_at and updated_at)
 try {
   db.exec(`ALTER TABLE consegne ADD COLUMN created_by INTEGER REFERENCES users(id)`);
-  console.log('Added created_by column to consegne table');
+  console.log('[AUDIT] Added created_by column to consegne table');
 } catch (err) {
   if (!err.message.includes('duplicate column')) throw err;
 }
 
 try {
   db.exec(`ALTER TABLE consegne ADD COLUMN updated_at DATETIME`);
-  console.log('Added updated_at column to consegne table');
+  console.log('[AUDIT] Added updated_at column to consegne table');
 } catch (err) {
   if (!err.message.includes('duplicate column')) throw err;
 }
@@ -216,30 +224,30 @@ try {
   const existingRecords = db.prepare('SELECT COUNT(*) as count FROM consegne WHERE created_by IS NULL AND user_id IS NOT NULL').get().count;
   if (existingRecords > 0) {
     db.exec(`UPDATE consegne SET created_by = user_id WHERE created_by IS NULL AND user_id IS NOT NULL`);
-    console.log(`Migrated ${existingRecords} consegne records: copied user_id to created_by`);
+    console.log(`[AUDIT] Migrated ${existingRecords} consegne records: copied user_id to created_by`);
   }
 } catch (err) {
-  console.error('Error migrating consegne user_id to created_by:', err.message);
+  console.error('[AUDIT] Error migrating consegne user_id to created_by:', err.message);
 }
 
 // Movimenti table audit columns (rename user_id to created_by conceptually, add created_at and updated_at)
 try {
   db.exec(`ALTER TABLE movimenti ADD COLUMN created_by INTEGER REFERENCES users(id)`);
-  console.log('Added created_by column to movimenti table');
+  console.log('[AUDIT] Added created_by column to movimenti table');
 } catch (err) {
   if (!err.message.includes('duplicate column')) throw err;
 }
 
 try {
   db.exec(`ALTER TABLE movimenti ADD COLUMN created_at DATETIME`);
-  console.log('Added created_at column to movimenti table');
+  console.log('[AUDIT] Added created_at column to movimenti table');
 } catch (err) {
   if (!err.message.includes('duplicate column')) throw err;
 }
 
 try {
   db.exec(`ALTER TABLE movimenti ADD COLUMN updated_at DATETIME`);
-  console.log('Added updated_at column to movimenti table');
+  console.log('[AUDIT] Added updated_at column to movimenti table');
 } catch (err) {
   if (!err.message.includes('duplicate column')) throw err;
 }
@@ -249,10 +257,10 @@ try {
   const existingRecords = db.prepare('SELECT COUNT(*) as count FROM movimenti WHERE created_by IS NULL AND user_id IS NOT NULL').get().count;
   if (existingRecords > 0) {
     db.exec(`UPDATE movimenti SET created_by = user_id WHERE created_by IS NULL AND user_id IS NOT NULL`);
-    console.log(`Migrated ${existingRecords} movimenti records: copied user_id to created_by`);
+    console.log(`[AUDIT] Migrated ${existingRecords} movimenti records: copied user_id to created_by`);
   }
 } catch (err) {
-  console.error('Error migrating movimenti user_id to created_by:', err.message);
+  console.error('[AUDIT] Error migrating movimenti user_id to created_by:', err.message);
 }
 
 // Create performance indexes for audit queries
@@ -262,10 +270,12 @@ try {
   db.exec(`CREATE INDEX IF NOT EXISTS idx_movimenti_created_by ON movimenti(created_by)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_movimenti_updated_by ON movimenti(updated_by)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_partecipanti_updated_by ON partecipanti(updated_by)`);
-  console.log('Created audit tracking indexes');
+  console.log('[AUDIT] Created audit tracking indexes');
 } catch (err) {
-  console.error('Error creating audit indexes:', err.message);
+  console.error('[AUDIT] Error creating audit indexes:', err.message);
 }
+
+console.log('\n--- Data initialization ---');
 
 // Initialize with participants list
 const count = db.prepare('SELECT COUNT(*) as count FROM partecipanti').get().count;
@@ -282,7 +292,9 @@ if (count === 0) {
     insert.run(name, 0);
   });
 
-  console.log(`Initialized database with ${participants.length} participants`);
+  console.log(`[INIT] Created ${participants.length} default participants`);
+} else {
+  console.log(`[INIT] Found ${count} existing participants`);
 }
 
 // Initialize with admin user if no users exist
@@ -292,8 +304,21 @@ if (userCount === 0) {
   const passwordHash = bcrypt.hashSync('admin', 12);
   const insertUser = db.prepare('INSERT INTO users (username, password_hash, display_name) VALUES (?, ?, ?)');
   insertUser.run('admin', passwordHash, 'Administrator');
-  console.log('Created default admin user (username: admin, password: admin)');
-  console.log('IMPORTANT: Change the default password immediately!');
+  console.log('[INIT] Created default admin user (username: admin, password: admin)');
+  console.log('[INIT] ⚠️  IMPORTANT: Change the default password immediately!');
+} else {
+  console.log(`[INIT] Found ${userCount} existing user(s)`);
 }
+
+// Get database statistics
+const consegneCount = db.prepare('SELECT COUNT(*) as count FROM consegne').get().count;
+const movimentiCount = db.prepare('SELECT COUNT(*) as count FROM movimenti').get().count;
+
+console.log('\n--- Database statistics ---');
+console.log(`Users: ${userCount}`);
+console.log(`Participants: ${count}`);
+console.log(`Consegne: ${consegneCount}`);
+console.log(`Movimenti: ${movimentiCount}`);
+console.log('\nDatabase initialization complete!\n');
 
 module.exports = db;

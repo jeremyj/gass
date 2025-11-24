@@ -45,6 +45,13 @@ app.use(session({
 
 app.use(express.static('public'));
 
+// Request logging middleware
+app.use((req, res, next) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] ${req.method} ${req.url} - User: ${req.session?.user?.username || 'anonymous'}`);
+  next();
+});
+
 // Mount routes
 app.use('/api/auth', authRouter);
 app.use('/', pagesRouter);
@@ -52,7 +59,33 @@ app.use('/api/consegna', consegnaRouter);
 app.use('/api/participants', participantsRouter);
 app.use('/api/storico', storicoRouter);
 
+// Error logging middleware
+app.use((err, req, res, next) => {
+  console.error(`[ERROR] ${new Date().toISOString()} - ${err.message}`);
+  console.error(err.stack);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`Network: http://192.168.178.21:${PORT}`);
+  const os = require('os');
+  const interfaces = os.networkInterfaces();
+
+  console.log('\n=== GASS Server Started ===');
+  console.log(`Time: ${new Date().toISOString()}`);
+  console.log(`Port: ${PORT}`);
+  console.log(`Database: ${dbPath}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log('\nAccess URLs:');
+  console.log(`  Local:   http://localhost:${PORT}`);
+
+  // Dynamically detect and display network addresses
+  Object.keys(interfaces).forEach(ifname => {
+    interfaces[ifname].forEach(iface => {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        console.log(`  Network: http://${iface.address}:${PORT}`);
+      }
+    });
+  });
+
+  console.log('\nPress Ctrl+C to stop\n');
 });
