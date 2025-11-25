@@ -12,9 +12,10 @@
 - **Database**: `server/config/database.js`
 - **Routes**: `server/routes/`
   - `pages.js` - HTML routing with mobile/desktop detection
-  - `auth.js` - Authentication endpoints
+  - `auth.js` - Authentication endpoints (login, logout, password change)
   - `consegna.js` - Delivery API (GET/:date, POST, DELETE/:id)
-  - `participants.js` - Participant API (CRUD)
+  - `participants.js` - Participant API (CRUD, saldo management)
+  - `users.js` - User management API (admin-only, edit profile/password/admin status)
   - `storico.js` - History API
   - `logs.js` - Activity log API (admin-only)
 - **Services**: `server/services/calculations.js` - Business logic
@@ -160,3 +161,26 @@ if diff < 0 && has_credit: auto-apply to usa_credito
 
 ### Currency Display
 `formatNumber()` hides `.00` on whole numbers, shows 2 decimals otherwise
+
+---
+
+## Activity Logging
+
+### Event Types (activity_logs table)
+- `movimento_changed` - Manual field changes (conto_produttore, importo_saldato only)
+- `saldo_updated` - Direct saldo modifications by admin
+- `user_created`, `user_edited`, `user_deleted` - User management events
+- `password_changed` - Password resets
+
+### Virtual Events (computed from other tables)
+- `movimento_created` - From movimenti with `created_at` (audit tracked)
+- `movimento_historical` - From movimenti without `created_at` (pre-audit data)
+- `movimento_updated` - From movimenti with different `updated_at` (no duplicate if `movimento_changed` exists)
+- `consegna_closed`, `consegna_reopened` - From consegne timestamps
+
+### Change Tracking
+Only **manual fields** are tracked for movimento changes:
+- `conto_produttore` - Producer invoice amount
+- `importo_saldato` - Amount paid
+
+Auto-calculated fields (credito_lasciato, debito_lasciato, usa_credito, debito_saldato) are NOT logged as changes since they derive from manual inputs.
