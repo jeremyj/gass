@@ -36,12 +36,11 @@ function createConsegnaSection(consegna, index, storico) {
   const section = document.createElement('div');
   section.className = 'section storico-section';
 
-  const header = createConsegnaHeader(consegna, index);
+  const header = createConsegnaHeader(consegna);
   section.appendChild(header);
 
   const content = document.createElement('div');
   content.className = 'storico-content';
-  content.id = `storico-content-${index}`;
 
   const cassaSummary = createCassaSummary(consegna);
   content.appendChild(cassaSummary);
@@ -55,10 +54,9 @@ function createConsegnaSection(consegna, index, storico) {
   return section;
 }
 
-function createConsegnaHeader(consegna, index) {
+function createConsegnaHeader(consegna) {
   const header = document.createElement('div');
   header.className = 'storico-header';
-  header.onclick = () => toggleSection(index);
 
   const statusClass = consegna.chiusa ? 'status-closed' : 'status-open';
   const statusText = consegna.chiusa ? 'Chiusa' : 'Aperta';
@@ -66,7 +64,6 @@ function createConsegnaHeader(consegna, index) {
 
   header.innerHTML = `
     <div class="storico-header-left">
-      <span class="storico-toggle" id="toggle-${index}">▼</span>
       <span class="storico-date">${formatDateItalian(consegna.data)}</span>
       <span class="storico-status ${statusClass}">${statusIcon} ${statusText}</span>
     </div>
@@ -78,18 +75,6 @@ function createConsegnaHeader(consegna, index) {
   `;
 
   return header;
-}
-
-function toggleSection(index) {
-  const content = document.getElementById(`storico-content-${index}`);
-  const toggle = document.getElementById(`toggle-${index}`);
-  if (content.style.display === 'none') {
-    content.style.display = 'block';
-    toggle.textContent = '▼';
-  } else {
-    content.style.display = 'none';
-    toggle.textContent = '▶';
-  }
 }
 
 function createCassaSummary(consegna) {
