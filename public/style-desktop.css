@@ -775,76 +775,174 @@ td input {
 
 /* Storico Styles */
 .storico-section {
-    background: #ecf0f1 !important;
-    margin-bottom: 20px;
+    background: #fff !important;
+    margin-bottom: 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
 }
 
 .storico-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+    color: white;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+}
+
+.storico-header:hover {
+    background: linear-gradient(135deg, #3d566e 0%, #354b5e 100%);
+}
+
+.storico-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.storico-header-right {
+    font-size: 0.85em;
+    opacity: 0.8;
+}
+
+.storico-toggle {
+    font-size: 0.8em;
+    width: 20px;
+    display: inline-block;
 }
 
 .storico-date {
-    margin: 0;
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.storico-status {
+    font-size: 0.8em;
+    padding: 3px 8px;
+    border-radius: 12px;
+    margin-left: 8px;
+}
+
+.storico-status.status-closed {
+    background: rgba(231, 76, 60, 0.2);
+    color: #ffcccc;
+}
+
+.storico-status.status-open {
+    background: rgba(46, 204, 113, 0.2);
+    color: #ccffdd;
+}
+
+.storico-content {
+    padding: 16px;
+}
+
+/* Cassa Summary Bar */
+.storico-cassa-summary {
+    display: flex;
+    gap: 24px;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    border-left: 4px solid #3498db;
+}
+
+.cassa-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.cassa-label {
+    font-size: 0.75em;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.cassa-value {
+    font-size: 1.1em;
+    font-weight: 600;
     color: #2c3e50;
-    display: inline;
 }
 
-.storico-info-table thead tr {
-    background: #34495e;
-    color: white;
+.cassa-value.cassa-positive {
+    color: #27ae60;
 }
 
-.storico-info-table thead th {
-    text-align: center;
-    vertical-align: middle;
+.cassa-value.cassa-negative {
+    color: #c0392b;
 }
 
-.storico-info-table tbody tr {
-    background: #E3F2FD;
-}
-
-.storico-movimenti-title {
-    margin-top: 20px;
-    margin-bottom: 10px;
-    color: #2c3e50;
-}
-
+/* Movimenti Table */
 .storico-movimenti-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 10px;
+    font-size: 0.9em;
 }
 
 .storico-movimenti-table thead {
-    background: #34495e;
-    color: white;
-}
-
-.storico-movimenti-table th,
-.storico-movimenti-table td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
+    background: #ecf0f1;
 }
 
 .storico-movimenti-table th {
+    padding: 10px 8px;
     text-align: center;
-    vertical-align: middle;
+    font-weight: 600;
+    color: #2c3e50;
+    border-bottom: 2px solid #bdc3c7;
+    font-size: 0.85em;
 }
 
-.storico-movimenti-table tbody tr:nth-child(even) {
-    background: #E3F2FD;
+.storico-movimenti-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #ecf0f1;
 }
 
-.storico-movimenti-table tbody tr:nth-child(odd) {
-    background: #FFFFFF;
+.storico-movimenti-table .col-nome {
+    text-align: left;
+    font-weight: 500;
+    min-width: 120px;
+}
+
+.storico-movimenti-table .col-num {
+    text-align: right;
+    font-family: 'Consolas', 'Monaco', monospace;
+    white-space: nowrap;
+    min-width: 70px;
+}
+
+.storico-movimenti-table .col-note {
+    text-align: left;
+    color: #7f8c8d;
+    font-size: 0.9em;
+    max-width: 200px;
+}
+
+.storico-movimenti-table .col-credito {
+    color: #27ae60;
+}
+
+.storico-movimenti-table .col-debito {
+    color: #c0392b;
 }
 
 .storico-movimenti-table tbody tr:hover {
     background: #f8f9fa;
+}
+
+.storico-movimenti-table .totals-row {
+    background: #ecf0f1;
+    border-top: 2px solid #bdc3c7;
+}
+
+.storico-movimenti-table .totals-row td {
+    border-bottom: none;
 }
 
 /* Desktop Nav Menu Auth Controls */

@@ -36,96 +36,135 @@ function createConsegnaSection(consegna, index, storico) {
   const section = document.createElement('div');
   section.className = 'section storico-section';
 
-  const header = createConsegnaHeader(consegna);
-  const infoTable = createInfoTable(consegna);
-
+  const header = createConsegnaHeader(consegna, index);
   section.appendChild(header);
-  section.appendChild(infoTable);
+
+  const content = document.createElement('div');
+  content.className = 'storico-content';
+  content.id = `storico-content-${index}`;
+
+  const cassaSummary = createCassaSummary(consegna);
+  content.appendChild(cassaSummary);
 
   if (consegna.movimenti && consegna.movimenti.length > 0) {
-    const movimentiTitle = createMovimentiTitle();
     const movimentiTable = createMovimentiTable(consegna.movimenti);
-    section.appendChild(movimentiTitle);
-    section.appendChild(movimentiTable);
+    content.appendChild(movimentiTable);
   }
 
+  section.appendChild(content);
   return section;
 }
 
-function createConsegnaHeader(consegna) {
+function createConsegnaHeader(consegna, index) {
   const header = document.createElement('div');
   header.className = 'storico-header';
+  header.onclick = () => toggleSection(index);
+
+  const statusClass = consegna.chiusa ? 'status-closed' : 'status-open';
+  const statusText = consegna.chiusa ? 'Chiusa' : 'Aperta';
+  const statusIcon = consegna.chiusa ? '🔒' : '🔓';
 
   header.innerHTML = `
-    <div>
-      <h3 class="storico-date">Data: ${formatDateItalian(consegna.data)}</h3>
+    <div class="storico-header-left">
+      <span class="storico-toggle" id="toggle-${index}">▼</span>
+      <span class="storico-date">${formatDateItalian(consegna.data)}</span>
+      <span class="storico-status ${statusClass}">${statusIcon} ${statusText}</span>
+    </div>
+    <div class="storico-header-right">
+      <span class="storico-summary-mini">
+        ${consegna.movimenti?.length || 0} movimenti
+      </span>
     </div>
   `;
 
   return header;
 }
 
-function createInfoTable(consegna) {
-  const table = document.createElement('table');
-  table.className = 'storico-info-table';
-  table.innerHTML = `
-    <thead>
-      <tr>
-        <th>Trovato in Cassa</th>
-        <th>Pagato Produttore</th>
-        <th>Lasciato in Cassa</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>€${formatNumber(consegna.trovato_in_cassa)}</td>
-        <td>€${formatNumber(consegna.pagato_produttore)}</td>
-        <td>€${formatNumber(consegna.lasciato_in_cassa)}</td>
-      </tr>
-    </tbody>
-  `;
-  return table;
+function toggleSection(index) {
+  const content = document.getElementById(`storico-content-${index}`);
+  const toggle = document.getElementById(`toggle-${index}`);
+  if (content.style.display === 'none') {
+    content.style.display = 'block';
+    toggle.textContent = '▼';
+  } else {
+    content.style.display = 'none';
+    toggle.textContent = '▶';
+  }
 }
 
-function createMovimentiTitle() {
-  const title = document.createElement('h4');
-  title.className = 'storico-movimenti-title';
-  title.textContent = 'Movimenti Partecipanti';
-  return title;
+function createCassaSummary(consegna) {
+  const summary = document.createElement('div');
+  summary.className = 'storico-cassa-summary';
+  summary.innerHTML = `
+    <div class="cassa-item">
+      <span class="cassa-label">Trovato</span>
+      <span class="cassa-value">€${formatNumber(consegna.trovato_in_cassa)}</span>
+    </div>
+    <div class="cassa-item">
+      <span class="cassa-label">Pagato Produttore</span>
+      <span class="cassa-value cassa-negative">€${formatNumber(consegna.pagato_produttore)}</span>
+    </div>
+    <div class="cassa-item">
+      <span class="cassa-label">Lasciato</span>
+      <span class="cassa-value ${consegna.lasciato_in_cassa >= 0 ? 'cassa-positive' : 'cassa-negative'}">€${formatNumber(consegna.lasciato_in_cassa)}</span>
+    </div>
+  `;
+  return summary;
 }
 
 function createMovimentiTable(movimenti) {
-  const rows = movimenti.map((m, idx) => {
-    return `
-      <tr>
-        <td><strong>${m.nome}</strong></td>
-        <td>${m.conto_produttore ? '€' + formatNumber(m.conto_produttore) : ''}</td>
-        <td>${m.importo_saldato ? '€' + formatNumber(m.importo_saldato) : ''}</td>
-        <td>${m.credito_lasciato ? '€' + formatNumber(m.credito_lasciato) : ''}</td>
-        <td>${m.debito_lasciato ? '€' + formatNumber(m.debito_lasciato) : ''}</td>
-        <td>${m.usa_credito ? '€' + formatNumber(m.usa_credito) : ''}</td>
-        <td>${m.debito_saldato ? '€' + formatNumber(m.debito_saldato) : ''}</td>
-        <td>${m.note || ''}</td>
-      </tr>
-    `;
-  }).join('');
+  // Calculate totals
+  const totals = movimenti.reduce((acc, m) => ({
+    conto: acc.conto + (m.conto_produttore || 0),
+    saldato: acc.saldato + (m.importo_saldato || 0),
+    credito: acc.credito + (m.credito_lasciato || 0),
+    debito: acc.debito + (m.debito_lasciato || 0),
+    usaCredito: acc.usaCredito + (m.usa_credito || 0),
+    saldaDebito: acc.saldaDebito + (m.debito_saldato || 0)
+  }), { conto: 0, saldato: 0, credito: 0, debito: 0, usaCredito: 0, saldaDebito: 0 });
+
+  const rows = movimenti.map(m => `
+    <tr>
+      <td class="col-nome">${m.nome}</td>
+      <td class="col-num">${m.conto_produttore ? '€' + formatNumber(m.conto_produttore) : '-'}</td>
+      <td class="col-num">${m.importo_saldato ? '€' + formatNumber(m.importo_saldato) : '-'}</td>
+      <td class="col-num col-credito">${m.credito_lasciato ? '€' + formatNumber(m.credito_lasciato) : '-'}</td>
+      <td class="col-num col-debito">${m.debito_lasciato ? '€' + formatNumber(m.debito_lasciato) : '-'}</td>
+      <td class="col-num col-credito">${m.usa_credito ? '€' + formatNumber(m.usa_credito) : '-'}</td>
+      <td class="col-num col-debito">${m.debito_saldato ? '€' + formatNumber(m.debito_saldato) : '-'}</td>
+      <td class="col-note">${m.note || ''}</td>
+    </tr>
+  `).join('');
+
+  const totalsRow = `
+    <tr class="totals-row">
+      <td class="col-nome"><strong>Totale</strong></td>
+      <td class="col-num"><strong>€${formatNumber(totals.conto)}</strong></td>
+      <td class="col-num"><strong>€${formatNumber(totals.saldato)}</strong></td>
+      <td class="col-num col-credito"><strong>${totals.credito ? '€' + formatNumber(totals.credito) : '-'}</strong></td>
+      <td class="col-num col-debito"><strong>${totals.debito ? '€' + formatNumber(totals.debito) : '-'}</strong></td>
+      <td class="col-num col-credito"><strong>${totals.usaCredito ? '€' + formatNumber(totals.usaCredito) : '-'}</strong></td>
+      <td class="col-num col-debito"><strong>${totals.saldaDebito ? '€' + formatNumber(totals.saldaDebito) : '-'}</strong></td>
+      <td class="col-note"></td>
+    </tr>
+  `;
 
   const table = document.createElement('table');
   table.className = 'storico-movimenti-table';
   table.innerHTML = `
     <thead>
       <tr>
-        <th>Nome</th>
-        <th>Conto Produttore</th>
-        <th>Importo Saldato</th>
-        <th>Lascia Credito</th>
-        <th>Lascia Debito</th>
-        <th>Usa Credito</th>
-        <th>Salda Debito</th>
-        <th>Note</th>
+        <th class="col-nome">Partecipante</th>
+        <th class="col-num">Conto</th>
+        <th class="col-num">Saldato</th>
+        <th class="col-num">+Credito</th>
+        <th class="col-num">+Debito</th>
+        <th class="col-num">-Credito</th>
+        <th class="col-num">-Debito</th>
+        <th class="col-note">Note</th>
       </tr>
     </thead>
-    <tbody>${rows}</tbody>
+    <tbody>${rows}${totalsRow}</tbody>
   `;
   return table;
 }
