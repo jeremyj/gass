@@ -11,6 +11,10 @@ let originalParticipantValues = {};
 let noteGiornataModified = false;
 let originalNoteGiornata = '';
 
+// Consegna status tracking
+let currentConsegnaId = null;
+let isConsegnaClosed = false;
+
 // ===== ACCORDION FUNCTIONS =====
 
 function toggleAccordion(section) {
@@ -117,10 +121,6 @@ async function checkDateData() {
   if (!dateValue) return;
 
   try {
-    // Remember currently selected participant (if any)
-    const select = document.getElementById('participant-select');
-    const currentParticipant = select ? select.value : '';
-
     // Reload participants with saldi for the selected date
     await loadData(dateValue);
 
@@ -134,26 +134,18 @@ async function checkDateData() {
       loadNewConsegna(result);
     }
 
-    // If a participant was selected, reload their data for the new date
-    if (currentParticipant) {
-      // Clear the current participant display
-      const container = document.getElementById('selected-participants');
-      container.innerHTML = '';
+    // Close any open participant card when date changes
+    const container = document.getElementById('selected-participants');
+    if (container) container.innerHTML = '';
 
-      // Re-render the same participant with new date's data
-      renderParticipant(currentParticipant);
+    const select = document.getElementById('participant-select');
+    if (select) select.value = '';
 
-      // Update the select to show the participant as selected
-      if (select) {
-        select.value = currentParticipant;
-      }
+    const infoBadge = document.getElementById('participant-info-badge');
+    if (infoBadge) infoBadge.style.display = 'block';
 
-      // Hide the info badge since a participant is selected
-      const infoBadge = document.getElementById('participant-info-badge');
-      if (infoBadge) {
-        infoBadge.style.display = 'none';
-      }
-    }
+    // Clear saved original values
+    originalParticipantValues = {};
   } catch (error) {
     console.error('Error checking date data:', error);
   }
@@ -182,6 +174,9 @@ function loadExistingConsegna(result) {
   updateMovimentiCounter();
   renderMovimentiGiorno();
   updateNoteButtonVisibility();
+
+  // Update consegna status (closed/open)
+  updateConsegnaStatusUI(result.consegna);
 }
 
 function loadNewConsegna(result) {
@@ -207,6 +202,9 @@ function loadNewConsegna(result) {
   updateMovimentiCounter();
   renderMovimentiGiorno();
   updateNoteButtonVisibility();
+
+  // No consegna exists yet - hide status section
+  updateConsegnaStatusUI(null);
 }
 
 // ===== NOTE MANAGEMENT =====
@@ -221,11 +219,125 @@ function updateNoteButtonVisibility() {
   const saveNoteBtn = document.getElementById('save-note-btn');
   if (!saveNoteBtn) return;
 
+  // Don't show save button if consegna is closed (admin must reopen first)
+  if (isConsegnaClosed) {
+    saveNoteBtn.style.display = 'none';
+    return;
+  }
+
   if (noteGiornataModified) {
     saveNoteBtn.style.display = 'block';
   } else {
     saveNoteBtn.style.display = 'none';
   }
+}
+
+// ===== CONSEGNA STATUS MANAGEMENT =====
+
+function updateConsegnaStatusUI(consegna) {
+  currentConsegnaId = consegna?.id || null;
+  isConsegnaClosed = consegna?.chiusa === true;
+
+  const statusSection = document.getElementById('consegna-status-section');
+  const closeBtn = document.getElementById('close-consegna-btn');
+  const closedBadge = document.getElementById('closed-badge');
+
+  if (!statusSection) return;
+
+  // Only show section if consegna exists
+  if (currentConsegnaId) {
+    statusSection.style.display = 'block';
+
+    if (isConsegnaClosed) {
+      closedBadge.style.display = 'block';
+      if (isAdmin()) {
+        closeBtn.style.display = 'block';
+        closeBtn.innerHTML = '🔓 Riapri Consegna';
+        closeBtn.style.background = '#28a745';
+      } else {
+        closeBtn.style.display = 'none';
+      }
+      // Disable all inputs when consegna is closed (admin must reopen first to edit)
+      disableConsegnaInputs();
+    } else {
+      closedBadge.style.display = 'none';
+      closeBtn.style.display = 'block';
+      closeBtn.innerHTML = '🔒 Chiudi Consegna';
+      closeBtn.style.background = '#dc3545';
+      enableConsegnaInputs();
+    }
+  } else {
+    statusSection.style.display = 'none';
+  }
+}
+
+async function toggleConsegnaStatus() {
+  if (!currentConsegnaId) return;
+
+  try {
+    if (isConsegnaClosed) {
+      // Reopen (admin only - backend will verify)
+      await API.reopenConsegna(currentConsegnaId);
+      showStatus('Consegna riaperta', 'success');
+    } else {
+      // Close
+      if (!confirm('Sei sicuro di voler chiudere questa consegna? I dati non potranno essere modificati.')) return;
+      await API.closeConsegna(currentConsegnaId);
+      showStatus('Consegna chiusa', 'success');
+    }
+    await checkDateData(); // Reload
+  } catch (error) {
+    showStatus('Errore: ' + error.message, 'error');
+  }
+}
+
+function disableConsegnaInputs() {
+  // Disable note field
+  const noteField = document.getElementById('noteGiornata');
+  if (noteField) noteField.disabled = true;
+
+  // Disable participant select
+  const select = document.getElementById('participant-select');
+  if (select) select.disabled = true;
+
+  // Add closed indicator class to container
+  document.querySelector('.container')?.classList.add('consegna-closed');
+
+  // Hide save note button
+  const saveNoteBtn = document.getElementById('save-note-btn');
+  if (saveNoteBtn) saveNoteBtn.style.display = 'none';
+
+  // Hide movimenti section and ensure cassa is open when consegna is closed
+  const movimentiSection = document.querySelector('.section-movimenti');
+  if (movimentiSection) movimentiSection.style.display = 'none';
+
+  // Ensure cassa accordion is open
+  const cassaContent = document.getElementById('content-cassa');
+  const cassaArrow = document.getElementById('arrow-cassa');
+  if (cassaContent && !cassaContent.classList.contains('show')) {
+    cassaContent.classList.add('show');
+    if (cassaArrow) {
+      cassaArrow.classList.add('expanded');
+      cassaArrow.textContent = '▲';
+    }
+  }
+}
+
+function enableConsegnaInputs() {
+  // Enable note field
+  const noteField = document.getElementById('noteGiornata');
+  if (noteField) noteField.disabled = false;
+
+  // Enable participant select
+  const select = document.getElementById('participant-select');
+  if (select) select.disabled = false;
+
+  // Remove closed indicator class
+  document.querySelector('.container')?.classList.remove('consegna-closed');
+
+  // Restore movimenti section visibility
+  const movimentiSection = document.querySelector('.section-movimenti');
+  if (movimentiSection) movimentiSection.style.display = '';
 }
 
 async function saveNoteOnly() {
@@ -788,11 +900,7 @@ function handleContoProduttoreInput(nome, saldo) {
 // ===== MOVEMENTS COUNTER =====
 
 function updateMovimentiCounter() {
-  const count = existingConsegnaMovimenti ? existingConsegnaMovimenti.length : 0;
-  const movimentiTitle = document.getElementById('movimenti-title');
-  if (movimentiTitle) {
-    movimentiTitle.textContent = `📦 MOVIMENTI (${count} salvat${count === 1 ? 'o' : 'i'})`;
-  }
+  // Counter removed - title is now just "MOVIMENTI"
 }
 
 // ===== UNSAVED CHANGES DETECTION =====
@@ -1053,9 +1161,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     onDateSelected: checkDateData
   });
 
-  // With empty database, always use today instead of potentially stale localStorage date
-  const savedDate = localStorage.getItem('gass_selected_date');
-
   try {
     const response = await fetch('/api/storico');
     const result = await response.json();
@@ -1064,20 +1169,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Populate consegneDates for calendar indicators
       const dates = result.consegne.map(c => c.data);
       setConsegneDates(dates);
-
-      // Use saved date if available, otherwise use last consegna
-      const dateToLoad = savedDate || result.consegne[0].data;
-      setDateDisplay(dateToLoad);
-    } else {
-      // Empty database: ignore saved date, always use today
-      const today = new Date().toISOString().split('T')[0];
-      setDateDisplay(today);
     }
   } catch (error) {
-    console.error('Error loading last date:', error);
-    const today = new Date().toISOString().split('T')[0];
-    setDateDisplay(today);
+    console.error('Error loading storico dates:', error);
   }
+
+  // Use restoreDateFromStorage which handles reload vs tab navigation
+  const dateToLoad = restoreDateFromStorage();
+  setDateDisplay(dateToLoad);
 
   loadData();
 });

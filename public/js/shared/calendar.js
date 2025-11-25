@@ -164,8 +164,8 @@ function selectPickerDate(dateStr) {
     }
   }
 
-  // Persist selected date in localStorage
-  localStorage.setItem('gass_selected_date', dateStr);
+  // Persist selected date in sessionStorage (for tab navigation)
+  sessionStorage.setItem('gass_selected_date', dateStr);
 
   renderDatePicker();
 
@@ -311,8 +311,8 @@ function setDateDisplay(dateStr) {
   currentCalendarYear = parseInt(year);
   currentCalendarMonth = parseInt(month) - 1;
 
-  // Persist selected date in localStorage
-  localStorage.setItem('gass_selected_date', dateStr);
+  // Persist selected date in sessionStorage (for tab navigation)
+  sessionStorage.setItem('gass_selected_date', dateStr);
 
   // Call page-specific callback
   if (onDateSelected) {
@@ -343,10 +343,23 @@ function getSelectedDate() {
 }
 
 function restoreDateFromStorage() {
-  const savedDate = localStorage.getItem('gass_selected_date');
+  // Check if this is a page reload vs tab navigation
+  const navEntry = performance.getEntriesByType('navigation')[0];
+  const isReload = navEntry && navEntry.type === 'reload';
+
+  // On reload, always use today's date
+  if (isReload) {
+    const today = new Date().toISOString().split('T')[0];
+    sessionStorage.setItem('gass_selected_date', today);
+    return today;
+  }
+
+  // On tab navigation, restore from sessionStorage
+  const savedDate = sessionStorage.getItem('gass_selected_date');
   if (savedDate) {
     return savedDate;
   }
+
   return new Date().toISOString().split('T')[0];
 }
 

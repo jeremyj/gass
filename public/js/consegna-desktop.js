@@ -6,6 +6,10 @@ let saldiBefore = {};
 let noteGiornataModified = false;
 let originalNoteGiornata = '';
 
+// Consegna status tracking
+let currentConsegnaId = null;
+let isConsegnaClosed = false;
+
 // ===== DATE HANDLING =====
 
 function formatDateItalian(dateStr) {
@@ -141,6 +145,9 @@ function setDateDisplay(dateStr) {
   pickerYear = parseInt(year);
   pickerMonth = parseInt(month) - 1;
 
+  // Save to sessionStorage for tab navigation
+  sessionStorage.setItem('gass_selected_date', dateStr);
+
   // Load data for this date
   checkDateData();
 }
@@ -273,10 +280,6 @@ async function checkDateData() {
   const dateValue = document.getElementById('data').value;
   if (!dateValue) return;
 
-  // Save currently selected participant
-  const select = document.getElementById('participant-select');
-  const selectedNome = select ? select.value : '';
-
   try {
     // Reload participants with saldi for the selected date
     await loadData(dateValue);
@@ -291,11 +294,12 @@ async function checkDateData() {
       loadNewConsegna(result);
     }
 
-    // Reselect participant if there was one selected
-    if (selectedNome && select) {
-      select.value = selectedNome;
-      showParticipantForm();
-    }
+    // Close any open participant form when date changes
+    const container = document.getElementById('selected-participants');
+    if (container) container.innerHTML = '';
+
+    const select = document.getElementById('participant-select');
+    if (select) select.value = '';
   } catch (error) {
     console.error('Error checking date data:', error);
   }
@@ -322,6 +326,9 @@ function loadExistingConsegna(result) {
 
   renderMovimentiGiorno();
   updateSaveButtonVisibility();
+
+  // Update consegna status (closed/open)
+  updateConsegnaStatusUI(result.consegna);
 }
 
 function loadNewConsegna(result) {
@@ -348,6 +355,9 @@ function loadNewConsegna(result) {
 
   renderMovimentiGiorno();
   updateSaveButtonVisibility();
+
+  // No consegna exists yet - hide status section
+  updateConsegnaStatusUI(null);
 }
 
 
@@ -1043,6 +1053,12 @@ function updateSaveButtonVisibility() {
   const saveBtnCassa = document.getElementById('save-btn-cassa');
   if (!saveBtnCassa) return;
 
+  // Don't show save button if consegna is closed (admin must reopen first)
+  if (isConsegnaClosed) {
+    saveBtnCassa.style.display = 'none';
+    return;
+  }
+
   // Show cassa save button only when note has been modified
   if (noteGiornataModified) {
     saveBtnCassa.style.display = 'block';
@@ -1050,6 +1066,95 @@ function updateSaveButtonVisibility() {
   } else {
     saveBtnCassa.style.display = 'none';
   }
+}
+
+// ===== CONSEGNA STATUS MANAGEMENT =====
+
+function updateConsegnaStatusUI(consegna) {
+  currentConsegnaId = consegna?.id || null;
+  isConsegnaClosed = consegna?.chiusa === true;
+
+  const statusSection = document.getElementById('consegna-status-section');
+  const closeBtn = document.getElementById('close-consegna-btn');
+  const closedBadge = document.getElementById('closed-badge');
+
+  if (!statusSection) return;
+
+  // Only show section if consegna exists
+  if (currentConsegnaId) {
+    statusSection.style.display = 'block';
+
+    if (isConsegnaClosed) {
+      closedBadge.style.display = 'inline-block';
+      if (isAdmin()) {
+        closeBtn.style.display = 'inline-block';
+        closeBtn.innerHTML = '🔓 Riapri Consegna';
+        closeBtn.className = 'btn-success';
+      } else {
+        closeBtn.style.display = 'none';
+      }
+      // Disable all inputs when consegna is closed (admin must reopen first to edit)
+      disableConsegnaInputs();
+    } else {
+      closedBadge.style.display = 'none';
+      closeBtn.style.display = 'inline-block';
+      closeBtn.innerHTML = '🔒 Chiudi Consegna';
+      closeBtn.className = 'btn-danger';
+      enableConsegnaInputs();
+    }
+  } else {
+    statusSection.style.display = 'none';
+  }
+}
+
+async function toggleConsegnaStatus() {
+  if (!currentConsegnaId) return;
+
+  try {
+    if (isConsegnaClosed) {
+      // Reopen (admin only - backend will verify)
+      await API.reopenConsegna(currentConsegnaId);
+      showStatus('Consegna riaperta', 'success');
+    } else {
+      // Close
+      if (!confirm('Sei sicuro di voler chiudere questa consegna? I dati non potranno essere modificati.')) return;
+      await API.closeConsegna(currentConsegnaId);
+      showStatus('Consegna chiusa', 'success');
+    }
+    await checkDateData(); // Reload
+  } catch (error) {
+    showStatus('Errore: ' + error.message, 'error');
+  }
+}
+
+function disableConsegnaInputs() {
+  // Disable note field
+  const noteField = document.getElementById('noteGiornata');
+  if (noteField) noteField.disabled = true;
+
+  // Disable participant select
+  const select = document.getElementById('participant-select');
+  if (select) select.disabled = true;
+
+  // Add closed indicator class to container
+  document.querySelector('.container')?.classList.add('consegna-closed');
+
+  // Hide save button
+  const saveBtnCassa = document.getElementById('save-btn-cassa');
+  if (saveBtnCassa) saveBtnCassa.style.display = 'none';
+}
+
+function enableConsegnaInputs() {
+  // Enable note field
+  const noteField = document.getElementById('noteGiornata');
+  if (noteField) noteField.disabled = false;
+
+  // Enable participant select
+  const select = document.getElementById('participant-select');
+  if (select) select.disabled = false;
+
+  // Remove closed indicator class
+  document.querySelector('.container')?.classList.remove('consegna-closed');
 }
 
 function clearParticipantForm() {
@@ -1060,8 +1165,32 @@ function clearParticipantForm() {
 
 // ===== INITIALIZATION =====
 
+function restoreDateFromStorage() {
+  // Check if this is a page reload vs tab navigation
+  const navEntry = performance.getEntriesByType('navigation')[0];
+  const isReload = navEntry && navEntry.type === 'reload';
+
+  // On reload, always use today's date
+  if (isReload) {
+    const today = new Date().toISOString().split('T')[0];
+    sessionStorage.setItem('gass_selected_date', today);
+    return today;
+  }
+
+  // On tab navigation, restore from sessionStorage
+  const savedDate = sessionStorage.getItem('gass_selected_date');
+  if (savedDate) {
+    return savedDate;
+  }
+
+  return new Date().toISOString().split('T')[0];
+}
+
+function saveDateToStorage(dateStr) {
+  sessionStorage.setItem('gass_selected_date', dateStr);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
-  // Set initial date (last consegna or today)
   try {
     const response = await fetch('/api/storico');
     const result = await response.json();
@@ -1069,16 +1198,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (result.success && result.consegne.length > 0) {
       // Populate consegneDates Set for calendar indicators
       consegneDates = new Set(result.consegne.map(c => c.data));
-      setDateDisplay(result.consegne[0].data);
-    } else {
-      const today = new Date().toISOString().split('T')[0];
-      setDateDisplay(today);
     }
   } catch (error) {
-    console.error('Error loading last date:', error);
-    const today = new Date().toISOString().split('T')[0];
-    setDateDisplay(today);
+    console.error('Error loading storico dates:', error);
   }
+
+  // Use restoreDateFromStorage which handles reload vs tab navigation
+  const dateToLoad = restoreDateFromStorage();
+  setDateDisplay(dateToLoad);
 
   loadData();
 });

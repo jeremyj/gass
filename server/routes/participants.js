@@ -61,13 +61,22 @@ router.get('/', (req, res) => {
   }
 });
 
-// Update participant saldo
+// Update participant saldo (admin only)
 router.put('/:id', (req, res) => {
   const timestamp = new Date().toISOString();
   const { id } = req.params;
   const { saldo } = req.body;
 
   console.log(`[PARTICIPANTS] ${timestamp} - PUT request to update participant ID: ${id}, new saldo: ${saldo}€`);
+
+  // Admin check
+  if (!req.session.isAdmin) {
+    console.log(`[PARTICIPANTS] ${timestamp} - Rejected: User ${req.session.username} is not admin`);
+    return res.status(403).json({
+      success: false,
+      error: 'Solo gli amministratori possono modificare i saldi'
+    });
+  }
 
   try {
     const current = db.prepare('SELECT saldo FROM partecipanti WHERE id = ?').get(id);

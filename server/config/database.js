@@ -275,6 +275,42 @@ try {
   console.error('[AUDIT] Error creating audit indexes:', err.message);
 }
 
+console.log('\n--- Admin role migration (v1.7) ---');
+
+// Add is_admin column to users table
+try {
+  db.exec(`ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0`);
+  console.log('[ADMIN] Added is_admin column to users table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) throw err;
+}
+
+console.log('\n--- Chiudi consegna feature (v1.7) ---');
+
+// Add chiusa column to consegne table
+try {
+  db.exec(`ALTER TABLE consegne ADD COLUMN chiusa INTEGER DEFAULT 0`);
+  console.log('[CHIUDI] Added chiusa column to consegne table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) throw err;
+}
+
+// Add chiusa_by column to consegne table
+try {
+  db.exec(`ALTER TABLE consegne ADD COLUMN chiusa_by INTEGER REFERENCES users(id)`);
+  console.log('[CHIUDI] Added chiusa_by column to consegne table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) throw err;
+}
+
+// Add chiusa_at column to consegne table
+try {
+  db.exec(`ALTER TABLE consegne ADD COLUMN chiusa_at DATETIME`);
+  console.log('[CHIUDI] Added chiusa_at column to consegne table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) throw err;
+}
+
 console.log('\n--- Data initialization ---');
 
 // Initialize with participants list
@@ -302,12 +338,19 @@ const bcrypt = require('bcrypt');
 const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
 if (userCount === 0) {
   const passwordHash = bcrypt.hashSync('admin', 12);
-  const insertUser = db.prepare('INSERT INTO users (username, password_hash, display_name) VALUES (?, ?, ?)');
+  const insertUser = db.prepare('INSERT INTO users (username, password_hash, display_name, is_admin) VALUES (?, ?, ?, 1)');
   insertUser.run('admin', passwordHash, 'Administrator');
   console.log('[INIT] Created default admin user (username: admin, password: admin)');
   console.log('[INIT] ⚠️  IMPORTANT: Change the default password immediately!');
 } else {
   console.log(`[INIT] Found ${userCount} existing user(s)`);
+
+  // Ensure first user is admin (migration for existing databases)
+  const firstUserAdmin = db.prepare('SELECT id, is_admin FROM users ORDER BY id ASC LIMIT 1').get();
+  if (firstUserAdmin && firstUserAdmin.is_admin !== 1) {
+    db.prepare('UPDATE users SET is_admin = 1 WHERE id = ?').run(firstUserAdmin.id);
+    console.log(`[ADMIN] Set first user (id: ${firstUserAdmin.id}) as admin`);
+  }
 }
 
 // Get database statistics

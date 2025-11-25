@@ -86,7 +86,12 @@ router.get('/:date', (req, res) => {
     res.json({
       success: true,
       found: true,
-      consegna: processedConsegna,
+      consegna: {
+        ...processedConsegna,
+        chiusa: consegna.chiusa === 1,
+        chiusa_by: consegna.chiusa_by,
+        chiusa_at: consegna.chiusa_at
+      },
       movimenti,
       saldiBefore,
       lasciatoPrecedente: previousConsegna?.lasciato_in_cassa ?? null
@@ -107,6 +112,16 @@ router.post('/', (req, res) => {
   console.log(`[CONSEGNA] ${timestamp} - Saving ${partecipanti?.length || 0} participant movements`);
 
   try {
+    // Check if consegna is closed (non-admins cannot edit)
+    const existingConsegna = db.prepare('SELECT chiusa FROM consegne WHERE data = ?').get(data);
+    if (existingConsegna && existingConsegna.chiusa === 1 && !req.session.isAdmin) {
+      console.log(`[CONSEGNA] ${timestamp} - Rejected: Consegna ${data} is closed and user is not admin`);
+      return res.status(403).json({
+        success: false,
+        error: 'Consegna chiusa',
+        message: 'Questa consegna è stata chiusa e non può essere modificata'
+      });
+    }
     const transaction = db.transaction(() => {
       let consegna = db.prepare('SELECT * FROM consegne WHERE data = ?').get(data);
 
@@ -277,6 +292,89 @@ router.delete('/:id', (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error(`[CONSEGNA] ${timestamp} - Error deleting consegna ID ${id}:`, error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Close consegna (any authenticated user)
+router.post('/:id/close', (req, res) => {
+  const timestamp = new Date().toISOString();
+  const { id } = req.params;
+
+  console.log(`[CONSEGNA] ${timestamp} - Close request for consegna ID: ${id} by user ${req.session.username}`);
+
+  try {
+    const consegna = db.prepare('SELECT * FROM consegne WHERE id = ?').get(id);
+    if (!consegna) {
+      return res.status(404).json({
+        success: false,
+        error: 'Consegna non trovata'
+      });
+    }
+
+    if (consegna.chiusa === 1) {
+      return res.status(400).json({
+        success: false,
+        error: 'Consegna già chiusa'
+      });
+    }
+
+    db.prepare(`
+      UPDATE consegne
+      SET chiusa = 1, chiusa_by = ?, chiusa_at = ?
+      WHERE id = ?
+    `).run(req.session.userId, timestamp, id);
+
+    console.log(`[CONSEGNA] ${timestamp} - Consegna ${id} closed by user ${req.session.username}`);
+    res.json({ success: true });
+  } catch (error) {
+    console.error(`[CONSEGNA] ${timestamp} - Error closing consegna ${id}:`, error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Reopen consegna (admin only)
+router.post('/:id/reopen', (req, res) => {
+  const timestamp = new Date().toISOString();
+  const { id } = req.params;
+
+  console.log(`[CONSEGNA] ${timestamp} - Reopen request for consegna ID: ${id} by user ${req.session.username}`);
+
+  // Admin check
+  if (!req.session.isAdmin) {
+    console.log(`[CONSEGNA] ${timestamp} - Rejected: User ${req.session.username} is not admin`);
+    return res.status(403).json({
+      success: false,
+      error: 'Solo gli amministratori possono riaprire una consegna'
+    });
+  }
+
+  try {
+    const consegna = db.prepare('SELECT * FROM consegne WHERE id = ?').get(id);
+    if (!consegna) {
+      return res.status(404).json({
+        success: false,
+        error: 'Consegna non trovata'
+      });
+    }
+
+    if (consegna.chiusa !== 1) {
+      return res.status(400).json({
+        success: false,
+        error: 'Consegna non è chiusa'
+      });
+    }
+
+    db.prepare(`
+      UPDATE consegne
+      SET chiusa = 0, chiusa_by = NULL, chiusa_at = NULL
+      WHERE id = ?
+    `).run(id);
+
+    console.log(`[CONSEGNA] ${timestamp} - Consegna ${id} reopened by admin ${req.session.username}`);
+    res.json({ success: true });
+  } catch (error) {
+    console.error(`[CONSEGNA] ${timestamp} - Error reopening consegna ${id}:`, error);
     res.status(500).json({ success: false, error: error.message });
   }
 });

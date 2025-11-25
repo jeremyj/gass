@@ -51,6 +51,16 @@
                 <input type="text" id="noteGiornata" placeholder="Note per questa consegna" oninput="onNoteGiornataChange()">
             </div>
             <button type="submit" class="btn-save" id="save-btn-cassa" style="display: none; margin-top: 20px;">Salva Movimenti</button>
+
+            <!-- Chiudi/Riapri Consegna -->
+            <div id="consegna-status-section" style="display: none; margin-top: 20px;">
+                <span id="closed-badge" class="closed-badge" style="display: none;">
+                    🔒 Consegna chiusa
+                </span>
+                <button type="button" id="close-consegna-btn" class="btn-danger" onclick="toggleConsegnaStatus()">
+                    🔒 Chiudi Consegna
+                </button>
+            </div>
         </div>
 
         <div class="section">

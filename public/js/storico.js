@@ -129,7 +129,7 @@ function createMovimentiSection(movimenti) {
 
   const title = document.createElement('div');
   title.className = 'storico-movimenti-title';
-  title.innerHTML = `👥 MOVIMENTI (${movimenti.length} PARTECIPANT${movimenti.length > 1 ? 'I' : 'E'})`;
+  title.innerHTML = `👥 MOVIMENTI`;
   section.appendChild(title);
 
   movimenti.forEach(m => {
@@ -166,9 +166,11 @@ function createParticipantMovimentoCard(m) {
 
   card.className = cardClass;
 
+  const noteIcon = m.note ? ` <span class="note-icon" style="cursor: pointer;">ℹ️</span>` : '';
+
   card.innerHTML = `
     <div class="storico-participant-header">
-      <div class="storico-participant-name">👤 ${m.nome}${m.note ? ' ℹ️' : ''}</div>
+      <div class="storico-participant-name">👤 ${m.nome}${noteIcon}</div>
     </div>
     <div class="storico-participant-details">
       ${m.conto_produttore ? `Conto: ${formatNumber(m.conto_produttore)} €` : ''}
@@ -177,7 +179,20 @@ function createParticipantMovimentoCard(m) {
       ${m.usa_credito ? ` • Usa credito: ${formatNumber(m.usa_credito)} €` : ''}
       ${!m.conto_produttore && !m.importo_saldato && !m.usa_credito && !m.debito_saldato ? 'Pari' : ''}
     </div>
+    ${m.note ? `<div class="storico-participant-note" style="display: none; padding: 8px; background: #fff3cd; border-radius: 4px; margin-top: 8px; font-size: 13px;">📝 ${m.note}</div>` : ''}
   `;
+
+  // Add click handler for note icon
+  if (m.note) {
+    const noteIconEl = card.querySelector('.note-icon');
+    const noteDiv = card.querySelector('.storico-participant-note');
+    if (noteIconEl && noteDiv) {
+      noteIconEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        noteDiv.style.display = noteDiv.style.display === 'none' ? 'block' : 'none';
+      });
+    }
+  }
 
   return card;
 }

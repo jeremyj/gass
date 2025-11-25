@@ -72,6 +72,14 @@ const API = {
     return this.delete(`/api/consegna/${id}`);
   },
 
+  async closeConsegna(id) {
+    return this.post(`/api/consegna/${id}/close`, {});
+  },
+
+  async reopenConsegna(id) {
+    return this.post(`/api/consegna/${id}/reopen`, {});
+  },
+
   // === Participants API ===
   async getParticipants(date = null) {
     const url = date ? `/api/participants?date=${date}` : '/api/participants';

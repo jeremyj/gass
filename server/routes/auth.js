@@ -55,15 +55,17 @@ router.post('/login', (req, res) => {
     req.session.userId = user.id;
     req.session.username = user.username;
     req.session.displayName = user.display_name;
+    req.session.isAdmin = user.is_admin === 1;
 
-    console.log(`[AUTH] ${timestamp} - Login successful: ${username} (ID: ${user.id})`);
+    console.log(`[AUTH] ${timestamp} - Login successful: ${username} (ID: ${user.id}, Admin: ${user.is_admin === 1})`);
 
     res.json({
       success: true,
       user: {
         id: user.id,
         username: user.username,
-        displayName: user.display_name
+        displayName: user.display_name,
+        isAdmin: user.is_admin === 1
       }
     });
 
@@ -112,13 +114,14 @@ router.get('/session', (req, res) => {
   const timestamp = new Date().toISOString();
 
   if (req.session && req.session.userId) {
-    console.log(`[AUTH] ${timestamp} - Session check: Authenticated - ${req.session.username}`);
+    console.log(`[AUTH] ${timestamp} - Session check: Authenticated - ${req.session.username} (Admin: ${req.session.isAdmin || false})`);
     res.json({
       authenticated: true,
       user: {
         id: req.session.userId,
         username: req.session.username,
-        displayName: req.session.displayName
+        displayName: req.session.displayName,
+        isAdmin: req.session.isAdmin || false
       }
     });
   } else {

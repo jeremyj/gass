@@ -1,6 +1,6 @@
 {
   "name": "gas-pagamenti",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "GAS Payment Management System",
   "main": "server.js",
   "scripts": {

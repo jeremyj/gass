@@ -203,6 +203,11 @@ function createParticipantCard(p) {
 // ===== CARD INTERACTION =====
 
 function toggleParticipantCard(id) {
+  // Only admin can edit saldi - silently ignore for non-admin
+  if (!isAdmin()) {
+    return;
+  }
+
   if (expandedParticipantId === id) {
     // Trying to close - check for unsaved changes
     if (hasUnsavedChanges(id)) {

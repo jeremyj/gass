@@ -31,9 +31,9 @@
         <div class="accordion-item">
             <div class="accordion-header cassa" onclick="toggleAccordion('cassa')">
                 <span>💰 CASSA</span>
-                <span class="accordion-arrow" id="arrow-cassa">▼</span>
+                <span class="accordion-arrow expanded" id="arrow-cassa">▲</span>
             </div>
-            <div class="accordion-content" id="content-cassa">
+            <div class="accordion-content show" id="content-cassa">
                 <!-- Trovato in Cassa -->
                 <div class="input-group">
                     <div class="input-label">
@@ -88,13 +88,23 @@
                 <button id="save-note-btn" class="big-btn big-btn-success" style="display: none; margin-top: 15px;" onclick="saveNoteOnly()">
                     💾 Salva Note
                 </button>
+
+                <!-- Chiudi/Riapri Consegna -->
+                <div id="consegna-status-section" style="display: none; margin-top: 15px;">
+                    <div id="closed-badge" class="info-badge closed-badge" style="display: none;">
+                        🔒 Consegna chiusa
+                    </div>
+                    <button id="close-consegna-btn" class="big-btn" onclick="toggleConsegnaStatus()" style="background: #dc3545;">
+                        🔒 Chiudi Consegna
+                    </button>
+                </div>
             </div>
         </div>
 
         <!-- Sezione MOVIMENTI - Sempre aperta -->
         <div class="section-movimenti">
             <div class="section-header-movimenti">
-                <span id="movimenti-title">📦 MOVIMENTI (0 salvati)</span>
+                <span id="movimenti-title">📦 MOVIMENTI</span>
             </div>
             <div class="section-content-movimenti">
                 <div class="info-badge" id="participant-info-badge">

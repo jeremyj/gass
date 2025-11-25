@@ -6,6 +6,7 @@ let editingId = null;
 let pickerYear = new Date().getFullYear();
 let pickerMonth = new Date().getMonth();
 let isPickerOpen = false;
+let consegneDates = new Set();
 
 // ===== DATE PICKER =====
 
@@ -56,14 +57,26 @@ function renderDatePicker() {
     const dateStr = `${pickerYear}-${String(pickerMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const isToday = today.getDate() === day && today.getMonth() === pickerMonth && today.getFullYear() === pickerYear;
     const isSelected = dateStr === selectedDateStr;
+    const hasConsegna = consegneDates.has(dateStr);
 
     let classes = 'date-picker-day';
     if (isToday) classes += ' today';
     if (isSelected) classes += ' selected';
+    if (hasConsegna) classes += ' has-consegna';
 
     html += `<div class="${classes}" onclick="selectPickerDate('${dateStr}')">${day}</div>`;
   }
   html += '</div>';
+
+  // Legend (only show if we have consegne dates)
+  if (consegneDates.size > 0) {
+    html += '<div class="date-picker-legend">';
+    html += '<div class="date-picker-legend-item">';
+    html += '<div class="date-picker-legend-color" style="background: #2ecc71;"></div>';
+    html += '<span>Con consegna</span>';
+    html += '</div>';
+    html += '</div>';
+  }
 
   container.innerHTML = html;
 }
@@ -117,6 +130,30 @@ function setDateDisplay(dateStr) {
   // Set picker to the same month/year
   pickerYear = parseInt(year);
   pickerMonth = parseInt(month) - 1;
+
+  // Save to sessionStorage for tab navigation
+  sessionStorage.setItem('gass_selected_date', dateStr);
+}
+
+function restoreDateFromStorage() {
+  // Check if this is a page reload vs tab navigation
+  const navEntry = performance.getEntriesByType('navigation')[0];
+  const isReload = navEntry && navEntry.type === 'reload';
+
+  // On reload, always use today's date
+  if (isReload) {
+    const today = new Date().toISOString().split('T')[0];
+    sessionStorage.setItem('gass_selected_date', today);
+    return today;
+  }
+
+  // On tab navigation, restore from sessionStorage
+  const savedDate = sessionStorage.getItem('gass_selected_date');
+  if (savedDate) {
+    return savedDate;
+  }
+
+  return new Date().toISOString().split('T')[0];
 }
 
 // ===== UI HELPERS =====
@@ -160,14 +197,29 @@ async function loadParticipants() {
   }
 }
 
+async function loadConsegneDates() {
+  try {
+    const response = await fetch('/api/storico');
+    const result = await response.json();
+
+    if (result.success) {
+      consegneDates = new Set(result.consegne.map(c => c.data));
+    }
+  } catch (error) {
+    console.error('Error loading consegne dates:', error);
+  }
+}
+
 // ===== RENDERING =====
 
 function renderParticipants() {
   const tbody = document.getElementById('participants-body');
   tbody.innerHTML = '';
 
+  const colspan = isAdmin() ? 4 : 3;
+
   if (participants.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Nessun partecipante</td></tr>';
+    tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align: center;">Nessun partecipante</td></tr>`;
     return;
   }
 
@@ -182,6 +234,15 @@ function createParticipantRow(p) {
   const saldoClass = p.saldo < 0 ? 'saldo-debito' : p.saldo > 0 ? 'saldo-credito' : '';
   const saldoText = formatNumber(p.saldo);
 
+  // Only show actions column for admin users
+  const actionsColumn = isAdmin()
+    ? `<td>
+         <button onclick="editSaldo(${p.id})" id="edit-btn-${p.id}">Modifica</button>
+         <button onclick="saveSaldo(${p.id})" id="save-btn-${p.id}" style="display: none;" class="btn-save">Salva</button>
+         <button onclick="cancelEdit(${p.id})" id="cancel-btn-${p.id}" style="display: none;">Annulla</button>
+       </td>`
+    : '';
+
   row.innerHTML = `
     <td><strong>${p.nome}</strong></td>
     <td class="${saldoClass}">
@@ -193,11 +254,7 @@ function createParticipantRow(p) {
              onkeydown="if(event.key==='Enter'){event.preventDefault();saveSaldo(${p.id})}">
     </td>
     <td>${formatDateItalian(p.ultima_modifica)}</td>
-    <td>
-      <button onclick="editSaldo(${p.id})" id="edit-btn-${p.id}">Modifica</button>
-      <button onclick="saveSaldo(${p.id})" id="save-btn-${p.id}" style="display: none;" class="btn-save">Salva</button>
-      <button onclick="cancelEdit(${p.id})" id="cancel-btn-${p.id}" style="display: none;">Annulla</button>
-    </td>
+    ${actionsColumn}
   `;
 
   return row;
@@ -338,11 +395,12 @@ async function syncParticipants() {
 // ===== INITIALIZATION =====
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Set today's date
-  const today = new Date().toISOString().split('T')[0];
-  setDateDisplay(today);
+  // Restore date (today on reload, preserved on tab navigation)
+  const dateToLoad = restoreDateFromStorage();
+  setDateDisplay(dateToLoad);
 
   loadParticipants();
+  loadConsegneDates();
 });
 
 // ===== CLICK OUTSIDE HANDLER =====

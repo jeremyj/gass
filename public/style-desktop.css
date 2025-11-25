@@ -880,3 +880,55 @@ td input {
     font-size: 12px;
     margin-top: 40px;
 }
+
+/* Closed Consegna State */
+.consegna-closed input:not([readonly]),
+.consegna-closed select,
+.consegna-closed textarea {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.consegna-closed .btn-save {
+    display: none !important;
+}
+
+.closed-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    border-radius: 4px;
+    margin-right: 15px;
+    font-weight: 500;
+}
+
+/* Button colors for close/reopen */
+.btn-danger {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
+.btn-success {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-success:hover {
+    background: #218838;
+}

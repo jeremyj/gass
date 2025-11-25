@@ -20,6 +20,22 @@ function requireAuth(req, res, next) {
 }
 
 /**
+ * Middleware to require admin privileges
+ * Must be used AFTER requireAuth
+ * Responds with 403 if user is not admin
+ */
+function requireAdmin(req, res, next) {
+  if (req.session && req.session.isAdmin) {
+    return next();
+  }
+
+  res.status(403).json({
+    error: 'Admin privileges required',
+    message: 'Solo gli amministratori possono accedere a questa risorsa'
+  });
+}
+
+/**
  * Middleware to attach user info to request object
  * Does not block unauthenticated requests, just adds user data if available
  */
@@ -28,7 +44,8 @@ function attachUser(req, res, next) {
     req.user = {
       id: req.session.userId,
       username: req.session.username,
-      displayName: req.session.displayName
+      displayName: req.session.displayName,
+      isAdmin: req.session.isAdmin || false
     };
   }
   next();
@@ -65,6 +82,7 @@ function getAuditFields(req, operation = 'create') {
 
 module.exports = {
   requireAuth,
+  requireAdmin,
   attachUser,
   getAuditFields
 };
