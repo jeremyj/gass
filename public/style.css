@@ -1529,19 +1529,6 @@ body {
         display: inline;
     }
 
-    .discrepanza-warning {
-        font-weight: bold;
-        margin-left: 15px;
-    }
-
-    .discrepanza-positive {
-        color: #2e7d32;
-    }
-
-    .discrepanza-negative {
-        color: #d32f2f;
-    }
-
     .storico-info-table thead tr {
         background: #34495e;
         color: white;

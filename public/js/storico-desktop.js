@@ -36,7 +36,7 @@ function createConsegnaSection(consegna, index, storico) {
   const section = document.createElement('div');
   section.className = 'section storico-section';
 
-  const header = createConsegnaHeader(consegna, index, storico);
+  const header = createConsegnaHeader(consegna);
   const infoTable = createInfoTable(consegna);
 
   section.appendChild(header);
@@ -52,25 +52,17 @@ function createConsegnaSection(consegna, index, storico) {
   return section;
 }
 
-function createConsegnaHeader(consegna, index, storico) {
+function createConsegnaHeader(consegna) {
   const header = document.createElement('div');
   header.className = 'storico-header';
-
-  const discrepanzaWarning = calculateDiscrepanzaWarning(consegna, index, storico);
 
   header.innerHTML = `
     <div>
       <h3 class="storico-date">Data: ${formatDateItalian(consegna.data)}</h3>
-      ${discrepanzaWarning}
     </div>
   `;
 
   return header;
-}
-
-function calculateDiscrepanzaWarning(consegna, index, storico) {
-  // Discrepanza system removed - cassa fields are now readonly calculated values
-  return '';
 }
 
 function createInfoTable(consegna) {

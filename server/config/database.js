@@ -42,7 +42,6 @@ db.exec(`
     trovato_in_cassa REAL DEFAULT 0,
     pagato_produttore REAL DEFAULT 0,
     lasciato_in_cassa REAL DEFAULT 0,
-    discrepanza_cassa BOOLEAN DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -81,25 +80,6 @@ try {
   }
 }
 
-// Add discrepanza_trovata column if it doesn't exist
-try {
-  db.exec(`ALTER TABLE consegne ADD COLUMN discrepanza_trovata BOOLEAN DEFAULT 0`);
-  console.log('[MIGRATION] Added discrepanza_trovata column to consegne table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) {
-    throw err;
-  }
-}
-
-// Add discrepanza_pagato column if it doesn't exist
-try {
-  db.exec(`ALTER TABLE consegne ADD COLUMN discrepanza_pagato BOOLEAN DEFAULT 0`);
-  console.log('[MIGRATION] Added discrepanza_pagato column to consegne table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) {
-    throw err;
-  }
-}
 
 // Add conto_produttore column to movimenti if it doesn't exist
 try {
@@ -111,30 +91,10 @@ try {
   }
 }
 
-// Add user_id column to consegne if it doesn't exist
-try {
-  db.exec(`ALTER TABLE consegne ADD COLUMN user_id INTEGER REFERENCES users(id)`);
-  console.log('[MIGRATION] Added user_id column to consegne table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) {
-    throw err;
-  }
-}
-
 // Add updated_by column to consegne if it doesn't exist
 try {
   db.exec(`ALTER TABLE consegne ADD COLUMN updated_by INTEGER REFERENCES users(id)`);
   console.log('[MIGRATION] Added updated_by column to consegne table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) {
-    throw err;
-  }
-}
-
-// Add user_id column to movimenti if it doesn't exist
-try {
-  db.exec(`ALTER TABLE movimenti ADD COLUMN user_id INTEGER REFERENCES users(id)`);
-  console.log('[MIGRATION] Added user_id column to movimenti table');
 } catch (err) {
   if (!err.message.includes('duplicate column')) {
     throw err;
@@ -204,7 +164,7 @@ try {
   if (!err.message.includes('duplicate column')) throw err;
 }
 
-// Consegne table audit columns (rename user_id to created_by conceptually, add created_at and updated_at)
+// Consegne table audit columns
 try {
   db.exec(`ALTER TABLE consegne ADD COLUMN created_by INTEGER REFERENCES users(id)`);
   console.log('[AUDIT] Added created_by column to consegne table');
@@ -219,18 +179,7 @@ try {
   if (!err.message.includes('duplicate column')) throw err;
 }
 
-// Copy user_id to created_by for existing consegne records (one-time migration)
-try {
-  const existingRecords = db.prepare('SELECT COUNT(*) as count FROM consegne WHERE created_by IS NULL AND user_id IS NOT NULL').get().count;
-  if (existingRecords > 0) {
-    db.exec(`UPDATE consegne SET created_by = user_id WHERE created_by IS NULL AND user_id IS NOT NULL`);
-    console.log(`[AUDIT] Migrated ${existingRecords} consegne records: copied user_id to created_by`);
-  }
-} catch (err) {
-  console.error('[AUDIT] Error migrating consegne user_id to created_by:', err.message);
-}
-
-// Movimenti table audit columns (rename user_id to created_by conceptually, add created_at and updated_at)
+// Movimenti table audit columns
 try {
   db.exec(`ALTER TABLE movimenti ADD COLUMN created_by INTEGER REFERENCES users(id)`);
   console.log('[AUDIT] Added created_by column to movimenti table');
@@ -250,17 +199,6 @@ try {
   console.log('[AUDIT] Added updated_at column to movimenti table');
 } catch (err) {
   if (!err.message.includes('duplicate column')) throw err;
-}
-
-// Copy user_id to created_by for existing movimenti records (one-time migration)
-try {
-  const existingRecords = db.prepare('SELECT COUNT(*) as count FROM movimenti WHERE created_by IS NULL AND user_id IS NOT NULL').get().count;
-  if (existingRecords > 0) {
-    db.exec(`UPDATE movimenti SET created_by = user_id WHERE created_by IS NULL AND user_id IS NOT NULL`);
-    console.log(`[AUDIT] Migrated ${existingRecords} movimenti records: copied user_id to created_by`);
-  }
-} catch (err) {
-  console.error('[AUDIT] Error migrating movimenti user_id to created_by:', err.message);
 }
 
 // Create performance indexes for audit queries
@@ -310,6 +248,31 @@ try {
 } catch (err) {
   if (!err.message.includes('duplicate column')) throw err;
 }
+
+console.log('\n--- Cleanup migration (v1.8) - removing unused columns ---');
+
+// Helper to safely drop a column (ignores if column doesn't exist)
+function safeDropColumn(table, column) {
+  try {
+    db.exec(`ALTER TABLE ${table} DROP COLUMN ${column}`);
+    console.log(`[CLEANUP] Dropped ${column} from ${table}`);
+    return true;
+  } catch (err) {
+    if (err.message.includes('no such column')) {
+      return false; // Already removed
+    }
+    throw err;
+  }
+}
+
+// Remove deprecated user_id columns (replaced by created_by)
+safeDropColumn('consegne', 'user_id');
+safeDropColumn('movimenti', 'user_id');
+
+// Remove unused discrepanza columns (feature removed)
+safeDropColumn('consegne', 'discrepanza_cassa');
+safeDropColumn('consegne', 'discrepanza_trovata');
+safeDropColumn('consegne', 'discrepanza_pagato');
 
 console.log('\n--- Data initialization ---');
 

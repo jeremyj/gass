@@ -75,9 +75,6 @@ data                  DATE UNIQUE NOT NULL
 trovato_in_cassa      REAL
 pagato_produttore     REAL
 lasciato_in_cassa     REAL
-discrepanza_cassa     BOOLEAN DEFAULT 0
-discrepanza_trovata   BOOLEAN DEFAULT 0
-discrepanza_pagato    BOOLEAN DEFAULT 0
 note                  TEXT
 created_at            DATETIME DEFAULT CURRENT_TIMESTAMP
 ```
@@ -163,8 +160,6 @@ Where `incassato` (cash collected) is:
 ```javascript
 incassato = SUM(importo_saldato);
 ```
-
-**Note**: The `discrepanza_*` flags are legacy fields kept for backward compatibility but are always set to 0. Manual overrides of cash fields have been removed to ensure data integrity.
 
 ### 3. Dynamic Recalculation Algorithm
 
@@ -279,10 +274,6 @@ Cash fields are **always readonly** - no manual override capability in mobile or
 **Display Formatting:**
 - Uses `formatNumber()` to hide unnecessary `.00` decimals on whole numbers
 - Shows "42" instead of "42.00" for cleaner UI
-
-**Database:**
-- Always saves with `discrepanza_cassa=0`, `discrepanza_trovata=0`, `discrepanza_pagato=0`
-- Legacy discrepanza flags kept for backward compatibility but never set to 1
 
 #### Participant Movements
 Each movement tracks:
