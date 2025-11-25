@@ -249,6 +249,24 @@ try {
   if (!err.message.includes('duplicate column')) throw err;
 }
 
+console.log('\n--- Reopen tracking migration (v1.9) ---');
+
+// Add riaperta_by column to consegne table
+try {
+  db.exec(`ALTER TABLE consegne ADD COLUMN riaperta_by INTEGER REFERENCES users(id)`);
+  console.log('[REOPEN] Added riaperta_by column to consegne table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) throw err;
+}
+
+// Add riaperta_at column to consegne table
+try {
+  db.exec(`ALTER TABLE consegne ADD COLUMN riaperta_at DATETIME`);
+  console.log('[REOPEN] Added riaperta_at column to consegne table');
+} catch (err) {
+  if (!err.message.includes('duplicate column')) throw err;
+}
+
 console.log('\n--- Cleanup migration (v1.8) - removing unused columns ---');
 
 // Helper to safely drop a column (ignores if column doesn't exist)

@@ -367,9 +367,10 @@ router.post('/:id/reopen', (req, res) => {
 
     db.prepare(`
       UPDATE consegne
-      SET chiusa = 0, chiusa_by = NULL, chiusa_at = NULL
+      SET chiusa = 0, chiusa_by = NULL, chiusa_at = NULL,
+          riaperta_by = ?, riaperta_at = ?
       WHERE id = ?
-    `).run(id);
+    `).run(req.session.userId, timestamp, id);
 
     console.log(`[CONSEGNA] ${timestamp} - Consegna ${id} reopened by admin ${req.session.username}`);
     res.json({ success: true });

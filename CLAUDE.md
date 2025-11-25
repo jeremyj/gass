@@ -16,6 +16,7 @@
   - `consegna.js` - Delivery API (GET/:date, POST, DELETE/:id)
   - `participants.js` - Participant API (CRUD)
   - `storico.js` - History API
+  - `logs.js` - Activity log API (admin-only)
 - **Services**: `server/services/calculations.js` - Business logic
 - **Middleware**: `server/middleware/` - auth.js, userAgent.js
 
@@ -28,7 +29,7 @@
   - `version.js` - Dynamic version footer
 - **Page-Specific**: `public/js/`
   - Mobile: `consegna.js`, `debiti.js`, `storico.js`
-  - Desktop: `consegna-desktop.js`, `debiti-desktop.js`, `storico-desktop.js`
+  - Desktop: `consegna-desktop.js`, `debiti-desktop.js`, `storico-desktop.js`, `logs-desktop.js`
 
 ### HTML Script Loading Order
 ```html
@@ -55,7 +56,7 @@
 ### Key Tables
 - `users` - Authentication (bcrypt hashed passwords, `is_admin` flag)
 - `partecipanti` - Participants with `saldo` field
-- `consegne` - Daily delivery records (`chiusa`, `chiusa_by`, `chiusa_at` for locking)
+- `consegne` - Daily delivery records (`chiusa`, `chiusa_by`, `chiusa_at` for locking, `riaperta_by`, `riaperta_at` for reopen tracking)
 - `movimenti` - Individual transactions with `conto_produttore`
 
 ### Audit Columns (all tables)
@@ -137,9 +138,10 @@ if diff < 0 && has_credit: auto-apply to usa_credito
 - Admin must reopen to edit a closed consegna
 
 ### Admin-Only Features
-- Edit saldi (debiti page)
+- Edit saldi (debiti page, only for today's date - historical saldi are read-only)
 - Reopen closed consegne
 - Add participants (desktop)
+- Activity logs page (desktop only)
 
 ### Currency Display
 `formatNumber()` hides `.00` on whole numbers, shows 2 decimals otherwise

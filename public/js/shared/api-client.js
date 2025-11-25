@@ -105,5 +105,10 @@ const API = {
 
   async getStoricoDettaglio() {
     return this.get('/api/storico/dettaglio');
+  },
+
+  // === Logs API ===
+  async getLogs(page = 1, limit = 50) {
+    return this.get(`/api/logs?page=${page}&limit=${limit}`);
   }
 };

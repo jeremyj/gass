@@ -17,6 +17,7 @@ const pagesRouter = require('./server/routes/pages');
 const consegnaRouter = require('./server/routes/consegna');
 const participantsRouter = require('./server/routes/participants');
 const storicoRouter = require('./server/routes/storico');
+const logsRouter = require('./server/routes/logs');
 const authRouter = require('./server/routes/auth');
 
 const app = express();
@@ -65,6 +66,7 @@ app.use('/', pagesRouter);
 app.use('/api/consegna', consegnaRouter);
 app.use('/api/participants', participantsRouter);
 app.use('/api/storico', storicoRouter);
+app.use('/api/logs', logsRouter);
 
 // Error logging middleware
 app.use((err, req, res, next) => {

@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GASS Torpignattara - Storico</title>
+    <title>GASS Torpignattara - Logs</title>
     <link rel="stylesheet" href="style-desktop.css">
 </head>
 <body>
     <nav class="nav-menu">
         <ul>
-            <li><a href="/consegna">📦 Consegna</a></li>
-            <li><a href="/debiti">💰 Saldi</a></li>
-            <li><a href="/storico" class="active">📋 Storico</a></li>
-            <li id="nav-logs" style="display: none;"><a href="/logs">📝 Logs</a></li>
+            <li><a href="/consegna">Consegna</a></li>
+            <li><a href="/debiti">Saldi</a></li>
+            <li><a href="/storico">Storico</a></li>
+            <li id="nav-logs"><a href="/logs" class="active">Logs</a></li>
             <li style="margin-left: 30px;"><span class="nav-user-tab"><span id="user-display"></span></span></li>
             <li><a href="#" class="nav-logout-tab" onclick="handleLogout(); return false;">Esci</a></li>
         </ul>
@@ -20,18 +20,15 @@
 
     <div class="container">
         <div class="page-header">
-            <h1>📋 STORICO</h1>
-        </div>
-
-        <div id="admin-hint-badge" class="info-badge" style="display: none; margin-bottom: 20px;">
-            📝 Per modificare una consegna, vai alla tab Consegna e seleziona la data da modificare
+            <h1>LOGS</h1>
         </div>
 
         <div id="status" class="status"></div>
 
         <div class="section">
-            <h2>Tutte le Consegne</h2>
-            <div id="storico-list"></div>
+            <h2>Attivita Recenti</h2>
+            <div id="logs-container"></div>
+            <div id="pagination" class="pagination"></div>
         </div>
     </div>
 
@@ -43,6 +40,6 @@
     <script src="js/shared/api-client.js"></script>
     <script src="js/shared/auth.js"></script>
     <script src="js/shared/version.js"></script>
-    <script src="js/storico-desktop.js"></script>
+    <script src="js/logs-desktop.js"></script>
 </body>
 </html>

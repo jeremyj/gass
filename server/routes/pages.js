@@ -42,6 +42,11 @@ router.get('/debiti', (req, res) => {
   res.sendFile(path.join(__dirname, '../../public', file));
 });
 
+// Desktop only - admin restriction enforced at API level
+router.get('/logs', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../public', 'logs-desktop.html'));
+});
+
 // Redirect root to consegna
 router.get('/', (req, res) => {
   res.redirect('/consegna');

@@ -229,17 +229,27 @@ function renderParticipants() {
   });
 }
 
+function isViewingToday() {
+  const dateInput = document.getElementById('data');
+  const today = new Date().toISOString().split('T')[0];
+  return !dateInput || dateInput.value === today;
+}
+
 function createParticipantRow(p) {
   const row = document.createElement('tr');
   const saldoClass = p.saldo < 0 ? 'saldo-debito' : p.saldo > 0 ? 'saldo-credito' : '';
   const saldoText = formatNumber(p.saldo);
 
-  // Only show actions column for admin users
+  // Only show actions column for admin users viewing today's date
+  // Historical saldi cannot be edited (they are calculated from movimenti)
+  const canEdit = isAdmin() && isViewingToday();
   const actionsColumn = isAdmin()
     ? `<td>
-         <button onclick="editSaldo(${p.id})" id="edit-btn-${p.id}">Modifica</button>
-         <button onclick="saveSaldo(${p.id})" id="save-btn-${p.id}" style="display: none;" class="btn-save">Salva</button>
-         <button onclick="cancelEdit(${p.id})" id="cancel-btn-${p.id}" style="display: none;">Annulla</button>
+         ${canEdit
+           ? `<button onclick="editSaldo(${p.id})" id="edit-btn-${p.id}">Modifica</button>
+              <button onclick="saveSaldo(${p.id})" id="save-btn-${p.id}" style="display: none;" class="btn-save">Salva</button>
+              <button onclick="cancelEdit(${p.id})" id="cancel-btn-${p.id}" style="display: none;">Annulla</button>`
+           : '<span class="historical-note">(storico)</span>'}
        </td>`
     : '';
 

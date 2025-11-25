@@ -202,9 +202,21 @@ function createParticipantCard(p) {
 
 // ===== CARD INTERACTION =====
 
+function isViewingToday() {
+  const dateInput = document.getElementById('data');
+  const today = new Date().toISOString().split('T')[0];
+  return !dateInput || dateInput.value === today;
+}
+
 function toggleParticipantCard(id) {
   // Only admin can edit saldi - silently ignore for non-admin
   if (!isAdmin()) {
+    return;
+  }
+
+  // Cannot edit historical saldi (they are calculated from movimenti)
+  if (!isViewingToday()) {
+    showStatus('I saldi storici non sono modificabili', 'error');
     return;
   }
 

@@ -29,6 +29,12 @@ async function checkSession() {
         adminHintBadge.style.display = 'block';
       }
 
+      // Show logs nav item only for admins
+      const navLogs = document.getElementById('nav-logs');
+      if (navLogs) {
+        navLogs.style.display = data.user.isAdmin ? '' : 'none';
+      }
+
       // Hide admin-only elements for non-admins
       if (!data.user.isAdmin) {
         // Desktop saldi: hide add button and actions column

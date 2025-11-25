@@ -919,3 +919,81 @@ td input {
 .btn-success:hover {
     background: #218838;
 }
+
+/* Logs Table */
+.logs-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 13px;
+}
+
+.logs-table thead {
+    background: #34495e;
+    color: white;
+}
+
+.logs-table th,
+.logs-table td {
+    padding: 10px 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.logs-table th {
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.logs-table td.text-right {
+    text-align: right;
+}
+
+.logs-table tbody tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+.logs-table tbody tr:hover {
+    background: #e9ecef;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+}
+
+.pagination button {
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+.pagination .page-info {
+    color: #666;
+    font-size: 14px;
+}
+
+/* Activity Log */
+.activity-log td:nth-child(2) {
+    text-align: center;
+    font-size: 16px;
+}
+
+.activity-log .details-cell {
+    font-size: 12px;
+    color: #666;
+    max-width: 300px;
+}
+
+/* Historical Note */
+.historical-note {
+    color: #95a5a6;
+    font-style: italic;
+    font-size: 12px;
+}
