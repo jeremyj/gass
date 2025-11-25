@@ -26,14 +26,9 @@ db.exec(`
     username TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     display_name TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  );
-
-  CREATE TABLE IF NOT EXISTS partecipanti (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nome TEXT UNIQUE NOT NULL,
     saldo REAL DEFAULT 0,
-    ultima_modifica DATE
+    ultima_modifica DATE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
   CREATE TABLE IF NOT EXISTS consegne (
@@ -58,7 +53,7 @@ db.exec(`
     debito_saldato REAL DEFAULT 0,
     note TEXT,
     FOREIGN KEY (consegna_id) REFERENCES consegne(id) ON DELETE CASCADE,
-    FOREIGN KEY (partecipante_id) REFERENCES partecipanti(id) ON DELETE CASCADE
+    FOREIGN KEY (partecipante_id) REFERENCES users(id) ON DELETE CASCADE
   );
 
   CREATE INDEX IF NOT EXISTS idx_consegne_data ON consegne(data);
@@ -135,31 +130,17 @@ try {
   if (!err.message.includes('duplicate column')) throw err;
 }
 
-// Partecipanti table audit columns
+// Users table saldo columns (v2.0 - merged from partecipanti)
 try {
-  db.exec(`ALTER TABLE partecipanti ADD COLUMN created_by INTEGER REFERENCES users(id)`);
-  console.log('[AUDIT] Added created_by column to partecipanti table');
+  db.exec(`ALTER TABLE users ADD COLUMN saldo REAL DEFAULT 0`);
+  console.log('[MERGE] Added saldo column to users table');
 } catch (err) {
   if (!err.message.includes('duplicate column')) throw err;
 }
 
 try {
-  db.exec(`ALTER TABLE partecipanti ADD COLUMN created_at DATETIME`);
-  console.log('[AUDIT] Added created_at column to partecipanti table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) throw err;
-}
-
-try {
-  db.exec(`ALTER TABLE partecipanti ADD COLUMN updated_by INTEGER REFERENCES users(id)`);
-  console.log('[AUDIT] Added updated_by column to partecipanti table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) throw err;
-}
-
-try {
-  db.exec(`ALTER TABLE partecipanti ADD COLUMN updated_at DATETIME`);
-  console.log('[AUDIT] Added updated_at column to partecipanti table');
+  db.exec(`ALTER TABLE users ADD COLUMN ultima_modifica DATE`);
+  console.log('[MERGE] Added ultima_modifica column to users table');
 } catch (err) {
   if (!err.message.includes('duplicate column')) throw err;
 }
@@ -207,7 +188,7 @@ try {
   db.exec(`CREATE INDEX IF NOT EXISTS idx_consegne_updated_by ON consegne(updated_by)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_movimenti_created_by ON movimenti(created_by)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_movimenti_updated_by ON movimenti(updated_by)`);
-  db.exec(`CREATE INDEX IF NOT EXISTS idx_partecipanti_updated_by ON partecipanti(updated_by)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_users_updated_by ON users(updated_by)`);
   console.log('[AUDIT] Created audit tracking indexes');
 } catch (err) {
   console.error('[AUDIT] Error creating audit indexes:', err.message);
@@ -267,6 +248,23 @@ try {
   if (!err.message.includes('duplicate column')) throw err;
 }
 
+console.log('\n--- Activity logs table (v2.1) ---');
+
+// Create activity_logs table for user management events
+db.exec(`
+  CREATE TABLE IF NOT EXISTS activity_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_type TEXT NOT NULL,
+    target_user_id INTEGER REFERENCES users(id),
+    actor_user_id INTEGER REFERENCES users(id),
+    details TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_activity_logs_created_at ON activity_logs(created_at);
+  CREATE INDEX IF NOT EXISTS idx_activity_logs_event_type ON activity_logs(event_type);
+`);
+console.log('[ACTIVITY] Created activity_logs table');
+
 console.log('\n--- Cleanup migration (v1.8) - removing unused columns ---');
 
 // Helper to safely drop a column (ignores if column doesn't exist)
@@ -294,32 +292,12 @@ safeDropColumn('consegne', 'discrepanza_pagato');
 
 console.log('\n--- Data initialization ---');
 
-// Initialize with participants list
-const count = db.prepare('SELECT COUNT(*) as count FROM partecipanti').get().count;
-if (count === 0) {
-  const insert = db.prepare('INSERT INTO partecipanti (nome, saldo) VALUES (?, ?)');
-  const participants = [
-    'Alessandra Solimene',
-    'Fernanda Fischione',
-    'Jeremy (Rossellino)',
-    'Rachele Brivio'
-  ];
-
-  participants.forEach(name => {
-    insert.run(name, 0);
-  });
-
-  console.log(`[INIT] Created ${participants.length} default participants`);
-} else {
-  console.log(`[INIT] Found ${count} existing participants`);
-}
-
 // Initialize with admin user if no users exist
 const bcrypt = require('bcrypt');
 const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
 if (userCount === 0) {
   const passwordHash = bcrypt.hashSync('admin', 12);
-  const insertUser = db.prepare('INSERT INTO users (username, password_hash, display_name, is_admin) VALUES (?, ?, ?, 1)');
+  const insertUser = db.prepare('INSERT INTO users (username, password_hash, display_name, is_admin, saldo) VALUES (?, ?, ?, 1, 0)');
   insertUser.run('admin', passwordHash, 'Administrator');
   console.log('[INIT] Created default admin user (username: admin, password: admin)');
   console.log('[INIT] ⚠️  IMPORTANT: Change the default password immediately!');
@@ -339,8 +317,7 @@ const consegneCount = db.prepare('SELECT COUNT(*) as count FROM consegne').get()
 const movimentiCount = db.prepare('SELECT COUNT(*) as count FROM movimenti').get().count;
 
 console.log('\n--- Database statistics ---');
-console.log(`Users: ${userCount}`);
-console.log(`Participants: ${count}`);
+console.log(`Users (participants): ${userCount}`);
 console.log(`Consegne: ${consegneCount}`);
 console.log(`Movimenti: ${movimentiCount}`);
 console.log('\nDatabase initialization complete!\n');

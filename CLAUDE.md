@@ -54,10 +54,16 @@
 - **Auto-detection**: Checks for `/app/data` existence
 
 ### Key Tables
-- `users` - Authentication (bcrypt hashed passwords, `is_admin` flag)
-- `partecipanti` - Participants with `saldo` field
+- `users` - Unified user/participant table: authentication (bcrypt, `is_admin`) + saldo tracking (`saldo`, `ultima_modifica`)
 - `consegne` - Daily delivery records (`chiusa`, `chiusa_by`, `chiusa_at` for locking, `riaperta_by`, `riaperta_at` for reopen tracking)
-- `movimenti` - Individual transactions with `conto_produttore`
+- `movimenti` - Individual transactions with `conto_produttore`, FK `partecipante_id` → `users(id)`
+
+### User/Participant Model (v2.0)
+Every user is a participant with a saldo. The `partecipanti` table was merged into `users`:
+- `display_name` = participant name shown in UI
+- `saldo` = current credit/debt balance
+- `ultima_modifica` = last balance change date
+- API returns `nome` (aliased from `display_name`) for frontend compatibility
 
 ### Audit Columns (all tables)
 `created_by`, `created_at`, `updated_by`, `updated_at` - Use `getAuditFields(req, 'create'|'update')` helper
@@ -78,6 +84,15 @@
 - `isAdmin()` helper in `auth.js` for frontend checks
 - `req.session.isAdmin` for backend checks
 - Manage users: `node manage-users.js admin <username> <on|off>`
+
+### User Management
+- **Self password change**: All users can change their own password via 🔑 button in header
+- **Admin user management**: Admins can edit any user via debiti-desktop page
+  - Edit display name
+  - Reset password (no current password required)
+  - Toggle admin status
+  - Username is immutable
+- API: `POST /api/auth/change-password` (self), `PUT /api/users/:id` (admin)
 
 ### Production: Trust Proxy
 Required for deployment behind nginx-proxy:
@@ -140,7 +155,7 @@ if diff < 0 && has_credit: auto-apply to usa_credito
 ### Admin-Only Features
 - Edit saldi (debiti page, only for today's date - historical saldi are read-only)
 - Reopen closed consegne
-- Add participants (desktop)
+- Add participants (desktop) - creates a full user account with username/password
 - Activity logs page (desktop only)
 
 ### Currency Display

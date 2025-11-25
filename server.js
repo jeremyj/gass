@@ -19,6 +19,7 @@ const participantsRouter = require('./server/routes/participants');
 const storicoRouter = require('./server/routes/storico');
 const logsRouter = require('./server/routes/logs');
 const authRouter = require('./server/routes/auth');
+const usersRouter = require('./server/routes/users');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -62,6 +63,7 @@ app.use((req, res, next) => {
 
 // Mount routes
 app.use('/api/auth', authRouter);
+app.use('/api/users', usersRouter);
 app.use('/', pagesRouter);
 app.use('/api/consegna', consegnaRouter);
 app.use('/api/participants', participantsRouter);

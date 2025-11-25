@@ -86,8 +86,8 @@ const API = {
     return this.get(url);
   },
 
-  async addParticipant(nome) {
-    return this.post('/api/participants', { nome });
+  async addParticipant(nome, username, password) {
+    return this.post('/api/participants', { nome, username, password });
   },
 
   async updateParticipant(id, saldo) {

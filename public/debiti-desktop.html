@@ -39,8 +39,16 @@
             <div id="add-form" style="display: none; margin-top: 15px;">
                 <form onsubmit="event.preventDefault(); addParticipant();">
                     <div class="form-group">
-                        <label>Nome Partecipante:</label>
-                        <input type="text" id="new-name" placeholder="Nome">
+                        <label>Nome Completo:</label>
+                        <input type="text" id="new-name" placeholder="Nome e Cognome" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Username:</label>
+                        <input type="text" id="new-username" placeholder="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password:</label>
+                        <input type="password" id="new-password" placeholder="min. 4 caratteri" required minlength="4">
                     </div>
                     <button type="submit" class="btn-save">Salva</button>
                     <button type="button" onclick="hideAddForm()">Annulla</button>
@@ -50,6 +58,7 @@
             <table id="participants-table">
                 <thead>
                     <tr>
+                        <th>Username</th>
                         <th>Nome</th>
                         <th>Saldo (€)</th>
                         <th>Ultima Modifica</th>
@@ -59,6 +68,40 @@
                 <tbody id="participants-body">
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <!-- Edit User Modal (Admin only) -->
+    <div id="edit-user-modal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h3>Modifica Utente</h3>
+            <form onsubmit="event.preventDefault(); submitEditUser();">
+                <div class="form-group">
+                    <label>Username:</label>
+                    <span id="edit-user-username" style="font-weight: bold;"></span>
+                    <small style="color: #666;">(non modificabile)</small>
+                </div>
+                <div class="form-group">
+                    <label>Nome Completo:</label>
+                    <input type="text" id="edit-user-displayname" required>
+                </div>
+                <div class="form-group">
+                    <label>Nuova Password:</label>
+                    <input type="password" id="edit-user-password" placeholder="Lascia vuoto per non modificare" minlength="4">
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="edit-user-isadmin">
+                        Amministratore
+                    </label>
+                </div>
+                <div id="edit-user-error" class="error-message" style="display:none;"></div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-delete" onclick="deleteUserFromModal()" style="margin-right: auto;">Elimina Utente</button>
+                    <button type="submit" class="btn-save">Salva</button>
+                    <button type="button" onclick="closeEditUserModal()">Annulla</button>
+                </div>
+            </form>
         </div>
     </div>
 

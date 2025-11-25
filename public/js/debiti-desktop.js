@@ -166,6 +166,9 @@ function showAddForm() {
 
 function hideAddForm() {
   document.getElementById('add-form').style.display = 'none';
+  document.getElementById('new-name').value = '';
+  document.getElementById('new-username').value = '';
+  document.getElementById('new-password').value = '';
 }
 
 // ===== DATA LOADING =====
@@ -216,7 +219,7 @@ function renderParticipants() {
   const tbody = document.getElementById('participants-body');
   tbody.innerHTML = '';
 
-  const colspan = isAdmin() ? 4 : 3;
+  const colspan = isAdmin() ? 5 : 4;
 
   if (participants.length === 0) {
     tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align: center;">Nessun partecipante</td></tr>`;
@@ -245,15 +248,15 @@ function createParticipantRow(p) {
   const canEdit = isAdmin() && isViewingToday();
   const actionsColumn = isAdmin()
     ? `<td>
-         ${canEdit
-           ? `<button onclick="editSaldo(${p.id})" id="edit-btn-${p.id}">Modifica</button>
-              <button onclick="saveSaldo(${p.id})" id="save-btn-${p.id}" style="display: none;" class="btn-save">Salva</button>
-              <button onclick="cancelEdit(${p.id})" id="cancel-btn-${p.id}" style="display: none;">Annulla</button>`
-           : '<span class="historical-note">(storico)</span>'}
+         <button onclick="editSaldo(${p.id})" id="edit-btn-${p.id}" ${canEdit ? '' : 'disabled'}>Modifica Saldo</button>
+         <button onclick="saveSaldo(${p.id})" id="save-btn-${p.id}" style="display: none;" class="btn-save">Salva</button>
+         <button onclick="cancelEdit(${p.id})" id="cancel-btn-${p.id}" style="display: none;">Annulla</button>
+         <button onclick="showEditUserModal(${p.id})">Modifica Utente</button>
        </td>`
     : '';
 
   row.innerHTML = `
+    <td>${p.username || '-'}</td>
     <td><strong>${p.nome}</strong></td>
     <td class="${saldoClass}">
       <span id="saldo-view-${p.id}">€${saldoText}</span>
@@ -328,9 +331,16 @@ async function saveSaldo(id) {
 
 async function addParticipant() {
   const nome = document.getElementById('new-name').value.trim();
+  const username = document.getElementById('new-username').value.trim();
+  const password = document.getElementById('new-password').value;
 
-  if (!nome) {
-    showStatus('Inserisci un nome', 'error');
+  if (!nome || !username || !password) {
+    showStatus('Tutti i campi sono obbligatori', 'error');
+    return;
+  }
+
+  if (password.length < 4) {
+    showStatus('La password deve essere di almeno 4 caratteri', 'error');
     return;
   }
 
@@ -338,7 +348,7 @@ async function addParticipant() {
     const response = await fetch('/api/participants', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nome }),
+      body: JSON.stringify({ nome, username, password }),
     });
 
     const result = await response.json();
@@ -432,3 +442,120 @@ document.addEventListener('click', function(event) {
     }
   }
 });
+
+// ===== EDIT USER MODAL (Admin only) =====
+
+let editingUserId = null;
+
+async function showEditUserModal(id) {
+  editingUserId = id;
+
+  // Fetch full user info from /api/users
+  try {
+    const response = await fetch('/api/users');
+    const result = await response.json();
+
+    if (!result.success) {
+      showStatus('Errore: ' + result.error, 'error');
+      return;
+    }
+
+    const user = result.users.find(u => u.id === id);
+    if (!user) {
+      showStatus('Utente non trovato', 'error');
+      return;
+    }
+
+    // Populate modal fields
+    document.getElementById('edit-user-username').textContent = user.username;
+    document.getElementById('edit-user-displayname').value = user.displayName;
+    document.getElementById('edit-user-password').value = '';
+    document.getElementById('edit-user-isadmin').checked = user.isAdmin;
+    document.getElementById('edit-user-error').style.display = 'none';
+
+    // Show modal
+    document.getElementById('edit-user-modal').style.display = 'flex';
+  } catch (error) {
+    showStatus('Errore: ' + error.message, 'error');
+  }
+}
+
+function closeEditUserModal() {
+  document.getElementById('edit-user-modal').style.display = 'none';
+  editingUserId = null;
+}
+
+async function deleteUserFromModal() {
+  const username = document.getElementById('edit-user-username').textContent;
+  if (!confirm(`Sei sicuro di voler eliminare l'utente "${username}"?\n\nQuesta azione non può essere annullata.`)) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/participants/${editingUserId}`, {
+      method: 'DELETE',
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      closeEditUserModal();
+      showStatus('Utente eliminato con successo!', 'success');
+      loadParticipants();
+    } else {
+      const errorDiv = document.getElementById('edit-user-error');
+      errorDiv.textContent = result.error || 'Errore durante l\'eliminazione';
+      errorDiv.style.display = 'block';
+    }
+  } catch (error) {
+    const errorDiv = document.getElementById('edit-user-error');
+    errorDiv.textContent = 'Errore di connessione';
+    errorDiv.style.display = 'block';
+  }
+}
+
+async function submitEditUser() {
+  const displayName = document.getElementById('edit-user-displayname').value.trim();
+  const newPassword = document.getElementById('edit-user-password').value;
+  const isAdmin = document.getElementById('edit-user-isadmin').checked;
+  const errorDiv = document.getElementById('edit-user-error');
+
+  if (!displayName) {
+    errorDiv.textContent = 'Il nome è obbligatorio';
+    errorDiv.style.display = 'block';
+    return;
+  }
+
+  if (newPassword && newPassword.length < 4) {
+    errorDiv.textContent = 'La password deve essere di almeno 4 caratteri';
+    errorDiv.style.display = 'block';
+    return;
+  }
+
+  const data = { displayName, isAdmin };
+  if (newPassword) {
+    data.newPassword = newPassword;
+  }
+
+  try {
+    const response = await fetch(`/api/users/${editingUserId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      closeEditUserModal();
+      showStatus('Utente aggiornato con successo!', 'success');
+      loadParticipants();
+    } else {
+      errorDiv.textContent = result.error || 'Errore durante l\'aggiornamento';
+      errorDiv.style.display = 'block';
+    }
+  } catch (error) {
+    errorDiv.textContent = 'Errore di connessione';
+    errorDiv.style.display = 'block';
+  }
+}

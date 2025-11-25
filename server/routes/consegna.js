@@ -42,9 +42,9 @@ router.get('/:date', (req, res) => {
     console.log(`[CONSEGNA] ${timestamp} - Found consegna for ${date} (ID: ${consegna.id})`);
 
     const movimenti = db.prepare(`
-      SELECT m.*, p.nome, p.id as partecipante_id
+      SELECT m.*, p.display_name AS nome, p.id as partecipante_id
       FROM movimenti m
-      JOIN partecipanti p ON m.partecipante_id = p.id
+      JOIN users p ON m.partecipante_id = p.id
       WHERE m.consegna_id = ?
     `).all(consegna.id);
 
@@ -170,14 +170,19 @@ router.post('/', (req, res) => {
       `);
 
       const updateSaldo = db.prepare(`
-        UPDATE partecipanti SET saldo = ?, ultima_modifica = ?, updated_by = ?, updated_at = ? WHERE id = ?
+        UPDATE users SET saldo = ?, ultima_modifica = ?, updated_by = ?, updated_at = ? WHERE id = ?
       `);
 
       let movimentiCreated = 0;
       let movimentiUpdated = 0;
 
+      const logMovimentoChange = db.prepare(`
+        INSERT INTO activity_logs (event_type, target_user_id, actor_user_id, details, created_at)
+        VALUES (?, ?, ?, ?, ?)
+      `);
+
       partecipanti.forEach(p => {
-        const partecipante = db.prepare('SELECT * FROM partecipanti WHERE nome = ?').get(p.nome);
+        const partecipante = db.prepare('SELECT * FROM users WHERE display_name = ?').get(p.nome);
         if (!partecipante) return;
 
         const existingMovimento = db.prepare(`
@@ -191,9 +196,29 @@ router.post('/', (req, res) => {
         ];
 
         if (existingMovimento) {
+          // Track only manually entered fields (not auto-calculated ones)
+          const changes = [];
+          if (existingMovimento.conto_produttore !== (p.contoProduttore || 0)) {
+            changes.push(`conto: ${existingMovimento.conto_produttore} → ${p.contoProduttore || 0}`);
+          }
+          if (existingMovimento.importo_saldato !== (p.importoSaldato || 0)) {
+            changes.push(`saldato: ${existingMovimento.importo_saldato} → ${p.importoSaldato || 0}`);
+          }
+
           const updateAudit = getAuditFields(req, 'update');
           updateMovimento.run(...movimentoData, updateAudit.updated_by, updateAudit.updated_at,
                               consegna.id, partecipante.id);
+
+          // Log movimento change if something actually changed
+          if (changes.length > 0) {
+            logMovimentoChange.run(
+              'movimento_changed',
+              partecipante.id,
+              req.session.userId,
+              `consegna: ${data}, ${changes.join(', ')}`,
+              timestamp
+            );
+          }
           movimentiUpdated++;
         } else {
           const createAudit = getAuditFields(req, 'create');
@@ -262,7 +287,7 @@ router.delete('/:id', (req, res) => {
       db.prepare('DELETE FROM consegne WHERE id = ?').run(id);
 
       const resetAudit = getAuditFields(req, 'update');
-      db.prepare('UPDATE partecipanti SET saldo = 0, updated_by = ?, updated_at = ? WHERE 1=1')
+      db.prepare('UPDATE users SET saldo = 0, updated_by = ?, updated_at = ? WHERE 1=1')
         .run(resetAudit.updated_by, resetAudit.updated_at);
 
       console.log(`[CONSEGNA] ${timestamp} - Reset all participant saldi to 0`);
@@ -274,14 +299,14 @@ router.delete('/:id', (req, res) => {
         const movimenti = db.prepare(`
           SELECT m.*, p.saldo as current_saldo
           FROM movimenti m
-          JOIN partecipanti p ON m.partecipante_id = p.id
+          JOIN users p ON m.partecipante_id = p.id
           WHERE m.consegna_id = ?
         `).all(consegna.id);
 
         movimenti.forEach(m => {
           const nuovoSaldo = applySaldoChanges(m.current_saldo || 0, m);
           const saldoAudit = getAuditFields(req, 'update');
-          db.prepare('UPDATE partecipanti SET saldo = ?, updated_by = ?, updated_at = ? WHERE id = ?')
+          db.prepare('UPDATE users SET saldo = ?, updated_by = ?, updated_at = ? WHERE id = ?')
             .run(nuovoSaldo, saldoAudit.updated_by, saldoAudit.updated_at, m.partecipante_id);
         });
       });

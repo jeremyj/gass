@@ -123,7 +123,7 @@ function showUsage() {
 
 function listUsers() {
   const users = db.prepare(`
-    SELECT id, username, display_name, is_admin, created_at, updated_at
+    SELECT id, username, display_name, is_admin, saldo, created_at, updated_at
     FROM users
     ORDER BY id ASC
   `).all();
@@ -134,8 +134,8 @@ function listUsers() {
   }
 
   console.log(`\nFound ${users.length} user(s):\n`);
-  console.log('ID  Username          Display Name         Admin   Created');
-  console.log('─'.repeat(75));
+  console.log('ID  Username          Display Name         Admin   Saldo       Created');
+  console.log('─'.repeat(85));
 
   users.forEach(user => {
     const created = user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A';
@@ -143,7 +143,8 @@ function listUsers() {
     const username = String(user.username).padEnd(18);
     const displayName = String(user.display_name).padEnd(21);
     const isAdmin = user.is_admin ? '✓' : '';
-    console.log(`${id}${username}${displayName}${isAdmin.padEnd(8)}${created}`);
+    const saldo = (user.saldo || 0).toFixed(2).padStart(10) + '€';
+    console.log(`${id}${username}${displayName}${isAdmin.padEnd(8)}${saldo}  ${created}`);
   });
   console.log('');
 }
@@ -183,8 +184,8 @@ function addUser(username, password, displayName, adminFlag) {
 
   // Insert the user
   const result = db.prepare(`
-    INSERT INTO users (username, password_hash, display_name, is_admin, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO users (username, password_hash, display_name, is_admin, saldo, created_at, updated_at)
+    VALUES (?, ?, ?, ?, 0, ?, ?)
   `).run(username, passwordHash, displayName, isAdmin, now, now);
 
   console.log(`✓ User created successfully (ID: ${result.lastInsertRowid})`);

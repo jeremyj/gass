@@ -132,4 +132,84 @@ router.get('/session', (req, res) => {
   }
 });
 
+/**
+ * POST /api/auth/change-password
+ * Change own password (requires current password)
+ */
+router.post('/change-password', (req, res) => {
+  const timestamp = new Date().toISOString();
+  const { currentPassword, newPassword } = req.body;
+
+  // Check authentication
+  if (!req.session || !req.session.userId) {
+    return res.status(401).json({
+      success: false,
+      error: 'Non autenticato'
+    });
+  }
+
+  console.log(`[AUTH] ${timestamp} - Password change request from user: ${req.session.username}`);
+
+  // Validate input
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({
+      success: false,
+      error: 'Password attuale e nuova password sono obbligatorie'
+    });
+  }
+
+  if (newPassword.length < 4) {
+    return res.status(400).json({
+      success: false,
+      error: 'La nuova password deve essere di almeno 4 caratteri'
+    });
+  }
+
+  try {
+    // Get current user
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.session.userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'Utente non trovato'
+      });
+    }
+
+    // Verify current password
+    if (!bcrypt.compareSync(currentPassword, user.password_hash)) {
+      console.log(`[AUTH] ${timestamp} - Password change failed: Invalid current password - ${req.session.username}`);
+      return res.status(401).json({
+        success: false,
+        error: 'Password attuale non corretta'
+      });
+    }
+
+    // Hash and update new password
+    const newHash = bcrypt.hashSync(newPassword, 12);
+    db.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?')
+      .run(newHash, timestamp, req.session.userId);
+
+    // Log the password change event
+    db.prepare(`
+      INSERT INTO activity_logs (event_type, target_user_id, actor_user_id, details, created_at)
+      VALUES (?, ?, ?, ?, ?)
+    `).run('password_changed', req.session.userId, req.session.userId, 'Self password change', timestamp);
+
+    console.log(`[AUTH] ${timestamp} - Password changed successfully for user: ${req.session.username}`);
+
+    res.json({
+      success: true,
+      message: 'Password modificata con successo'
+    });
+
+  } catch (error) {
+    console.error(`[AUTH] ${timestamp} - Password change error:`, error);
+    res.status(500).json({
+      success: false,
+      error: 'Errore durante la modifica della password'
+    });
+  }
+});
+
 module.exports = router;

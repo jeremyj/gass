@@ -51,9 +51,9 @@ router.get('/dettaglio', (req, res) => {
     let totalMovimenti = 0;
     const storico = consegneAsc.map((consegna, index) => {
       const movimenti = db.prepare(`
-        SELECT m.*, p.nome
+        SELECT m.*, p.display_name AS nome
         FROM movimenti m
-        JOIN partecipanti p ON m.partecipante_id = p.id
+        JOIN users p ON m.partecipante_id = p.id
         WHERE m.consegna_id = ?
       `).all(consegna.id);
 
