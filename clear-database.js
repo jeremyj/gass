@@ -152,7 +152,7 @@ async function main() {
 
   const stats = showStats();
 
-  if (stats.consegne === 0 && stats.movimenti === 0 && stats.logs === 0) {
+  if (stats.consegne === 0 && stats.movimenti === 0 && stats.logs === 0 && stats.partecipanti === 0) {
     console.log('Database is already empty. Nothing to clear.');
     db.close();
     process.exit(0);
