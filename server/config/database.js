@@ -290,6 +290,79 @@ safeDropColumn('consegne', 'discrepanza_cassa');
 safeDropColumn('consegne', 'discrepanza_trovata');
 safeDropColumn('consegne', 'discrepanza_pagato');
 
+console.log('\n--- FK constraint fix (v1.9.3) ---');
+
+// Fix movimenti FK to reference users instead of partecipanti
+// Check if the FK still references partecipanti
+const movimentiSchema = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='movimenti'").get();
+if (movimentiSchema && movimentiSchema.sql.includes('REFERENCES partecipanti')) {
+  console.log('[FK-FIX] Detected old FK referencing partecipanti, recreating movimenti table...');
+
+  // Disable FK checks temporarily
+  db.pragma('foreign_keys = OFF');
+
+  db.transaction(() => {
+    // Create new table with correct FK
+    db.exec(`
+      CREATE TABLE movimenti_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        consegna_id INTEGER NOT NULL,
+        partecipante_id INTEGER NOT NULL,
+        salda_tutto BOOLEAN DEFAULT 0,
+        importo_saldato REAL DEFAULT 0,
+        usa_credito REAL DEFAULT 0,
+        debito_lasciato REAL DEFAULT 0,
+        credito_lasciato REAL DEFAULT 0,
+        salda_debito_totale BOOLEAN DEFAULT 0,
+        debito_saldato REAL DEFAULT 0,
+        note TEXT,
+        conto_produttore REAL DEFAULT 0,
+        created_by INTEGER REFERENCES users(id),
+        created_at DATETIME,
+        updated_by INTEGER REFERENCES users(id),
+        updated_at DATETIME,
+        FOREIGN KEY (consegna_id) REFERENCES consegne(id) ON DELETE CASCADE,
+        FOREIGN KEY (partecipante_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
+    // Copy existing data (if any)
+    db.exec(`
+      INSERT INTO movimenti_new
+      SELECT id, consegna_id, partecipante_id, salda_tutto, importo_saldato,
+             usa_credito, debito_lasciato, credito_lasciato, salda_debito_totale,
+             debito_saldato, note, conto_produttore, created_by, created_at,
+             updated_by, updated_at
+      FROM movimenti
+    `);
+
+    // Drop old table and rename new one
+    db.exec('DROP TABLE movimenti');
+    db.exec('ALTER TABLE movimenti_new RENAME TO movimenti');
+
+    // Recreate indexes
+    db.exec('CREATE INDEX IF NOT EXISTS idx_movimenti_consegna ON movimenti(consegna_id)');
+    db.exec('CREATE INDEX IF NOT EXISTS idx_movimenti_partecipante ON movimenti(partecipante_id)');
+    db.exec('CREATE INDEX IF NOT EXISTS idx_movimenti_created_by ON movimenti(created_by)');
+    db.exec('CREATE INDEX IF NOT EXISTS idx_movimenti_updated_by ON movimenti(updated_by)');
+  })();
+
+  // Re-enable FK checks
+  db.pragma('foreign_keys = ON');
+  console.log('[FK-FIX] Successfully fixed movimenti FK to reference users');
+}
+
+// Drop legacy partecipanti table if it exists and is empty
+try {
+  const partecipantiCount = db.prepare('SELECT COUNT(*) as count FROM partecipanti').get();
+  if (partecipantiCount.count === 0) {
+    db.exec('DROP TABLE partecipanti');
+    console.log('[FK-FIX] Dropped empty legacy partecipanti table');
+  }
+} catch (err) {
+  // Table doesn't exist, ignore
+}
+
 console.log('\n--- Data initialization ---');
 
 // Initialize with admin user if no users exist

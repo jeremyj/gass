@@ -184,3 +184,4 @@ Only **manual fields** are tracked for movimento changes:
 - `importo_saldato` - Amount paid
 
 Auto-calculated fields (credito_lasciato, debito_lasciato, usa_credito, debito_saldato) are NOT logged as changes since they derive from manual inputs.
+- don't update container images after docker builds
