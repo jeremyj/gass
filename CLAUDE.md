@@ -184,4 +184,14 @@ Only **manual fields** are tracked for movimento changes:
 - `importo_saldato` - Amount paid
 
 Auto-calculated fields (credito_lasciato, debito_lasciato, usa_credito, debito_saldato) are NOT logged as changes since they derive from manual inputs.
+
+---
+
+## Docker Build
+
+Build and push multi-platform images:
+```bash
+docker buildx build --platform linux/amd64,linux/arm64 -t jeremyjrossi/gass:<version> --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t jeremyjrossi/gass:latest --push .
+```
 - don't update container images after docker builds
