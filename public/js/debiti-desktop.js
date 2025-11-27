@@ -242,6 +242,7 @@ function createParticipantRow(p) {
   const row = document.createElement('tr');
   const saldoClass = p.saldo < 0 ? 'saldo-debito' : p.saldo > 0 ? 'saldo-credito' : '';
   const saldoText = formatNumber(p.saldo);
+  const adminBadge = p.is_admin ? '<span class="admin-badge">Admin</span>' : '';
 
   // Only show actions column for admin users viewing today's date
   // Historical saldi cannot be edited (they are calculated from movimenti)
@@ -256,7 +257,7 @@ function createParticipantRow(p) {
     : '';
 
   row.innerHTML = `
-    <td>${p.username || '-'}</td>
+    <td>${p.username || '-'}${adminBadge}</td>
     <td><strong>${p.nome}</strong></td>
     <td class="${saldoClass}">
       <span id="saldo-view-${p.id}">€${saldoText}</span>

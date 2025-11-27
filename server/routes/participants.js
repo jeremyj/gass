@@ -17,7 +17,7 @@ router.get('/', (req, res) => {
   try {
     // If date is provided, calculate saldi as of that date
     if (date) {
-      const participants = db.prepare('SELECT id, username, display_name AS nome FROM users ORDER BY display_name').all();
+      const participants = db.prepare('SELECT id, username, display_name AS nome, is_admin FROM users ORDER BY display_name').all();
 
       console.log(`[PARTICIPANTS] ${timestamp} - Calculating saldi as of ${date} for ${participants.length} participants`);
 
@@ -44,7 +44,8 @@ router.get('/', (req, res) => {
           username: p.username,
           nome: p.nome,
           saldo: saldo,
-          ultima_modifica: ultima_modifica
+          ultima_modifica: ultima_modifica,
+          is_admin: p.is_admin
         };
       });
 
@@ -52,7 +53,7 @@ router.get('/', (req, res) => {
       res.json({ success: true, participants: participantsWithSaldi });
     } else {
       // Return current saldi
-      const participants = db.prepare('SELECT id, username, display_name AS nome, saldo, ultima_modifica FROM users ORDER BY display_name').all();
+      const participants = db.prepare('SELECT id, username, display_name AS nome, saldo, ultima_modifica, is_admin FROM users ORDER BY display_name').all();
       console.log(`[PARTICIPANTS] ${timestamp} - Retrieved ${participants.length} participants with current saldi`);
       res.json({ success: true, participants });
     }

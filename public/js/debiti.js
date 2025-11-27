@@ -104,12 +104,14 @@ function createParticipantCard(p) {
     card.className = cardClass;
   }
 
+  const adminBadge = p.is_admin ? '<span class="admin-badge">Admin</span>' : '';
+
   if (!isExpanded) {
     // Collapsed view
     card.onclick = () => toggleParticipantCard(p.id);
     card.innerHTML = `
       <div class="saldo-info-left">
-        <div class="saldo-name">👤 ${p.nome}</div>
+        <div class="saldo-name">👤 ${p.nome}${adminBadge}</div>
         <div class="saldo-last-date">Ultimo movimento: ${formatDateItalian(p.ultima_modifica)}</div>
       </div>
       <div class="${saldoBadgeClass}">
@@ -121,7 +123,7 @@ function createParticipantCard(p) {
     card.innerHTML = `
       <div class="saldo-header-expanded" id="header-${p.id}" style="cursor: pointer;">
         <div>
-          <div class="participant-name-expanded">👤 ${p.nome}</div>
+          <div class="participant-name-expanded">👤 ${p.nome}${adminBadge}</div>
           <div class="saldo-last-date">Ultimo movimento: ${formatDateItalian(p.ultima_modifica)}</div>
         </div>
         <div class="${saldoBadgeClass}">
