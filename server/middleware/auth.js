@@ -3,14 +3,22 @@
  *
  * Provides session-based authentication for GASS application.
  */
+const db = require('../config/database');
 
 /**
  * Middleware to require authentication for routes
- * Responds with 401 if user is not logged in
+ * Validates that session user still exists in database
+ * Responds with 401 if user is not logged in or no longer exists
  */
 function requireAuth(req, res, next) {
   if (req.session && req.session.userId) {
-    return next();
+    // Verify user still exists in database (prevents FK constraint failures)
+    const user = db.prepare('SELECT id FROM users WHERE id = ?').get(req.session.userId);
+    if (user) {
+      return next();
+    }
+    // User no longer exists - destroy stale session
+    req.session.destroy();
   }
 
   res.status(401).json({
