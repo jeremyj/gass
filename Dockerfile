@@ -1,25 +1,27 @@
-FROM node:20-alpine
+# Stage 1: Build — compile native modules (bcrypt, better-sqlite3)
+FROM node:20-alpine AS builder
 
-# Install dependencies for building native modules and proper signal handling
-RUN apk add --no-cache \
-    dumb-init \
-    python3 \
-    make \
-    g++
+RUN apk add --no-cache python3 make g++
 
-# Create app directory
 WORKDIR /app
 
-# Create app user for security
+COPY package*.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+
+# Stage 2: Runtime — clean Alpine image without build tools (~200MB smaller)
+FROM node:20-alpine
+
+# Install dumb-init for proper signal handling
+RUN apk add --no-cache dumb-init
+
+# Create non-root user
 RUN addgroup -g 1001 -S gass && \
     adduser -S -u 1001 -G gass gass
 
-# Copy package files
-COPY package*.json ./
+WORKDIR /app
 
-# Install production dependencies only
-RUN npm ci --omit=dev && \
-    npm cache clean --force
+# Copy built node_modules from builder stage
+COPY --from=builder /app/node_modules ./node_modules
 
 # Copy application files
 COPY --chown=gass:gass . .
@@ -28,14 +30,9 @@ COPY --chown=gass:gass . .
 RUN mkdir -p /app/data && \
     chown -R gass:gass /app/data
 
-# Switch to non-root user
 USER gass
 
-# Expose application port
 EXPOSE 3000
 
-# Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
-
-# Start application
 CMD ["node", "server.js"]

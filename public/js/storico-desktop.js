@@ -110,14 +110,14 @@ function createMovimentiTable(movimenti) {
 
   const rows = movimenti.map(m => `
     <tr>
-      <td class="col-nome">${m.nome}</td>
+      <td class="col-nome">${escapeHtml(m.nome)}</td>
       <td class="col-num">${m.conto_produttore ? '€' + formatNumber(m.conto_produttore) : '-'}</td>
       <td class="col-num">${m.importo_saldato ? '€' + formatNumber(m.importo_saldato) : '-'}</td>
       <td class="col-num col-credito">${m.credito_lasciato ? '€' + formatNumber(m.credito_lasciato) : '-'}</td>
       <td class="col-num col-debito">${m.debito_lasciato ? '€' + formatNumber(m.debito_lasciato) : '-'}</td>
       <td class="col-num col-credito">${m.usa_credito ? '€' + formatNumber(m.usa_credito) : '-'}</td>
       <td class="col-num col-debito">${m.debito_saldato ? '€' + formatNumber(m.debito_saldato) : '-'}</td>
-      <td class="col-note">${m.note || ''}</td>
+      <td class="col-note">${escapeHtml(m.note)}</td>
     </tr>
   `).join('');
 

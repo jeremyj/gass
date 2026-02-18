@@ -1,6 +1,7 @@
 const express = require('express');
+const bcrypt = require('bcrypt');
 const db = require('../config/database');
-const { requireAuth, getAuditFields } = require('../middleware/auth');
+const { requireAuth, requireAdmin, getAuditFields } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -15,39 +16,36 @@ router.get('/', (req, res) => {
   console.log(`[PARTICIPANTS] ${timestamp} - GET request${date ? ` for date: ${date}` : ''}`);
 
   try {
-    // If date is provided, calculate saldi as of that date
+    // If date is provided, calculate saldi as of that date using a single aggregation query
     if (date) {
       const participants = db.prepare('SELECT id, username, display_name AS nome, is_admin FROM users ORDER BY display_name').all();
 
       console.log(`[PARTICIPANTS] ${timestamp} - Calculating saldi as of ${date} for ${participants.length} participants`);
 
-      // For each participant, calculate saldo from movimenti up to and including the date
-      const participantsWithSaldi = participants.map(p => {
-        const movimenti = db.prepare(`
-          SELECT m.*, c.data
-          FROM movimenti m
-          JOIN consegne c ON m.consegna_id = c.id
-          WHERE m.partecipante_id = ? AND c.data <= ?
-          ORDER BY c.data
-        `).all(p.id, date);
+      // Single query to get all saldi up to and including the date
+      const saldoRows = db.prepare(`
+        SELECT m.partecipante_id,
+          SUM(m.credito_lasciato) - SUM(m.debito_lasciato) - SUM(m.usa_credito) + SUM(m.debito_saldato) AS saldo,
+          MAX(c.data) AS ultima_modifica
+        FROM movimenti m
+        JOIN consegne c ON m.consegna_id = c.id
+        WHERE c.data <= ?
+        GROUP BY m.partecipante_id
+      `).all(date);
 
-        let saldo = 0;
-        let ultima_modifica = null;
-
-        movimenti.forEach(m => {
-          saldo += m.credito_lasciato - m.debito_lasciato - m.usa_credito + m.debito_saldato;
-          ultima_modifica = m.data;
-        });
-
-        return {
-          id: p.id,
-          username: p.username,
-          nome: p.nome,
-          saldo: saldo,
-          ultima_modifica: ultima_modifica,
-          is_admin: p.is_admin
-        };
+      const saldoMap = {};
+      saldoRows.forEach(row => {
+        saldoMap[row.partecipante_id] = { saldo: row.saldo || 0, ultima_modifica: row.ultima_modifica };
       });
+
+      const participantsWithSaldi = participants.map(p => ({
+        id: p.id,
+        username: p.username,
+        nome: p.nome,
+        saldo: saldoMap[p.id]?.saldo || 0,
+        ultima_modifica: saldoMap[p.id]?.ultima_modifica || null,
+        is_admin: p.is_admin
+      }));
 
       console.log(`[PARTICIPANTS] ${timestamp} - Successfully calculated saldi for ${date}`);
       res.json({ success: true, participants: participantsWithSaldi });
@@ -59,26 +57,17 @@ router.get('/', (req, res) => {
     }
   } catch (error) {
     console.error(`[PARTICIPANTS] ${timestamp} - Error fetching participants:`, error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Errore durante il recupero dei partecipanti' });
   }
 });
 
 // Update participant saldo (admin only)
-router.put('/:id', (req, res) => {
+router.put('/:id', requireAdmin, (req, res) => {
   const timestamp = new Date().toISOString();
   const { id } = req.params;
   const { saldo } = req.body;
 
   console.log(`[PARTICIPANTS] ${timestamp} - PUT request to update participant ID: ${id}, new saldo: ${saldo}€`);
-
-  // Admin check
-  if (!req.session.isAdmin) {
-    console.log(`[PARTICIPANTS] ${timestamp} - Rejected: User ${req.session.username} is not admin`);
-    return res.status(403).json({
-      success: false,
-      error: 'Solo gli amministratori possono modificare i saldi'
-    });
-  }
 
   try {
     const current = db.prepare('SELECT saldo, username, display_name FROM users WHERE id = ?').get(id);
@@ -102,12 +91,12 @@ router.put('/:id', (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error(`[PARTICIPANTS] ${timestamp} - Error updating participant ID ${id}:`, error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Errore durante l\'aggiornamento del saldo' });
   }
 });
 
-// Add new participant (creates a user account)
-router.post('/', (req, res) => {
+// Add new participant (creates a user account, admin only)
+router.post('/', requireAdmin, async (req, res) => {
   const timestamp = new Date().toISOString();
   const { nome, username, password } = req.body;
 
@@ -121,16 +110,15 @@ router.post('/', (req, res) => {
     });
   }
 
-  if (password.length < 4) {
+  if (password.length < 8) {
     return res.status(400).json({
       success: false,
-      error: 'La password deve essere di almeno 4 caratteri'
+      error: 'La password deve essere di almeno 8 caratteri'
     });
   }
 
   try {
-    const bcrypt = require('bcrypt');
-    const passwordHash = bcrypt.hashSync(password, 12);
+    const passwordHash = await bcrypt.hash(password, 12);
     const audit = getAuditFields(req, 'create');
 
     const result = db.prepare(`
@@ -151,12 +139,12 @@ router.post('/', (req, res) => {
     if (error.message.includes('UNIQUE constraint failed')) {
       return res.status(400).json({ success: false, error: 'Username già esistente' });
     }
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Errore durante la creazione del partecipante' });
   }
 });
 
-// Delete participant (deletes user account)
-router.delete('/:id', (req, res) => {
+// Delete participant (deletes user account, admin only)
+router.delete('/:id', requireAdmin, (req, res) => {
   const timestamp = new Date().toISOString();
   const { id } = req.params;
 
@@ -185,7 +173,7 @@ router.delete('/:id', (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error(`[PARTICIPANTS] ${timestamp} - Error deleting participant ID ${id}:`, error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Errore durante l\'eliminazione del partecipante' });
   }
 });
 

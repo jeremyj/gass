@@ -257,8 +257,8 @@ function createParticipantRow(p) {
     : '';
 
   row.innerHTML = `
-    <td>${p.username || '-'}${adminBadge}</td>
-    <td><strong>${p.nome}</strong></td>
+    <td>${escapeHtml(p.username) || '-'}${adminBadge}</td>
+    <td><strong>${escapeHtml(p.nome)}</strong></td>
     <td class="${saldoClass}">
       <span id="saldo-view-${p.id}">€${saldoText}</span>
       <input type="text" inputmode="decimal" id="saldo-edit-${p.id}" value="${p.saldo}"
@@ -387,29 +387,6 @@ async function deleteParticipant(id) {
     }
   } catch (error) {
     showStatus('Errore durante l\'eliminazione: ' + error.message, 'error');
-  }
-}
-
-// ===== SYNC (UNUSED) =====
-
-async function syncParticipants() {
-  showStatus('Sincronizzazione in corso...', 'success');
-
-  try {
-    const response = await fetch('/api/sync-participants', {
-      method: 'POST',
-    });
-
-    const result = await response.json();
-
-    if (result.success) {
-      showStatus('Partecipanti sincronizzati con successo!', 'success');
-      loadParticipants();
-    } else {
-      showStatus('Errore: ' + result.error, 'error');
-    }
-  } catch (error) {
-    showStatus('Errore durante la sincronizzazione: ' + error.message, 'error');
   }
 }
 

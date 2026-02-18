@@ -170,7 +170,7 @@ function createParticipantMovimentoCard(m) {
 
   card.innerHTML = `
     <div class="storico-participant-header">
-      <div class="storico-participant-name">👤 ${m.nome}${noteIcon}</div>
+      <div class="storico-participant-name">👤 ${escapeHtml(m.nome)}${noteIcon}</div>
     </div>
     <div class="storico-participant-details">
       ${m.conto_produttore ? `Conto: ${formatNumber(m.conto_produttore)} €` : ''}
@@ -179,7 +179,7 @@ function createParticipantMovimentoCard(m) {
       ${m.usa_credito ? ` • Usa credito: ${formatNumber(m.usa_credito)} €` : ''}
       ${!m.conto_produttore && !m.importo_saldato && !m.usa_credito && !m.debito_saldato ? 'Pari' : ''}
     </div>
-    ${m.note ? `<div class="storico-participant-note" style="display: none; padding: 8px; background: #fff3cd; border-radius: 4px; margin-top: 8px; font-size: 13px;">📝 ${m.note}</div>` : ''}
+    ${m.note ? `<div class="storico-participant-note" style="display: none; padding: 8px; background: #fff3cd; border-radius: 4px; margin-top: 8px; font-size: 13px;">📝 ${escapeHtml(m.note)}</div>` : ''}
   `;
 
   // Add click handler for note icon

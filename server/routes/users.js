@@ -21,7 +21,7 @@ router.use(requireAdmin);
  * Can update: displayName, password, isAdmin
  * Cannot update: username (immutable)
  */
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   const timestamp = new Date().toISOString();
   const { id } = req.params;
   const { displayName, newPassword, isAdmin } = req.body;
@@ -49,14 +49,14 @@ router.put('/:id', (req, res) => {
     }
 
     if (newPassword !== undefined && newPassword.length > 0) {
-      if (newPassword.length < 4) {
+      if (newPassword.length < 8) {
         return res.status(400).json({
           success: false,
-          error: 'La password deve essere di almeno 4 caratteri'
+          error: 'La password deve essere di almeno 8 caratteri'
         });
       }
       updates.push('password_hash = ?');
-      params.push(bcrypt.hashSync(newPassword, 12));
+      params.push(await bcrypt.hash(newPassword, 12));
     }
 
     if (isAdmin !== undefined) {

@@ -4,6 +4,7 @@ const session = require('express-session');
 const SQLiteStore = require('connect-sqlite3')(session);
 const path = require('path');
 const fs = require('fs');
+const helmet = require('helmet');
 
 // Initialize database (creates tables if needed)
 const db = require('./server/config/database');
@@ -24,12 +25,21 @@ const usersRouter = require('./server/routes/users');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Warn on missing SESSION_SECRET in production
+if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) {
+  console.error('[FATAL] SESSION_SECRET environment variable is not set in production. Exiting.');
+  process.exit(1);
+}
+
 // Trust proxy when behind nginx-proxy or other reverse proxy
 // This is required for:
 // - Secure cookies to work properly with HTTPS
 // - req.ip and req.protocol to work correctly
 // - Session cookies to be set properly
 app.set('trust proxy', 1);
+
+// Security headers
+app.use(helmet());
 
 // Middleware
 app.use(express.json());
@@ -48,7 +58,8 @@ app.use(session({
   cookie: {
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production'
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
   }
 }));
 
@@ -57,7 +68,7 @@ app.use(express.static('public'));
 // Request logging middleware
 app.use((req, res, next) => {
   const timestamp = new Date().toISOString();
-  console.log(`[${timestamp}] ${req.method} ${req.url} - User: ${req.session?.user?.username || 'anonymous'}`);
+  console.log(`[${timestamp}] ${req.method} ${req.url} - User: ${req.session?.username || 'anonymous'}`);
   next();
 });
 

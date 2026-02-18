@@ -16,6 +16,9 @@ services:
       - LETSENCRYPT_HOST=gass.yourdomain.com
       - LETSENCRYPT_EMAIL=your-email@example.com
 
+      # Required: Session secret (generate with: openssl rand -base64 48)
+      - SESSION_SECRET=change-this-to-a-long-random-secret
+
       # Optional: Node environment
       - NODE_ENV=production
       - PORT=3000

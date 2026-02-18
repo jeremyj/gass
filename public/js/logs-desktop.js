@@ -58,11 +58,11 @@ function getEventIcon(eventType) {
 function getEventDescription(event) {
   switch (event.event_type) {
     case 'movimento_created':
-      return `Movimento creato per <strong>${event.partecipante_nome}</strong>`;
+      return `Movimento creato per <strong>${escapeHtml(event.partecipante_nome)}</strong>`;
     case 'movimento_historical':
-      return `Movimento storico per <strong>${event.partecipante_nome}</strong>`;
+      return `Movimento storico per <strong>${escapeHtml(event.partecipante_nome)}</strong>`;
     case 'movimento_updated':
-      return `Movimento modificato per <strong>${event.partecipante_nome}</strong>`;
+      return `Movimento modificato per <strong>${escapeHtml(event.partecipante_nome)}</strong>`;
     case 'consegna_closed':
       return `Consegna chiusa`;
     case 'consegna_reopened':
@@ -70,17 +70,17 @@ function getEventDescription(event) {
     case 'user_created':
       return `Utente creato`;
     case 'user_edited':
-      return `Utente modificato: <strong>${event.partecipante_nome || 'N/A'}</strong>`;
+      return `Utente modificato: <strong>${escapeHtml(event.partecipante_nome || 'N/A')}</strong>`;
     case 'user_deleted':
       return `Utente eliminato`;
     case 'password_changed':
       return `Password cambiata`;
     case 'saldo_updated':
-      return `Saldo modificato per <strong>${event.partecipante_nome || 'N/A'}</strong>`;
+      return `Saldo modificato per <strong>${escapeHtml(event.partecipante_nome || 'N/A')}</strong>`;
     case 'movimento_changed':
-      return `Movimento modificato per <strong>${event.partecipante_nome || 'N/A'}</strong>`;
+      return `Movimento modificato per <strong>${escapeHtml(event.partecipante_nome || 'N/A')}</strong>`;
     default:
-      return event.event_type;
+      return escapeHtml(event.event_type);
   }
 }
 
@@ -124,8 +124,8 @@ function createLogsTable(events) {
         <td>${icon}</td>
         <td>${formatDateItalian(consegnaData)}</td>
         <td>${desc}</td>
-        <td class="details-cell">${details}</td>
-        <td>${e.user_name || '-'}</td>
+        <td class="details-cell">${escapeHtml(details)}</td>
+        <td>${escapeHtml(e.user_name) || '-'}</td>
       </tr>
     `;
   }).join('');

@@ -160,8 +160,8 @@ function addUser(username, password, displayName, adminFlag) {
   }
 
   // Validate password length
-  if (password.length < 4) {
-    console.error('Error: Password must be at least 4 characters long');
+  if (password.length < 8) {
+    console.error('Error: Password must be at least 8 characters long');
     process.exit(1);
   }
 

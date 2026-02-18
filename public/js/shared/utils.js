@@ -1,6 +1,17 @@
 // ===== SHARED UTILITY FUNCTIONS =====
 // Used across consegna.js, storico.js, and debiti.js
 
+// Escape HTML special characters to prevent XSS
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // Display status message to user
 function showStatus(message, type) {
   const status = document.getElementById('status');

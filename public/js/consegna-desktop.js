@@ -369,7 +369,7 @@ function renderParticipantSelect() {
 
   participants.forEach(p => {
     const option = document.createElement('option');
-    option.value = p.nome;
+    option.value = p.id;
     option.textContent = p.nome;
     select.appendChild(option);
   });
@@ -377,18 +377,18 @@ function renderParticipantSelect() {
 
 function showParticipantForm() {
   const select = document.getElementById('participant-select');
-  const nome = select.value;
+  const id = parseInt(select.value);
 
   const container = document.getElementById('selected-participants');
   container.innerHTML = '';
 
-  if (!nome) {
+  if (!id) {
     updateLasciatoInCassa();
     updateSaveButtonVisibility();
     return;
   }
 
-  renderParticipant(nome);
+  renderParticipant(id);
   updateLasciatoInCassa();
   updateSaveButtonVisibility();
 }
@@ -404,14 +404,14 @@ function renderMovimentiGiorno() {
   const rows = existingConsegnaMovimenti.map((m, idx) => {
     return `
       <tr>
-        <td><strong>${m.nome}</strong></td>
+        <td><strong>${escapeHtml(m.nome)}</strong></td>
         <td class="text-right">${m.conto_produttore ? '€' + formatNumber(m.conto_produttore) : ''}</td>
         <td class="text-right">${m.importo_saldato ? '€' + formatNumber(m.importo_saldato) : ''}</td>
         <td class="text-right">${m.credito_lasciato ? '€' + formatNumber(m.credito_lasciato) : ''}</td>
         <td class="text-right">${m.debito_lasciato ? '€' + formatNumber(m.debito_lasciato) : ''}</td>
         <td class="text-right">${m.usa_credito ? '€' + formatNumber(m.usa_credito) : ''}</td>
         <td class="text-right">${m.debito_saldato ? '€' + formatNumber(m.debito_saldato) : ''}</td>
-        <td>${m.note || ''}</td>
+        <td>${escapeHtml(m.note || '')}</td>
       </tr>
     `;
   }).join('');
@@ -436,12 +436,12 @@ function renderMovimentiGiorno() {
   `;
 }
 
-function renderParticipant(nome) {
+function renderParticipant(id) {
   const container = document.getElementById('selected-participants');
-  const p = participants.find(part => part.nome === nome);
+  const p = participants.find(part => part.id === id);
   if (!p) return;
 
-  const saldo = saldiBefore[nome] !== undefined ? saldiBefore[nome] : (p.saldo || 0);
+  const saldo = saldiBefore[id] !== undefined ? saldiBefore[id] : (p.saldo || 0);
   const haCredito = saldo > 0;
   const haDebito = saldo < 0;
 
@@ -452,53 +452,53 @@ function renderParticipant(nome) {
 
   const card = document.createElement('div');
   card.className = 'participant-card-flow';
-  card.innerHTML = buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito, haDebito);
-  addHiddenFields(card, nome, haCredito, haDebito);
+  card.innerHTML = buildParticipantCardHTML(id, p.nome, saldo, saldoText, saldoClass, haCredito, haDebito);
+  addHiddenFields(card, id, haCredito, haDebito);
   container.appendChild(card);
 
   // Populate fields with existing movimento data if editing
-  populateExistingMovimento(nome);
+  populateExistingMovimento(id);
 }
 
-function populateExistingMovimento(nome) {
+function populateExistingMovimento(id) {
   if (!existingConsegnaMovimenti || existingConsegnaMovimenti.length === 0) {
     return;
   }
 
-  const movimento = existingConsegnaMovimenti.find(m => m.nome === nome);
+  const movimento = existingConsegnaMovimenti.find(m => m.partecipante_id === id);
   if (!movimento) {
     return;
   }
 
   // Get current saldo for this participant
-  const p = participants.find(part => part.nome === nome);
-  const saldo = saldiBefore[nome] !== undefined ? saldiBefore[nome] : (p ? p.saldo || 0 : 0);
+  const p = participants.find(part => part.id === id);
+  const saldo = saldiBefore[id] !== undefined ? saldiBefore[id] : (p ? p.saldo || 0 : 0);
 
   // Populate form fields with existing values
   const fields = {
-    [`contoProduttore_${nome}`]: movimento.conto_produttore || '',
-    [`importo_${nome}`]: movimento.importo_saldato || '',
-    [`usaCredito_${nome}`]: movimento.usa_credito || '',
-    [`credito_${nome}`]: movimento.credito_lasciato || '',
-    [`debito_${nome}`]: movimento.debito_lasciato || '',
-    [`debitoSaldato_${nome}`]: movimento.debito_saldato || '',
-    [`note_${nome}`]: movimento.note || ''
+    [`contoProduttore_${id}`]: movimento.conto_produttore || '',
+    [`importo_${id}`]: movimento.importo_saldato || '',
+    [`usaCredito_${id}`]: movimento.usa_credito || '',
+    [`credito_${id}`]: movimento.credito_lasciato || '',
+    [`debito_${id}`]: movimento.debito_lasciato || '',
+    [`debitoSaldato_${id}`]: movimento.debito_saldato || '',
+    [`note_${id}`]: movimento.note || ''
   };
 
-  for (const [id, value] of Object.entries(fields)) {
-    const field = document.getElementById(id);
+  for (const [fieldId, value] of Object.entries(fields)) {
+    const field = document.getElementById(fieldId);
     if (field && value !== '') {
       field.value = value;
       // All compensation fields are always disabled - system-managed
-      if (id.includes('usaCredito_') || id.includes('debitoSaldato_')) {
+      if (fieldId.includes('usaCredito_') || fieldId.includes('debitoSaldato_')) {
         field.disabled = true;
       }
     }
   }
 
   // Handle "usa intero credito" checkbox
-  const usaCreditoField = document.getElementById(`usaCredito_${nome}`);
-  const usaInteroCreditoCheckbox = document.getElementById(`usaInteroCreditoCheckbox_${nome}`);
+  const usaCreditoField = document.getElementById(`usaCredito_${id}`);
+  const usaInteroCreditoCheckbox = document.getElementById(`usaInteroCreditoCheckbox_${id}`);
 
   if (usaCreditoField && movimento.usa_credito && usaInteroCreditoCheckbox && saldo > 0) {
     // If usa_credito equals the full credit amount, check the checkbox
@@ -510,11 +510,11 @@ function populateExistingMovimento(nome) {
 
   // Handle "salda intero debito" checkbox
   if (movimento.salda_debito_totale === 1) {
-    const saldaCheckbox = document.getElementById(`saldaDebito_${nome}`);
+    const saldaCheckbox = document.getElementById(`saldaDebito_${id}`);
     if (saldaCheckbox) {
       saldaCheckbox.checked = true;
       // Also disable the partial debito field if checkbox is checked
-      const debitoSaldatoField = document.getElementById(`debitoSaldato_${nome}`);
+      const debitoSaldatoField = document.getElementById(`debitoSaldato_${id}`);
       if (debitoSaldatoField) {
         debitoSaldatoField.disabled = true;
       }
@@ -522,40 +522,40 @@ function populateExistingMovimento(nome) {
   }
 }
 
-function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito, haDebito) {
+function buildParticipantCardHTML(id, nome, saldo, saldoText, saldoClass, haCredito, haDebito) {
   return `
     <div class="flow-section">
       <div class="flow-section-title">PAGAMENTO</div>
       <div class="form-group">
         <label>Conto Produttore:</label>
-        <input type="text" inputmode="decimal" id="contoProduttore_${nome}" placeholder="0.00"
-               oninput="normalizeInputField(this); handleContoProduttoreInput('${nome}', ${saldo})"
+        <input type="text" inputmode="decimal" id="contoProduttore_${id}" placeholder="0.00"
+               oninput="normalizeInputField(this); handleContoProduttoreInput(${id}, ${saldo})"
                onfocus="handleInputFocus(this)">
       </div>
       <div class="form-group">
         <label>Importo saldato:</label>
-        <input type="text" inputmode="decimal" id="importo_${nome}" placeholder="0.00"
-               oninput="normalizeInputField(this); handleContoProduttoreInput('${nome}', ${saldo}); updateLasciatoInCassa()"
+        <input type="text" inputmode="decimal" id="importo_${id}" placeholder="0.00"
+               oninput="normalizeInputField(this); handleContoProduttoreInput(${id}, ${saldo}); updateLasciatoInCassa()"
                onfocus="handleInputFocus(this)">
       </div>
     </div>
 
-    ${haCredito ? buildCreditoSection(nome, saldo, saldoText, saldoClass) : ''}
+    ${haCredito ? buildCreditoSection(id, nome, saldo, saldoText, saldoClass) : ''}
 
-    ${haDebito ? buildDebitoSection(nome, saldo, saldoText, saldoClass) : ''}
+    ${haDebito ? buildDebitoSection(id, nome, saldo, saldoText, saldoClass) : ''}
 
     <div class="flow-section">
       <div class="row">
         <div class="form-group">
           <label>Lascia credito:</label>
-          <input type="text" inputmode="decimal" id="credito_${nome}" placeholder="0.00" disabled
-                 oninput="normalizeInputField(this); delete this.dataset.autoCalculated; handleCreditoDebitoInput('${nome}', ${saldo})"
+          <input type="text" inputmode="decimal" id="credito_${id}" placeholder="0.00" disabled
+                 oninput="normalizeInputField(this); delete this.dataset.autoCalculated; handleCreditoDebitoInput(${id}, ${saldo})"
                  onfocus="handleInputFocus(this)">
         </div>
         <div class="form-group">
           <label>Lascia debito:</label>
-          <input type="text" inputmode="decimal" id="debito_${nome}" placeholder="0.00" disabled
-                 oninput="normalizeInputField(this); delete this.dataset.autoCalculated; handleCreditoDebitoInput('${nome}', ${saldo})"
+          <input type="text" inputmode="decimal" id="debito_${id}" placeholder="0.00" disabled
+                 oninput="normalizeInputField(this); delete this.dataset.autoCalculated; handleCreditoDebitoInput(${id}, ${saldo})"
                  onfocus="handleInputFocus(this)">
         </div>
       </div>
@@ -564,7 +564,7 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
     <div class="flow-section">
       <div class="form-group">
         <label>Note:</label>
-        <input type="text" id="note_${nome}" placeholder="Note aggiuntive">
+        <input type="text" id="note_${id}" placeholder="Note aggiuntive">
       </div>
     </div>
 
@@ -579,52 +579,52 @@ function buildParticipantCardHTML(nome, saldo, saldoText, saldoClass, haCredito,
   `;
 }
 
-function buildCreditoSection(nome, saldo, saldoText, saldoClass) {
+function buildCreditoSection(id, nome, saldo, saldoText, saldoClass) {
   return `
     <div class="flow-section flow-credito">
       <div class="flow-section-title">
-        <span>CREDITO <span class="saldo-info ${saldoClass}">${saldoText}</span></span>
+        <span>CREDITO <span class="saldo-info ${saldoClass}">${escapeHtml(saldoText)}</span></span>
       </div>
       <div class="checkbox-group">
-        <input type="checkbox" id="usaInteroCreditoCheckbox_${nome}" onchange="toggleUsaInteroCredito('${nome}', ${saldo})">
-        <label for="usaInteroCreditoCheckbox_${nome}">Usa intero credito</label>
+        <input type="checkbox" id="usaInteroCreditoCheckbox_${id}" onchange="toggleUsaInteroCredito(${id}, ${saldo})">
+        <label for="usaInteroCreditoCheckbox_${id}">Usa intero credito</label>
       </div>
       <div class="form-group">
         <label>Usa credito parziale:</label>
-        <input type="text" inputmode="decimal" id="usaCredito_${nome}" placeholder="0.00" disabled
-               oninput="normalizeInputField(this); validateCreditoMax('${nome}', ${saldo}); handleContoProduttoreInput('${nome}', ${saldo}); handleCreditoDebitoInput('${nome}', ${saldo})"
+        <input type="text" inputmode="decimal" id="usaCredito_${id}" placeholder="0.00" disabled
+               oninput="normalizeInputField(this); validateCreditoMax(${id}, ${saldo}); handleContoProduttoreInput(${id}, ${saldo}); handleCreditoDebitoInput(${id}, ${saldo})"
                onfocus="handleInputFocus(this)">
       </div>
     </div>
   `;
 }
 
-function buildDebitoSection(nome, saldo, saldoText, saldoClass) {
+function buildDebitoSection(id, nome, saldo, saldoText, saldoClass) {
   return `
     <div class="flow-section flow-debito">
       <div class="flow-section-title">
-        <span>DEBITO <span class="saldo-info ${saldoClass}">${saldoText}</span></span>
+        <span>DEBITO <span class="saldo-info ${saldoClass}">${escapeHtml(saldoText)}</span></span>
       </div>
       <div class="checkbox-group">
-        <input type="checkbox" id="saldaDebito_${nome}" onchange="toggleSaldaDebito('${nome}', ${saldo})">
-        <label for="saldaDebito_${nome}">Salda intero debito</label>
+        <input type="checkbox" id="saldaDebito_${id}" onchange="toggleSaldaDebito(${id}, ${saldo})">
+        <label for="saldaDebito_${id}">Salda intero debito</label>
       </div>
       <div class="form-group">
         <label>Salda parziale:</label>
-        <input type="text" inputmode="decimal" id="debitoSaldato_${nome}" placeholder="0.00" disabled
-               oninput="normalizeInputField(this); handleContoProduttoreInput('${nome}', ${saldo}); handleCreditoDebitoInput('${nome}', ${saldo})"
+        <input type="text" inputmode="decimal" id="debitoSaldato_${id}" placeholder="0.00" disabled
+               oninput="normalizeInputField(this); handleContoProduttoreInput(${id}, ${saldo}); handleCreditoDebitoInput(${id}, ${saldo})"
                onfocus="handleInputFocus(this)">
       </div>
     </div>
   `;
 }
 
-function addHiddenFields(card, nome, haCredito, haDebito) {
+function addHiddenFields(card, id, haCredito, haDebito) {
   if (!haCredito) {
-    card.appendChild(createHiddenInput(`usaCredito_${nome}`, '0'));
+    card.appendChild(createHiddenInput(`usaCredito_${id}`, '0'));
   }
   if (!haDebito) {
-    card.appendChild(createHiddenInput(`debitoSaldato_${nome}`, '0'));
+    card.appendChild(createHiddenInput(`debitoSaldato_${id}`, '0'));
   }
 }
 
@@ -638,9 +638,9 @@ function createHiddenInput(id, value) {
 
 // ===== CHECKBOX TOGGLE FUNCTIONS =====
 
-function toggleUsaInteroCredito(nome, saldo) {
-  const checkbox = document.getElementById(`usaInteroCreditoCheckbox_${nome}`);
-  const usaCreditoField = document.getElementById(`usaCredito_${nome}`);
+function toggleUsaInteroCredito(id, saldo) {
+  const checkbox = document.getElementById(`usaInteroCreditoCheckbox_${id}`);
+  const usaCreditoField = document.getElementById(`usaCredito_${id}`);
 
   if (checkbox && usaCreditoField) {
     if (checkbox.checked) {
@@ -653,13 +653,13 @@ function toggleUsaInteroCredito(nome, saldo) {
   }
 
   // Trigger auto-calculation with new usaCredito value
-  handleContoProduttoreInput(nome, saldo);
-  handleCreditoDebitoInput(nome, saldo);
+  handleContoProduttoreInput(id, saldo);
+  handleCreditoDebitoInput(id, saldo);
 }
 
-function toggleSaldaDebito(nome, saldo) {
-  const checkbox = document.getElementById(`saldaDebito_${nome}`);
-  const debitoField = document.getElementById(`debitoSaldato_${nome}`);
+function toggleSaldaDebito(id, saldo) {
+  const checkbox = document.getElementById(`saldaDebito_${id}`);
+  const debitoField = document.getElementById(`debitoSaldato_${id}`);
 
   if (checkbox && debitoField) {
     if (checkbox.checked) {
@@ -672,13 +672,13 @@ function toggleSaldaDebito(nome, saldo) {
   }
 
   if (!saldo) {
-    const p = participants.find(part => part.nome === nome);
-    saldo = saldiBefore[nome] !== undefined ? saldiBefore[nome] : (p ? p.saldo || 0 : 0);
+    const p = participants.find(part => part.id === id);
+    saldo = saldiBefore[id] !== undefined ? saldiBefore[id] : (p ? p.saldo || 0 : 0);
   }
 
   // Trigger auto-calculation with new debitoSaldato value
-  handleContoProduttoreInput(nome, saldo);
-  handleCreditoDebitoInput(nome, saldo);
+  handleContoProduttoreInput(id, saldo);
+  handleCreditoDebitoInput(id, saldo);
 }
 
 // ===== CASSA CALCULATIONS =====
@@ -721,8 +721,8 @@ function updateLasciatoInCassa() {
 
 // ===== PARTICIPANT INTERACTION =====
 
-function validateCreditoMax(nome, saldo) {
-  const usaCreditoField = document.getElementById(`usaCredito_${nome}`);
+function validateCreditoMax(id, saldo) {
+  const usaCreditoField = document.getElementById(`usaCredito_${id}`);
   if (!usaCreditoField) return;
 
   const value = parseAmount(usaCreditoField.value);
@@ -732,13 +732,13 @@ function validateCreditoMax(nome, saldo) {
   }
 }
 
-function handleCreditoDebitoInput(nome, saldo) {
+function handleCreditoDebitoInput(id, saldo) {
   // Credit/debt fields are now always disabled and auto-calculated
   // This function only enforces that all 4 fields are always disabled
-  const creditoLasciato = document.getElementById(`credito_${nome}`);
-  const debitoLasciato = document.getElementById(`debito_${nome}`);
-  const usaCredito = document.getElementById(`usaCredito_${nome}`);
-  const debitoSaldato = document.getElementById(`debitoSaldato_${nome}`);
+  const creditoLasciato = document.getElementById(`credito_${id}`);
+  const debitoLasciato = document.getElementById(`debito_${id}`);
+  const usaCredito = document.getElementById(`usaCredito_${id}`);
+  const debitoSaldato = document.getElementById(`debitoSaldato_${id}`);
 
   // All compensation and result fields are always disabled - system-managed only
   if (creditoLasciato) creditoLasciato.disabled = true;
@@ -747,13 +747,13 @@ function handleCreditoDebitoInput(nome, saldo) {
   if (debitoSaldato) debitoSaldato.disabled = true;
 }
 
-function handleContoProduttoreInput(nome, saldo) {
-  const contoProduttore = document.getElementById(`contoProduttore_${nome}`);
-  const importoSaldato = document.getElementById(`importo_${nome}`);
-  const usaCredito = document.getElementById(`usaCredito_${nome}`);
-  const debitoSaldato = document.getElementById(`debitoSaldato_${nome}`);
-  const creditoLasciato = document.getElementById(`credito_${nome}`);
-  const debitoLasciato = document.getElementById(`debito_${nome}`);
+function handleContoProduttoreInput(id, saldo) {
+  const contoProduttore = document.getElementById(`contoProduttore_${id}`);
+  const importoSaldato = document.getElementById(`importo_${id}`);
+  const usaCredito = document.getElementById(`usaCredito_${id}`);
+  const debitoSaldato = document.getElementById(`debitoSaldato_${id}`);
+  const creditoLasciato = document.getElementById(`credito_${id}`);
+  const debitoLasciato = document.getElementById(`debito_${id}`);
 
   if (!contoProduttore || !importoSaldato) return;
 
@@ -794,8 +794,8 @@ function handleContoProduttoreInput(nome, saldo) {
 
   const debitoPreesistente = saldo < 0 ? Math.abs(saldo) : 0;
   const creditoPreesistente = saldo > 0 ? saldo : 0;
-  const saldaDebitoCheckbox = document.getElementById(`saldaDebito_${nome}`);
-  const usaInteroCreditoCheckbox = document.getElementById(`usaInteroCreditoCheckbox_${nome}`);
+  const saldaDebitoCheckbox = document.getElementById(`saldaDebito_${id}`);
+  const usaInteroCreditoCheckbox = document.getElementById(`usaInteroCreditoCheckbox_${id}`);
 
   // Compensation fields are always system-managed (always recalculated)
   // Calculate diff without any compensation values (they will be auto-populated)
@@ -908,22 +908,22 @@ async function saveData() {
   }
 
   const select = document.getElementById('participant-select');
-  const currentNome = select.value;
+  const currentId = parseInt(select.value);
 
-  if (!currentNome) {
+  if (!currentId) {
     await saveCassaOnly();
     return;
   }
 
-  const debitoLasciato = parseAmount(document.getElementById(`debito_${currentNome}`).value);
-  const creditoLasciato = parseAmount(document.getElementById(`credito_${currentNome}`).value);
+  const debitoLasciato = parseAmount(document.getElementById(`debito_${currentId}`).value);
+  const creditoLasciato = parseAmount(document.getElementById(`credito_${currentId}`).value);
 
   if (debitoLasciato > 0 && creditoLasciato > 0) {
     showStatus(`Errore: non puoi lasciare sia credito che debito contemporaneamente`, 'error');
     return;
   }
 
-  await saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteGiornata, currentNome);
+  await saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteGiornata, currentId);
 }
 
 async function saveCassaOnly() {
@@ -970,43 +970,29 @@ async function saveCassaOnly() {
   }
 }
 
-async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteGiornata, currentNome) {
+async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteGiornata, currentId) {
   showStatus('Salvataggio in corso...', 'success');
 
-  const p = participants.find(part => part.nome === currentNome);
+  const p = participants.find(part => part.id === currentId);
   if (!p) {
     showStatus('Partecipante non trovato', 'error');
     return;
   }
 
-  const contoProduttore = roundUpCents(parseAmount(document.getElementById(`contoProduttore_${currentNome}`).value));
-  const importoSaldato = roundUpCents(parseAmount(document.getElementById(`importo_${currentNome}`).value));
-  const usaCredito = roundUpCents(parseAmount(document.getElementById(`usaCredito_${currentNome}`)?.value || '0'));
-  const debitoLasciato = roundUpCents(parseAmount(document.getElementById(`debito_${currentNome}`).value));
-  const creditoLasciato = roundUpCents(parseAmount(document.getElementById(`credito_${currentNome}`).value));
-  const debitoSaldato = roundUpCents(parseAmount(document.getElementById(`debitoSaldato_${currentNome}`)?.value || '0'));
-  const saldaDebitoTotale = document.getElementById(`saldaDebito_${currentNome}`)?.checked || false;
-  const note = document.getElementById(`note_${currentNome}`).value || '';
-
-  let saldoCorrente = saldiBefore[currentNome] !== undefined ? saldiBefore[currentNome] : (p.saldo || 0);
-
-  if (usaCredito > 0) saldoCorrente -= usaCredito;
-
-  if (saldaDebitoTotale && saldoCorrente < 0) {
-    saldoCorrente = 0;
-  } else if (debitoSaldato > 0 && saldoCorrente < 0) {
-    saldoCorrente = Math.min(0, saldoCorrente + debitoSaldato);
-  }
-
-  if (debitoLasciato > 0) saldoCorrente -= debitoLasciato;
-  if (creditoLasciato > 0) saldoCorrente += creditoLasciato;
+  const contoProduttore = roundUpCents(parseAmount(document.getElementById(`contoProduttore_${currentId}`).value));
+  const importoSaldato = roundUpCents(parseAmount(document.getElementById(`importo_${currentId}`).value));
+  const usaCredito = roundUpCents(parseAmount(document.getElementById(`usaCredito_${currentId}`)?.value || '0'));
+  const debitoLasciato = roundUpCents(parseAmount(document.getElementById(`debito_${currentId}`).value));
+  const creditoLasciato = roundUpCents(parseAmount(document.getElementById(`credito_${currentId}`).value));
+  const debitoSaldato = roundUpCents(parseAmount(document.getElementById(`debitoSaldato_${currentId}`)?.value || '0'));
+  const saldaDebitoTotale = document.getElementById(`saldaDebito_${currentId}`)?.checked || false;
+  const note = document.getElementById(`note_${currentId}`).value || '';
 
   const partecipantiData = [{
-    nome: currentNome,
+    partecipante_id: currentId,
     saldaTutto: false,
     contoProduttore, importoSaldato, usaCredito, debitoLasciato, creditoLasciato,
     saldaDebitoTotale, debitoSaldato, note,
-    nuovoSaldo: roundUpCents(saldoCorrente)
   }];
 
   // Always read from DOM

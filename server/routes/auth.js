@@ -6,15 +6,24 @@
 
 const express = require('express');
 const bcrypt = require('bcrypt');
+const rateLimit = require('express-rate-limit');
 const db = require('../config/database');
 
 const router = express.Router();
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  message: { error: 'Too many login attempts', message: 'Too many login attempts. Try again in 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
 
 /**
  * POST /api/auth/login
  * Authenticate user and create session
  */
-router.post('/login', (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
   const { username, password } = req.body;
   const timestamp = new Date().toISOString();
 
@@ -41,7 +50,7 @@ router.post('/login', (req, res) => {
     }
 
     // Verify password
-    const passwordMatch = bcrypt.compareSync(password, user.password_hash);
+    const passwordMatch = await bcrypt.compare(password, user.password_hash);
 
     if (!passwordMatch) {
       console.log(`[AUTH] ${timestamp} - Login failed: Invalid password - ${username}`);
@@ -50,6 +59,14 @@ router.post('/login', (req, res) => {
         message: 'Username or password is incorrect'
       });
     }
+
+    // Regenerate session to prevent session fixation
+    await new Promise((resolve, reject) => {
+      req.session.regenerate((err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
 
     // Create session
     req.session.userId = user.id;
@@ -136,7 +153,7 @@ router.get('/session', (req, res) => {
  * POST /api/auth/change-password
  * Change own password (requires current password)
  */
-router.post('/change-password', (req, res) => {
+router.post('/change-password', async (req, res) => {
   const timestamp = new Date().toISOString();
   const { currentPassword, newPassword } = req.body;
 
@@ -158,10 +175,10 @@ router.post('/change-password', (req, res) => {
     });
   }
 
-  if (newPassword.length < 4) {
+  if (newPassword.length < 8) {
     return res.status(400).json({
       success: false,
-      error: 'La nuova password deve essere di almeno 4 caratteri'
+      error: 'La nuova password deve essere di almeno 8 caratteri'
     });
   }
 
@@ -177,7 +194,7 @@ router.post('/change-password', (req, res) => {
     }
 
     // Verify current password
-    if (!bcrypt.compareSync(currentPassword, user.password_hash)) {
+    if (!await bcrypt.compare(currentPassword, user.password_hash)) {
       console.log(`[AUTH] ${timestamp} - Password change failed: Invalid current password - ${req.session.username}`);
       return res.status(401).json({
         success: false,
@@ -186,7 +203,7 @@ router.post('/change-password', (req, res) => {
     }
 
     // Hash and update new password
-    const newHash = bcrypt.hashSync(newPassword, 12);
+    const newHash = await bcrypt.hash(newPassword, 12);
     db.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?')
       .run(newHash, timestamp, req.session.userId);
 

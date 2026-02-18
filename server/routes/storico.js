@@ -32,7 +32,7 @@ router.get('/', (req, res) => {
     res.json({ success: true, consegne: processed });
   } catch (error) {
     console.error(`[STORICO] ${timestamp} - Error fetching storico:`, error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Errore durante il recupero dello storico' });
   }
 });
 
@@ -48,15 +48,25 @@ router.get('/dettaglio', (req, res) => {
 
     console.log(`[STORICO] ${timestamp} - Processing ${consegne.length} consegne with movimenti`);
 
+    // Fetch all movimenti in a single query instead of N+1
+    const allMovimenti = db.prepare(`
+      SELECT m.*, p.display_name AS nome
+      FROM movimenti m
+      JOIN users p ON m.partecipante_id = p.id
+    `).all();
+
+    // Group movimenti by consegna_id
+    const movimentiByConsegna = {};
+    allMovimenti.forEach(m => {
+      if (!movimentiByConsegna[m.consegna_id]) {
+        movimentiByConsegna[m.consegna_id] = [];
+      }
+      movimentiByConsegna[m.consegna_id].push(m);
+    });
+
     let totalMovimenti = 0;
     const storico = consegneAsc.map((consegna, index) => {
-      const movimenti = db.prepare(`
-        SELECT m.*, p.display_name AS nome
-        FROM movimenti m
-        JOIN users p ON m.partecipante_id = p.id
-        WHERE m.consegna_id = ?
-      `).all(consegna.id);
-
+      const movimenti = movimentiByConsegna[consegna.id] || [];
       totalMovimenti += movimenti.length;
 
       const previousLasciato = index > 0
@@ -80,7 +90,7 @@ router.get('/dettaglio', (req, res) => {
     res.json({ success: true, storico: storico.reverse() });
   } catch (error) {
     console.error(`[STORICO] ${timestamp} - Error fetching detailed storico:`, error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Errore durante il recupero del dettaglio storico' });
   }
 });
 

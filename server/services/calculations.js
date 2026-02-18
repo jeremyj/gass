@@ -1,14 +1,13 @@
 // Round to 0.1€ (1 decimo) to avoid floating-point precision errors
-const roundToCents = (num) => Math.round(num * 10) / 10;
+const roundToTenths = (num) => Math.round(num * 10) / 10;
 
 // Calculate trovato_in_cassa dynamically from previous consegna's lasciato
 function calculateTrovatoInCassa(consegna, previousLasciato) {
-  return previousLasciato !== undefined ? roundToCents(previousLasciato) : consegna.trovato_in_cassa;
+  return previousLasciato !== undefined ? roundToTenths(previousLasciato) : consegna.trovato_in_cassa;
 }
 
-// Calculate lasciato_in_cassa dynamically: trovato - pagato
-function calculateLasciatoInCassa(consegna, trovato) {
-  // Always use the value from database - it's calculated correctly when saving
+// Calculate lasciato_in_cassa: always read from database (calculated correctly when saving)
+function calculateLasciatoInCassa(consegna) {
   return consegna.lasciato_in_cassa;
 }
 
@@ -77,7 +76,7 @@ function applySaldoChanges(currentSaldo, movimento) {
 }
 
 module.exports = {
-  roundToCents,
+  roundToTenths,
   calculateTrovatoInCassa,
   calculateLasciatoInCassa,
   applyDynamicCalculations,

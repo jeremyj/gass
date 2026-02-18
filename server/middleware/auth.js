@@ -30,11 +30,19 @@ function requireAuth(req, res, next) {
 /**
  * Middleware to require admin privileges
  * Must be used AFTER requireAuth
+ * Queries DB to verify current admin status (prevents stale session privilege escalation)
  * Responds with 403 if user is not admin
  */
 function requireAdmin(req, res, next) {
-  if (req.session && req.session.isAdmin) {
-    return next();
+  if (req.session && req.session.userId) {
+    const user = db.prepare('SELECT is_admin FROM users WHERE id = ?').get(req.session.userId);
+    if (user && user.is_admin === 1) {
+      // Keep session in sync
+      req.session.isAdmin = true;
+      return next();
+    }
+    // Admin revoked - update session
+    req.session.isAdmin = false;
   }
 
   res.status(403).json({

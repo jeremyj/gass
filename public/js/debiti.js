@@ -111,7 +111,7 @@ function createParticipantCard(p) {
     card.onclick = () => toggleParticipantCard(p.id);
     card.innerHTML = `
       <div class="saldo-info-left">
-        <div class="saldo-name">👤 ${p.nome}${adminBadge}</div>
+        <div class="saldo-name">👤 ${escapeHtml(p.nome)}${adminBadge}</div>
         <div class="saldo-last-date">Ultimo movimento: ${formatDateItalian(p.ultima_modifica)}</div>
       </div>
       <div class="${saldoBadgeClass}">
@@ -123,7 +123,7 @@ function createParticipantCard(p) {
     card.innerHTML = `
       <div class="saldo-header-expanded" id="header-${p.id}" style="cursor: pointer;">
         <div>
-          <div class="participant-name-expanded">👤 ${p.nome}${adminBadge}</div>
+          <div class="participant-name-expanded">👤 ${escapeHtml(p.nome)}${adminBadge}</div>
           <div class="saldo-last-date">Ultimo movimento: ${formatDateItalian(p.ultima_modifica)}</div>
         </div>
         <div class="${saldoBadgeClass}">

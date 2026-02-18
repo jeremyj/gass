@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('../config/database');
-const { requireAuth, getAuditFields } = require('../middleware/auth');
+const { requireAuth, requireAdmin, getAuditFields } = require('../middleware/auth');
 const {
   calculateTrovatoInCassa,
   calculateLasciatoInCassa,
@@ -50,32 +50,19 @@ router.get('/:date', (req, res) => {
 
     console.log(`[CONSEGNA] ${timestamp} - Retrieved ${movimenti.length} movimenti for consegna ${consegna.id}`);
 
-    // Calculate saldo before this consegna for each participant
+    // Calculate saldo before this consegna for each participant in a single query
+    const saldoRows = db.prepare(`
+      SELECT m2.partecipante_id,
+        SUM(m2.credito_lasciato) - SUM(m2.usa_credito) + SUM(m2.debito_saldato) - SUM(m2.debito_lasciato) AS saldo
+      FROM movimenti m2
+      JOIN consegne c2 ON m2.consegna_id = c2.id
+      WHERE c2.data < ?
+      GROUP BY m2.partecipante_id
+    `).all(date);
+
     const saldiBefore = {};
-
-    // Calculate saldoBefore for each participant by summing all movements before this date
-    movimenti.forEach(m => {
-      // Get all movements for this participant before the current consegna date
-      const previousMovimenti = db.prepare(`
-        SELECT m2.*
-        FROM movimenti m2
-        JOIN consegne c2 ON m2.consegna_id = c2.id
-        WHERE m2.partecipante_id = ? AND c2.data < ?
-        ORDER BY c2.data ASC
-      `).all(m.partecipante_id, date);
-
-      // Calculate saldo by applying each previous movement's effects
-      let saldoBefore = 0;
-      previousMovimenti.forEach(prevM => {
-        // Add credito, subtract debito
-        if (prevM.credito_lasciato > 0) saldoBefore += prevM.credito_lasciato;
-        if (prevM.debito_lasciato > 0) saldoBefore -= prevM.debito_lasciato;
-        // Subtract used credit, add paid debt
-        if (prevM.usa_credito > 0) saldoBefore -= prevM.usa_credito;
-        if (prevM.debito_saldato > 0) saldoBefore += prevM.debito_saldato;
-      });
-
-      saldiBefore[m.nome] = saldoBefore;
+    saldoRows.forEach(row => {
+      saldiBefore[row.partecipante_id] = row.saldo || 0;
     });
 
     // Apply dynamic calculations
@@ -98,7 +85,7 @@ router.get('/:date', (req, res) => {
     });
   } catch (error) {
     console.error(`[CONSEGNA] ${timestamp} - Error fetching consegna for ${date}:`, error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Errore interno del server' });
   }
 });
 
@@ -182,7 +169,8 @@ router.post('/', (req, res) => {
       `);
 
       partecipanti.forEach(p => {
-        const partecipante = db.prepare('SELECT * FROM users WHERE display_name = ?').get(p.nome);
+        // Look up by ID (sent from client as partecipante_id)
+        const partecipante = db.prepare('SELECT * FROM users WHERE id = ?').get(p.partecipante_id);
         if (!partecipante) return;
 
         const existingMovimento = db.prepare(`
@@ -228,8 +216,26 @@ router.post('/', (req, res) => {
           movimentiCreated++;
         }
 
+        // Calculate nuovoSaldo server-side from the movimento fields
+        const saldoBefore = db.prepare(`
+          SELECT COALESCE(SUM(m2.credito_lasciato) - SUM(m2.usa_credito) + SUM(m2.debito_saldato) - SUM(m2.debito_lasciato), 0) AS saldo
+          FROM movimenti m2
+          JOIN consegne c2 ON m2.consegna_id = c2.id
+          WHERE m2.partecipante_id = ? AND c2.data < ?
+        `).get(partecipante.id, data)?.saldo || 0;
+
+        const movimentoForCalc = {
+          salda_tutto: p.saldaTutto ? 1 : 0,
+          usa_credito: p.usaCredito || 0,
+          salda_debito_totale: p.saldaDebitoTotale ? 1 : 0,
+          debito_saldato: p.debitoSaldato || 0,
+          debito_lasciato: p.debitoLasciato || 0,
+          credito_lasciato: p.creditoLasciato || 0
+        };
+
+        const nuovoSaldo = applySaldoChanges(saldoBefore, movimentoForCalc);
         const saldoAudit = getAuditFields(req, 'update');
-        updateSaldo.run(p.nuovoSaldo, data, saldoAudit.updated_by, saldoAudit.updated_at, partecipante.id);
+        updateSaldo.run(nuovoSaldo, data, saldoAudit.updated_by, saldoAudit.updated_at, partecipante.id);
       });
 
       console.log(`[CONSEGNA] ${timestamp} - Movimenti: ${movimentiCreated} created, ${movimentiUpdated} updated`);
@@ -238,7 +244,6 @@ router.post('/', (req, res) => {
       const movimenti = db.prepare('SELECT * FROM movimenti WHERE consegna_id = ?').all(consegna.id);
       let totalPagato = 0;
       movimenti.forEach(m => {
-        // Pagato produttore = sum of all conto_produttore values
         totalPagato += (m.conto_produttore || 0);
       });
       const pagatoAudit = getAuditFields(req, 'update');
@@ -258,7 +263,7 @@ router.post('/', (req, res) => {
       db.prepare('UPDATE consegne SET lasciato_in_cassa = ?, updated_by = ?, updated_at = ? WHERE id = ?')
         .run(lasciato, lasciatoAudit.updated_by, lasciatoAudit.updated_at, consegna.id);
 
-      console.log(`[CONSEGNA] ${timestamp} - Calculated lasciato_in_cassa: ${lasciato}€ (trovato: ${currentConsegna.trovato_in_cassa}€ + incassato: ${incassato}€ - pagato: ${currentConsegna.pagato_produttore}€)`);
+      console.log(`[CONSEGNA] ${timestamp} - Calculated lasciato_in_cassa: ${lasciato}€`);
     });
 
     transaction();
@@ -266,12 +271,12 @@ router.post('/', (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error(`[CONSEGNA] ${timestamp} - Error saving consegna for ${data}:`, error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Errore durante il salvataggio' });
   }
 });
 
-// Delete consegna and recalculate all saldi
-router.delete('/:id', (req, res) => {
+// Delete consegna and recalculate all saldi (admin only)
+router.delete('/:id', requireAdmin, (req, res) => {
   const timestamp = new Date().toISOString();
   const { id } = req.params;
 
@@ -317,7 +322,7 @@ router.delete('/:id', (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error(`[CONSEGNA] ${timestamp} - Error deleting consegna ID ${id}:`, error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Errore durante l\'eliminazione' });
   }
 });
 
@@ -354,25 +359,16 @@ router.post('/:id/close', (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error(`[CONSEGNA] ${timestamp} - Error closing consegna ${id}:`, error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Errore durante la chiusura' });
   }
 });
 
 // Reopen consegna (admin only)
-router.post('/:id/reopen', (req, res) => {
+router.post('/:id/reopen', requireAdmin, (req, res) => {
   const timestamp = new Date().toISOString();
   const { id } = req.params;
 
   console.log(`[CONSEGNA] ${timestamp} - Reopen request for consegna ID: ${id} by user ${req.session.username}`);
-
-  // Admin check
-  if (!req.session.isAdmin) {
-    console.log(`[CONSEGNA] ${timestamp} - Rejected: User ${req.session.username} is not admin`);
-    return res.status(403).json({
-      success: false,
-      error: 'Solo gli amministratori possono riaprire una consegna'
-    });
-  }
 
   try {
     const consegna = db.prepare('SELECT * FROM consegne WHERE id = ?').get(id);
@@ -401,7 +397,7 @@ router.post('/:id/reopen', (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error(`[CONSEGNA] ${timestamp} - Error reopening consegna ${id}:`, error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Errore durante la riapertura' });
   }
 });
 
