@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Saldi</title>
-    <link rel="stylesheet" href="style-desktop.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <nav class="nav-menu">
@@ -12,8 +12,8 @@
             <li><a href="/consegna">📦 Consegna</a></li>
             <li><a href="/debiti" class="active">💰 Saldi</a></li>
             <li><a href="/storico">📋 Storico</a></li>
-            <li id="nav-logs" style="display: none;"><a href="/logs">📝 Logs</a></li>
-            <li style="margin-left: 30px;"><span class="nav-user-tab"><span id="user-display"></span></span></li>
+            <li id="nav-logs" class="initially-hidden"><a href="/logs">📝 Logs</a></li>
+            <li class="nav-spacer"><span class="nav-user-tab"><span id="user-display"></span></span></li>
             <li><a href="#" class="nav-logout-tab" onclick="handleLogout(); return false;">Esci</a></li>
         </ul>
     </nav>
@@ -24,7 +24,7 @@
             <div class="header-date-section">
                 <span id="header-date-display">Oggi</span>
                 <button type="button" class="change-date-btn" onclick="toggleDatePicker()">📅</button>
-                <div id="date-picker-container" class="date-picker-popup" style="display: none;"></div>
+                <div id="date-picker-container" class="date-picker-popup initially-hidden"></div>
             </div>
         </div>
         <input type="hidden" id="data" required>
@@ -36,7 +36,7 @@
             <h2>Partecipanti</h2>
             <button id="btn-add-participant" class="btn-add" onclick="showAddForm()">+ Aggiungi Partecipante</button>
 
-            <div id="add-form" style="display: none; margin-top: 15px;">
+            <div id="add-form" class="initially-hidden" style="margin-top: 15px;">
                 <form onsubmit="event.preventDefault(); addParticipant();">
                     <div class="form-group">
                         <label>Nome Completo:</label>
@@ -72,7 +72,7 @@
     </div>
 
     <!-- Edit User Modal (Admin only) -->
-    <div id="edit-user-modal" class="modal" style="display:none;">
+    <div id="edit-user-modal" class="modal initially-hidden">
         <div class="modal-content">
             <h3>Modifica Utente</h3>
             <form onsubmit="event.preventDefault(); submitEditUser();">
@@ -95,7 +95,7 @@
                         Amministratore
                     </label>
                 </div>
-                <div id="edit-user-error" class="error-message" style="display:none;"></div>
+                <div id="edit-user-error" class="error-message initially-hidden"></div>
                 <div class="modal-buttons">
                     <button type="button" class="btn-delete" onclick="deleteUserFromModal()" style="margin-right: auto;">Elimina Utente</button>
                     <button type="submit" class="btn-save">Salva</button>

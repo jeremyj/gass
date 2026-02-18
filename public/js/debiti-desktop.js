@@ -25,7 +25,7 @@ function renderParticipants() {
   tbody.innerHTML = '';
 
   if (participants.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">Nessun partecipante</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center">Nessun partecipante</td></tr>`;
     return;
   }
 
@@ -50,7 +50,7 @@ function createParticipantRow(p) {
     <td class="${saldoClass}">
       <span id="saldo-view-${p.id}">€${saldoText}</span>
       <input type="text" inputmode="decimal" id="saldo-edit-${p.id}" value="${p.saldo}"
-             style="display: none;"
+             class="initially-hidden"
              oninput="normalizeInputField(this)"
              onfocus="handleInputFocus(this)"
              onkeydown="if(event.key==='Enter'){event.preventDefault();saveSaldo(${p.id})}">
@@ -58,8 +58,8 @@ function createParticipantRow(p) {
     <td>${formatDateItalian(p.ultima_modifica)}</td>
     <td>
       <button onclick="editSaldo(${p.id})" id="edit-btn-${p.id}" ${canEdit ? '' : 'disabled'}>Modifica Saldo</button>
-      <button onclick="saveSaldo(${p.id})" id="save-btn-${p.id}" style="display: none;" class="btn-save">Salva</button>
-      <button onclick="cancelEdit(${p.id})" id="cancel-btn-${p.id}" style="display: none;">Annulla</button>
+      <button onclick="saveSaldo(${p.id})" id="save-btn-${p.id}" class="btn-save initially-hidden">Salva</button>
+      <button onclick="cancelEdit(${p.id})" id="cancel-btn-${p.id}" class="initially-hidden">Annulla</button>
       <button onclick="showEditUserModal(${p.id})">Modifica Utente</button>
     </td>
   `;

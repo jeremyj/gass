@@ -26,7 +26,7 @@ function renderStorico(storico) {
   container.innerHTML = '';
 
   if (storico.length === 0) {
-    container.innerHTML = '<p style="text-align: center; padding: 20px;">Nessuna consegna registrata</p>';
+    container.innerHTML = '<p class="empty-state">Nessuna consegna registrata</p>';
     return;
   }
 
@@ -166,7 +166,7 @@ function createParticipantMovimentoCard(m) {
 
   card.className = cardClass;
 
-  const noteIcon = m.note ? ` <span class="note-icon" style="cursor: pointer;">ℹ️</span>` : '';
+  const noteIcon = m.note ? ` <span class="note-icon clickable">ℹ️</span>` : '';
 
   card.innerHTML = `
     <div class="storico-participant-header">
@@ -179,7 +179,7 @@ function createParticipantMovimentoCard(m) {
       ${m.usa_credito ? ` • Usa credito: ${formatNumber(m.usa_credito)} €` : ''}
       ${!m.conto_produttore && !m.importo_saldato && !m.usa_credito && !m.debito_saldato ? 'Pari' : ''}
     </div>
-    ${m.note ? `<div class="storico-participant-note" style="display: none; padding: 8px; background: #fff3cd; border-radius: 4px; margin-top: 8px; font-size: 13px;">📝 ${escapeHtml(m.note)}</div>` : ''}
+    ${m.note ? `<div class="storico-participant-note">📝 ${escapeHtml(m.note)}</div>` : ''}
   `;
 
   // Add click handler for note icon
@@ -189,7 +189,7 @@ function createParticipantMovimentoCard(m) {
     if (noteIconEl && noteDiv) {
       noteIconEl.addEventListener('click', (e) => {
         e.stopPropagation();
-        noteDiv.style.display = noteDiv.style.display === 'none' ? 'block' : 'none';
+        noteDiv.classList.toggle('show');
       });
     }
   }

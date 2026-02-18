@@ -16,7 +16,7 @@ function renderParticipants() {
   container.innerHTML = '';
 
   if (participants.length === 0) {
-    container.innerHTML = '<p style="text-align: center; padding: 20px;">Nessun partecipante</p>';
+    container.innerHTML = '<p class="empty-state">Nessun partecipante</p>';
     return;
   }
 
@@ -78,7 +78,7 @@ function createParticipantCard(p) {
   } else {
     // Expanded view
     card.innerHTML = `
-      <div class="saldo-header-expanded" id="header-${p.id}" style="cursor: pointer;">
+      <div class="saldo-header-expanded clickable" id="header-${p.id}">
         <div>
           <div class="participant-name-expanded">👤 ${escapeHtml(p.nome)}${adminBadge}</div>
           <div class="saldo-last-date">Ultimo movimento: ${formatDateItalian(p.ultima_modifica)}</div>
@@ -118,11 +118,11 @@ function createParticipantCard(p) {
         </div>
       </div>
 
-      <div class="info-badge" style="background: #fff3cd; border-color: #ffc107; color: #856404;">
+      <div class="info-badge info-badge-warning">
         ⚠️ Modifica manuale del saldo. Usa con attenzione.
       </div>
 
-      <button class="big-btn big-btn-success" style="margin-top: 12px;" onclick="saveSaldo(${p.id})">
+      <button class="big-btn big-btn-success" onclick="saveSaldo(${p.id})">
         💾 Salva Modifiche
       </button>
 
@@ -223,20 +223,16 @@ function updateSaldoInputs(id, changedField) {
     if (creditoValue > 0) {
       debitoInput.value = '';
       debitoInput.disabled = true;
-      debitoInput.style.opacity = '0.5';
     } else {
       debitoInput.disabled = false;
-      debitoInput.style.opacity = '1';
     }
   } else if (changedField === 'debito') {
     const debitoValue = parseAmount(debitoInput.value);
     if (debitoValue > 0) {
       creditoInput.value = '';
       creditoInput.disabled = true;
-      creditoInput.style.opacity = '0.5';
     } else {
       creditoInput.disabled = false;
-      creditoInput.style.opacity = '1';
     }
   }
 }

@@ -19,7 +19,7 @@
             <div class="header-date-section">
                 <span id="header-date-display">Oggi</span>
                 <button type="button" class="change-date-btn" onclick="toggleDatePicker()">📅</button>
-                <div id="date-picker-container" class="date-picker-popup" style="display: none;"></div>
+                <div id="date-picker-container" class="date-picker-popup initially-hidden"></div>
             </div>
         </div>
         <input type="hidden" id="data" required>
@@ -42,10 +42,9 @@
                     <input type="text"
                            inputmode="decimal"
                            id="trovatoInCassa"
-                           class="input-field"
+                           class="input-field input-readonly"
                            placeholder="Dal lasciato precedente"
-                           readonly
-                           style="background: #f0f0f0; cursor: not-allowed;">
+                           readonly>
                 </div>
 
                 <!-- Pagato Produttore -->
@@ -56,10 +55,9 @@
                     <input type="text"
                            inputmode="decimal"
                            id="pagatoProduttore"
-                           class="input-field"
+                           class="input-field input-readonly"
                            placeholder="Σ tutti i movimenti"
-                           readonly
-                           style="background: #f0f0f0; cursor: not-allowed;">
+                           readonly>
                 </div>
 
                 <!-- Lasciato in Cassa -->
@@ -70,10 +68,9 @@
                     <input type="text"
                            inputmode="decimal"
                            id="lasciatoInCassa"
-                           class="input-field"
+                           class="input-field input-readonly"
                            placeholder="Trovato - Pagato"
-                           readonly
-                           style="background: #f0f0f0; cursor: not-allowed;">
+                           readonly>
                 </div>
 
                 <!-- Note Giornata -->
@@ -85,16 +82,16 @@
                 </div>
 
                 <!-- Pulsante Salva Note -->
-                <button id="save-note-btn" class="big-btn big-btn-success" style="display: none; margin-top: 15px;" onclick="saveNoteOnly()">
+                <button id="save-note-btn" class="big-btn big-btn-success initially-hidden" style="margin-top: 15px;" onclick="saveNoteOnly()">
                     💾 Salva Note
                 </button>
 
                 <!-- Chiudi/Riapri Consegna -->
-                <div id="consegna-status-section" style="display: none; margin-top: 15px;">
-                    <div id="closed-badge" class="info-badge closed-badge" style="display: none;">
+                <div id="consegna-status-section" class="initially-hidden" style="margin-top: 15px;">
+                    <div id="closed-badge" class="info-badge closed-badge initially-hidden">
                         🔒 Consegna chiusa
                     </div>
-                    <button id="close-consegna-btn" class="big-btn" onclick="toggleConsegnaStatus()" style="background: #dc3545;">
+                    <button id="close-consegna-btn" class="big-btn big-btn-danger" onclick="toggleConsegnaStatus()">
                         🔒 Chiudi Consegna
                     </button>
                 </div>

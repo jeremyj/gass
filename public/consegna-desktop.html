@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Consegna</title>
-    <link rel="stylesheet" href="style-desktop.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <nav class="nav-menu">
@@ -12,8 +12,8 @@
             <li><a href="/consegna" class="active">📦 Consegna</a></li>
             <li><a href="/debiti">💰 Saldi</a></li>
             <li><a href="/storico">📋 Storico</a></li>
-            <li id="nav-logs" style="display: none;"><a href="/logs">📝 Logs</a></li>
-            <li style="margin-left: 30px;"><span class="nav-user-tab"><span id="user-display"></span></span></li>
+            <li id="nav-logs" class="initially-hidden"><a href="/logs">📝 Logs</a></li>
+            <li class="nav-spacer"><span class="nav-user-tab"><span id="user-display"></span></span></li>
             <li><a href="#" class="nav-logout-tab" onclick="handleLogout(); return false;">Esci</a></li>
         </ul>
     </nav>
@@ -24,7 +24,7 @@
             <div class="header-date-section">
                 <span id="header-date-display">Oggi</span>
                 <button type="button" class="change-date-btn" onclick="toggleDatePicker()">📅</button>
-                <div id="date-picker-container" class="date-picker-popup" style="display: none;"></div>
+                <div id="date-picker-container" class="date-picker-popup initially-hidden"></div>
             </div>
         </div>
         <input type="hidden" id="data" required>
@@ -37,25 +37,25 @@
             <h2>Dati Giornata</h2>
             <div class="form-group">
                 <label>Trovato in cassa:</label>
-                <input type="text" inputmode="decimal" id="trovatoInCassa" placeholder="0.00" readonly style="cursor: not-allowed; background: #f0f0f0;">
+                <input type="text" inputmode="decimal" id="trovatoInCassa" placeholder="0.00" readonly class="input-readonly">
             </div>
             <div class="form-group">
                 <label>Pagato Produttore:</label>
-                <input type="text" inputmode="decimal" id="pagatoProduttore" placeholder="0.00" readonly style="cursor: not-allowed; background: #f0f0f0;">
+                <input type="text" inputmode="decimal" id="pagatoProduttore" placeholder="0.00" readonly class="input-readonly">
             </div>
             <div class="form-group">
                 <label>Lasciato in cassa:</label>
-                <input type="text" inputmode="decimal" id="lasciatoInCassa" placeholder="0.00" readonly style="cursor: not-allowed; background: #f0f0f0;">
+                <input type="text" inputmode="decimal" id="lasciatoInCassa" placeholder="0.00" readonly class="input-readonly">
             </div>
             <div class="form-group">
                 <label>Note:</label>
                 <input type="text" id="noteGiornata" placeholder="Note per questa consegna" oninput="onNoteGiornataChange()">
             </div>
-            <button type="submit" class="btn-save" id="save-btn-cassa" style="display: none; margin-top: 20px;">Salva Movimenti</button>
+            <button type="submit" class="btn-save initially-hidden" id="save-btn-cassa" style="margin-top: 20px;">Salva Movimenti</button>
 
             <!-- Chiudi/Riapri Consegna -->
-            <div id="consegna-status-section" style="display: none; margin-top: 20px;">
-                <span id="closed-badge" class="closed-badge" style="display: none;">
+            <div id="consegna-status-section" class="initially-hidden" style="margin-top: 20px;">
+                <span id="closed-badge" class="closed-badge initially-hidden">
                     🔒 Consegna chiusa
                 </span>
                 <button type="button" id="close-consegna-btn" class="btn-danger" onclick="toggleConsegnaStatus()">

@@ -169,7 +169,8 @@ function updateConsegnaStatusUI(consegna) {
       if (isAdmin()) {
         closeBtn.style.display = 'block';
         closeBtn.innerHTML = '🔓 Riapri Consegna';
-        closeBtn.style.background = '#28a745';
+        closeBtn.classList.remove('big-btn-danger');
+        closeBtn.classList.add('big-btn-success');
       } else {
         closeBtn.style.display = 'none';
       }
@@ -179,7 +180,8 @@ function updateConsegnaStatusUI(consegna) {
       closedBadge.style.display = 'none';
       closeBtn.style.display = 'block';
       closeBtn.innerHTML = '🔒 Chiudi Consegna';
-      closeBtn.style.background = '#dc3545';
+      closeBtn.classList.remove('big-btn-success');
+      closeBtn.classList.add('big-btn-danger');
       enableConsegnaInputs();
     }
   } else {
@@ -293,32 +295,31 @@ function renderMovimentiGiorno() {
     return;
   }
 
-  const rows = existingConsegnaMovimenti.map((m, idx) => {
-    const bgColor = idx % 2 === 0 ? '#FFFFFF' : '#E3F2FD';
+  const rows = existingConsegnaMovimenti.map((m) => {
     return `
-      <tr style="background: ${bgColor};">
-        <td style="padding: 8px;"><strong>${escapeHtml(m.nome)}</strong></td>
-        <td style="padding: 8px; text-align: right;">${m.importo_saldato ? '€' + formatNumber(m.importo_saldato) : ''}</td>
-        <td style="padding: 8px; text-align: right;">${m.usa_credito ? '€' + formatNumber(m.usa_credito) : ''}</td>
-        <td style="padding: 8px; text-align: right;">${m.debito_lasciato ? '€' + formatNumber(m.debito_lasciato) : ''}</td>
-        <td style="padding: 8px; text-align: right;">${m.credito_lasciato ? '€' + formatNumber(m.credito_lasciato) : ''}</td>
-        <td style="padding: 8px; text-align: right;">${m.debito_saldato ? '€' + formatNumber(m.debito_saldato) : ''}</td>
-        <td style="padding: 8px;">${escapeHtml(m.note || '')}</td>
+      <tr>
+        <td><strong>${escapeHtml(m.nome)}</strong></td>
+        <td class="text-right">${m.importo_saldato ? '€' + formatNumber(m.importo_saldato) : ''}</td>
+        <td class="text-right">${m.usa_credito ? '€' + formatNumber(m.usa_credito) : ''}</td>
+        <td class="text-right">${m.debito_lasciato ? '€' + formatNumber(m.debito_lasciato) : ''}</td>
+        <td class="text-right">${m.credito_lasciato ? '€' + formatNumber(m.credito_lasciato) : ''}</td>
+        <td class="text-right">${m.debito_saldato ? '€' + formatNumber(m.debito_saldato) : ''}</td>
+        <td>${escapeHtml(m.note || '')}</td>
       </tr>
     `;
   }).join('');
 
   container.innerHTML = `
     <h3 style="margin-bottom: 10px;">Movimenti del Giorno</h3>
-    <table style="width: 100%; border-collapse: collapse;">
-      <thead><tr style="background: #FFEB3B; color: white;">
-        <th style="padding: 10px; text-align: left;">Nome</th>
-        <th style="padding: 10px; text-align: right;">Importo Saldato</th>
-        <th style="padding: 10px; text-align: right;">Usa Credito</th>
-        <th style="padding: 10px; text-align: right;">Debito Lasciato</th>
-        <th style="padding: 10px; text-align: right;">Credito Lasciato</th>
-        <th style="padding: 10px; text-align: right;">Debito Saldato</th>
-        <th style="padding: 10px; text-align: left;">Note</th>
+    <table class="movimenti-giorno-table">
+      <thead><tr>
+        <th>Nome</th>
+        <th class="text-right">Importo Saldato</th>
+        <th class="text-right">Usa Credito</th>
+        <th class="text-right">Debito Lasciato</th>
+        <th class="text-right">Credito Lasciato</th>
+        <th class="text-right">Debito Saldato</th>
+        <th>Note</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>

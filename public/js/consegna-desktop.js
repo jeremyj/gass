@@ -251,7 +251,7 @@ function buildParticipantCardHTML(id, nome, saldo, saldoText, saldoClass, haCred
       </div>
     </div>
 
-    <div class="flow-section" style="text-align: center; display: flex; gap: 10px; justify-content: center;">
+    <div class="flow-section flow-btn-row">
       <button type="submit" class="btn-save" id="save-btn-participant-inline">
         💾 Salva Movimento
       </button>
