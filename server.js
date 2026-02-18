@@ -45,6 +45,7 @@ app.use(helmet({
     directives: {
       ...helmet.contentSecurityPolicy.getDefaultDirectives(),
       'script-src-attr': ["'unsafe-inline'"],
+      'upgrade-insecure-requests': null,
     },
   },
 }));
