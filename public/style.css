@@ -1333,7 +1333,7 @@ body {
 /* ===== UTILITY CLASSES ===== */
 
 .hidden          { display: none !important; }
-.initially-hidden { display: none; }
+.initially-hidden { display: none !important; }
 .input-readonly  { background: var(--color-readonly-bg) !important; cursor: not-allowed !important; color: var(--color-text-muted) !important; border-color: var(--color-border) !important; }
 .text-right      { text-align: right; }
 .clickable       { cursor: pointer; }
