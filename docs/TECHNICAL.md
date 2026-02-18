@@ -60,12 +60,17 @@ GET    /api/version             - Get application version from package.json (pub
 
 ### Database Schema
 
-#### Table: partecipanti
+#### Table: users (unified user + participant table, v2.0+)
 ```sql
 id                INTEGER PRIMARY KEY
-nome              TEXT UNIQUE NOT NULL
+username          TEXT UNIQUE NOT NULL
+password_hash     TEXT NOT NULL
+display_name      TEXT NOT NULL          -- shown as "nome" in API
+is_admin          INTEGER DEFAULT 0
 saldo             REAL DEFAULT 0
 ultima_modifica   DATE
+created_by        TEXT, created_at DATETIME
+updated_by        TEXT, updated_at DATETIME
 ```
 
 #### Table: consegne
@@ -76,14 +81,18 @@ trovato_in_cassa      REAL
 pagato_produttore     REAL
 lasciato_in_cassa     REAL
 note                  TEXT
-created_at            DATETIME DEFAULT CURRENT_TIMESTAMP
+chiusa                INTEGER DEFAULT 0
+chiusa_by             TEXT, chiusa_at DATETIME
+riaperta_by           TEXT, riaperta_at DATETIME
+created_by            TEXT, created_at DATETIME
+updated_by            TEXT, updated_at DATETIME
 ```
 
 #### Table: movimenti
 ```sql
 id                    INTEGER PRIMARY KEY
-consegna_id           INTEGER NOT NULL
-partecipante_id       INTEGER NOT NULL
+consegna_id           INTEGER NOT NULL REFERENCES consegne(id)
+partecipante_id       INTEGER NOT NULL REFERENCES users(id)
 salda_tutto           BOOLEAN DEFAULT 0
 importo_saldato       REAL DEFAULT 0
 usa_credito           REAL DEFAULT 0
@@ -91,7 +100,20 @@ debito_lasciato       REAL DEFAULT 0
 credito_lasciato      REAL DEFAULT 0
 salda_debito_totale   BOOLEAN DEFAULT 0
 debito_saldato        REAL DEFAULT 0
+conto_produttore      REAL DEFAULT 0
 note                  TEXT
+created_by            TEXT, created_at DATETIME
+updated_by            TEXT, updated_at DATETIME
+```
+
+#### Table: activity_logs
+```sql
+id              INTEGER PRIMARY KEY
+event_type      TEXT NOT NULL
+target_user_id  INTEGER
+actor_user_id   INTEGER
+details         TEXT
+created_at      DATETIME
 ```
 
 #### Indexes
