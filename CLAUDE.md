@@ -25,7 +25,9 @@
 - **Shared**: `public/js/shared/`
   - `api-client.js` - **Always use `API.*` methods for server calls**
   - `utils.js` - formatNumber, formatDateItalian, parseAmount, showStatus
-  - `calendar.js` - Date picker (mobile)
+  - `calendar.js` - Date picker (mobile + desktop)
+  - `consegna-common.js` - Shared consegna business logic (mobile + desktop)
+  - `debiti-common.js` - Shared debiti loading and helpers (mobile + desktop)
   - `auth.js` - Session/logout handling
   - `version.js` - Dynamic version footer
 - **Page-Specific**: `public/js/`
@@ -35,8 +37,11 @@
 ### HTML Script Loading Order
 ```html
 <script src="js/shared/utils.js"></script>
-<script src="js/shared/calendar.js"></script>    <!-- mobile only -->
+<script src="js/shared/calendar.js"></script>
 <script src="js/shared/api-client.js"></script>
+<script src="js/shared/consegna-common.js"></script>  <!-- or debiti-common.js -->
+<script src="js/shared/auth.js"></script>
+<script src="js/shared/version.js"></script>
 <script src="js/[page-name].js"></script>
 ```
 

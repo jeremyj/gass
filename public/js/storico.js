@@ -206,32 +206,6 @@ function toggleConsegnaCard(id) {
   loadStorico();
 }
 
-// ===== DELETE =====
-
-async function deleteConsegna(id) {
-  if (!confirm('Sei sicuro di voler eliminare questa consegna?')) {
-    return;
-  }
-
-  try {
-    const response = await fetch(`/api/consegna/${id}`, {
-      method: 'DELETE',
-    });
-
-    const result = await response.json();
-
-    if (result.success) {
-      showStatus('✓ Consegna eliminata', 'success');
-      expandedConsegnaId = null;
-      loadStorico();
-    } else {
-      showStatus('Errore: ' + result.error, 'error');
-    }
-  } catch (error) {
-    showStatus('Errore durante l\'eliminazione: ' + error.message, 'error');
-  }
-}
-
 // ===== UTILS =====
 
 function formatDateItalianWithDay(dateStr) {

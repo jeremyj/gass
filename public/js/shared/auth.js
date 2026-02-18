@@ -206,26 +206,10 @@ async function checkSession() {
         }
       }
 
-      // Show admin hint badge only for admins
-      const adminHintBadge = document.getElementById('admin-hint-badge');
-      if (adminHintBadge && data.user.isAdmin) {
-        adminHintBadge.style.display = 'block';
-      }
-
       // Show logs nav item only for admins
       const navLogs = document.getElementById('nav-logs');
       if (navLogs) {
         navLogs.style.display = data.user.isAdmin ? '' : 'none';
-      }
-
-      // Hide admin-only elements for non-admins
-      if (!data.user.isAdmin) {
-        // Desktop saldi: hide add button and actions column
-        const btnAddParticipant = document.getElementById('btn-add-participant');
-        if (btnAddParticipant) btnAddParticipant.style.display = 'none';
-
-        const thAzioni = document.getElementById('th-azioni');
-        if (thAzioni) thAzioni.style.display = 'none';
       }
 
       return data.user;

@@ -39,7 +39,15 @@ if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) {
 app.set('trust proxy', 1);
 
 // Security headers
-app.use(helmet());
+// script-src-attr 'unsafe-inline' allows onclick= handlers used throughout the HTML
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      'script-src-attr': ["'unsafe-inline'"],
+    },
+  },
+}));
 
 // Middleware
 app.use(express.json());

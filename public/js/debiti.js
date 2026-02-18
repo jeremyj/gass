@@ -9,49 +9,6 @@ let originalSaldoValues = {}; // Track original values when card is expanded
 // ===== CALENDAR AND DATE PICKER =====
 // Calendar and date picker functions are now in calendar.js
 
-// ===== DATA LOADING =====
-
-async function loadParticipants() {
-  try {
-    const dateInput = document.getElementById('data');
-    const date = dateInput ? dateInput.value : null;
-    const today = new Date().toISOString().split('T')[0];
-
-    // Build URL with optional date parameter
-    // For today's date, don't pass date parameter to get current saldi from partecipanti table
-    let url = '/api/participants';
-    if (date && date !== today) {
-      url += `?date=${date}`;
-    }
-
-    const response = await fetch(url);
-    const result = await response.json();
-
-    if (result.success) {
-      participants = result.participants;
-      renderParticipants();
-    } else {
-      showStatus('Errore: ' + result.error, 'error');
-    }
-  } catch (error) {
-    showStatus('Errore: ' + error.message, 'error');
-  }
-}
-
-async function loadConsegneDates() {
-  try {
-    const response = await fetch('/api/storico');
-    const result = await response.json();
-
-    if (result.success) {
-      const dates = result.consegne.map(c => c.data);
-      setConsegneDates(dates);
-    }
-  } catch (error) {
-    console.error('Error loading consegne dates:', error);
-  }
-}
-
 // ===== RENDERING =====
 
 function renderParticipants() {
@@ -203,12 +160,6 @@ function createParticipantCard(p) {
 }
 
 // ===== CARD INTERACTION =====
-
-function isViewingToday() {
-  const dateInput = document.getElementById('data');
-  const today = new Date().toISOString().split('T')[0];
-  return !dateInput || dateInput.value === today;
-}
 
 function toggleParticipantCard(id) {
   // Only admin can edit saldi - silently ignore for non-admin

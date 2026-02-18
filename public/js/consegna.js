@@ -32,99 +32,15 @@ function toggleAccordion(section) {
   }
 }
 
-// ===== CASSA CALCULATIONS =====
-
-function calculatePagatoProduttore() {
-  let totalPagato = 0;
-  if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
-    existingConsegnaMovimenti.forEach(m => {
-      // Pagato produttore = sum of all conto_produttore values
-      totalPagato += (m.conto_produttore || 0);
-    });
-  }
-  return roundUpCents(totalPagato);
-}
-
-function calculateLasciatoInCassa() {
-  const trovatoInCassa = parseAmount(document.getElementById('trovatoInCassa').value);
-  const pagatoProduttore = parseAmount(document.getElementById('pagatoProduttore').value);
-
-  let incassato = 0;
-  if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
-    existingConsegnaMovimenti.forEach(m => {
-      incassato += (m.importo_saldato || 0);
-    });
-  }
-
-  return roundUpCents(trovatoInCassa + incassato - pagatoProduttore);
-}
-
-function updatePagatoProduttore() {
-  const pagatoField = document.getElementById('pagatoProduttore');
-  const value = calculatePagatoProduttore();
-  pagatoField.value = formatNumber(value);
-}
-
-function updateLasciatoInCassa() {
-  const lasciatoField = document.getElementById('lasciatoInCassa');
-  const value = calculateLasciatoInCassa();
-  lasciatoField.value = formatNumber(value);
-}
-
-
-// ===== CALENDAR AND DATE PICKER =====
-// Calendar and date picker functions are now in calendar.js
-// We only keep the page-specific callback
-
-async function loadConsegneDates() {
-  try {
-    const response = await fetch('/api/storico');
-    const result = await response.json();
-
-    if (result.success) {
-      const dates = result.consegne.map(c => c.data);
-      setConsegneDates(dates); // Update calendar.js with the dates
-    }
-  } catch (error) {
-    console.error('Error loading consegne dates:', error);
-  }
-}
-
 // ===== DATA LOADING =====
-
-async function loadData(date = null) {
-  try {
-    let url = '/api/participants';
-    if (date) {
-      const today = new Date().toISOString().split('T')[0];
-      if (date !== today) {
-        url += `?date=${date}`;
-      }
-    }
-
-    const response = await fetch(url);
-    const result = await response.json();
-
-    if (result.success) {
-      participants = result.participants;
-      renderParticipantSelect();
-    } else {
-      showStatus('Errore: ' + result.error, 'error');
-    }
-  } catch (error) {
-    showStatus('Errore: ' + error.message, 'error');
-  }
-}
 
 async function checkDateData() {
   const dateValue = document.getElementById('data').value;
   if (!dateValue) return;
 
   try {
-    // Reload participants with saldi for the selected date
     await loadData(dateValue);
 
-    // Load consegna data
     const response = await fetch(`/api/consegna/${dateValue}`);
     const result = await response.json();
 
@@ -271,26 +187,6 @@ function updateConsegnaStatusUI(consegna) {
   }
 }
 
-async function toggleConsegnaStatus() {
-  if (!currentConsegnaId) return;
-
-  try {
-    if (isConsegnaClosed) {
-      // Reopen (admin only - backend will verify)
-      await API.reopenConsegna(currentConsegnaId);
-      showStatus('Consegna riaperta', 'success');
-    } else {
-      // Close
-      if (!confirm('Sei sicuro di voler chiudere questa consegna? I dati non potranno essere modificati.')) return;
-      await API.closeConsegna(currentConsegnaId);
-      showStatus('Consegna chiusa', 'success');
-    }
-    await checkDateData(); // Reload
-  } catch (error) {
-    showStatus('Errore: ' + error.message, 'error');
-  }
-}
-
 function disableConsegnaInputs() {
   // Disable note field
   const noteField = document.getElementById('noteGiornata');
@@ -387,44 +283,6 @@ async function saveNoteOnly() {
 }
 
 // ===== RENDERING =====
-
-function renderParticipantSelect() {
-  const select = document.getElementById('participant-select');
-  if (!select) return;
-
-  select.innerHTML = '<option value="">-- Seleziona un partecipante --</option>';
-
-  participants.forEach(p => {
-    const option = document.createElement('option');
-    option.value = p.id;
-    option.textContent = p.nome;
-    select.appendChild(option);
-  });
-}
-
-function showParticipantForm() {
-  const select = document.getElementById('participant-select');
-  if (!select) return;
-
-  const id = parseInt(select.value);
-
-  const container = document.getElementById('selected-participants');
-  if (!container) return;
-
-  container.innerHTML = '';
-
-  const infoBadge = document.getElementById('participant-info-badge');
-
-  if (!id) {
-    if (infoBadge) infoBadge.style.display = 'block';
-    updateLasciatoInCassa();
-    return;
-  }
-
-  if (infoBadge) infoBadge.style.display = 'none';
-  renderParticipant(id);
-  updateLasciatoInCassa();
-}
 
 function renderMovimentiGiorno() {
   const container = document.getElementById('movimenti-giorno');
@@ -616,46 +474,6 @@ function buildParticipantCardHTML(id, nome, saldo, saldoText, saldoClass, haCred
   `;
 }
 
-function buildCreditoSection(id, nome, saldo, saldoText, saldoClass) {
-  return `
-    <div class="flow-section flow-credito">
-      <div class="flow-section-title">
-        <span>CREDITO <span class="saldo-info ${saldoClass}">${escapeHtml(saldoText)}</span></span>
-      </div>
-      <div class="checkbox-group">
-        <input type="checkbox" id="usaInteroCreditoCheckbox_${id}" onchange="toggleUsaInteroCredito(${id}, ${saldo})">
-        <label for="usaInteroCreditoCheckbox_${id}">Usa intero credito</label>
-      </div>
-      <div class="form-group">
-        <label>Usa credito parziale:</label>
-        <input type="text" inputmode="decimal" id="usaCredito_${id}" placeholder="0.00" disabled
-               oninput="normalizeInputField(this); validateCreditoMax(${id}, ${saldo}); handleContoProduttoreInput(${id}, ${saldo}); handleCreditoDebitoInput(${id}, ${saldo})"
-               onfocus="handleInputFocus(this)">
-      </div>
-    </div>
-  `;
-}
-
-function buildDebitoSection(id, nome, saldo, saldoText, saldoClass) {
-  return `
-    <div class="flow-section flow-debito">
-      <div class="flow-section-title">
-        <span>DEBITO <span class="saldo-info ${saldoClass}">${escapeHtml(saldoText)}</span></span>
-      </div>
-      <div class="checkbox-group">
-        <input type="checkbox" id="saldaDebito_${id}" onchange="toggleSaldaDebito(${id}, ${saldo})">
-        <label for="saldaDebito_${id}">Salda intero debito</label>
-      </div>
-      <div class="form-group">
-        <label>Salda parziale:</label>
-        <input type="text" inputmode="decimal" id="debitoSaldato_${id}" placeholder="0.00" disabled
-               oninput="normalizeInputField(this); handleContoProduttoreInput(${id}, ${saldo}); handleCreditoDebitoInput(${id}, ${saldo})"
-               onfocus="handleInputFocus(this)">
-      </div>
-    </div>
-  `;
-}
-
 function addHiddenFields(card, id, haCredito, haDebito) {
   if (!haCredito) {
     card.appendChild(createHiddenInput(`usaCredito_${id}`, '0'));
@@ -667,225 +485,28 @@ function addHiddenFields(card, id, haCredito, haDebito) {
   }
 }
 
-function createHiddenInput(id, value) {
-  const input = document.createElement('input');
-  input.type = 'hidden';
-  input.id = id;
-  input.value = value;
-  return input;
-}
+function showParticipantForm() {
+  const select = document.getElementById('participant-select');
+  if (!select) return;
 
+  const id = parseInt(select.value);
 
-// ===== PARTICIPANT INTERACTION =====
+  const container = document.getElementById('selected-participants');
+  if (!container) return;
 
-function toggleUsaInteroCredito(id, saldo) {
-  const checkbox = document.getElementById(`usaInteroCreditoCheckbox_${id}`);
-  const usaCreditoField = document.getElementById(`usaCredito_${id}`);
+  container.innerHTML = '';
 
-  if (checkbox && usaCreditoField) {
-    if (checkbox.checked) {
-      usaCreditoField.disabled = true;
-      usaCreditoField.value = saldo;
-    } else {
-      usaCreditoField.disabled = false;
-      usaCreditoField.value = '';
-    }
-  }
+  const infoBadge = document.getElementById('participant-info-badge');
 
-  // Trigger auto-calculation with new usaCredito value
-  handleContoProduttoreInput(id, saldo);
-  handleCreditoDebitoInput(id, saldo);
-}
-
-function validateCreditoMax(id, saldo) {
-  const usaCreditoField = document.getElementById(`usaCredito_${id}`);
-  if (!usaCreditoField) return;
-
-  const value = parseAmount(usaCreditoField.value);
-  if (value > saldo) {
-    usaCreditoField.value = saldo;
-    showStatus(`Non puoi usare più di €${formatSaldo(saldo)} di credito`, 'error');
-  }
-}
-
-function toggleSaldaDebito(id, saldo) {
-  const checkbox = document.getElementById(`saldaDebito_${id}`);
-  const debitoField = document.getElementById(`debitoSaldato_${id}`);
-
-  if (checkbox && debitoField) {
-    if (checkbox.checked) {
-      debitoField.disabled = true;
-      debitoField.value = Math.abs(saldo);
-    } else {
-      debitoField.disabled = false;
-      debitoField.value = '';
-    }
-  }
-
-  if (!saldo) {
-    const p = participants.find(part => part.id === id);
-    saldo = saldiBefore[id] !== undefined ? saldiBefore[id] : (p ? p.saldo || 0 : 0);
-  }
-
-  // Trigger auto-calculation with new debitoSaldato value
-  handleContoProduttoreInput(id, saldo);
-  handleCreditoDebitoInput(id, saldo);
-}
-
-function handleCreditoDebitoInput(id, saldo) {
-  // Credit/debt fields are now always disabled and auto-calculated
-  const creditoLasciato = document.getElementById(`credito_${id}`);
-  const debitoLasciato = document.getElementById(`debito_${id}`);
-  const debitoSaldato = document.getElementById(`debitoSaldato_${id}`);
-  const usaCredito = document.getElementById(`usaCredito_${id}`);
-
-  // All compensation and result fields are always disabled - managed by system only
-  if (creditoLasciato) creditoLasciato.disabled = true;
-  if (debitoLasciato) debitoLasciato.disabled = true;
-  if (usaCredito) usaCredito.disabled = true;
-  if (debitoSaldato) debitoSaldato.disabled = true;
-}
-
-function handleContoProduttoreInput(id, saldo) {
-  const contoProduttore = document.getElementById(`contoProduttore_${id}`);
-  const importoSaldato = document.getElementById(`importo_${id}`);
-  const usaCredito = document.getElementById(`usaCredito_${id}`);
-  const debitoSaldato = document.getElementById(`debitoSaldato_${id}`);
-  const creditoLasciato = document.getElementById(`credito_${id}`);
-  const debitoLasciato = document.getElementById(`debito_${id}`);
-
-  if (!contoProduttore || !importoSaldato) return;
-
-  const contoProduttoreValue = parseAmount(contoProduttore.value);
-  const importoSaldatoValue = parseAmount(importoSaldato.value);
-  const usaCreditoValue = usaCredito ? parseAmount(usaCredito.value) : 0;
-  const debitoSaldatoValue = debitoSaldato ? parseAmount(debitoSaldato.value) : 0;
-
-  // Only auto-calculate if we have any payment-related value
-  // Skip only if ALL values are zero AND conto_produttore is also zero
-  if (importoSaldatoValue === 0 && usaCreditoValue === 0 && debitoSaldatoValue === 0 && contoProduttoreValue === 0) {
+  if (!id) {
+    if (infoBadge) infoBadge.style.display = 'block';
+    updateLasciatoInCassa();
     return;
   }
 
-  // Formula: conto_produttore = importo_saldato + usa_credito + debito_lasciato - credito_lasciato - debito_saldato
-  // Rearranged: diff = importo_saldato + usa_credito - debito_saldato - conto_produttore
-  // If diff > 0: credito_lasciato = diff
-  // If diff < 0: debito_lasciato = -diff
-  // If diff = 0: in pari
-
-  // Check if credito/debito fields have been manually modified by user (not auto-calculated)
-  // A field is manual if: has value AND was not auto-calculated AND is not disabled
-  const creditoValue = creditoLasciato ? parseAmount(creditoLasciato.value) : 0;
-  const debitoValue = debitoLasciato ? parseAmount(debitoLasciato.value) : 0;
-
-  const creditoIsManual = creditoLasciato && creditoValue > 0 && creditoLasciato.dataset.autoCalculated !== 'true' && !creditoLasciato.disabled;
-  const debitoIsManual = debitoLasciato && debitoValue > 0 && debitoLasciato.dataset.autoCalculated !== 'true' && !debitoLasciato.disabled;
-
-  // Don't auto-fill if user has manually entered values
-  if (creditoIsManual || debitoIsManual) {
-    return;
-  }
-
-  // AUTO-COMPENSATION: Bidirectional credit/debt compensation
-  const shouldAutoCompensate = contoProduttoreValue > 0;
-
-  const debitoPreesistente = saldo < 0 ? Math.abs(saldo) : 0;
-  const creditoPreesistente = saldo > 0 ? saldo : 0;
-  const saldaDebitoCheckbox = document.getElementById(`saldaDebito_${id}`);
-  const usaInteroCreditoCheckbox = document.getElementById(`usaInteroCreditoCheckbox_${id}`);
-
-  // Compensation fields are always system-managed (always recalculated)
-  // Calculate diff without any compensation values (they will be auto-populated)
-  let diff = importoSaldatoValue - contoProduttoreValue;
-
-  // Reset compensation fields first (will be repopulated if needed)
-  if (usaCredito) {
-    usaCredito.value = '';
-    usaCredito.disabled = true;
-  }
-  if (usaInteroCreditoCheckbox) {
-    usaInteroCreditoCheckbox.checked = false;
-  }
-  if (debitoSaldato) {
-    debitoSaldato.value = '';
-    debitoSaldato.disabled = true;
-  }
-  if (saldaDebitoCheckbox) {
-    saldaDebitoCheckbox.checked = false;
-  }
-
-  // Case 1: Creating credit while participant has existing debt - auto-compensate
-  if (shouldAutoCompensate && diff > 0 && debitoPreesistente > 0) {
-    const debitoSaldabile = Math.min(diff, debitoPreesistente);
-    const saldaTuttoIlDebito = debitoSaldabile === debitoPreesistente;
-
-    // Auto-populate debito_saldato field (always disabled, system-managed)
-    if (debitoSaldato) {
-      debitoSaldato.value = roundUpCents(debitoSaldabile);
-      debitoSaldato.disabled = true;
-    }
-
-    // Check "Salda intero debito" only if paying ALL existing debt
-    if (saldaDebitoCheckbox) {
-      saldaDebitoCheckbox.checked = saldaTuttoIlDebito;
-    }
-
-    // Recalculate diff after debt payment
-    diff = diff - debitoSaldabile;
-  }
-
-  // Case 2: Creating debt while participant has existing credit - auto-compensate
-  if (shouldAutoCompensate && diff < 0 && creditoPreesistente > 0) {
-    const creditoUsabile = Math.min(Math.abs(diff), creditoPreesistente);
-    const usaTuttoIlCredito = creditoUsabile === creditoPreesistente;
-
-    // Auto-populate usa_credito field (always disabled, system-managed)
-    if (usaCredito) {
-      usaCredito.value = roundUpCents(creditoUsabile);
-      usaCredito.disabled = true;
-    }
-
-    // Check "Usa intero credito" only if using ALL available credit
-    if (usaInteroCreditoCheckbox) {
-      usaInteroCreditoCheckbox.checked = usaTuttoIlCredito;
-    }
-
-    // Recalculate diff after credit usage
-    diff = diff + creditoUsabile;
-  }
-
-  // Auto-fill based on calculation - fields are ALWAYS disabled
-  if (diff > 0) {
-    // Leaving credit
-    if (creditoLasciato) {
-      creditoLasciato.value = roundUpCents(diff);
-      creditoLasciato.disabled = true;
-    }
-    if (debitoLasciato) {
-      debitoLasciato.value = '';
-      debitoLasciato.disabled = true;
-    }
-  } else if (diff < 0) {
-    // Leaving debt
-    if (debitoLasciato) {
-      debitoLasciato.value = roundUpCents(-diff);
-      debitoLasciato.disabled = true;
-    }
-    if (creditoLasciato) {
-      creditoLasciato.value = '';
-      creditoLasciato.disabled = true;
-    }
-  } else {
-    // In pari
-    if (creditoLasciato) {
-      creditoLasciato.value = '';
-      creditoLasciato.disabled = true;
-    }
-    if (debitoLasciato) {
-      debitoLasciato.value = '';
-      debitoLasciato.disabled = true;
-    }
-  }
+  if (infoBadge) infoBadge.style.display = 'none';
+  renderParticipant(id);
+  updateLasciatoInCassa();
 }
 
 // ===== MOVEMENTS COUNTER =====
@@ -980,36 +601,6 @@ function removeParticipant(id) {
 }
 
 // ===== SAVE DATA =====
-
-async function saveData() {
-  const data = document.getElementById('data').value;
-  const trovatoInCassa = roundUpCents(parseAmount(document.getElementById('trovatoInCassa').value));
-  const pagatoProduttore = roundUpCents(parseAmount(document.getElementById('pagatoProduttore').value));
-  const noteGiornata = document.getElementById('noteGiornata').value || '';
-
-  if (!data) {
-    showStatus('Inserisci la data', 'error');
-    return;
-  }
-
-  const select = document.getElementById('participant-select');
-  const currentId = parseInt(select.value);
-
-  if (!currentId) {
-    await saveCassaOnly();
-    return;
-  }
-
-  const debitoLasciato = parseAmount(document.getElementById(`debito_${currentId}`).value);
-  const creditoLasciato = parseAmount(document.getElementById(`credito_${currentId}`).value);
-
-  if (debitoLasciato > 0 && creditoLasciato > 0) {
-    showStatus(`Errore: non puoi lasciare sia credito che debito contemporaneamente`, 'error');
-    return;
-  }
-
-  await saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteGiornata, currentId);
-}
 
 async function saveCassaOnly() {
   // Read values from DOM
