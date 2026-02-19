@@ -161,6 +161,7 @@ function handleContoProduttoreInput(id, saldo) {
   const debitoSaldatoValue = debitoSaldato ? parseAmount(debitoSaldato.value) : 0;
 
   if (importoSaldatoValue === 0 && usaCreditoValue === 0 && debitoSaldatoValue === 0 && contoProduttoreValue === 0) {
+    syncDebitoCreditoVisibility(id);
     return;
   }
 
@@ -254,7 +255,7 @@ function handleContoProduttoreInput(id, saldo) {
     }
   }
 
-  syncDebitoVisibility(id);
+  syncDebitoCreditoVisibility(id);
 }
 
 function toggleUsaInteroCredito(id, saldo) {
@@ -304,14 +305,54 @@ function syncDebitoVisibility(id) {
   const debitoField = document.getElementById(`debitoSaldato_${id}`);
   if (!checkbox || !debitoField) return;
 
-  const isChecked = checkbox.checked;
-  const hasPartialValue = !isChecked && parseAmount(debitoField.value) > 0;
+  const importo = document.getElementById(`importo_${id}`);
+  const hasImporto = importo && parseAmount(importo.value) > 0;
 
   const checkboxGroup = checkbox.closest('.checkbox-group');
-  if (checkboxGroup) checkboxGroup.style.display = hasPartialValue ? 'none' : '';
-
   const partialGroup = debitoField.closest('.form-group');
+
+  if (!hasImporto) {
+    if (checkboxGroup) checkboxGroup.style.display = 'none';
+    if (partialGroup) partialGroup.style.display = 'none';
+    return;
+  }
+
+  const isChecked = checkbox.checked;
+  const partialValue = parseAmount(debitoField.value);
+
+  // Hide both when no debt is being paid (nothing auto-filled nor manually entered)
+  if (!isChecked && partialValue === 0) {
+    if (checkboxGroup) checkboxGroup.style.display = 'none';
+    if (partialGroup) partialGroup.style.display = 'none';
+    return;
+  }
+
+  // Mutual exclusivity: hide checkbox only when partial has value AND checkbox not checked
+  const hasPartialValue = !isChecked && partialValue > 0;
+  if (checkboxGroup) checkboxGroup.style.display = hasPartialValue ? 'none' : '';
   if (partialGroup) partialGroup.style.display = isChecked ? 'none' : '';
+}
+
+function syncCreditoVisibility(id) {
+  const checkbox = document.getElementById(`usaInteroCreditoCheckbox_${id}`);
+  const usaCreditoField = document.getElementById(`usaCredito_${id}`);
+  if (!checkbox || !usaCreditoField) return;
+
+  const importo = document.getElementById(`importo_${id}`);
+  const hasImporto = importo && parseAmount(importo.value) > 0;
+
+  const checkboxGroup = checkbox.closest('.checkbox-group');
+  const formGroup = usaCreditoField.closest('.form-group');
+
+  // Show only when importo is present AND credit is being used (checkbox checked or partial entered)
+  const show = hasImporto && (checkbox.checked || parseAmount(usaCreditoField.value) > 0);
+  if (checkboxGroup) checkboxGroup.style.display = show ? '' : 'none';
+  if (formGroup) formGroup.style.display = show ? '' : 'none';
+}
+
+function syncDebitoCreditoVisibility(id) {
+  syncDebitoVisibility(id);
+  syncCreditoVisibility(id);
 }
 
 // ===== SECTION BUILDERS =====
