@@ -177,6 +177,17 @@ router.post('/', (req, res) => {
           SELECT * FROM movimenti WHERE consegna_id = ? AND partecipante_id = ?
         `).get(consegna.id, partecipante.id);
 
+        // Compute saldoBefore BEFORE the upsert so the query sees the existing state.
+        // Use stored saldo minus movements on/after this date: this preserves admin
+        // manual saldo adjustments while correctly handling re-saves of existing consegne.
+        const onOrAfterEffect = db.prepare(`
+          SELECT COALESCE(SUM(m2.credito_lasciato) - SUM(m2.usa_credito) + SUM(m2.debito_saldato) - SUM(m2.debito_lasciato), 0) AS saldo
+          FROM movimenti m2
+          JOIN consegne c2 ON m2.consegna_id = c2.id
+          WHERE m2.partecipante_id = ? AND c2.data >= ?
+        `).get(partecipante.id, data)?.saldo || 0;
+        const saldoBefore = (partecipante.saldo || 0) - onOrAfterEffect;
+
         const movimentoData = [
           p.saldaTutto ? 1 : 0, p.importoSaldato || 0, p.usaCredito || 0,
           p.debitoLasciato || 0, p.creditoLasciato || 0,
@@ -215,14 +226,6 @@ router.post('/', (req, res) => {
                              createAudit.updated_by, createAudit.updated_at);
           movimentiCreated++;
         }
-
-        // Calculate nuovoSaldo server-side from the movimento fields
-        const saldoBefore = db.prepare(`
-          SELECT COALESCE(SUM(m2.credito_lasciato) - SUM(m2.usa_credito) + SUM(m2.debito_saldato) - SUM(m2.debito_lasciato), 0) AS saldo
-          FROM movimenti m2
-          JOIN consegne c2 ON m2.consegna_id = c2.id
-          WHERE m2.partecipante_id = ? AND c2.data < ?
-        `).get(partecipante.id, data)?.saldo || 0;
 
         const movimentoForCalc = {
           salda_tutto: p.saldaTutto ? 1 : 0,
