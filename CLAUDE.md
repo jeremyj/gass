@@ -8,8 +8,9 @@
 ## Codebase Architecture
 
 ### Server-Side (MVC Pattern)
-- **Entry Point**: `server.js` - minimal bootstrap, loads routes
-- **Database**: `server/config/database.js`
+- **Entry Point**: `server.js` - minimal bootstrap (`createApp()` + listen)
+- **App Factory**: `server/app.js` - Express setup, middleware, route mounting
+- **Database**: `server/config/database.js` - exports `createDatabase(dbPath)` factory + production singleton
 - **Routes**: `server/routes/`
   - `pages.js` - HTML routing with mobile/desktop detection
   - `auth.js` - Authentication endpoints (login, logout, password change)
@@ -189,6 +190,30 @@ Only **manual fields** are tracked for movimento changes:
 - `importo_saldato` - Amount paid
 
 Auto-calculated fields (credito_lasciato, debito_lasciato, usa_credito, debito_saldato) are NOT logged as changes since they derive from manual inputs.
+
+---
+
+## Testing
+
+**Stack**: Vitest + supertest, `pool: forks` (each test file = isolated Node process)
+
+```bash
+npm test                    # all 162 tests
+npm run test:unit           # pure function tests (no DB/HTTP)
+npm run test:integration    # API tests with in-memory SQLite
+npm run test:coverage       # with coverage report
+```
+
+### Architecture
+- `test/helpers/setup-test-db.js` — creates in-memory DB, patches `require.cache` for DB isolation
+- `test/helpers/setup-app.js` — creates supertest agent wrapping `createApp()`
+- `test/helpers/seed.js` — `createUser`, `createConsegna`, `createMovimento`, `loginAs`, `clearConsegne`, `clearNonAdminUsers`
+- Call `setupTestDb()` **before** any `require('../../server/app')` in test files
+
+### Key gotchas
+- `database.js` creates no production singleton when `NODE_ENV=test`; test files must call `setupTestDb()` first to patch the require cache before loading app
+- API routes are mounted before the pages router so unauthenticated API calls return 401 (not 302)
+- `clearNonAdminUsers` deletes all users except `username='admin'` and resets admin's `is_admin=1`; cleans FK-dependent `activity_logs` rows first
 
 ---
 
