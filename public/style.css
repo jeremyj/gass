@@ -173,7 +173,7 @@ body {
     padding: 15px;
     z-index: 1000;
     top: 100%;
-    right: 0;
+    left: 0;
     margin-top: var(--space-2);
     min-width: 280px; /* Mobile default */
 }
@@ -772,6 +772,7 @@ body {
     letter-spacing: 0.3px;
     display: flex;
     align-items: center;
+    justify-content: center;
     flex-wrap: wrap;
 }
 
@@ -1333,7 +1334,8 @@ body {
 /* ===== UTILITY CLASSES ===== */
 
 .hidden          { display: none !important; }
-.initially-hidden { display: none !important; }
+.initially-hidden { display: none; }
+.modal.initially-hidden { display: none; }
 .input-readonly  { background: var(--color-readonly-bg) !important; cursor: not-allowed !important; color: var(--color-text-muted) !important; border-color: var(--color-border) !important; }
 .text-right      { text-align: right; }
 .clickable       { cursor: pointer; }
@@ -1427,7 +1429,7 @@ input:disabled {
     opacity: 0.6;
 }
 
-.consegna-closed .big-btn-success {
+.consegna-closed .big-btn-success:not(#close-consegna-btn) {
     display: none !important;
 }
 
@@ -1869,6 +1871,8 @@ button:disabled {
 
     .date-picker-popup {
         min-width: 300px; /* Larger for desktop */
+        left: auto;
+        right: 0;
     }
 
     .date-picker-weekday {
@@ -2146,6 +2150,7 @@ button:disabled {
         font-size: 14px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        text-align: center;
     }
 
     .flow-credito {
@@ -2418,8 +2423,18 @@ button:disabled {
         display: none !important;
     }
 
+    #consegna-status-section {
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    #close-consegna-btn {
+        width: auto;
+    }
+
     .closed-badge {
-        margin-right: 15px;
+        margin-right: 0;
         margin-bottom: 0;
     }
 
