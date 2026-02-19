@@ -203,6 +203,8 @@ function populateExistingMovimento(id) {
       }
     }
   }
+
+  syncDebitoVisibility(id);
 }
 
 function buildParticipantCardHTML(id, nome, saldo, saldoText, saldoClass, haCredito, haDebito) {

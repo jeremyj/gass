@@ -418,6 +418,7 @@ function loadExistingParticipantData(id, saldo) {
   }
 
   // Apply business rules to correctly set disabled states based on loaded data
+  syncDebitoVisibility(id);
   handleCreditoDebitoInput(id, saldo);
 }
 

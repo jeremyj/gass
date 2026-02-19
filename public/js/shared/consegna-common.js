@@ -253,6 +253,8 @@ function handleContoProduttoreInput(id, saldo) {
       debitoLasciato.disabled = true;
     }
   }
+
+  syncDebitoVisibility(id);
 }
 
 function toggleUsaInteroCredito(id, saldo) {
@@ -292,8 +294,24 @@ function toggleSaldaDebito(id, saldo) {
     saldo = saldiBefore[id] !== undefined ? saldiBefore[id] : (p ? p.saldo || 0 : 0);
   }
 
+  syncDebitoVisibility(id);
   handleContoProduttoreInput(id, saldo);
   handleCreditoDebitoInput(id, saldo);
+}
+
+function syncDebitoVisibility(id) {
+  const checkbox = document.getElementById(`saldaDebito_${id}`);
+  const debitoField = document.getElementById(`debitoSaldato_${id}`);
+  if (!checkbox || !debitoField) return;
+
+  const isChecked = checkbox.checked;
+  const hasPartialValue = !isChecked && parseAmount(debitoField.value) > 0;
+
+  const checkboxGroup = checkbox.closest('.checkbox-group');
+  if (checkboxGroup) checkboxGroup.style.display = hasPartialValue ? 'none' : '';
+
+  const partialGroup = debitoField.closest('.form-group');
+  if (partialGroup) partialGroup.style.display = isChecked ? 'none' : '';
 }
 
 // ===== SECTION BUILDERS =====
@@ -331,7 +349,7 @@ function buildDebitoSection(id, nome, saldo, saldoText, saldoClass) {
       <div class="form-group">
         <label>Salda parziale:</label>
         <input type="text" inputmode="decimal" id="debitoSaldato_${id}" placeholder="0.00" disabled
-               oninput="normalizeInputField(this); handleContoProduttoreInput(${id}, ${saldo}); handleCreditoDebitoInput(${id}, ${saldo})"
+               oninput="normalizeInputField(this); syncDebitoVisibility(${id}); handleContoProduttoreInput(${id}, ${saldo}); handleCreditoDebitoInput(${id}, ${saldo})"
                onfocus="handleInputFocus(this)">
       </div>
     </div>
