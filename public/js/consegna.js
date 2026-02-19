@@ -186,6 +186,7 @@ function updateConsegnaStatusUI(consegna) {
     }
   } else {
     statusSection.style.display = 'none';
+    enableConsegnaInputs(); // Restore inputs/visibility for dates with no consegna
   }
 }
 
@@ -349,6 +350,7 @@ function renderParticipant(id) {
   // Load existing data if available (with timeout to ensure DOM is ready)
   setTimeout(() => {
     loadExistingParticipantData(id, saldo);
+    syncDebitoCreditoVisibility(id);
     // Save original values after form is fully loaded
     setTimeout(() => saveOriginalParticipantValues(id), 10);
   }, 0);
@@ -418,7 +420,7 @@ function loadExistingParticipantData(id, saldo) {
   }
 
   // Apply business rules to correctly set disabled states based on loaded data
-  syncDebitoVisibility(id);
+  syncDebitoCreditoVisibility(id);
   handleCreditoDebitoInput(id, saldo);
 }
 
@@ -744,7 +746,5 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Use restoreDateFromStorage which handles reload vs tab navigation
   const dateToLoad = restoreDateFromStorage();
-  setDateDisplay(dateToLoad);
-
-  loadData();
+  setDateDisplay(dateToLoad); // triggers checkDateData → loadData(dateValue)
 });

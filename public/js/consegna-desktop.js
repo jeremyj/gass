@@ -148,6 +148,7 @@ function renderParticipant(id) {
   container.appendChild(card);
 
   populateExistingMovimento(id);
+  syncDebitoCreditoVisibility(id);
 }
 
 function populateExistingMovimento(id) {
@@ -204,7 +205,7 @@ function populateExistingMovimento(id) {
     }
   }
 
-  syncDebitoVisibility(id);
+  syncDebitoCreditoVisibility(id);
 }
 
 function buildParticipantCardHTML(id, nome, saldo, saldoText, saldoClass, haCredito, haDebito) {
@@ -329,7 +330,7 @@ function updateConsegnaStatusUI(consegna) {
   if (!statusSection) return;
 
   if (currentConsegnaId) {
-    statusSection.style.display = 'block';
+    statusSection.style.display = 'flex';
 
     if (isConsegnaClosed) {
       closedBadge.style.display = 'inline-block';
@@ -347,6 +348,7 @@ function updateConsegnaStatusUI(consegna) {
     }
   } else {
     statusSection.style.display = 'none';
+    enableConsegnaInputs(); // Restore inputs for dates with no consegna
   }
 }
 
@@ -486,7 +488,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadConsegneDates();
 
   const dateToLoad = restoreDateFromStorage();
-  setDateDisplay(dateToLoad);
-
-  loadData();
+  setDateDisplay(dateToLoad); // triggers checkDateData → loadData(dateValue)
 });
