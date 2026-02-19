@@ -92,9 +92,9 @@ describe('parseAmount', () => {
 });
 
 describe('roundUpCents', () => {
-  it('rounds to nearest 0.1', () => {
-    expect(roundUpCents(1.05)).toBe(1.1);
-    expect(roundUpCents(1.04)).toBe(1.0);
+  it('rounds to nearest 0.01', () => {
+    expect(roundUpCents(1.006)).toBe(1.01);
+    expect(roundUpCents(1.004)).toBe(1.0);
   });
 
   it('returns whole numbers unchanged', () => {

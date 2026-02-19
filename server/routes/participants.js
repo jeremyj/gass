@@ -16,38 +16,35 @@ router.get('/', (req, res) => {
   console.log(`[PARTICIPANTS] ${timestamp} - GET request${date ? ` for date: ${date}` : ''}`);
 
   try {
-    // If date is provided, calculate saldi as of that date using a single aggregation query
+    // If date is provided, calculate saldi as of that date
     if (date) {
-      const participants = db.prepare('SELECT id, username, display_name AS nome, is_admin FROM users ORDER BY display_name').all();
-
-      console.log(`[PARTICIPANTS] ${timestamp} - Calculating saldi as of ${date} for ${participants.length} participants`);
-
-      // Single query to get all saldi up to and including the date
-      const saldoRows = db.prepare(`
-        SELECT m.partecipante_id,
-          SUM(m.credito_lasciato) - SUM(m.debito_lasciato) - SUM(m.usa_credito) + SUM(m.debito_saldato) AS saldo,
-          MAX(c.data) AS ultima_modifica
-        FROM movimenti m
-        JOIN consegne c ON m.consegna_id = c.id
-        WHERE c.data <= ?
-        GROUP BY m.partecipante_id
+      // Derive historical saldo: start from current saldo, subtract all movimenti effect,
+      // then add back the effect of movimenti up to the requested date.
+      // This correctly accounts for initial balances stored in users.saldo before any movimenti.
+      const participantsWithSaldi = db.prepare(`
+        SELECT u.id, u.username, u.display_name AS nome, u.is_admin,
+          COALESCE(u.saldo - COALESCE(all_mv.effect, 0) + COALESCE(date_mv.effect, 0), 0) AS saldo,
+          date_mv.ultima_modifica
+        FROM users u
+        LEFT JOIN (
+          SELECT m.partecipante_id,
+            SUM(m.credito_lasciato) - SUM(m.debito_lasciato) - SUM(m.usa_credito) + SUM(m.debito_saldato) AS effect
+          FROM movimenti m
+          GROUP BY m.partecipante_id
+        ) all_mv ON all_mv.partecipante_id = u.id
+        LEFT JOIN (
+          SELECT m.partecipante_id,
+            SUM(m.credito_lasciato) - SUM(m.debito_lasciato) - SUM(m.usa_credito) + SUM(m.debito_saldato) AS effect,
+            MAX(c.data) AS ultima_modifica
+          FROM movimenti m
+          JOIN consegne c ON m.consegna_id = c.id
+          WHERE c.data <= ?
+          GROUP BY m.partecipante_id
+        ) date_mv ON date_mv.partecipante_id = u.id
+        ORDER BY u.display_name
       `).all(date);
 
-      const saldoMap = {};
-      saldoRows.forEach(row => {
-        saldoMap[row.partecipante_id] = { saldo: row.saldo || 0, ultima_modifica: row.ultima_modifica };
-      });
-
-      const participantsWithSaldi = participants.map(p => ({
-        id: p.id,
-        username: p.username,
-        nome: p.nome,
-        saldo: saldoMap[p.id]?.saldo || 0,
-        ultima_modifica: saldoMap[p.id]?.ultima_modifica || null,
-        is_admin: p.is_admin
-      }));
-
-      console.log(`[PARTICIPANTS] ${timestamp} - Successfully calculated saldi for ${date}`);
+      console.log(`[PARTICIPANTS] ${timestamp} - Successfully calculated saldi for ${date} (${participantsWithSaldi.length} participants)`);
       res.json({ success: true, participants: participantsWithSaldi });
     } else {
       // Return current saldi

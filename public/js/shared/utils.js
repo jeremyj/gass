@@ -64,9 +64,9 @@ function parseAmount(value) {
   return parseFloat(normalized) || 0;
 }
 
-// Round to 0.1€ (1 decimo) - matches server-side rounding
+// Round to 0.01€ (1 cent) - matches server-side rounding
 function roundUpCents(amount) {
-  return Math.round(amount * 10) / 10;
+  return Math.round(amount * 100) / 100;
 }
 
 // Format saldo for display (remove unnecessary .0)

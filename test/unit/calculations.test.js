@@ -1,26 +1,26 @@
 'use strict';
 
 const {
-  roundToTenths,
+  roundToCents,
   calculateTrovatoInCassa,
   processConsegneWithDynamicValues,
   applySaldoChanges,
 } = require('../../server/services/calculations');
 
-describe('roundToTenths', () => {
-  it('rounds to nearest 0.1', () => {
-    expect(roundToTenths(1.05)).toBe(1.1);
-    expect(roundToTenths(1.04)).toBe(1.0);
-    expect(roundToTenths(10.25)).toBe(10.3);
+describe('roundToCents', () => {
+  it('rounds to nearest 0.01', () => {
+    expect(roundToCents(1.006)).toBe(1.01);
+    expect(roundToCents(1.004)).toBe(1.0);
+    expect(roundToCents(10.126)).toBe(10.13);
   });
 
   it('returns whole numbers unchanged', () => {
-    expect(roundToTenths(5)).toBe(5);
-    expect(roundToTenths(0)).toBe(0);
+    expect(roundToCents(5)).toBe(5);
+    expect(roundToCents(0)).toBe(0);
   });
 
   it('handles floating point noise', () => {
-    expect(roundToTenths(0.1 + 0.2)).toBe(0.3);
+    expect(roundToCents(0.1 + 0.2)).toBe(0.3);
   });
 });
 

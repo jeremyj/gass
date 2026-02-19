@@ -50,14 +50,21 @@ router.get('/:date', (req, res) => {
 
     console.log(`[CONSEGNA] ${timestamp} - Retrieved ${movimenti.length} movimenti for consegna ${consegna.id}`);
 
-    // Calculate saldo before this consegna for each participant in a single query
+    // Calculate saldo before this consegna for each participant.
+    // Use stored saldo minus movements on/after this date — same logic as POST handler —
+    // so that initial balances stored in users.saldo are correctly included.
     const saldoRows = db.prepare(`
-      SELECT m2.partecipante_id,
-        SUM(m2.credito_lasciato) - SUM(m2.usa_credito) + SUM(m2.debito_saldato) - SUM(m2.debito_lasciato) AS saldo
-      FROM movimenti m2
-      JOIN consegne c2 ON m2.consegna_id = c2.id
-      WHERE c2.data < ?
-      GROUP BY m2.partecipante_id
+      SELECT u.id AS partecipante_id,
+        COALESCE(u.saldo - COALESCE(on_or_after.effect, 0), 0) AS saldo
+      FROM users u
+      LEFT JOIN (
+        SELECT m2.partecipante_id,
+          SUM(m2.credito_lasciato) - SUM(m2.usa_credito) + SUM(m2.debito_saldato) - SUM(m2.debito_lasciato) AS effect
+        FROM movimenti m2
+        JOIN consegne c2 ON m2.consegna_id = c2.id
+        WHERE c2.data >= ?
+        GROUP BY m2.partecipante_id
+      ) on_or_after ON on_or_after.partecipante_id = u.id
     `).all(date);
 
     const saldiBefore = {};
