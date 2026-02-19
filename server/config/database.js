@@ -1,398 +1,268 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
-
-// Use /app/data for Docker volume, or project root for local dev
-const projectRoot = path.join(__dirname, '../..');
-const dbDir = fs.existsSync('/app/data') ? '/app/data' : projectRoot;
-const dbPath = path.join(dbDir, 'gass.db');
-const dbExists = fs.existsSync(dbPath);
-const db = new Database(dbPath);
-
-console.log('\n=== Database Initialization ===');
-console.log(`Path: ${dbPath}`);
-console.log(`Mode: ${dbExists ? 'Existing database' : 'New database'}`);
-console.log(`Environment: ${fs.existsSync('/app/data') ? 'Docker' : 'Local'}`);
-
-// Enable foreign keys
-db.pragma('foreign_keys = ON');
-console.log('Foreign keys: ENABLED');
-
-// Create tables
-console.log('\n--- Creating base tables ---');
-db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
-    display_name TEXT NOT NULL,
-    saldo REAL DEFAULT 0,
-    ultima_modifica DATE,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  );
-
-  CREATE TABLE IF NOT EXISTS consegne (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    data DATE NOT NULL,
-    trovato_in_cassa REAL DEFAULT 0,
-    pagato_produttore REAL DEFAULT 0,
-    lasciato_in_cassa REAL DEFAULT 0,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  );
-
-  CREATE TABLE IF NOT EXISTS movimenti (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    consegna_id INTEGER NOT NULL,
-    partecipante_id INTEGER NOT NULL,
-    salda_tutto BOOLEAN DEFAULT 0,
-    importo_saldato REAL DEFAULT 0,
-    usa_credito REAL DEFAULT 0,
-    debito_lasciato REAL DEFAULT 0,
-    credito_lasciato REAL DEFAULT 0,
-    salda_debito_totale BOOLEAN DEFAULT 0,
-    debito_saldato REAL DEFAULT 0,
-    note TEXT,
-    FOREIGN KEY (consegna_id) REFERENCES consegne(id) ON DELETE CASCADE,
-    FOREIGN KEY (partecipante_id) REFERENCES users(id) ON DELETE CASCADE
-  );
-
-  CREATE INDEX IF NOT EXISTS idx_consegne_data ON consegne(data);
-  CREATE INDEX IF NOT EXISTS idx_movimenti_consegna ON movimenti(consegna_id);
-  CREATE INDEX IF NOT EXISTS idx_movimenti_partecipante ON movimenti(partecipante_id);
-`);
-console.log('Base tables created/verified');
-
-console.log('\n--- Running schema migrations ---');
-
-// Add note column to consegne if it doesn't exist
-try {
-  db.exec(`ALTER TABLE consegne ADD COLUMN note TEXT`);
-  console.log('[MIGRATION] Added note column to consegne table');
-} catch (err) {
-  // Column already exists, ignore
-  if (!err.message.includes('duplicate column')) {
-    throw err;
-  }
-}
-
-
-// Add conto_produttore column to movimenti if it doesn't exist
-try {
-  db.exec(`ALTER TABLE movimenti ADD COLUMN conto_produttore REAL DEFAULT 0`);
-  console.log('[MIGRATION] Added conto_produttore column to movimenti table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) {
-    throw err;
-  }
-}
-
-// Add updated_by column to consegne if it doesn't exist
-try {
-  db.exec(`ALTER TABLE consegne ADD COLUMN updated_by INTEGER REFERENCES users(id)`);
-  console.log('[MIGRATION] Added updated_by column to consegne table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) {
-    throw err;
-  }
-}
-
-// Add updated_by column to movimenti if it doesn't exist
-try {
-  db.exec(`ALTER TABLE movimenti ADD COLUMN updated_by INTEGER REFERENCES users(id)`);
-  console.log('[MIGRATION] Added updated_by column to movimenti table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) {
-    throw err;
-  }
-}
-
-console.log('\n--- Audit tracking migration (v1.4) ---');
-
-// Users table audit columns
-try {
-  db.exec(`ALTER TABLE users ADD COLUMN created_by INTEGER REFERENCES users(id)`);
-  console.log('[AUDIT] Added created_by column to users table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) throw err;
-}
-
-try {
-  db.exec(`ALTER TABLE users ADD COLUMN updated_by INTEGER REFERENCES users(id)`);
-  console.log('[AUDIT] Added updated_by column to users table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) throw err;
-}
-
-try {
-  db.exec(`ALTER TABLE users ADD COLUMN updated_at DATETIME`);
-  console.log('[AUDIT] Added updated_at column to users table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) throw err;
-}
-
-// Users table saldo columns (v2.0 - merged from partecipanti)
-try {
-  db.exec(`ALTER TABLE users ADD COLUMN saldo REAL DEFAULT 0`);
-  console.log('[MERGE] Added saldo column to users table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) throw err;
-}
-
-try {
-  db.exec(`ALTER TABLE users ADD COLUMN ultima_modifica DATE`);
-  console.log('[MERGE] Added ultima_modifica column to users table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) throw err;
-}
-
-// Consegne table audit columns
-try {
-  db.exec(`ALTER TABLE consegne ADD COLUMN created_by INTEGER REFERENCES users(id)`);
-  console.log('[AUDIT] Added created_by column to consegne table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) throw err;
-}
-
-try {
-  db.exec(`ALTER TABLE consegne ADD COLUMN updated_at DATETIME`);
-  console.log('[AUDIT] Added updated_at column to consegne table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) throw err;
-}
-
-// Movimenti table audit columns
-try {
-  db.exec(`ALTER TABLE movimenti ADD COLUMN created_by INTEGER REFERENCES users(id)`);
-  console.log('[AUDIT] Added created_by column to movimenti table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) throw err;
-}
-
-try {
-  db.exec(`ALTER TABLE movimenti ADD COLUMN created_at DATETIME`);
-  console.log('[AUDIT] Added created_at column to movimenti table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) throw err;
-}
-
-try {
-  db.exec(`ALTER TABLE movimenti ADD COLUMN updated_at DATETIME`);
-  console.log('[AUDIT] Added updated_at column to movimenti table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) throw err;
-}
-
-// Create performance indexes for audit queries
-try {
-  db.exec(`CREATE INDEX IF NOT EXISTS idx_consegne_created_by ON consegne(created_by)`);
-  db.exec(`CREATE INDEX IF NOT EXISTS idx_consegne_updated_by ON consegne(updated_by)`);
-  db.exec(`CREATE INDEX IF NOT EXISTS idx_movimenti_created_by ON movimenti(created_by)`);
-  db.exec(`CREATE INDEX IF NOT EXISTS idx_movimenti_updated_by ON movimenti(updated_by)`);
-  db.exec(`CREATE INDEX IF NOT EXISTS idx_users_updated_by ON users(updated_by)`);
-  console.log('[AUDIT] Created audit tracking indexes');
-} catch (err) {
-  console.error('[AUDIT] Error creating audit indexes:', err.message);
-}
-
-console.log('\n--- Admin role migration (v1.7) ---');
-
-// Add is_admin column to users table
-try {
-  db.exec(`ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0`);
-  console.log('[ADMIN] Added is_admin column to users table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) throw err;
-}
-
-console.log('\n--- Chiudi consegna feature (v1.7) ---');
-
-// Add chiusa column to consegne table
-try {
-  db.exec(`ALTER TABLE consegne ADD COLUMN chiusa INTEGER DEFAULT 0`);
-  console.log('[CHIUDI] Added chiusa column to consegne table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) throw err;
-}
-
-// Add chiusa_by column to consegne table
-try {
-  db.exec(`ALTER TABLE consegne ADD COLUMN chiusa_by INTEGER REFERENCES users(id)`);
-  console.log('[CHIUDI] Added chiusa_by column to consegne table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) throw err;
-}
-
-// Add chiusa_at column to consegne table
-try {
-  db.exec(`ALTER TABLE consegne ADD COLUMN chiusa_at DATETIME`);
-  console.log('[CHIUDI] Added chiusa_at column to consegne table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) throw err;
-}
-
-console.log('\n--- Reopen tracking migration (v1.9) ---');
-
-// Add riaperta_by column to consegne table
-try {
-  db.exec(`ALTER TABLE consegne ADD COLUMN riaperta_by INTEGER REFERENCES users(id)`);
-  console.log('[REOPEN] Added riaperta_by column to consegne table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) throw err;
-}
-
-// Add riaperta_at column to consegne table
-try {
-  db.exec(`ALTER TABLE consegne ADD COLUMN riaperta_at DATETIME`);
-  console.log('[REOPEN] Added riaperta_at column to consegne table');
-} catch (err) {
-  if (!err.message.includes('duplicate column')) throw err;
-}
-
-console.log('\n--- Activity logs table (v2.1) ---');
-
-// Create activity_logs table for user management events
-db.exec(`
-  CREATE TABLE IF NOT EXISTS activity_logs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    event_type TEXT NOT NULL,
-    target_user_id INTEGER REFERENCES users(id),
-    actor_user_id INTEGER REFERENCES users(id),
-    details TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  );
-  CREATE INDEX IF NOT EXISTS idx_activity_logs_created_at ON activity_logs(created_at);
-  CREATE INDEX IF NOT EXISTS idx_activity_logs_event_type ON activity_logs(event_type);
-`);
-console.log('[ACTIVITY] Created activity_logs table');
-
-console.log('\n--- Cleanup migration (v1.8) - removing unused columns ---');
-
-// Helper to safely drop a column (ignores if column doesn't exist)
-function safeDropColumn(table, column) {
-  try {
-    db.exec(`ALTER TABLE ${table} DROP COLUMN ${column}`);
-    console.log(`[CLEANUP] Dropped ${column} from ${table}`);
-    return true;
-  } catch (err) {
-    if (err.message.includes('no such column')) {
-      return false; // Already removed
-    }
-    throw err;
-  }
-}
-
-// Remove deprecated user_id columns (replaced by created_by)
-safeDropColumn('consegne', 'user_id');
-safeDropColumn('movimenti', 'user_id');
-
-// Remove unused discrepanza columns (feature removed)
-safeDropColumn('consegne', 'discrepanza_cassa');
-safeDropColumn('consegne', 'discrepanza_trovata');
-safeDropColumn('consegne', 'discrepanza_pagato');
-
-console.log('\n--- FK constraint fix (v1.9.3) ---');
-
-// Fix movimenti FK to reference users instead of partecipanti
-// Check if the FK still references partecipanti
-const movimentiSchema = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='movimenti'").get();
-if (movimentiSchema && movimentiSchema.sql.includes('REFERENCES partecipanti')) {
-  console.log('[FK-FIX] Detected old FK referencing partecipanti, recreating movimenti table...');
-
-  // Disable FK checks temporarily
-  db.pragma('foreign_keys = OFF');
-
-  db.transaction(() => {
-    // Create new table with correct FK
-    db.exec(`
-      CREATE TABLE movimenti_new (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        consegna_id INTEGER NOT NULL,
-        partecipante_id INTEGER NOT NULL,
-        salda_tutto BOOLEAN DEFAULT 0,
-        importo_saldato REAL DEFAULT 0,
-        usa_credito REAL DEFAULT 0,
-        debito_lasciato REAL DEFAULT 0,
-        credito_lasciato REAL DEFAULT 0,
-        salda_debito_totale BOOLEAN DEFAULT 0,
-        debito_saldato REAL DEFAULT 0,
-        note TEXT,
-        conto_produttore REAL DEFAULT 0,
-        created_by INTEGER REFERENCES users(id),
-        created_at DATETIME,
-        updated_by INTEGER REFERENCES users(id),
-        updated_at DATETIME,
-        FOREIGN KEY (consegna_id) REFERENCES consegne(id) ON DELETE CASCADE,
-        FOREIGN KEY (partecipante_id) REFERENCES users(id) ON DELETE CASCADE
-      )
-    `);
-
-    // Copy existing data (if any)
-    db.exec(`
-      INSERT INTO movimenti_new
-      SELECT id, consegna_id, partecipante_id, salda_tutto, importo_saldato,
-             usa_credito, debito_lasciato, credito_lasciato, salda_debito_totale,
-             debito_saldato, note, conto_produttore, created_by, created_at,
-             updated_by, updated_at
-      FROM movimenti
-    `);
-
-    // Drop old table and rename new one
-    db.exec('DROP TABLE movimenti');
-    db.exec('ALTER TABLE movimenti_new RENAME TO movimenti');
-
-    // Recreate indexes
-    db.exec('CREATE INDEX IF NOT EXISTS idx_movimenti_consegna ON movimenti(consegna_id)');
-    db.exec('CREATE INDEX IF NOT EXISTS idx_movimenti_partecipante ON movimenti(partecipante_id)');
-    db.exec('CREATE INDEX IF NOT EXISTS idx_movimenti_created_by ON movimenti(created_by)');
-    db.exec('CREATE INDEX IF NOT EXISTS idx_movimenti_updated_by ON movimenti(updated_by)');
-  })();
-
-  // Re-enable FK checks
-  db.pragma('foreign_keys = ON');
-  console.log('[FK-FIX] Successfully fixed movimenti FK to reference users');
-}
-
-// Drop legacy partecipanti table if it exists and is empty
-try {
-  const partecipantiCount = db.prepare('SELECT COUNT(*) as count FROM partecipanti').get();
-  if (partecipantiCount.count === 0) {
-    db.exec('DROP TABLE partecipanti');
-    console.log('[FK-FIX] Dropped empty legacy partecipanti table');
-  }
-} catch (err) {
-  // Table doesn't exist, ignore
-}
-
-console.log('\n--- Data initialization ---');
-
-// Initialize with admin user if no users exist
 const bcrypt = require('bcrypt');
-const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
-if (userCount === 0) {
-  const passwordHash = bcrypt.hashSync('admin', 12);
-  const insertUser = db.prepare('INSERT INTO users (username, password_hash, display_name, is_admin, saldo) VALUES (?, ?, ?, 1, 0)');
-  insertUser.run('admin', passwordHash, 'Administrator');
-  console.log('[INIT] Created default admin user (username: admin, password: admin)');
-  console.log('[INIT] ⚠️  IMPORTANT: Change the default password immediately!');
-} else {
-  console.log(`[INIT] Found ${userCount} existing user(s)`);
 
-  // Ensure first user is admin (migration for existing databases)
-  const firstUserAdmin = db.prepare('SELECT id, is_admin FROM users ORDER BY id ASC LIMIT 1').get();
-  if (firstUserAdmin && firstUserAdmin.is_admin !== 1) {
-    db.prepare('UPDATE users SET is_admin = 1 WHERE id = ?').run(firstUserAdmin.id);
-    console.log(`[ADMIN] Set first user (id: ${firstUserAdmin.id}) as admin`);
+function createDatabase(dbPath) {
+  const isTest = process.env.NODE_ENV === 'test';
+  const log = isTest ? () => {} : console.log;
+  const bcryptRounds = isTest ? 4 : 12;
+
+  const dbExists = dbPath !== ':memory:' && fs.existsSync(dbPath);
+  const db = new Database(dbPath);
+
+  log('\n=== Database Initialization ===');
+  log(`Path: ${dbPath}`);
+  log(`Mode: ${dbExists ? 'Existing database' : 'New database'}`);
+  log(`Environment: ${fs.existsSync('/app/data') ? 'Docker' : 'Local'}`);
+
+  // Enable foreign keys
+  db.pragma('foreign_keys = ON');
+  log('Foreign keys: ENABLED');
+
+  // Create tables
+  log('\n--- Creating base tables ---');
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      username TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      display_name TEXT NOT NULL,
+      saldo REAL DEFAULT 0,
+      ultima_modifica DATE,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS consegne (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      data DATE NOT NULL,
+      trovato_in_cassa REAL DEFAULT 0,
+      pagato_produttore REAL DEFAULT 0,
+      lasciato_in_cassa REAL DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS movimenti (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      consegna_id INTEGER NOT NULL,
+      partecipante_id INTEGER NOT NULL,
+      salda_tutto BOOLEAN DEFAULT 0,
+      importo_saldato REAL DEFAULT 0,
+      usa_credito REAL DEFAULT 0,
+      debito_lasciato REAL DEFAULT 0,
+      credito_lasciato REAL DEFAULT 0,
+      salda_debito_totale BOOLEAN DEFAULT 0,
+      debito_saldato REAL DEFAULT 0,
+      note TEXT,
+      FOREIGN KEY (consegna_id) REFERENCES consegne(id) ON DELETE CASCADE,
+      FOREIGN KEY (partecipante_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_consegne_data ON consegne(data);
+    CREATE INDEX IF NOT EXISTS idx_movimenti_consegna ON movimenti(consegna_id);
+    CREATE INDEX IF NOT EXISTS idx_movimenti_partecipante ON movimenti(partecipante_id);
+  `);
+  log('Base tables created/verified');
+
+  log('\n--- Running schema migrations ---');
+
+  // Helper to safely add a column (ignores if already exists)
+  function tryAddColumn(table, column, definition) {
+    try {
+      db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+      log(`[MIGRATION] Added ${column} column to ${table} table`);
+    } catch (err) {
+      if (!err.message.includes('duplicate column')) throw err;
+    }
   }
+
+  tryAddColumn('consegne', 'note', 'TEXT');
+  tryAddColumn('movimenti', 'conto_produttore', 'REAL DEFAULT 0');
+  tryAddColumn('consegne', 'updated_by', 'INTEGER REFERENCES users(id)');
+  tryAddColumn('movimenti', 'updated_by', 'INTEGER REFERENCES users(id)');
+
+  log('\n--- Audit tracking migration (v1.4) ---');
+
+  tryAddColumn('users', 'created_by', 'INTEGER REFERENCES users(id)');
+  tryAddColumn('users', 'updated_by', 'INTEGER REFERENCES users(id)');
+  tryAddColumn('users', 'updated_at', 'DATETIME');
+  tryAddColumn('users', 'saldo', 'REAL DEFAULT 0');
+  tryAddColumn('users', 'ultima_modifica', 'DATE');
+  tryAddColumn('consegne', 'created_by', 'INTEGER REFERENCES users(id)');
+  tryAddColumn('consegne', 'updated_at', 'DATETIME');
+  tryAddColumn('movimenti', 'created_by', 'INTEGER REFERENCES users(id)');
+  tryAddColumn('movimenti', 'created_at', 'DATETIME');
+  tryAddColumn('movimenti', 'updated_at', 'DATETIME');
+
+  // Create performance indexes for audit queries
+  try {
+    db.exec(`CREATE INDEX IF NOT EXISTS idx_consegne_created_by ON consegne(created_by)`);
+    db.exec(`CREATE INDEX IF NOT EXISTS idx_consegne_updated_by ON consegne(updated_by)`);
+    db.exec(`CREATE INDEX IF NOT EXISTS idx_movimenti_created_by ON movimenti(created_by)`);
+    db.exec(`CREATE INDEX IF NOT EXISTS idx_movimenti_updated_by ON movimenti(updated_by)`);
+    db.exec(`CREATE INDEX IF NOT EXISTS idx_users_updated_by ON users(updated_by)`);
+    log('[AUDIT] Created audit tracking indexes');
+  } catch (err) {
+    if (!isTest) console.error('[AUDIT] Error creating audit indexes:', err.message);
+  }
+
+  log('\n--- Admin role migration (v1.7) ---');
+
+  tryAddColumn('users', 'is_admin', 'INTEGER DEFAULT 0');
+
+  log('\n--- Chiudi consegna feature (v1.7) ---');
+
+  tryAddColumn('consegne', 'chiusa', 'INTEGER DEFAULT 0');
+  tryAddColumn('consegne', 'chiusa_by', 'INTEGER REFERENCES users(id)');
+  tryAddColumn('consegne', 'chiusa_at', 'DATETIME');
+
+  log('\n--- Reopen tracking migration (v1.9) ---');
+
+  tryAddColumn('consegne', 'riaperta_by', 'INTEGER REFERENCES users(id)');
+  tryAddColumn('consegne', 'riaperta_at', 'DATETIME');
+
+  log('\n--- Activity logs table (v2.1) ---');
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS activity_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      event_type TEXT NOT NULL,
+      target_user_id INTEGER REFERENCES users(id),
+      actor_user_id INTEGER REFERENCES users(id),
+      details TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS idx_activity_logs_created_at ON activity_logs(created_at);
+    CREATE INDEX IF NOT EXISTS idx_activity_logs_event_type ON activity_logs(event_type);
+  `);
+  log('[ACTIVITY] Created activity_logs table');
+
+  log('\n--- Cleanup migration (v1.8) - removing unused columns ---');
+
+  // Helper to safely drop a column (ignores if column doesn't exist)
+  function safeDropColumn(table, column) {
+    try {
+      db.exec(`ALTER TABLE ${table} DROP COLUMN ${column}`);
+      log(`[CLEANUP] Dropped ${column} from ${table}`);
+      return true;
+    } catch (err) {
+      if (err.message.includes('no such column')) {
+        return false; // Already removed
+      }
+      throw err;
+    }
+  }
+
+  safeDropColumn('consegne', 'user_id');
+  safeDropColumn('movimenti', 'user_id');
+  safeDropColumn('consegne', 'discrepanza_cassa');
+  safeDropColumn('consegne', 'discrepanza_trovata');
+  safeDropColumn('consegne', 'discrepanza_pagato');
+
+  log('\n--- FK constraint fix (v1.9.3) ---');
+
+  const movimentiSchema = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='movimenti'").get();
+  if (movimentiSchema && movimentiSchema.sql.includes('REFERENCES partecipanti')) {
+    log('[FK-FIX] Detected old FK referencing partecipanti, recreating movimenti table...');
+
+    db.pragma('foreign_keys = OFF');
+
+    db.transaction(() => {
+      db.exec(`
+        CREATE TABLE movimenti_new (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          consegna_id INTEGER NOT NULL,
+          partecipante_id INTEGER NOT NULL,
+          salda_tutto BOOLEAN DEFAULT 0,
+          importo_saldato REAL DEFAULT 0,
+          usa_credito REAL DEFAULT 0,
+          debito_lasciato REAL DEFAULT 0,
+          credito_lasciato REAL DEFAULT 0,
+          salda_debito_totale BOOLEAN DEFAULT 0,
+          debito_saldato REAL DEFAULT 0,
+          note TEXT,
+          conto_produttore REAL DEFAULT 0,
+          created_by INTEGER REFERENCES users(id),
+          created_at DATETIME,
+          updated_by INTEGER REFERENCES users(id),
+          updated_at DATETIME,
+          FOREIGN KEY (consegna_id) REFERENCES consegne(id) ON DELETE CASCADE,
+          FOREIGN KEY (partecipante_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+      `);
+
+      db.exec(`
+        INSERT INTO movimenti_new
+        SELECT id, consegna_id, partecipante_id, salda_tutto, importo_saldato,
+               usa_credito, debito_lasciato, credito_lasciato, salda_debito_totale,
+               debito_saldato, note, conto_produttore, created_by, created_at,
+               updated_by, updated_at
+        FROM movimenti
+      `);
+
+      db.exec('DROP TABLE movimenti');
+      db.exec('ALTER TABLE movimenti_new RENAME TO movimenti');
+
+      db.exec('CREATE INDEX IF NOT EXISTS idx_movimenti_consegna ON movimenti(consegna_id)');
+      db.exec('CREATE INDEX IF NOT EXISTS idx_movimenti_partecipante ON movimenti(partecipante_id)');
+      db.exec('CREATE INDEX IF NOT EXISTS idx_movimenti_created_by ON movimenti(created_by)');
+      db.exec('CREATE INDEX IF NOT EXISTS idx_movimenti_updated_by ON movimenti(updated_by)');
+    })();
+
+    db.pragma('foreign_keys = ON');
+    log('[FK-FIX] Successfully fixed movimenti FK to reference users');
+  }
+
+  // Drop legacy partecipanti table if it exists and is empty
+  try {
+    const partecipantiCount = db.prepare('SELECT COUNT(*) as count FROM partecipanti').get();
+    if (partecipantiCount.count === 0) {
+      db.exec('DROP TABLE partecipanti');
+      log('[FK-FIX] Dropped empty legacy partecipanti table');
+    }
+  } catch (err) {
+    // Table doesn't exist, ignore
+  }
+
+  log('\n--- Data initialization ---');
+
+  const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
+  if (userCount === 0) {
+    const passwordHash = bcrypt.hashSync('admin', bcryptRounds);
+    const insertUser = db.prepare('INSERT INTO users (username, password_hash, display_name, is_admin, saldo) VALUES (?, ?, ?, 1, 0)');
+    insertUser.run('admin', passwordHash, 'Administrator');
+    log('[INIT] Created default admin user (username: admin, password: admin)');
+  } else {
+    log(`[INIT] Found ${userCount} existing user(s)`);
+
+    const firstUserAdmin = db.prepare('SELECT id, is_admin FROM users ORDER BY id ASC LIMIT 1').get();
+    if (firstUserAdmin && firstUserAdmin.is_admin !== 1) {
+      db.prepare('UPDATE users SET is_admin = 1 WHERE id = ?').run(firstUserAdmin.id);
+      log(`[ADMIN] Set first user (id: ${firstUserAdmin.id}) as admin`);
+    }
+  }
+
+  const consegneCount = db.prepare('SELECT COUNT(*) as count FROM consegne').get().count;
+  const movimentiCount = db.prepare('SELECT COUNT(*) as count FROM movimenti').get().count;
+
+  log('\n--- Database statistics ---');
+  log(`Users (participants): ${db.prepare('SELECT COUNT(*) as count FROM users').get().count}`);
+  log(`Consegne: ${consegneCount}`);
+  log(`Movimenti: ${movimentiCount}`);
+  log('\nDatabase initialization complete!\n');
+
+  return db;
 }
 
-// Get database statistics
-const consegneCount = db.prepare('SELECT COUNT(*) as count FROM consegne').get().count;
-const movimentiCount = db.prepare('SELECT COUNT(*) as count FROM movimenti').get().count;
-
-console.log('\n--- Database statistics ---');
-console.log(`Users (participants): ${userCount}`);
-console.log(`Consegne: ${consegneCount}`);
-console.log(`Movimenti: ${movimentiCount}`);
-console.log('\nDatabase initialization complete!\n');
-
-module.exports = db;
+// Production singleton — only created outside test environment
+let db;
+if (process.env.NODE_ENV !== 'test') {
+  const projectRoot = path.join(__dirname, '../..');
+  const dbDir = fs.existsSync('/app/data') ? '/app/data' : projectRoot;
+  db = createDatabase(path.join(dbDir, 'gass.db'));
+  module.exports = db;
+  module.exports.createDatabase = createDatabase;
+} else {
+  // In test mode: export only the factory; caller patches require.cache with a real DB
+  module.exports = { createDatabase };
+}

@@ -1,101 +1,13 @@
-const express = require('express');
-const cookieParser = require('cookie-parser');
-const session = require('express-session');
-const SQLiteStore = require('connect-sqlite3')(session);
-const path = require('path');
+const createApp = require('./server/app');
 const fs = require('fs');
-const helmet = require('helmet');
+const path = require('path');
 
-// Initialize database (creates tables if needed)
-const db = require('./server/config/database');
+// Initialize database (via route requires inside createApp)
+const app = createApp();
 
-// Determine database path (same logic as database.js)
+const PORT = process.env.PORT || 3000;
 const dbDir = fs.existsSync('/app/data') ? '/app/data' : __dirname;
 const dbPath = path.join(dbDir, 'gass.db');
-
-// Import routes
-const pagesRouter = require('./server/routes/pages');
-const consegnaRouter = require('./server/routes/consegna');
-const participantsRouter = require('./server/routes/participants');
-const storicoRouter = require('./server/routes/storico');
-const logsRouter = require('./server/routes/logs');
-const authRouter = require('./server/routes/auth');
-const usersRouter = require('./server/routes/users');
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Warn on missing SESSION_SECRET in production
-if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) {
-  console.error('[FATAL] SESSION_SECRET environment variable is not set in production. Exiting.');
-  process.exit(1);
-}
-
-// Trust proxy when behind nginx-proxy or other reverse proxy
-// This is required for:
-// - Secure cookies to work properly with HTTPS
-// - req.ip and req.protocol to work correctly
-// - Session cookies to be set properly
-app.set('trust proxy', 1);
-
-// Security headers
-// script-src-attr 'unsafe-inline' allows onclick= handlers used throughout the HTML
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-      'script-src-attr': ["'unsafe-inline'"],
-      'upgrade-insecure-requests': null,
-    },
-  },
-}));
-
-// Middleware
-app.use(express.json());
-app.use(cookieParser());
-
-// Session configuration
-app.use(session({
-  store: new SQLiteStore({
-    dir: dbDir,
-    db: 'gass.db',
-    table: 'sessions'
-  }),
-  secret: process.env.SESSION_SECRET || 'gass-secret-change-in-production',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax'
-  }
-}));
-
-app.use(express.static('public'));
-
-// Request logging middleware
-app.use((req, res, next) => {
-  const timestamp = new Date().toISOString();
-  console.log(`[${timestamp}] ${req.method} ${req.url} - User: ${req.session?.username || 'anonymous'}`);
-  next();
-});
-
-// Mount routes
-app.use('/api/auth', authRouter);
-app.use('/api/users', usersRouter);
-app.use('/', pagesRouter);
-app.use('/api/consegna', consegnaRouter);
-app.use('/api/participants', participantsRouter);
-app.use('/api/storico', storicoRouter);
-app.use('/api/logs', logsRouter);
-
-// Error logging middleware
-app.use((err, req, res, next) => {
-  console.error(`[ERROR] ${new Date().toISOString()} - ${err.message}`);
-  console.error(err.stack);
-  res.status(500).json({ error: 'Internal server error' });
-});
 
 app.listen(PORT, '0.0.0.0', () => {
   const os = require('os');
@@ -109,7 +21,6 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log('\nAccess URLs:');
   console.log(`  Local:   http://localhost:${PORT}`);
 
-  // Dynamically detect and display network addresses
   Object.keys(interfaces).forEach(ifname => {
     interfaces[ifname].forEach(iface => {
       if (iface.family === 'IPv4' && !iface.internal) {
