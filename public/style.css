@@ -1347,25 +1347,26 @@ input:disabled {
 
 /* ===== AUTH UI ===== */
 
-.header-top {
+.header-row-top,
+.header-row-bottom {
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
 }
 
-.header-top h1 {
+.header-row-top h1 {
     margin: 0;
     font-size: 20px;
     flex-shrink: 0;
 }
 
-.user-controls {
+.header-actions {
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    min-width: 0;
-    overflow: hidden;
+    flex-shrink: 0;
+    margin-left: auto;
 }
 
 .user-name {
@@ -1375,6 +1376,7 @@ input:disabled {
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 0;
+    text-transform: lowercase;
 }
 
 .logout-btn {
@@ -1398,7 +1400,7 @@ input:disabled {
 }
 
 @media (min-width: 768px) {
-    .header-top h1 {
+    .header-row-top h1 {
         font-size: 24px;
     }
 

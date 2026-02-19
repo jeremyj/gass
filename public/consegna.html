@@ -9,17 +9,19 @@
 <body>
     <div class="container">
         <div class="page-header">
-            <div class="header-top">
+            <div class="header-row-top">
                 <h1>📦 CONSEGNA</h1>
-                <div class="user-controls">
-                    <span id="user-display" class="user-name"></span>
+                <span id="user-display" class="user-name"></span>
+            </div>
+            <div class="header-row-bottom">
+                <div class="header-date-section">
+                    <span id="header-date-display">Oggi</span>
+                    <button type="button" class="change-date-btn" onclick="toggleDatePicker()">📅</button>
+                    <div id="date-picker-container" class="date-picker-popup initially-hidden"></div>
+                </div>
+                <div class="header-actions">
                     <button type="button" onclick="handleLogout()" class="logout-btn" title="Esci">🚪</button>
                 </div>
-            </div>
-            <div class="header-date-section">
-                <span id="header-date-display">Oggi</span>
-                <button type="button" class="change-date-btn" onclick="toggleDatePicker()">📅</button>
-                <div id="date-picker-container" class="date-picker-popup initially-hidden"></div>
             </div>
         </div>
         <input type="hidden" id="data" required>

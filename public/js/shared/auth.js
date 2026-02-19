@@ -113,8 +113,7 @@ async function checkSession() {
       // Display user info in header
       const userDisplay = document.getElementById('user-display');
       if (userDisplay) {
-        const adminBadge = data.user.isAdmin ? ' [Admin]' : '';
-        userDisplay.textContent = `👤 ${data.user.displayName}${adminBadge}`;
+        userDisplay.textContent = `👤 ${data.user.username}`;
 
         // Inject change password button if not already present
         if (!document.getElementById('btn-change-password')) {
@@ -125,7 +124,14 @@ async function checkSession() {
           btn.textContent = '🔑';
           btn.title = 'Cambia Password';
           btn.onclick = showPasswordModal;
-          userDisplay.parentNode.insertBefore(btn, userDisplay.nextSibling);
+          // Mobile: insert into .header-actions before the logout button
+          // Desktop: insert after user-display in the nav
+          const actions = document.querySelector('.header-actions');
+          if (actions) {
+            actions.insertBefore(btn, actions.firstChild);
+          } else {
+            userDisplay.parentNode.insertBefore(btn, userDisplay.nextSibling);
+          }
         }
       }
 
