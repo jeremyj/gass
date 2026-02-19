@@ -52,7 +52,7 @@ function createApp() {
     const dbDir = fs.existsSync('/app/data') ? '/app/data' : path.join(__dirname, '..');
     sessionOptions.store = new SQLiteStore({
       dir: dbDir,
-      db: 'gass.db',
+      db: 'sessions.db',
       table: 'sessions'
     });
   }
@@ -97,6 +97,7 @@ function createApp() {
       console.error(`[ERROR] ${new Date().toISOString()} - ${err.message}`);
       console.error(err.stack);
     }
+    if (res.headersSent) return;
     res.status(500).json({ error: 'Internal server error' });
   });
 
