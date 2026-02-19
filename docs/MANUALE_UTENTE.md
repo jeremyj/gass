@@ -20,7 +20,11 @@ GASS Pagamenti è un sistema di gestione finanziaria per gruppi di acquisto soli
 
 ### Cambiare la Password
 
-Per motivi di sicurezza, contattare l'amministratore del sistema per modificare la password.
+Ogni utente può cambiare la propria password autonomamente:
+1. Cliccare sul pulsante 🔑 nell'intestazione della pagina
+2. Inserire la password attuale
+3. Inserire e confermare la nuova password (minimo 4 caratteri)
+4. Cliccare "Salva"
 
 ### Navigazione
 
@@ -116,17 +120,26 @@ Il sistema compensa automaticamente crediti e debiti nelle due direzioni:
 
 **Sezioni Credito e Debito**
 
-A seconda del saldo del partecipante, potrebbero apparire:
+Le sezioni CREDITO e DEBITO appaiono solo quando sono rilevanti per il partecipante e per l'importo inserito:
 
-- **Sezione CREDITO** (solo se il partecipante ha credito):
+- **Sezione CREDITO** (visibile solo se il partecipante ha credito e l'importo copre il conto):
   - ☑️ **Usa intero credito**: Spuntato automaticamente quando il sistema usa tutto il credito disponibile
   - **Usa credito**: Importo di credito utilizzato (sola lettura, gestito dal sistema)
 
-- **Sezione DEBITO** (solo se il partecipante ha debito):
+- **Sezione DEBITO** (visibile solo se il partecipante ha debito e l'importo non copre interamente il conto):
   - ☑️ **Salda intero debito**: Spuntato automaticamente quando il sistema salda tutto il debito
-  - **Debito saldato**: Importo di debito saldato (sola lettura, gestito dal sistema)
+  - **Salda parziale**: Importo parziale di debito da saldare (alternativo alla casella "salda intero")
 
-**Nota**: I campi "Usa credito" e "Debito saldato" sono sempre disabilitati perché vengono gestiti automaticamente dal sistema. Questo garantisce che i calcoli siano sempre corretti e coerenti.
+**Nota**: "Salda intero debito" e "Salda parziale" sono mutuamente esclusivi — quando si inserisce un importo in "Salda parziale", la casella si nasconde automaticamente e viceversa.
+
+#### Chiusura e Riapertura Consegna
+
+Dopo aver registrato tutti i movimenti, è possibile chiudere la consegna:
+
+- **Chiudi Consegna**: Blocca tutte le modifiche per la giornata. Qualsiasi utente può chiudere una consegna.
+- **Riapri Consegna** (solo amministratori): Sblocca la consegna per permettere modifiche successive.
+
+Quando una consegna è chiusa, tutti i campi sono disabilitati e appare il badge "🔒 Consegna chiusa".
 
 #### Salvataggio
 
@@ -315,10 +328,11 @@ La data dovrebbe essere mantenuta automaticamente tra le sezioni. Se questo non 
 
 ### Non Vedo i Campi di Compensazione
 
-I campi "Usa credito" e "Debito saldato" sono sempre presenti ma disabilitati:
-- Sono visibili in tutti i movimenti
-- Vengono popolati automaticamente quando applicabile
-- Non possono essere modificati manualmente per garantire l'integrità dei dati
+Le sezioni CREDITO e DEBITO sono visibili solo quando applicabili:
+- Appaiono solo dopo aver inserito un importo saldato
+- Vengono popolate automaticamente dal sistema
+- Non possono essere modificate manualmente per garantire l'integrità dei dati
+- Se il partecipante non ha credito/debito preesistente, le sezioni non compaiono
 
 ## Supporto
 
@@ -326,9 +340,11 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 1.4
-- Sistema di autenticazione implementato
-- Tracciamento audit completo
-- Compensazione automatica bidirezionale crediti/debiti
-- Indicatori note nello storico
-- Campi cassa di sola lettura con calcolo automatico
+Sistema GASS Pagamenti - Versione 2.3.0
+- Cambio password autonomo per tutti gli utenti (pulsante 🔑)
+- Chiusura/riapertura consegne con blocco modifiche
+- Gestione utenti completa per amministratori (Saldi → Modifica Utente)
+- Sezioni CREDITO/DEBITO condizionali: visibili solo quando rilevanti
+- Mutua esclusività "Salda intero" / "Salda parziale"
+- Selezione data persistente tra le sezioni
+- Layout ottimizzato per mobile e desktop

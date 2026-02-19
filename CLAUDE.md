@@ -153,6 +153,15 @@ if diff < 0 && has_credit: auto-apply to usa_credito
 - Tab navigation → preserved date
 - Uses `performance.getEntriesByType('navigation')` to detect reload vs navigation
 
+### Visibility Sync
+`syncDebitoCreditoVisibility(id)` in `consegna-common.js` syncs both debito and credito control visibility. Always call this instead of `syncDebitoVisibility` alone. Rules:
+- No importo → hide all debito/credito controls
+- Importo present but nothing being paid → hide controls
+- Mutual exclusivity: checkbox hidden when partial field has value (and vice versa)
+
+### CSS .initially-hidden pattern
+`.initially-hidden { display: none }` (no `!important`) — JS `element.style.display = 'block/flex'` must be able to override it. Use CSS specificity for modals (`.modal.initially-hidden` 0-2-0 beats `.modal` 0-1-0) rather than `!important`, since `!important` would also block inline style overrides.
+
 ### Consegna Locking
 - "Chiudi Consegna" button in Cassa section (any user can close)
 - "Riapri Consegna" button visible only to admins
@@ -214,6 +223,9 @@ npm run test:coverage       # with coverage report
 - `database.js` creates no production singleton when `NODE_ENV=test`; test files must call `setupTestDb()` first to patch the require cache before loading app
 - API routes are mounted before the pages router so unauthenticated API calls return 401 (not 302)
 - `clearNonAdminUsers` deletes all users except `username='admin'` and resets admin's `is_admin=1`; cleans FK-dependent `activity_logs` rows first
+
+### Dev testing tip
+Set `force_mobile=true` cookie in browser to force mobile view regardless of user agent. Clear it to restore desktop view for admin users.
 
 ---
 
