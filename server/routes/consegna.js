@@ -299,21 +299,33 @@ router.delete('/:id', (req, res) => {
     }
 
     const transaction = db.transaction(() => {
-      // Log deletion before removing data
+      // Materialize movimenti log entries before cascade delete removes them
       const movimenti = db.prepare(`
-        SELECT m.*, p.display_name
-        FROM movimenti m
-        JOIN users p ON m.partecipante_id = p.id
-        WHERE m.consegna_id = ?
+        SELECT m.* FROM movimenti m WHERE m.consegna_id = ?
       `).all(id);
 
-      const partecipanti = movimenti.map(m => m.display_name).join(', ');
-      const details = `consegna: ${consegna.data}, partecipanti: ${partecipanti || 'nessuno'}, movimenti: ${movimenti.length}`;
+      const logMovimento = db.prepare(`
+        INSERT INTO activity_logs (event_type, target_user_id, actor_user_id, details, created_at)
+        VALUES ('movimento_created', ?, ?, ?, ?)
+      `);
 
+      movimenti.forEach(m => {
+        const parts = [];
+        if (m.conto_produttore) parts.push(`Conto: €${m.conto_produttore}`);
+        if (m.importo_saldato) parts.push(`Saldato: €${m.importo_saldato}`);
+        if (m.credito_lasciato) parts.push(`Cred: €${m.credito_lasciato}`);
+        if (m.debito_lasciato) parts.push(`Deb: €${m.debito_lasciato}`);
+        if (m.usa_credito) parts.push(`Usa Cred: €${m.usa_credito}`);
+        if (m.debito_saldato) parts.push(`Salda Deb: €${m.debito_saldato}`);
+        const details = `consegna: ${consegna.data}, ${parts.join(', ')}`;
+        logMovimento.run(m.partecipante_id, m.created_by || req.session.userId, details, m.created_at || timestamp);
+      });
+
+      // Log the consegna deletion itself
       db.prepare(`
         INSERT INTO activity_logs (event_type, actor_user_id, details, created_at)
         VALUES ('consegna_deleted', ?, ?, ?)
-      `).run(req.session.userId, details, timestamp);
+      `).run(req.session.userId, `consegna: ${consegna.data}`, timestamp);
 
       db.prepare('DELETE FROM consegne WHERE id = ?').run(id);
 

@@ -96,7 +96,7 @@ function getEventDetails(event) {
     if (event.debito_lasciato) parts.push(`Deb: €${formatNumber(event.debito_lasciato)}`);
     if (event.usa_credito) parts.push(`Usa Cred: €${formatNumber(event.usa_credito)}`);
     if (event.debito_saldato) parts.push(`Salda Deb: €${formatNumber(event.debito_saldato)}`);
-    return parts.join(' | ') || '-';
+    return parts.join(' | ') || (event.details || '-');
   }
   // User management events have details field
   if (event.details) {
@@ -112,12 +112,12 @@ function createLogsTable(events) {
     let details = getEventDetails(e);
     let consegnaData = e.consegna_data;
 
-    // For movimento_changed, extract consegna date from details
-    if (e.event_type === 'movimento_changed' && e.details) {
-      const match = e.details.match(/^consegna: (\d{4}-\d{2}-\d{2}), (.*)$/);
+    // Extract consegna date from details field (for activity_logs entries)
+    if (!consegnaData && e.details) {
+      const match = e.details.match(/^consegna: (\d{4}-\d{2}-\d{2})(?:, (.*))?$/);
       if (match) {
         consegnaData = match[1];
-        details = match[2];
+        details = match[2] || '';
       }
     }
 
