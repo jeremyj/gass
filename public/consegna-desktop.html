@@ -53,7 +53,7 @@
             </div>
             <button type="submit" class="btn-save initially-hidden" id="save-btn-cassa" style="margin-top: 20px;">Salva Movimenti</button>
 
-            <!-- Chiudi/Riapri/Annulla Consegna -->
+            <!-- Chiudi/Riapri Consegna -->
             <div id="consegna-status-section" class="initially-hidden" style="margin-top: 20px;">
                 <span id="closed-badge" class="closed-badge initially-hidden">
                     🔒 Consegna chiusa
@@ -61,10 +61,10 @@
                 <button type="button" id="close-consegna-btn" class="btn-danger" onclick="toggleConsegnaStatus()">
                     🔒 Chiudi Consegna
                 </button>
-                <button type="button" id="btn-annulla-consegna" class="btn-danger initially-hidden" onclick="annullaConsegna()">
-                    🗑️ Annulla Consegna
-                </button>
             </div>
+            <button type="button" id="btn-annulla-consegna" class="btn-danger initially-hidden" style="margin-top: 20px;" onclick="annullaConsegna()">
+                🗑️ Annulla Consegna
+            </button>
         </div>
 
         <button type="button" id="btn-nuova-consegna" class="btn-save initially-hidden" onclick="startNuovaConsegna()">📦 Nuova Consegna</button>

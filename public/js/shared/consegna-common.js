@@ -390,11 +390,7 @@ function hideNoteGiornata() {
 function startNuovaConsegna() {
   showPartecipantiSection();
   showNoteGiornata();
-  // Show status section with only annulla button visible
-  const statusSection = document.getElementById('consegna-status-section');
-  if (statusSection) statusSection.style.display = 'block';
-  const closeBtn = document.getElementById('close-consegna-btn');
-  if (closeBtn) closeBtn.style.display = 'none';
+  // Show only annulla button (no consegna exists yet, so no close/badge)
   const annullaBtn = document.getElementById('btn-annulla-consegna');
   if (annullaBtn) annullaBtn.style.display = 'block';
 }
@@ -418,8 +414,8 @@ async function annullaConsegna() {
   } else {
     hidePartecipantiSection();
     hideNoteGiornata();
-    const statusSection = document.getElementById('consegna-status-section');
-    if (statusSection) statusSection.style.display = 'none';
+    const annullaBtn = document.getElementById('btn-annulla-consegna');
+    if (annullaBtn) annullaBtn.style.display = 'none';
   }
 }
 

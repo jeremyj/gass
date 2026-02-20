@@ -302,7 +302,7 @@ router.delete('/:id', (req, res) => {
       db.prepare('DELETE FROM consegne WHERE id = ?').run(id);
 
       const resetAudit = getAuditFields(req, 'update');
-      db.prepare('UPDATE users SET saldo = 0, updated_by = ?, updated_at = ? WHERE 1=1')
+      db.prepare('UPDATE users SET saldo = 0, ultima_modifica = NULL, updated_by = ?, updated_at = ? WHERE 1=1')
         .run(resetAudit.updated_by, resetAudit.updated_at);
 
       console.log(`[CONSEGNA] ${timestamp} - Reset all participant saldi to 0`);
@@ -310,19 +310,19 @@ router.delete('/:id', (req, res) => {
       const consegne = db.prepare('SELECT * FROM consegne ORDER BY data ASC').all();
       console.log(`[CONSEGNA] ${timestamp} - Recalculating saldi for ${consegne.length} remaining consegne`);
 
-      consegne.forEach(consegna => {
+      consegne.forEach(c => {
         const movimenti = db.prepare(`
           SELECT m.*, p.saldo as current_saldo
           FROM movimenti m
           JOIN users p ON m.partecipante_id = p.id
           WHERE m.consegna_id = ?
-        `).all(consegna.id);
+        `).all(c.id);
 
         movimenti.forEach(m => {
           const nuovoSaldo = applySaldoChanges(m.current_saldo || 0, m);
           const saldoAudit = getAuditFields(req, 'update');
-          db.prepare('UPDATE users SET saldo = ?, updated_by = ?, updated_at = ? WHERE id = ?')
-            .run(nuovoSaldo, saldoAudit.updated_by, saldoAudit.updated_at, m.partecipante_id);
+          db.prepare('UPDATE users SET saldo = ?, ultima_modifica = ?, updated_by = ?, updated_at = ? WHERE id = ?')
+            .run(nuovoSaldo, c.data, saldoAudit.updated_by, saldoAudit.updated_at, m.partecipante_id);
         });
       });
     });
