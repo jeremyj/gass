@@ -25,19 +25,19 @@ const requireAuthForPages = (req, res, next) => {
 router.use(requireAuthForPages);
 
 router.get('/consegna', (req, res) => {
-  const useMobile = shouldUseMobileView(req) || !req.session.isAdmin;
+  const useMobile = shouldUseMobileView(req);
   const file = useMobile ? 'consegna.html' : 'consegna-desktop.html';
   res.sendFile(path.join(__dirname, '../../public', file));
 });
 
 router.get('/storico', (req, res) => {
-  const useMobile = shouldUseMobileView(req) || !req.session.isAdmin;
+  const useMobile = shouldUseMobileView(req);
   const file = useMobile ? 'storico.html' : 'storico-desktop.html';
   res.sendFile(path.join(__dirname, '../../public', file));
 });
 
 router.get('/debiti', (req, res) => {
-  const useMobile = shouldUseMobileView(req) || !req.session.isAdmin;
+  const useMobile = shouldUseMobileView(req);
   const file = useMobile ? 'debiti.html' : 'debiti-desktop.html';
   res.sendFile(path.join(__dirname, '../../public', file));
 });

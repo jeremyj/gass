@@ -41,8 +41,7 @@ function createParticipantRow(p) {
   const saldoText = formatNumber(p.saldo);
   const adminBadge = p.is_admin ? '<span class="admin-badge">Admin</span>' : '';
 
-  // Desktop is always admin — enable edit only for today's date
-  const canEdit = isViewingToday();
+  const canEdit = isAdmin() && isViewingToday();
 
   row.innerHTML = `
     <td>${escapeHtml(p.username) || '-'}${adminBadge}</td>
@@ -56,12 +55,12 @@ function createParticipantRow(p) {
              onkeydown="if(event.key==='Enter'){event.preventDefault();saveSaldo(${p.id})}">
     </td>
     <td>${formatDateItalian(p.ultima_modifica)}</td>
-    <td>
+    ${isAdmin() ? `<td>
       <button onclick="editSaldo(${p.id})" id="edit-btn-${p.id}" ${canEdit ? '' : 'disabled'}>Modifica Saldo</button>
       <button onclick="saveSaldo(${p.id})" id="save-btn-${p.id}" class="btn-save initially-hidden">Salva</button>
       <button onclick="cancelEdit(${p.id})" id="cancel-btn-${p.id}" class="initially-hidden">Annulla</button>
       <button onclick="showEditUserModal(${p.id})">Modifica Utente</button>
-    </td>
+    </td>` : ''}
   `;
 
   return row;
@@ -185,11 +184,21 @@ async function deleteParticipant(id) {
 
 // ===== INITIALIZATION =====
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   initCalendar({ onDateSelected: loadParticipants });
 
   const dateToLoad = restoreDateFromStorage();
   setDateDisplay(dateToLoad);
+
+  // Ensure user data is loaded before rendering participant rows
+  await checkSession();
+
+  if (!isAdmin()) {
+    const addBtn = document.getElementById('btn-add-participant');
+    if (addBtn) addBtn.style.display = 'none';
+    const thAzioni = document.getElementById('th-azioni');
+    if (thAzioni) thAzioni.style.display = 'none';
+  }
 
   loadParticipants();
   loadConsegneDates();

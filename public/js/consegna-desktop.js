@@ -334,10 +334,13 @@ function updateConsegnaStatusUI(consegna) {
 
     if (isConsegnaClosed) {
       closedBadge.style.display = 'inline-block';
-      // Desktop is always admin — always show reopen button
-      closeBtn.style.display = 'inline-block';
-      closeBtn.innerHTML = '🔓 Riapri Consegna';
-      closeBtn.className = 'btn-success';
+      if (isAdmin()) {
+        closeBtn.style.display = 'inline-block';
+        closeBtn.innerHTML = '🔓 Riapri Consegna';
+        closeBtn.className = 'btn-success';
+      } else {
+        closeBtn.style.display = 'none';
+      }
       disableConsegnaInputs();
     } else {
       closedBadge.style.display = 'none';
@@ -485,6 +488,8 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
 document.addEventListener('DOMContentLoaded', async () => {
   initCalendar({ onDateSelected: checkDateData });
 
+  // Ensure user data is loaded before rendering consegna status
+  await checkSession();
   await loadConsegneDates();
 
   const dateToLoad = restoreDateFromStorage();
