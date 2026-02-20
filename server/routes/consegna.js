@@ -299,6 +299,22 @@ router.delete('/:id', (req, res) => {
     }
 
     const transaction = db.transaction(() => {
+      // Log deletion before removing data
+      const movimenti = db.prepare(`
+        SELECT m.*, p.display_name
+        FROM movimenti m
+        JOIN users p ON m.partecipante_id = p.id
+        WHERE m.consegna_id = ?
+      `).all(id);
+
+      const partecipanti = movimenti.map(m => m.display_name).join(', ');
+      const details = `consegna: ${consegna.data}, partecipanti: ${partecipanti || 'nessuno'}, movimenti: ${movimenti.length}`;
+
+      db.prepare(`
+        INSERT INTO activity_logs (event_type, actor_user_id, details, created_at)
+        VALUES ('consegna_deleted', ?, ?, ?)
+      `).run(req.session.userId, details, timestamp);
+
       db.prepare('DELETE FROM consegne WHERE id = ?').run(id);
 
       const resetAudit = getAuditFields(req, 'update');
