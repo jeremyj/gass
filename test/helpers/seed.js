@@ -89,6 +89,10 @@ function clearNonAdminUsers(db) {
   // Must delete FK-dependent activity_logs rows before deleting users
   db.prepare("DELETE FROM activity_logs WHERE target_user_id IN (SELECT id FROM users WHERE username != 'admin')").run();
   db.prepare("DELETE FROM activity_logs WHERE actor_user_id IN (SELECT id FROM users WHERE username != 'admin')").run();
+  // Clear audit FK references on remaining rows that point to users being deleted
+  db.prepare("UPDATE users SET created_by = NULL, updated_by = NULL WHERE created_by IN (SELECT id FROM users WHERE username != 'admin') OR updated_by IN (SELECT id FROM users WHERE username != 'admin')").run();
+  db.prepare("UPDATE consegne SET created_by = NULL, updated_by = NULL, chiusa_by = NULL, riaperta_by = NULL WHERE created_by IN (SELECT id FROM users WHERE username != 'admin') OR updated_by IN (SELECT id FROM users WHERE username != 'admin') OR chiusa_by IN (SELECT id FROM users WHERE username != 'admin') OR riaperta_by IN (SELECT id FROM users WHERE username != 'admin')").run();
+  db.prepare("UPDATE movimenti SET created_by = NULL, updated_by = NULL WHERE created_by IN (SELECT id FROM users WHERE username != 'admin') OR updated_by IN (SELECT id FROM users WHERE username != 'admin')").run();
   db.prepare("DELETE FROM users WHERE username != 'admin'").run();
   // Reset admin's admin status in case a test modified it
   db.prepare("UPDATE users SET is_admin = 1 WHERE username = 'admin'").run();
