@@ -96,8 +96,9 @@ function loadExistingConsegna(result) {
 
   // Show participant section for existing consegna
   showPartecipantiSection();
+  showNoteGiornata();
   const annullaBtn = document.getElementById('btn-annulla-consegna');
-  if (annullaBtn) annullaBtn.style.display = isConsegnaClosed ? 'none' : '';
+  if (annullaBtn) annullaBtn.style.display = isConsegnaClosed ? 'none' : 'block';
 }
 
 function loadNewConsegna(result) {
@@ -129,6 +130,7 @@ function loadNewConsegna(result) {
 
   // Hide participant section, show "Nuova Consegna" button
   hidePartecipantiSection();
+  hideNoteGiornata();
 }
 
 // ===== NOTE MANAGEMENT =====

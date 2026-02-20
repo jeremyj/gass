@@ -363,7 +363,7 @@ function getPartecipantiSection() {
 
 function showPartecipantiSection() {
   const section = getPartecipantiSection();
-  if (section) section.style.display = '';
+  if (section) section.style.display = 'block';
   const btn = document.getElementById('btn-nuova-consegna');
   if (btn) btn.style.display = 'none';
 }
@@ -372,15 +372,25 @@ function hidePartecipantiSection() {
   const section = getPartecipantiSection();
   if (section) section.style.display = 'none';
   const btn = document.getElementById('btn-nuova-consegna');
-  if (btn) btn.style.display = '';
+  if (btn) btn.style.display = 'block';
   const annullaBtn = document.getElementById('btn-annulla-consegna');
   if (annullaBtn) annullaBtn.style.display = 'none';
+}
+
+function showNoteGiornata() {
+  const group = document.getElementById('note-giornata-group');
+  if (group) group.style.display = 'block';
+}
+
+function hideNoteGiornata() {
+  const group = document.getElementById('note-giornata-group');
+  if (group) group.style.display = 'none';
 }
 
 function startNuovaConsegna() {
   showPartecipantiSection();
   const annullaBtn = document.getElementById('btn-annulla-consegna');
-  if (annullaBtn) annullaBtn.style.display = '';
+  if (annullaBtn) annullaBtn.style.display = 'block';
 }
 
 async function annullaConsegna() {
