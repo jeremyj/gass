@@ -363,7 +363,6 @@ function updateConsegnaStatusUI(consegna) {
     }
   } else {
     statusSection.style.display = 'none';
-    if (annullaBtn) annullaBtn.style.display = 'none';
     enableConsegnaInputs(); // Restore inputs for dates with no consegna
   }
 }

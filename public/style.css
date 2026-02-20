@@ -1444,8 +1444,9 @@ input:disabled {
     font-weight: 500;
 }
 
-/* Close/Reopen button styles */
-#close-consegna-btn {
+/* Close/Reopen/Annulla button styles */
+#close-consegna-btn,
+#btn-annulla-consegna {
     width: 100%;
     color: white;
     border: none;
@@ -1455,8 +1456,14 @@ input:disabled {
     cursor: pointer;
 }
 
-#close-consegna-btn:hover {
+#close-consegna-btn:hover,
+#btn-annulla-consegna:hover {
     opacity: 0.9;
+}
+
+.consegna-action-buttons {
+    display: flex;
+    gap: 12px;
 }
 
 /* ===== ADMIN BADGE ===== */
@@ -2429,7 +2436,8 @@ button:disabled {
         flex-wrap: wrap;
     }
 
-    #close-consegna-btn {
+    #close-consegna-btn,
+    #btn-annulla-consegna {
         width: auto;
     }
 

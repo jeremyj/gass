@@ -58,13 +58,15 @@
                 <span id="closed-badge" class="closed-badge initially-hidden">
                     🔒 Consegna chiusa
                 </span>
-                <button type="button" id="close-consegna-btn" class="btn-danger" onclick="toggleConsegnaStatus()">
-                    🔒 Chiudi Consegna
-                </button>
+                <div class="consegna-action-buttons">
+                    <button type="button" id="close-consegna-btn" class="btn-danger" onclick="toggleConsegnaStatus()">
+                        🔒 Chiudi Consegna
+                    </button>
+                    <button type="button" id="btn-annulla-consegna" class="btn-danger initially-hidden" onclick="annullaConsegna()">
+                        🗑️ Annulla Consegna
+                    </button>
+                </div>
             </div>
-            <button type="button" id="btn-annulla-consegna" class="btn-danger initially-hidden" style="margin-top: 20px;" onclick="annullaConsegna()">
-                🗑️ Annulla Consegna
-            </button>
         </div>
 
         <button type="button" id="btn-nuova-consegna" class="btn-save initially-hidden" onclick="startNuovaConsegna()">📦 Nuova Consegna</button>

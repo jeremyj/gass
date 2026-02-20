@@ -198,7 +198,6 @@ function updateConsegnaStatusUI(consegna) {
     }
   } else {
     statusSection.style.display = 'none';
-    if (annullaBtn) annullaBtn.style.display = 'none';
     enableConsegnaInputs(); // Restore inputs/visibility for dates with no consegna
   }
 }
