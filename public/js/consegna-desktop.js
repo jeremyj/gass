@@ -58,6 +58,11 @@ function loadExistingConsegna(result) {
   renderMovimentiGiorno();
   updateSaveButtonVisibility();
   updateConsegnaStatusUI(result.consegna);
+
+  // Show participant section for existing consegna
+  showPartecipantiSection();
+  const annullaBtn = document.getElementById('btn-annulla-consegna');
+  if (annullaBtn) annullaBtn.style.display = isConsegnaClosed ? 'none' : '';
 }
 
 function loadNewConsegna(result) {
@@ -80,6 +85,9 @@ function loadNewConsegna(result) {
   renderMovimentiGiorno();
   updateSaveButtonVisibility();
   updateConsegnaStatusUI(null);
+
+  // Hide participant section, show "Nuova Consegna" button
+  hidePartecipantiSection();
 }
 
 // ===== RENDERING =====

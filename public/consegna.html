@@ -100,8 +100,10 @@
             </div>
         </div>
 
+        <button id="btn-nuova-consegna" class="big-btn initially-hidden" onclick="startNuovaConsegna()">📦 Nuova Consegna</button>
+
         <!-- Sezione MOVIMENTI - Sempre aperta -->
-        <div class="section-movimenti">
+        <div id="section-movimenti" class="section-movimenti initially-hidden">
             <div class="section-header-movimenti">
                 <span id="movimenti-title">📦 MOVIMENTI</span>
             </div>
@@ -119,6 +121,8 @@
 
                 <!-- Form partecipante espandibile -->
                 <div id="selected-participants"></div>
+
+                <button id="btn-annulla-consegna" class="big-btn big-btn-danger initially-hidden" onclick="annullaConsegna()">🗑️ Annulla Consegna</button>
             </div>
         </div>
     </div>

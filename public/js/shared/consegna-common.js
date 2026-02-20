@@ -355,6 +355,55 @@ function syncDebitoCreditoVisibility(id) {
   syncCreditoVisibility(id);
 }
 
+// ===== NUOVA CONSEGNA FLOW =====
+
+function getPartecipantiSection() {
+  return document.getElementById('section-movimenti') || document.getElementById('section-partecipanti');
+}
+
+function showPartecipantiSection() {
+  const section = getPartecipantiSection();
+  if (section) section.style.display = '';
+  const btn = document.getElementById('btn-nuova-consegna');
+  if (btn) btn.style.display = 'none';
+}
+
+function hidePartecipantiSection() {
+  const section = getPartecipantiSection();
+  if (section) section.style.display = 'none';
+  const btn = document.getElementById('btn-nuova-consegna');
+  if (btn) btn.style.display = '';
+  const annullaBtn = document.getElementById('btn-annulla-consegna');
+  if (annullaBtn) annullaBtn.style.display = 'none';
+}
+
+function startNuovaConsegna() {
+  showPartecipantiSection();
+  const annullaBtn = document.getElementById('btn-annulla-consegna');
+  if (annullaBtn) annullaBtn.style.display = '';
+}
+
+async function annullaConsegna() {
+  if (currentConsegnaId) {
+    if (!confirm('Sei sicuro di voler annullare questa consegna? Tutti i movimenti verranno eliminati.')) return;
+    try {
+      const response = await fetch(`/api/consegna/${currentConsegnaId}`, { method: 'DELETE' });
+      const result = await response.json();
+      if (result.success) {
+        showStatus('Consegna annullata', 'success');
+        await loadConsegneDates();
+        await checkDateData();
+      } else {
+        showStatus('Errore: ' + result.error, 'error');
+      }
+    } catch (error) {
+      showStatus('Errore: ' + error.message, 'error');
+    }
+  } else {
+    hidePartecipantiSection();
+  }
+}
+
 // ===== SECTION BUILDERS =====
 
 function buildCreditoSection(id, nome, saldo, saldoText, saldoClass) {

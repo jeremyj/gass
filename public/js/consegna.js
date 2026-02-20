@@ -93,6 +93,11 @@ function loadExistingConsegna(result) {
 
   // Update consegna status (closed/open)
   updateConsegnaStatusUI(result.consegna);
+
+  // Show participant section for existing consegna
+  showPartecipantiSection();
+  const annullaBtn = document.getElementById('btn-annulla-consegna');
+  if (annullaBtn) annullaBtn.style.display = isConsegnaClosed ? 'none' : '';
 }
 
 function loadNewConsegna(result) {
@@ -121,6 +126,9 @@ function loadNewConsegna(result) {
 
   // No consegna exists yet - hide status section
   updateConsegnaStatusUI(null);
+
+  // Hide participant section, show "Nuova Consegna" button
+  hidePartecipantiSection();
 }
 
 // ===== NOTE MANAGEMENT =====
@@ -207,7 +215,7 @@ function disableConsegnaInputs() {
   if (saveNoteBtn) saveNoteBtn.style.display = 'none';
 
   // Hide movimenti section and ensure cassa is open when consegna is closed
-  const movimentiSection = document.querySelector('.section-movimenti');
+  const movimentiSection = document.getElementById('section-movimenti');
   if (movimentiSection) movimentiSection.style.display = 'none';
 
   // Ensure cassa accordion is open
@@ -235,7 +243,7 @@ function enableConsegnaInputs() {
   document.querySelector('.container')?.classList.remove('consegna-closed');
 
   // Restore movimenti section visibility
-  const movimentiSection = document.querySelector('.section-movimenti');
+  const movimentiSection = document.getElementById('section-movimenti');
   if (movimentiSection) movimentiSection.style.display = '';
 }
 
