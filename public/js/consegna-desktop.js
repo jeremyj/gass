@@ -62,8 +62,6 @@ function loadExistingConsegna(result) {
   // Show participant section for existing consegna
   showPartecipantiSection();
   showNoteGiornata();
-  const annullaBtn = document.getElementById('btn-annulla-consegna');
-  if (annullaBtn) annullaBtn.style.display = isConsegnaClosed ? 'none' : 'block';
 }
 
 function loadNewConsegna(result) {
@@ -339,6 +337,8 @@ function updateConsegnaStatusUI(consegna) {
 
   if (!statusSection) return;
 
+  const annullaBtn = document.getElementById('btn-annulla-consegna');
+
   if (currentConsegnaId) {
     statusSection.style.display = 'flex';
 
@@ -351,16 +351,19 @@ function updateConsegnaStatusUI(consegna) {
       } else {
         closeBtn.style.display = 'none';
       }
+      if (annullaBtn) annullaBtn.style.display = 'none';
       disableConsegnaInputs();
     } else {
       closedBadge.style.display = 'none';
       closeBtn.style.display = 'inline-block';
       closeBtn.innerHTML = '🔒 Chiudi Consegna';
       closeBtn.className = 'btn-danger';
+      if (annullaBtn) annullaBtn.style.display = 'inline-block';
       enableConsegnaInputs();
     }
   } else {
     statusSection.style.display = 'none';
+    if (annullaBtn) annullaBtn.style.display = 'none';
     enableConsegnaInputs(); // Restore inputs for dates with no consegna
   }
 }
@@ -448,10 +451,10 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
 
   const contoProduttore = roundUpCents(parseAmount(document.getElementById(`contoProduttore_${currentId}`).value));
   const importoSaldato = roundUpCents(parseAmount(document.getElementById(`importo_${currentId}`).value));
-  const usaCredito = roundUpCents(parseAmount(document.getElementById(`usaCredito_${currentId}`)?.value || '0'));
-  const debitoLasciato = roundUpCents(parseAmount(document.getElementById(`debito_${currentId}`).value));
-  const creditoLasciato = roundUpCents(parseAmount(document.getElementById(`credito_${currentId}`).value));
-  const debitoSaldato = roundUpCents(parseAmount(document.getElementById(`debitoSaldato_${currentId}`)?.value || '0'));
+  const usaCredito = parseAmount(document.getElementById(`usaCredito_${currentId}`)?.value || '0');
+  const debitoLasciato = parseAmount(document.getElementById(`debito_${currentId}`).value);
+  const creditoLasciato = parseAmount(document.getElementById(`credito_${currentId}`).value);
+  const debitoSaldato = parseAmount(document.getElementById(`debitoSaldato_${currentId}`)?.value || '0');
   const saldaDebitoTotale = document.getElementById(`saldaDebito_${currentId}`)?.checked || false;
   const note = document.getElementById(`note_${currentId}`).value || '';
 

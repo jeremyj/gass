@@ -203,7 +203,7 @@ function handleContoProduttoreInput(id, saldo) {
     const saldaTuttoIlDebito = debitoSaldabile === debitoPreesistente;
 
     if (debitoSaldato) {
-      debitoSaldato.value = roundUpCents(debitoSaldabile);
+      debitoSaldato.value = debitoSaldabile;
       debitoSaldato.disabled = true;
     }
     if (saldaDebitoCheckbox) {
@@ -217,7 +217,7 @@ function handleContoProduttoreInput(id, saldo) {
     const usaTuttoIlCredito = creditoUsabile === creditoPreesistente;
 
     if (usaCredito) {
-      usaCredito.value = roundUpCents(creditoUsabile);
+      usaCredito.value = creditoUsabile;
       usaCredito.disabled = true;
     }
     if (usaInteroCreditoCheckbox) {
@@ -228,7 +228,7 @@ function handleContoProduttoreInput(id, saldo) {
 
   if (diff > 0) {
     if (creditoLasciato) {
-      creditoLasciato.value = roundUpCents(diff);
+      creditoLasciato.value = diff;
       creditoLasciato.disabled = true;
     }
     if (debitoLasciato) {
@@ -237,7 +237,7 @@ function handleContoProduttoreInput(id, saldo) {
     }
   } else if (diff < 0) {
     if (debitoLasciato) {
-      debitoLasciato.value = roundUpCents(-diff);
+      debitoLasciato.value = -diff;
       debitoLasciato.disabled = true;
     }
     if (creditoLasciato) {
@@ -389,6 +389,12 @@ function hideNoteGiornata() {
 
 function startNuovaConsegna() {
   showPartecipantiSection();
+  showNoteGiornata();
+  // Show status section with only annulla button visible
+  const statusSection = document.getElementById('consegna-status-section');
+  if (statusSection) statusSection.style.display = 'block';
+  const closeBtn = document.getElementById('close-consegna-btn');
+  if (closeBtn) closeBtn.style.display = 'none';
   const annullaBtn = document.getElementById('btn-annulla-consegna');
   if (annullaBtn) annullaBtn.style.display = 'block';
 }
@@ -411,6 +417,9 @@ async function annullaConsegna() {
     }
   } else {
     hidePartecipantiSection();
+    hideNoteGiornata();
+    const statusSection = document.getElementById('consegna-status-section');
+    if (statusSection) statusSection.style.display = 'none';
   }
 }
 

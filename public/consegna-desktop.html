@@ -53,13 +53,16 @@
             </div>
             <button type="submit" class="btn-save initially-hidden" id="save-btn-cassa" style="margin-top: 20px;">Salva Movimenti</button>
 
-            <!-- Chiudi/Riapri Consegna -->
+            <!-- Chiudi/Riapri/Annulla Consegna -->
             <div id="consegna-status-section" class="initially-hidden" style="margin-top: 20px;">
                 <span id="closed-badge" class="closed-badge initially-hidden">
                     🔒 Consegna chiusa
                 </span>
                 <button type="button" id="close-consegna-btn" class="btn-danger" onclick="toggleConsegnaStatus()">
                     🔒 Chiudi Consegna
+                </button>
+                <button type="button" id="btn-annulla-consegna" class="btn-danger initially-hidden" onclick="annullaConsegna()">
+                    🗑️ Annulla Consegna
                 </button>
             </div>
         </div>
@@ -78,8 +81,6 @@
             <div id="selected-participants"></div>
 
             <div id="movimenti-giorno" style="margin-top: 30px;"></div>
-
-            <button type="button" id="btn-annulla-consegna" class="btn-danger initially-hidden" style="margin-top: 20px;" onclick="annullaConsegna()">🗑️ Annulla Consegna</button>
         </div>
 
         </form>
