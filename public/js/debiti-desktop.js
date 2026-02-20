@@ -44,7 +44,7 @@ function createParticipantRow(p) {
   const canEdit = isAdmin() && isViewingToday();
 
   row.innerHTML = `
-    <td>${escapeHtml(p.username) || '-'}${adminBadge}</td>
+    ${isAdmin() ? `<td>${escapeHtml(p.username) || '-'}${adminBadge}</td>` : ''}
     <td><strong>${escapeHtml(p.nome)}</strong></td>
     <td class="${saldoClass}">
       <span id="saldo-view-${p.id}">€${saldoText}</span>
@@ -198,6 +198,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (addBtn) addBtn.style.display = 'none';
     const thAzioni = document.getElementById('th-azioni');
     if (thAzioni) thAzioni.style.display = 'none';
+    const thUsername = document.getElementById('th-username');
+    if (thUsername) thUsername.style.display = 'none';
   }
 
   loadParticipants();
