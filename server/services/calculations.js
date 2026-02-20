@@ -72,7 +72,7 @@ function applySaldoChanges(currentSaldo, movimento) {
     saldo += movimento.credito_lasciato;
   }
 
-  return saldo;
+  return roundToCents(saldo);
 }
 
 module.exports = {

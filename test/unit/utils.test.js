@@ -132,8 +132,9 @@ describe('formatSaldo', () => {
     expect(formatSaldo(-5)).toBe('5'); // abs value
   });
 
-  it('keeps non-zero decimal', () => {
-    expect(formatSaldo(5.5)).toBe('5.5');
+  it('keeps non-zero decimal with 2 places', () => {
+    expect(formatSaldo(5.5)).toBe('5.50');
+    expect(formatSaldo(5.73)).toBe('5.73');
   });
 
   it('handles 0', () => {

@@ -71,8 +71,7 @@ function roundUpCents(amount) {
 
 // Format saldo for display (remove unnecessary .0)
 function formatSaldo(val) {
-  const formatted = Math.abs(val).toFixed(1);
-  return formatted.endsWith('.0') ? formatted.slice(0, -2) : formatted;
+  return formatNumber(Math.abs(val));
 }
 
 // Format a number for display, hiding .00 decimals
