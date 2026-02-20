@@ -175,7 +175,7 @@ function handleContoProduttoreInput(id, saldo) {
     return;
   }
 
-  const shouldAutoCompensate = contoProduttoreValue > 0;
+  const shouldAutoCompensate = importoSaldatoValue > 0;
   const debitoPreesistente = saldo < 0 ? Math.abs(saldo) : 0;
   const creditoPreesistente = saldo > 0 ? saldo : 0;
   const saldaDebitoCheckbox = document.getElementById(`saldaDebito_${id}`);
