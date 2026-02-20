@@ -46,6 +46,7 @@ function getEventIcon(eventType) {
     case 'movimento_changed': return '✏️';
     case 'consegna_closed': return '🔒';
     case 'consegna_reopened': return '🔓';
+    case 'consegna_created': return '📋';
     case 'consegna_deleted': return '🗑️';
     case 'user_created': return '👤';
     case 'user_edited': return '✏️';
@@ -68,6 +69,8 @@ function getEventDescription(event) {
       return `Consegna chiusa`;
     case 'consegna_reopened':
       return `Consegna riaperta`;
+    case 'consegna_created':
+      return `Nuova consegna`;
     case 'consegna_deleted':
       return `Consegna annullata`;
     case 'user_created':

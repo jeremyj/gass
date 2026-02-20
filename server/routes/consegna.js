@@ -142,6 +142,11 @@ router.post('/', (req, res) => {
                createAudit.updated_by, createAudit.updated_at);
         consegna = { id: result.lastInsertRowid };
         console.log(`[CONSEGNA] ${timestamp} - Created new consegna ID: ${consegna.id}`);
+
+        db.prepare(`
+          INSERT INTO activity_logs (event_type, actor_user_id, consegna_id, details, created_at)
+          VALUES ('consegna_created', ?, ?, ?, ?)
+        `).run(req.session.userId, consegna.id, `consegna: ${data}`, timestamp);
       }
 
       // Upsert movimenti and update saldi
@@ -171,8 +176,8 @@ router.post('/', (req, res) => {
       let movimentiUpdated = 0;
 
       const logMovimentoChange = db.prepare(`
-        INSERT INTO activity_logs (event_type, target_user_id, actor_user_id, details, created_at)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO activity_logs (event_type, target_user_id, actor_user_id, details, consegna_id, created_at)
+        VALUES (?, ?, ?, ?, ?, ?)
       `);
 
       partecipanti.forEach(p => {
@@ -221,7 +226,8 @@ router.post('/', (req, res) => {
               'movimento_changed',
               partecipante.id,
               req.session.userId,
-              `consegna: ${data}, ${changes.join(', ')}`,
+              changes.join(', '),
+              consegna.id,
               timestamp
             );
           }
@@ -305,8 +311,8 @@ router.delete('/:id', (req, res) => {
       `).all(id);
 
       const logMovimento = db.prepare(`
-        INSERT INTO activity_logs (event_type, target_user_id, actor_user_id, details, created_at)
-        VALUES ('movimento_created', ?, ?, ?, ?)
+        INSERT INTO activity_logs (event_type, target_user_id, actor_user_id, details, consegna_id, created_at)
+        VALUES ('movimento_created', ?, ?, ?, ?, ?)
       `);
 
       movimenti.forEach(m => {
@@ -318,14 +324,14 @@ router.delete('/:id', (req, res) => {
         if (m.usa_credito) parts.push(`Usa Cred: €${m.usa_credito}`);
         if (m.debito_saldato) parts.push(`Salda Deb: €${m.debito_saldato}`);
         const details = `consegna: ${consegna.data}, ${parts.join(', ')}`;
-        logMovimento.run(m.partecipante_id, m.created_by || req.session.userId, details, m.created_at || timestamp);
+        logMovimento.run(m.partecipante_id, m.created_by || req.session.userId, details, parseInt(id), m.created_at || timestamp);
       });
 
       // Log the consegna deletion itself
       db.prepare(`
-        INSERT INTO activity_logs (event_type, actor_user_id, details, created_at)
-        VALUES ('consegna_deleted', ?, ?, ?)
-      `).run(req.session.userId, `consegna: ${consegna.data}`, timestamp);
+        INSERT INTO activity_logs (event_type, actor_user_id, details, consegna_id, created_at)
+        VALUES ('consegna_deleted', ?, ?, ?, ?)
+      `).run(req.session.userId, `consegna: ${consegna.data}`, parseInt(id), timestamp);
 
       db.prepare('DELETE FROM consegne WHERE id = ?').run(id);
 

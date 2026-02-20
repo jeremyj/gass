@@ -137,6 +137,26 @@ function createDatabase(dbPath) {
   `);
   log('[ACTIVITY] Created activity_logs table');
 
+  tryAddColumn('activity_logs', 'consegna_id', 'INTEGER');
+
+  // Backfill consegna_id from details field for existing rows
+  try {
+    const backfilled = db.prepare(`
+      UPDATE activity_logs SET consegna_id = (
+        SELECT c.id FROM consegne c
+        WHERE activity_logs.details LIKE 'consegna: ' || c.data || ',%'
+           OR activity_logs.details LIKE 'consegna: ' || c.data
+      )
+      WHERE consegna_id IS NULL
+        AND details LIKE 'consegna: ____-__-__%'
+    `).run();
+    if (backfilled.changes > 0) {
+      log(`[ACTIVITY] Backfilled consegna_id for ${backfilled.changes} activity_logs rows`);
+    }
+  } catch (err) {
+    if (!isTest) console.error('[ACTIVITY] Error backfilling consegna_id:', err.message);
+  }
+
   log('\n--- Cleanup migration (v1.8) - removing unused columns ---');
 
   // Helper to safely drop a column (ignores if column doesn't exist)

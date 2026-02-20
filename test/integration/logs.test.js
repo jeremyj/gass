@@ -79,6 +79,44 @@ describe('GET /api/logs', () => {
     expect(res.body.events.some(e => e.event_type === 'user_created')).toBe(true);
   });
 
+  it('populates consegna_data via consegna_id for movimento_changed events', async () => {
+    const userId = db.prepare('SELECT id FROM users WHERE username = ?').get('admin').id;
+    const consegnaId = createConsegna(db, { data: '2026-02-18' });
+    createMovimento(db, { consegnaId, partecipanteId: userId, contoProduttore: 10, createdAt: new Date().toISOString() });
+
+    // Insert a movimento_changed log with consegna_id (new format)
+    db.prepare(`
+      INSERT INTO activity_logs (event_type, target_user_id, actor_user_id, details, consegna_id, created_at)
+      VALUES ('movimento_changed', ?, ?, ?, ?, ?)
+    `).run(userId, userId, 'conto: 10 → 20', consegnaId, new Date().toISOString());
+
+    const res = await adminAgent.get('/api/logs');
+    expect(res.status).toBe(200);
+
+    const changedEvent = res.body.events.find(e => e.event_type === 'movimento_changed');
+    expect(changedEvent).toBeDefined();
+    expect(changedEvent.consegna_data).toBe('2026-02-18');
+    // Details should NOT contain the consegna prefix (new format)
+    expect(changedEvent.details).not.toContain('consegna:');
+  });
+
+  it('includes consegna_created events', async () => {
+    const userId = db.prepare('SELECT id FROM users WHERE username = ?').get('admin').id;
+    const consegnaId = createConsegna(db, { data: '2026-02-17' });
+
+    db.prepare(`
+      INSERT INTO activity_logs (event_type, actor_user_id, consegna_id, details, created_at)
+      VALUES ('consegna_created', ?, ?, ?, ?)
+    `).run(userId, consegnaId, 'consegna: 2026-02-17', new Date().toISOString());
+
+    const res = await adminAgent.get('/api/logs');
+    expect(res.status).toBe(200);
+
+    const createdEvent = res.body.events.find(e => e.event_type === 'consegna_created');
+    expect(createdEvent).toBeDefined();
+    expect(createdEvent.consegna_data).toBe('2026-02-17');
+  });
+
   it('paginates results', async () => {
     // Create several activity log entries
     for (let i = 0; i < 5; i++) {

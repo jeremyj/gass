@@ -31,8 +31,10 @@ describe('getEventIcon', () => {
     ['movimento_historical', '📜'],
     ['movimento_updated', '✏️'],
     ['movimento_changed', '✏️'],
+    ['consegna_created', '📋'],
     ['consegna_closed', '🔒'],
     ['consegna_reopened', '🔓'],
+    ['consegna_deleted', '🗑️'],
     ['user_created', '👤'],
     ['user_edited', '✏️'],
     ['user_deleted', '🗑️'],
@@ -58,6 +60,11 @@ describe('getEventDescription', () => {
   it('includes escaped participant name for saldo_updated', () => {
     const event = { event_type: 'saldo_updated', partecipante_nome: 'Giulia & Bianchi' };
     expect(getEventDescription(event)).toContain('Giulia &amp; Bianchi');
+  });
+
+  it('returns plain text for consegna_created', () => {
+    const event = { event_type: 'consegna_created' };
+    expect(getEventDescription(event)).toBe('Nuova consegna');
   });
 
   it('returns plain text for consegna_closed', () => {

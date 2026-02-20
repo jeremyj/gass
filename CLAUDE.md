@@ -182,10 +182,14 @@ if diff < 0 && has_credit: auto-apply to usa_credito
 ## Activity Logging
 
 ### Event Types (activity_logs table)
+- `consegna_created` - New consegna created (with `consegna_id`)
 - `movimento_changed` - Manual field changes (conto_produttore, importo_saldato only)
 - `saldo_updated` - Direct saldo modifications by admin
 - `user_created`, `user_edited`, `user_deleted` - User management events
 - `password_changed` - Password resets
+
+### `consegna_id` Column
+`activity_logs.consegna_id` links events to a consegna (no FK constraint — consegna may be deleted). The frontend regex fallback (parsing date from `details`) handles old rows without `consegna_id` and orphaned references.
 
 ### Virtual Events (computed from other tables)
 - `movimento_created` - From movimenti with `created_at` (audit tracked)

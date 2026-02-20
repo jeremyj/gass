@@ -34,7 +34,7 @@ router.get('/', (req, res) => {
               SELECT 1 FROM activity_logs al
               WHERE al.event_type = 'movimento_changed'
                 AND al.target_user_id = m.partecipante_id
-                AND al.details LIKE '%consegna: ' || c.data || ',%'
+                AND (al.consegna_id = c.id OR al.details LIKE '%consegna: ' || c.data || ',%')
             )
         UNION ALL
         SELECT c.chiusa_at AS event_time FROM consegne c WHERE c.chiusa = 1 AND c.chiusa_at IS NOT NULL
@@ -141,7 +141,7 @@ router.get('/', (req, res) => {
         SELECT
           al.event_type,
           al.created_at AS event_time,
-          NULL AS consegna_data,
+          c.data AS consegna_data,
           t.display_name AS partecipante_nome,
           a.username AS user_name,
           NULL, NULL, NULL, NULL, NULL, NULL,
@@ -149,6 +149,7 @@ router.get('/', (req, res) => {
         FROM activity_logs al
         LEFT JOIN users t ON al.target_user_id = t.id
         LEFT JOIN users a ON al.actor_user_id = a.id
+        LEFT JOIN consegne c ON al.consegna_id = c.id
       ) combined
       ORDER BY event_time DESC
       LIMIT ? OFFSET ?
