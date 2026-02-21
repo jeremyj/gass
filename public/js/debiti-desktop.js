@@ -60,7 +60,10 @@ function createParticipantRow(p) {
       <button onclick="saveSaldo(${p.id})" id="save-btn-${p.id}" class="btn-save initially-hidden">Salva</button>
       <button onclick="cancelEdit(${p.id})" id="cancel-btn-${p.id}" class="initially-hidden">Annulla</button>
       <button onclick="showEditUserModal(${p.id})">Modifica Utente</button>
-    </td>` : ''}
+      <button onclick="showTransactionsModal(${p.id})">Transazioni</button>
+    </td>` : `<td>
+      <button onclick="showTransactionsModal(${p.id})">Transazioni</button>
+    </td>`}
   `;
 
   return row;
@@ -182,6 +185,111 @@ async function deleteParticipant(id) {
   }
 }
 
+// ===== TRANSACTIONS MODAL =====
+
+function injectTransactionsModal() {
+  if (document.getElementById('transactions-modal')) return;
+
+  const modalHtml = `
+    <div id="transactions-modal" class="modal" style="display:none;">
+      <div class="modal-content modal-content-wide">
+        <div class="modal-header-row">
+          <h3 id="transactions-modal-title">Transazioni</h3>
+          <button type="button" class="modal-close-btn" onclick="closeTransactionsModal()">&times;</button>
+        </div>
+        <div id="transactions-modal-body">
+          <p>Caricamento...</p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+async function showTransactionsModal(id) {
+  injectTransactionsModal();
+
+  const participant = participants.find(p => p.id === id);
+  const name = participant ? participant.nome : '';
+  document.getElementById('transactions-modal-title').textContent = `Transazioni - ${name}`;
+  document.getElementById('transactions-modal-body').innerHTML = '<p>Caricamento...</p>';
+  document.getElementById('transactions-modal').style.display = 'flex';
+
+  try {
+    const response = await fetch(`/api/participants/${id}/transactions`);
+    const result = await response.json();
+
+    if (result.success) {
+      renderTransactionsTable(result.transactions);
+    } else {
+      document.getElementById('transactions-modal-body').innerHTML = `<p>Errore: ${escapeHtml(result.error)}</p>`;
+    }
+  } catch (error) {
+    document.getElementById('transactions-modal-body').innerHTML = '<p>Errore di connessione</p>';
+  }
+}
+
+function renderTransactionsTable(transactions) {
+  const body = document.getElementById('transactions-modal-body');
+
+  if (transactions.length === 0) {
+    body.innerHTML = '<p>Nessuna transazione</p>';
+    return;
+  }
+
+  const rows = transactions.map(t => {
+    const saldoEffect = (t.credito_lasciato || 0) - (t.debito_lasciato || 0);
+    let effectClass = '';
+    let effectText = 'Pari';
+
+    if (saldoEffect > 0) {
+      effectClass = 'saldo-credito';
+      effectText = `+${formatNumber(saldoEffect)} €`;
+    } else if (saldoEffect < 0) {
+      effectClass = 'saldo-debito';
+      effectText = `${formatNumber(saldoEffect)} €`;
+    }
+
+    return `
+      <tr>
+        <td>${formatDateItalian(t.consegna_data)}</td>
+        <td class="col-num">${t.conto_produttore ? '€' + formatNumber(t.conto_produttore) : '-'}</td>
+        <td class="col-num">${t.importo_saldato ? '€' + formatNumber(t.importo_saldato) : '-'}</td>
+        <td class="col-num col-credito">${t.credito_lasciato ? '€' + formatNumber(t.credito_lasciato) : '-'}</td>
+        <td class="col-num col-debito">${t.debito_lasciato ? '€' + formatNumber(t.debito_lasciato) : '-'}</td>
+        <td class="col-num col-credito">${t.usa_credito ? '€' + formatNumber(t.usa_credito) : '-'}</td>
+        <td class="col-num col-debito">${t.debito_saldato ? '€' + formatNumber(t.debito_saldato) : '-'}</td>
+        <td class="${effectClass}" style="font-weight:bold;">${effectText}</td>
+        <td class="col-note">${escapeHtml(t.note)}</td>
+      </tr>
+    `;
+  }).join('');
+
+  body.innerHTML = `
+    <table class="transactions-table">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th class="col-num">Conto</th>
+          <th class="col-num">Saldato</th>
+          <th class="col-num">+Credito</th>
+          <th class="col-num">+Debito</th>
+          <th class="col-num">-Credito</th>
+          <th class="col-num">-Debito</th>
+          <th>Effetto</th>
+          <th class="col-note">Note</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+function closeTransactionsModal() {
+  document.getElementById('transactions-modal').style.display = 'none';
+}
+
 // ===== INITIALIZATION =====
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -196,8 +304,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!isAdmin()) {
     const addBtn = document.getElementById('btn-add-participant');
     if (addBtn) addBtn.style.display = 'none';
-    const thAzioni = document.getElementById('th-azioni');
-    if (thAzioni) thAzioni.style.display = 'none';
     const thUsername = document.getElementById('th-username');
     if (thUsername) thUsername.style.display = 'none';
   }

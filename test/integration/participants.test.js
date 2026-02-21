@@ -109,6 +109,74 @@ describe('POST /api/participants', () => {
   });
 });
 
+describe('GET /api/participants/:id/transactions', () => {
+  it('returns 401 when not authenticated', async () => {
+    const res = await request(app).get('/api/participants/1/transactions');
+    expect(res.status).toBe(401);
+  });
+
+  it('returns transactions for own user (non-admin)', async () => {
+    const userId = createUser(db, { username: 'user1', password: 'password1', displayName: 'User1' });
+    const c1 = createConsegna(db, { data: '2026-01-10' });
+    createMovimento(db, { consegnaId: c1, partecipanteId: userId, contoProduttore: 100, importoSaldato: 80, creditoLasciato: 20 });
+
+    const userAgent = request.agent(app);
+    await userAgent.post('/api/auth/login').send({ username: 'user1', password: 'password1' });
+
+    const res = await userAgent.get(`/api/participants/${userId}/transactions`);
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.transactions).toHaveLength(1);
+    expect(res.body.transactions[0].consegna_data).toBe('2026-01-10');
+    expect(res.body.transactions[0].conto_produttore).toBe(100);
+    expect(res.body.transactions[0].credito_lasciato).toBe(20);
+  });
+
+  it('returns 403 when non-admin tries to view another user transactions', async () => {
+    const userId1 = createUser(db, { username: 'user1', password: 'password1', displayName: 'User1' });
+    const userId2 = createUser(db, { username: 'user2', password: 'password2', displayName: 'User2' });
+
+    const userAgent = request.agent(app);
+    await userAgent.post('/api/auth/login').send({ username: 'user1', password: 'password1' });
+
+    const res = await userAgent.get(`/api/participants/${userId2}/transactions`);
+    expect(res.status).toBe(403);
+  });
+
+  it('admin can view any user transactions', async () => {
+    const userId = createUser(db, { username: 'user1', password: 'password1', displayName: 'User1' });
+    const c1 = createConsegna(db, { data: '2026-01-10' });
+    createMovimento(db, { consegnaId: c1, partecipanteId: userId, contoProduttore: 50, debitoLasciato: 10 });
+
+    const res = await adminAgent.get(`/api/participants/${userId}/transactions`);
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.transactions).toHaveLength(1);
+    expect(res.body.transactions[0].debito_lasciato).toBe(10);
+  });
+
+  it('returns transactions sorted by date descending', async () => {
+    const userId = createUser(db, { username: 'user1', password: 'password1', displayName: 'User1' });
+    const c1 = createConsegna(db, { data: '2026-01-01' });
+    const c2 = createConsegna(db, { data: '2026-02-01' });
+    createMovimento(db, { consegnaId: c1, partecipanteId: userId, contoProduttore: 30 });
+    createMovimento(db, { consegnaId: c2, partecipanteId: userId, contoProduttore: 50 });
+
+    const res = await adminAgent.get(`/api/participants/${userId}/transactions`);
+    expect(res.body.transactions).toHaveLength(2);
+    expect(res.body.transactions[0].consegna_data).toBe('2026-02-01');
+    expect(res.body.transactions[1].consegna_data).toBe('2026-01-01');
+  });
+
+  it('returns empty array when no transactions exist', async () => {
+    const userId = createUser(db, { username: 'user1', password: 'password1', displayName: 'User1' });
+
+    const res = await adminAgent.get(`/api/participants/${userId}/transactions`);
+    expect(res.status).toBe(200);
+    expect(res.body.transactions).toHaveLength(0);
+  });
+});
+
 describe('PUT /api/participants/:id', () => {
   it('returns 403 for non-admin', async () => {
     const userId = createUser(db, { username: 'user1', password: 'password1', displayName: 'User1', saldo: 10 });

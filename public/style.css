@@ -986,6 +986,154 @@ body {
     display: block;
 }
 
+/* ===== SALDO TRANSACTIONS (mobile) ===== */
+
+.saldo-transactions-section {
+    margin-top: 12px;
+    background: var(--color-bg);
+    border-radius: var(--radius-md);
+    padding: 12px;
+}
+
+.transactions-loading {
+    text-align: center;
+    color: var(--color-text-muted);
+    padding: 10px;
+}
+
+.transactions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.transaction-item {
+    background: var(--color-surface);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    border-left: 4px solid var(--color-border);
+}
+
+.transaction-item.tx-credito {
+    border-left-color: var(--color-success);
+}
+
+.transaction-item.tx-debito {
+    border-left-color: var(--color-danger);
+}
+
+.transaction-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.transaction-date {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--color-text);
+}
+
+.transaction-effect {
+    font-weight: bold;
+    font-size: 13px;
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+}
+
+.transaction-effect.tx-credito {
+    color: var(--color-success);
+    background: #e8f5e9;
+}
+
+.transaction-effect.tx-debito {
+    color: var(--color-danger);
+    background: #ffebee;
+}
+
+.transaction-effect.tx-pari {
+    color: var(--color-text-muted);
+}
+
+.transaction-details {
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+
+.transaction-note {
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+    font-style: italic;
+}
+
+/* ===== TRANSACTIONS MODAL (desktop) ===== */
+
+.modal-content-wide {
+    min-width: 600px;
+    max-width: 900px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header-row h3 {
+    margin: 0;
+    border: none;
+    padding: 0;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    padding: 0 5px;
+    line-height: 1;
+}
+
+.modal-close-btn:hover {
+    color: var(--color-text);
+}
+
+.transactions-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.transactions-table th {
+    background: var(--color-nav-hover);
+    color: white;
+    padding: 8px 10px;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.transactions-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.transactions-table tbody tr:nth-child(even) {
+    background: #f2f7fd;
+}
+
+.transactions-table tbody tr:hover {
+    background: #e8f0fe;
+}
+
 /* ===== STORICO (mobile card styles) ===== */
 
 .storico-consegna-card {
