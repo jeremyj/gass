@@ -318,7 +318,7 @@ function updateSaveButtonVisibility() {
   }
 
   if (noteGiornataModified) {
-    saveBtnCassa.style.display = 'block';
+    saveBtnCassa.style.display = 'inline-block';
     saveBtnCassa.textContent = '💾 Salva Note';
   } else {
     saveBtnCassa.style.display = 'none';
