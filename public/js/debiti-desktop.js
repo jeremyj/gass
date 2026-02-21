@@ -55,7 +55,7 @@ function createParticipantRow(p) {
              onkeydown="if(event.key==='Enter'){event.preventDefault();saveSaldo(${p.id})}">
     </td>
     <td>${formatDateItalian(p.ultima_modifica)}</td>
-    ${isAdmin() ? `<td>
+    ${isAdmin() ? `<td style="white-space: nowrap">
       <button onclick="editSaldo(${p.id})" id="edit-btn-${p.id}" ${canEdit ? '' : 'disabled'}>Modifica Saldo</button>
       <button onclick="saveSaldo(${p.id})" id="save-btn-${p.id}" class="btn-save initially-hidden">Salva</button>
       <button onclick="cancelEdit(${p.id})" id="cancel-btn-${p.id}" class="initially-hidden">Annulla</button>
