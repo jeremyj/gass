@@ -169,6 +169,17 @@ La pagina Saldi mostra una panoramica dei saldi di tutti i partecipanti.
   - **Grigio**: Saldo a zero (in pari)
 - Data dell'ultima modifica per ciascun partecipante
 
+#### Storico Transazioni
+
+Ogni partecipante può visualizzare il proprio storico movimenti:
+
+- **Mobile**: Espandere la card del partecipante per vedere le transazioni inline
+- **Desktop**: Cliccare il pulsante "Transazioni" per aprire un modal con la tabella completa
+
+Per ogni transazione vengono mostrati: data, conto produttore, importo saldato, credito/debito lasciato, uso credito, debito saldato.
+
+Gli amministratori possono visualizzare le transazioni di qualsiasi partecipante. Gli utenti normali possono visualizzare solo le proprie.
+
 #### Visualizzazione Storica
 
 Per vedere i saldi in una data passata:
@@ -340,7 +351,8 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.3.0
+Sistema GASS Pagamenti - Versione 2.5.3
+- Storico transazioni per partecipante nella pagina Saldi (mobile inline, desktop modal)
 - Cambio password autonomo per tutti gli utenti (pulsante 🔑)
 - Chiusura/riapertura consegne con blocco modifiche
 - Gestione utenti completa per amministratori (Saldi → Modifica Utente)

@@ -24,29 +24,30 @@ GASS Pagamenti is a financial management system for tracking deliveries, cash mo
 RESTful API with the following endpoints:
 
 ```
-GET    /api/participants        - Retrieve all participants with current balances
-GET    /api/participants?date   - Calculate participant balances as of specific date
-GET    /api/consegna/:date      - Retrieve delivery data for specific date
-POST   /api/consegna            - Create or update delivery with movements
-DELETE /api/consegna/:id        - Delete delivery and recalculate all balances
-GET    /api/storico             - Retrieve all deliveries (summary)
-GET    /api/storico/dettaglio   - Retrieve all deliveries with detailed movements
-PUT    /api/participants/:id    - Update participant balance
-POST   /api/participants        - Create new participant
-DELETE /api/participants/:id    - Delete participant
-GET    /api/version             - Get application version from package.json (public, no auth)
+GET    /api/participants              - Retrieve all participants with current balances
+GET    /api/participants?date         - Calculate participant balances as of specific date
+GET    /api/participants/:id/transactions - Get movimenti for a participant (own only for non-admins)
+GET    /api/consegna/:date            - Retrieve delivery data for specific date
+POST   /api/consegna                  - Create or update delivery with movements
+DELETE /api/consegna/:id              - Delete delivery and recalculate all balances
+GET    /api/storico                   - Retrieve all deliveries (summary)
+GET    /api/storico/dettaglio         - Retrieve all deliveries with detailed movements
+PUT    /api/participants/:id          - Update participant balance
+POST   /api/participants              - Create new participant
+DELETE /api/participants/:id          - Delete participant
+GET    /api/version                   - Get application version from package.json (public, no auth)
 ```
 
 ### Frontend Structure
 
 #### Desktop Views
 - `consegna-desktop.html/js` (1159 lines) - Delivery entry form
-- `debiti-desktop.html/js` (363 lines) - Balance overview
+- `debiti-desktop.html/js` (427 lines) - Balance overview with transactions modal
 - `storico-desktop.html/js` (193 lines) - Historical records
 
 #### Mobile Views
 - `consegna.html/js` (1223 lines) - Delivery entry form
-- `debiti.html/js` (345 lines) - Balance overview
+- `debiti.html/js` (416 lines) - Balance overview with inline transaction history
 - `storico.html/js` (239 lines) - Historical records
 
 #### Shared Components
@@ -360,6 +361,12 @@ These fields are always disabled to prevent manual editing and ensure data integ
   - Gray: Zero balance
 - Shows last modification date for each participant
 - Date picker to view historical balances
+
+#### Transaction History
+- **Desktop**: "Transazioni" button on each row opens a modal with the full movimenti table (`GET /api/participants/:id/transactions`)
+- **Mobile**: Expanding a participant card loads and shows transactions inline
+- Auth: non-admin users can only view their own transactions (API returns 403 otherwise)
+- Non-admin users can now expand cards (previously admin-only)
 
 #### Historical View
 - Select any past date
