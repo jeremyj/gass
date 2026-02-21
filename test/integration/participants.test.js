@@ -132,7 +132,7 @@ describe('GET /api/participants/:id/transactions', () => {
     expect(res.body.transactions[0].credito_lasciato).toBe(20);
   });
 
-  it('returns 403 when non-admin tries to view another user transactions', async () => {
+  it('allows non-admin to view another user transactions', async () => {
     const userId1 = createUser(db, { username: 'user1', password: 'password1', displayName: 'User1' });
     const userId2 = createUser(db, { username: 'user2', password: 'password2', displayName: 'User2' });
 
@@ -140,7 +140,8 @@ describe('GET /api/participants/:id/transactions', () => {
     await userAgent.post('/api/auth/login').send({ username: 'user1', password: 'password1' });
 
     const res = await userAgent.get(`/api/participants/${userId2}/transactions`);
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
   });
 
   it('admin can view any user transactions', async () => {

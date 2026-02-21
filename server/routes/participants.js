@@ -63,11 +63,6 @@ router.get('/:id/transactions', (req, res) => {
   const timestamp = new Date().toISOString();
   const { id } = req.params;
 
-  // Non-admin users can only view their own transactions
-  if (!req.session.isAdmin && req.session.userId !== parseInt(id)) {
-    return res.status(403).json({ success: false, error: 'Accesso negato' });
-  }
-
   console.log(`[PARTICIPANTS] ${timestamp} - GET transactions for participant ID: ${id}`);
 
   try {
