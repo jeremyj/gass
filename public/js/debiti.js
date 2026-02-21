@@ -3,6 +3,7 @@
 let participants = [];
 let expandedParticipantId = null;
 let originalSaldoValues = {}; // Track original values when card is expanded
+let transactionsCache = {}; // Cache loaded transactions
 
 // Calendar state now managed in calendar.js
 
@@ -77,6 +78,51 @@ function createParticipantCard(p) {
     `;
   } else {
     // Expanded view
+    const canEdit = isAdmin() && isViewingToday();
+
+    let editSectionHtml = '';
+    if (canEdit) {
+      editSectionHtml = `
+        <div class="saldo-edit-section">
+          <div class="saldo-edit-title">✏️ Modifica Saldo Attuale</div>
+          <div class="input-row">
+            <div>
+              <label style="font-size: 12px; color: #6c757d; margin-bottom: 5px; display: block;">Nuovo Credito</label>
+              <input type="text"
+                     inputmode="decimal"
+                     id="credito-input-${p.id}"
+                     class="input-field"
+                     value="${p.saldo > 0 ? p.saldo : ''}"
+                     placeholder="0.00"
+                     oninput="normalizeInputField(this); updateSaldoInputs(${p.id}, 'credito')"
+                     onfocus="handleInputFocus(this)"
+                     ${p.saldo < 0 ? 'disabled style="opacity: 0.5;"' : ''}>
+            </div>
+            <div>
+              <label style="font-size: 12px; color: #6c757d; margin-bottom: 5px; display: block;">Nuovo Debito</label>
+              <input type="text"
+                     inputmode="decimal"
+                     id="debito-input-${p.id}"
+                     class="input-field"
+                     value="${p.saldo < 0 ? Math.abs(p.saldo) : ''}"
+                     placeholder="0.00"
+                     oninput="normalizeInputField(this); updateSaldoInputs(${p.id}, 'debito')"
+                     onfocus="handleInputFocus(this)"
+                     ${p.saldo > 0 ? 'disabled style="opacity: 0.5;"' : ''}>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-badge info-badge-warning">
+          ⚠️ Modifica manuale del saldo. Usa con attenzione.
+        </div>
+
+        <button class="big-btn big-btn-success" onclick="saveSaldo(${p.id})">
+          💾 Salva Modifiche
+        </button>
+      `;
+    }
+
     card.innerHTML = `
       <div class="saldo-header-expanded clickable" id="header-${p.id}">
         <div>
@@ -88,50 +134,19 @@ function createParticipantCard(p) {
         </div>
       </div>
 
-      <div class="saldo-edit-section">
-        <div class="saldo-edit-title">✏️ Modifica Saldo Attuale</div>
-        <div class="input-row">
-          <div>
-            <label style="font-size: 12px; color: #6c757d; margin-bottom: 5px; display: block;">Nuovo Credito</label>
-            <input type="text"
-                   inputmode="decimal"
-                   id="credito-input-${p.id}"
-                   class="input-field"
-                   value="${p.saldo > 0 ? p.saldo : ''}"
-                   placeholder="0.00"
-                   oninput="normalizeInputField(this); updateSaldoInputs(${p.id}, 'credito')"
-                   onfocus="handleInputFocus(this)"
-                   ${p.saldo < 0 ? 'disabled style="opacity: 0.5;"' : ''}>
-          </div>
-          <div>
-            <label style="font-size: 12px; color: #6c757d; margin-bottom: 5px; display: block;">Nuovo Debito</label>
-            <input type="text"
-                   inputmode="decimal"
-                   id="debito-input-${p.id}"
-                   class="input-field"
-                   value="${p.saldo < 0 ? Math.abs(p.saldo) : ''}"
-                   placeholder="0.00"
-                   oninput="normalizeInputField(this); updateSaldoInputs(${p.id}, 'debito')"
-                   onfocus="handleInputFocus(this)"
-                   ${p.saldo > 0 ? 'disabled style="opacity: 0.5;"' : ''}>
-          </div>
-        </div>
-      </div>
+      ${editSectionHtml}
 
-      <div class="info-badge info-badge-warning">
-        ⚠️ Modifica manuale del saldo. Usa con attenzione.
+      <div class="saldo-transactions-section" id="transactions-${p.id}">
+        <div class="saldo-edit-title">📋 Transazioni</div>
+        <div class="transactions-loading">Caricamento...</div>
       </div>
-
-      <button class="big-btn big-btn-success" onclick="saveSaldo(${p.id})">
-        💾 Salva Modifiche
-      </button>
 
       <button class="big-btn big-btn-secondary" onclick="toggleParticipantCard(${p.id})">
         ✖️ Chiudi
       </button>
     `;
 
-    // Add click handler to header and focus appropriate input after render
+    // Add click handler to header and load transactions after render
     setTimeout(() => {
       const header = document.getElementById(`header-${p.id}`);
       if (header) {
@@ -143,39 +158,106 @@ function createParticipantCard(p) {
         });
       }
 
-      const creditoInput = document.getElementById(`credito-input-${p.id}`);
-      const debitoInput = document.getElementById(`debito-input-${p.id}`);
+      if (canEdit) {
+        const creditoInput = document.getElementById(`credito-input-${p.id}`);
+        const debitoInput = document.getElementById(`debito-input-${p.id}`);
 
-      if (p.saldo >= 0 && creditoInput) {
-        creditoInput.focus();
-        creditoInput.select();
-      } else if (p.saldo < 0 && debitoInput) {
-        debitoInput.focus();
-        debitoInput.select();
+        if (p.saldo >= 0 && creditoInput) {
+          creditoInput.focus();
+          creditoInput.select();
+        } else if (p.saldo < 0 && debitoInput) {
+          debitoInput.focus();
+          debitoInput.select();
+        }
       }
+
+      // Load transactions
+      loadTransactions(p.id);
     }, 100);
   }
 
   return card;
 }
 
+// ===== TRANSACTIONS =====
+
+async function loadTransactions(participantId) {
+  const container = document.getElementById(`transactions-${participantId}`);
+  if (!container) return;
+
+  // Use cache if available
+  if (transactionsCache[participantId]) {
+    renderTransactions(container, transactionsCache[participantId]);
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/participants/${participantId}/transactions`);
+    const result = await response.json();
+
+    if (result.success) {
+      transactionsCache[participantId] = result.transactions;
+      renderTransactions(container, result.transactions);
+    } else {
+      container.innerHTML = `<div class="saldo-edit-title">📋 Transazioni</div><p class="empty-state">Errore: ${result.error}</p>`;
+    }
+  } catch (error) {
+    container.innerHTML = `<div class="saldo-edit-title">📋 Transazioni</div><p class="empty-state">Errore di connessione</p>`;
+  }
+}
+
+function renderTransactions(container, transactions) {
+  if (transactions.length === 0) {
+    container.innerHTML = `<div class="saldo-edit-title">📋 Transazioni</div><p class="empty-state">Nessuna transazione</p>`;
+    return;
+  }
+
+  let html = '<div class="saldo-edit-title">📋 Transazioni</div>';
+  html += '<div class="transactions-list">';
+
+  transactions.forEach(t => {
+    const saldoEffect = (t.credito_lasciato || 0) - (t.debito_lasciato || 0);
+    let effectClass = 'tx-pari';
+    let effectText = 'Pari';
+
+    if (saldoEffect > 0) {
+      effectClass = 'tx-credito';
+      effectText = `+${formatNumber(saldoEffect)} €`;
+    } else if (saldoEffect < 0) {
+      effectClass = 'tx-debito';
+      effectText = `${formatNumber(saldoEffect)} €`;
+    }
+
+    const details = [];
+    if (t.conto_produttore) details.push(`Conto: ${formatNumber(t.conto_produttore)} €`);
+    if (t.importo_saldato) details.push(`Pagato: ${formatNumber(t.importo_saldato)} €`);
+    if (t.usa_credito) details.push(`Usa credito: ${formatNumber(t.usa_credito)} €`);
+    if (t.debito_saldato) details.push(`Salda debito: ${formatNumber(t.debito_saldato)} €`);
+
+    html += `
+      <div class="transaction-item ${effectClass}">
+        <div class="transaction-header">
+          <span class="transaction-date">${formatDateItalian(t.consegna_data)}</span>
+          <span class="transaction-effect ${effectClass}">${effectText}</span>
+        </div>
+        <div class="transaction-details">
+          ${details.length > 0 ? details.join(' · ') : 'Pari'}
+        </div>
+        ${t.note ? `<div class="transaction-note">📝 ${escapeHtml(t.note)}</div>` : ''}
+      </div>
+    `;
+  });
+
+  html += '</div>';
+  container.innerHTML = html;
+}
+
 // ===== CARD INTERACTION =====
 
 function toggleParticipantCard(id) {
-  // Only admin can edit saldi - silently ignore for non-admin
-  if (!isAdmin()) {
-    return;
-  }
-
-  // Cannot edit historical saldi (they are calculated from movimenti)
-  if (!isViewingToday()) {
-    showStatus('I saldi storici non sono modificabili', 'error');
-    return;
-  }
-
   if (expandedParticipantId === id) {
-    // Trying to close - check for unsaved changes
-    if (hasUnsavedChanges(id)) {
+    // Trying to close - check for unsaved changes (admin only)
+    if (isAdmin() && isViewingToday() && hasUnsavedChanges(id)) {
       if (!confirm('Ci sono modifiche non salvate. Vuoi chiudere senza salvare?')) {
         return; // User cancelled, keep card open
       }
@@ -183,13 +265,15 @@ function toggleParticipantCard(id) {
     expandedParticipantId = null;
     originalSaldoValues = {}; // Clear saved values
   } else {
-    // Opening card - save original values
-    const participant = participants.find(p => p.id === id);
-    if (participant) {
-      originalSaldoValues[id] = {
-        credito: participant.saldo > 0 ? participant.saldo : 0,
-        debito: participant.saldo < 0 ? Math.abs(participant.saldo) : 0
-      };
+    // Opening card - save original values for admin edit tracking
+    if (isAdmin() && isViewingToday()) {
+      const participant = participants.find(p => p.id === id);
+      if (participant) {
+        originalSaldoValues[id] = {
+          credito: participant.saldo > 0 ? participant.saldo : 0,
+          debito: participant.saldo < 0 ? Math.abs(participant.saldo) : 0
+        };
+      }
     }
     expandedParticipantId = id;
   }
@@ -277,6 +361,7 @@ async function saveSaldo(id) {
       showStatus('✓ Saldo aggiornato', 'success');
       expandedParticipantId = null;
       originalSaldoValues = {}; // Clear saved values after successful save
+      transactionsCache = {}; // Clear transactions cache
       loadParticipants();
     } else {
       showStatus('Errore: ' + result.error, 'error');
@@ -316,7 +401,10 @@ async function deleteParticipant(id) {
 document.addEventListener('DOMContentLoaded', () => {
   // Initialize calendar with page-specific callback
   initCalendar({
-    onDateSelected: loadParticipants
+    onDateSelected: () => {
+      transactionsCache = {}; // Clear cache on date change
+      loadParticipants();
+    }
   });
 
   // Load consegna dates for calendar indicators

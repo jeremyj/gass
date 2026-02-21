@@ -58,6 +58,35 @@ router.get('/', (req, res) => {
   }
 });
 
+// Get transactions for a specific participant
+router.get('/:id/transactions', (req, res) => {
+  const timestamp = new Date().toISOString();
+  const { id } = req.params;
+
+  // Non-admin users can only view their own transactions
+  if (!req.session.isAdmin && req.session.userId !== parseInt(id)) {
+    return res.status(403).json({ success: false, error: 'Accesso negato' });
+  }
+
+  console.log(`[PARTICIPANTS] ${timestamp} - GET transactions for participant ID: ${id}`);
+
+  try {
+    const transactions = db.prepare(`
+      SELECT m.*, c.data AS consegna_data
+      FROM movimenti m
+      JOIN consegne c ON m.consegna_id = c.id
+      WHERE m.partecipante_id = ?
+      ORDER BY c.data DESC
+    `).all(id);
+
+    console.log(`[PARTICIPANTS] ${timestamp} - Retrieved ${transactions.length} transactions for participant ID: ${id}`);
+    res.json({ success: true, transactions });
+  } catch (error) {
+    console.error(`[PARTICIPANTS] ${timestamp} - Error fetching transactions for participant ID ${id}:`, error);
+    res.status(500).json({ success: false, error: 'Errore durante il recupero delle transazioni' });
+  }
+});
+
 // Update participant saldo (admin only)
 router.put('/:id', requireAdmin, (req, res) => {
   const timestamp = new Date().toISOString();
