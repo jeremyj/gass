@@ -15,7 +15,7 @@
   - `pages.js` - HTML routing with mobile/desktop detection
   - `auth.js` - Authentication endpoints (login, logout, password change)
   - `consegna.js` - Delivery API (GET/:date, POST, DELETE/:id)
-  - `participants.js` - Participant API (CRUD, saldo management, `GET /:id/transactions` — non-admin can only view own)
+  - `participants.js` - Participant API (CRUD, saldo management, `GET /:id/transactions` — any authenticated user)
   - `users.js` - User management API (admin-only, edit profile/password/admin status)
   - `storico.js` - History API
   - `logs.js` - Activity log API (admin-only)

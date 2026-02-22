@@ -178,7 +178,7 @@ Ogni partecipante può visualizzare il proprio storico movimenti:
 
 Per ogni transazione vengono mostrati: data, conto produttore, importo saldato, credito/debito lasciato, uso credito, debito saldato.
 
-Gli amministratori possono visualizzare le transazioni di qualsiasi partecipante. Gli utenti normali possono visualizzare solo le proprie.
+Tutti gli utenti autenticati possono visualizzare le transazioni di qualsiasi partecipante.
 
 #### Visualizzazione Storica
 
@@ -351,7 +351,8 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.5.3
+Sistema GASS Pagamenti - Versione 2.5.5
+- Visualizzazione transazioni aperta a tutti gli utenti autenticati (non solo amministratori)
 - Storico transazioni per partecipante nella pagina Saldi (mobile inline, desktop modal)
 - Cambio password autonomo per tutti gli utenti (pulsante 🔑)
 - Chiusura/riapertura consegne con blocco modifiche

@@ -26,7 +26,7 @@ RESTful API with the following endpoints:
 ```
 GET    /api/participants              - Retrieve all participants with current balances
 GET    /api/participants?date         - Calculate participant balances as of specific date
-GET    /api/participants/:id/transactions - Get movimenti for a participant (own only for non-admins)
+GET    /api/participants/:id/transactions - Get movimenti for a participant (any authenticated user)
 GET    /api/consegna/:date            - Retrieve delivery data for specific date
 POST   /api/consegna                  - Create or update delivery with movements
 DELETE /api/consegna/:id              - Delete delivery and recalculate all balances
@@ -114,6 +114,7 @@ event_type      TEXT NOT NULL
 target_user_id  INTEGER
 actor_user_id   INTEGER
 details         TEXT
+consegna_id     INTEGER
 created_at      DATETIME
 ```
 

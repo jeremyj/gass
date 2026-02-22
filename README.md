@@ -30,7 +30,7 @@ GASS Pagamenti è un'applicazione web completa per la gestione di:
 
 ### Requisiti
 
-- Node.js v18 o superiore
+- Node.js v20 o superiore
 - Docker (opzionale, consigliato per produzione)
 
 ### Installazione Locale
@@ -118,7 +118,7 @@ docker exec gass node manage-users.js delete john
 ## Stack Tecnologico
 
 ### Backend
-- **Runtime**: Node.js 18
+- **Runtime**: Node.js 20
 - **Framework**: Express.js
 - **Database**: SQLite3 (better-sqlite3)
 - **Autenticazione**: express-session + bcrypt
@@ -191,14 +191,13 @@ Per contribuire al progetto:
 
 ## Versione
 
-**Versione Corrente**: 1.4
+**Versione Corrente**: 2.5.5
 
 **Changelog Recente**:
-- v1.4 (Nov 2025): Sistema audit tracking completo
-- v1.3 (Nov 2025): Riorganizzazione architettura MVC
-- v1.2 (Nov 2025): Sistema autenticazione e sessioni
-- v1.1 (Nov 2025): Compensazione automatica bidirezionale
-- v1.0 (Nov 2025): Release iniziale con SQLite
+- v2.5.5 (Feb 2026): Aggiornamento documentazione, visualizzazione transazioni aperta a tutti gli utenti
+- v2.5.3 (Feb 2026): Storico transazioni per partecipante nella pagina Saldi
+- v2.5.0 (Feb 2026): Tracking consegna_id nei log di attività
+- v2.4.0 (Gen 2026): Pagina log attività per amministratori
 
 ## Licenza
 
