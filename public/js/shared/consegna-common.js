@@ -181,7 +181,7 @@ function handleContoProduttoreInput(id, saldo) {
   const saldaDebitoCheckbox = document.getElementById(`saldaDebito_${id}`);
   const usaInteroCreditoCheckbox = document.getElementById(`usaInteroCreditoCheckbox_${id}`);
 
-  let diff = importoSaldatoValue - contoProduttoreValue;
+  let diff = Math.round((importoSaldatoValue - contoProduttoreValue) * 100) / 100;
 
   if (usaCredito) {
     usaCredito.value = '';
@@ -203,11 +203,12 @@ function handleContoProduttoreInput(id, saldo) {
   if (shouldAutoCompensate && diff > 0 && debitoPreesistente > 0) {
     const debitoSaldabile = Math.min(diff, debitoPreesistente);
     debitoSaldabileUsed = debitoSaldabile;
-    remainingDebtCarryForward = debitoPreesistente - debitoSaldabile;
+    remainingDebtCarryForward = Math.round((debitoPreesistente - debitoSaldabile) * 100) / 100;
     const saldaTuttoIlDebito = debitoSaldabile === debitoPreesistente;
 
     if (debitoSaldato) {
-      debitoSaldato.value = debitoPreesistente;
+      debitoSaldato.dataset.submitValue = String(debitoPreesistente);
+      debitoSaldato.value = debitoSaldabile;
       debitoSaldato.disabled = true;
     }
     if (saldaDebitoCheckbox) {

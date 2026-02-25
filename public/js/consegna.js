@@ -675,7 +675,8 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
   const usaCredito = parseAmount(document.getElementById(`usaCredito_${currentId}`)?.value || '0');
   const debitoLasciato = parseAmount(document.getElementById(`debito_${currentId}`).value);
   const creditoLasciato = parseAmount(document.getElementById(`credito_${currentId}`).value);
-  const debitoSaldato = parseAmount(document.getElementById(`debitoSaldato_${currentId}`)?.value || '0');
+  const debitoSaldatoEl = document.getElementById(`debitoSaldato_${currentId}`);
+  const debitoSaldato = parseAmount(debitoSaldatoEl?.dataset.submitValue || debitoSaldatoEl?.value || '0');
   const saldaDebitoTotale = document.getElementById(`saldaDebito_${currentId}`)?.checked || false;
   const note = document.getElementById(`note_${currentId}`).value || '';
 
