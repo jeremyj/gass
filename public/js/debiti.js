@@ -185,9 +185,12 @@ async function loadTransactions(participantId) {
   const container = document.getElementById(`transactions-${participantId}`);
   if (!container) return;
 
+  const participant = participants.find(p => p.id === participantId);
+  const currentSaldo = participant ? participant.saldo : 0;
+
   // Use cache if available
   if (transactionsCache[participantId]) {
-    renderTransactions(container, transactionsCache[participantId]);
+    renderTransactions(container, transactionsCache[participantId], currentSaldo);
     return;
   }
 
@@ -197,7 +200,7 @@ async function loadTransactions(participantId) {
 
     if (result.success) {
       transactionsCache[participantId] = result.transactions;
-      renderTransactions(container, result.transactions);
+      renderTransactions(container, result.transactions, currentSaldo);
     } else {
       container.innerHTML = `<div class="saldo-edit-title">📋 Transazioni</div><p class="empty-state">Errore: ${result.error}</p>`;
     }
@@ -206,26 +209,35 @@ async function loadTransactions(participantId) {
   }
 }
 
-function renderTransactions(container, transactions) {
+function renderTransactions(container, transactions, currentSaldo = 0) {
   if (transactions.length === 0) {
     container.innerHTML = `<div class="saldo-edit-title">📋 Transazioni</div><p class="empty-state">Nessuna transazione</p>`;
     return;
   }
 
+  // Compute running balance after each transaction (transactions ordered newest-first)
+  let balance = currentSaldo;
+  const balancesAfter = [];
+  for (const t of transactions) {
+    balancesAfter.push(balance);
+    const effect = (t.credito_lasciato || 0) - (t.debito_lasciato || 0) - (t.usa_credito || 0) + (t.debito_saldato || 0);
+    balance -= effect;
+  }
+
   let html = '<div class="saldo-edit-title">📋 Transazioni</div>';
   html += '<div class="transactions-list">';
 
-  transactions.forEach(t => {
-    const saldoEffect = (t.credito_lasciato || 0) - (t.debito_lasciato || 0) - (t.usa_credito || 0) + (t.debito_saldato || 0);
+  transactions.forEach((t, i) => {
+    const balanceAfter = balancesAfter[i];
     let effectClass = 'tx-pari';
     let effectText = 'Pari';
 
-    if (saldoEffect > 0) {
+    if (balanceAfter > 0) {
       effectClass = 'tx-credito';
-      effectText = `+${formatNumber(saldoEffect)} €`;
-    } else if (saldoEffect < 0) {
+      effectText = `+${formatNumber(balanceAfter)} €`;
+    } else if (balanceAfter < 0) {
       effectClass = 'tx-debito';
-      effectText = `${formatNumber(saldoEffect)} €`;
+      effectText = `${formatNumber(balanceAfter)} €`;
     }
 
     const details = [];

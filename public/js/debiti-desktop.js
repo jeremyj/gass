@@ -212,6 +212,7 @@ async function showTransactionsModal(id) {
 
   const participant = participants.find(p => p.id === id);
   const name = participant ? participant.nome : '';
+  const currentSaldo = participant ? participant.saldo : 0;
   document.getElementById('transactions-modal-title').textContent = `Transazioni - ${name}`;
   document.getElementById('transactions-modal-body').innerHTML = '<p>Caricamento...</p>';
   document.getElementById('transactions-modal').style.display = 'flex';
@@ -221,7 +222,7 @@ async function showTransactionsModal(id) {
     const result = await response.json();
 
     if (result.success) {
-      renderTransactionsTable(result.transactions);
+      renderTransactionsTable(result.transactions, currentSaldo);
     } else {
       document.getElementById('transactions-modal-body').innerHTML = `<p>Errore: ${escapeHtml(result.error)}</p>`;
     }
@@ -230,7 +231,7 @@ async function showTransactionsModal(id) {
   }
 }
 
-function renderTransactionsTable(transactions) {
+function renderTransactionsTable(transactions, currentSaldo = 0) {
   const body = document.getElementById('transactions-modal-body');
 
   if (transactions.length === 0) {
@@ -238,17 +239,26 @@ function renderTransactionsTable(transactions) {
     return;
   }
 
-  const rows = transactions.map(t => {
-    const saldoEffect = (t.credito_lasciato || 0) - (t.debito_lasciato || 0) - (t.usa_credito || 0) + (t.debito_saldato || 0);
+  // Compute running balance after each transaction (transactions ordered newest-first)
+  let balance = currentSaldo;
+  const balancesAfter = [];
+  for (const t of transactions) {
+    balancesAfter.push(balance);
+    const effect = (t.credito_lasciato || 0) - (t.debito_lasciato || 0) - (t.usa_credito || 0) + (t.debito_saldato || 0);
+    balance -= effect;
+  }
+
+  const rows = transactions.map((t, i) => {
+    const balanceAfter = balancesAfter[i];
     let effectClass = '';
     let effectText = 'Pari';
 
-    if (saldoEffect > 0) {
+    if (balanceAfter > 0) {
       effectClass = 'saldo-credito';
-      effectText = `+${formatNumber(saldoEffect)} €`;
-    } else if (saldoEffect < 0) {
+      effectText = `+${formatNumber(balanceAfter)} €`;
+    } else if (balanceAfter < 0) {
       effectClass = 'saldo-debito';
-      effectText = `${formatNumber(saldoEffect)} €`;
+      effectText = `${formatNumber(balanceAfter)} €`;
     }
 
     return `
@@ -273,11 +283,11 @@ function renderTransactionsTable(transactions) {
           <th>Data</th>
           <th class="col-num">Conto</th>
           <th class="col-num">Saldato</th>
-          <th class="col-num">+Credito</th>
-          <th class="col-num">+Debito</th>
-          <th class="col-num">-Credito</th>
-          <th class="col-num">-Debito</th>
-          <th>Effetto</th>
+          <th class="col-num">Lascia Credito</th>
+          <th class="col-num">Lascia Debito</th>
+          <th class="col-num">Usa Credito</th>
+          <th class="col-num">Salda Debito</th>
+          <th>Saldo</th>
           <th class="col-note">Note</th>
         </tr>
       </thead>

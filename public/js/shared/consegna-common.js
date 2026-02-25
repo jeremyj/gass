@@ -199,13 +199,15 @@ function handleContoProduttoreInput(id, saldo) {
   }
 
   let debitoSaldabileUsed = 0;
+  let remainingDebtCarryForward = 0;
   if (shouldAutoCompensate && diff > 0 && debitoPreesistente > 0) {
     const debitoSaldabile = Math.min(diff, debitoPreesistente);
     debitoSaldabileUsed = debitoSaldabile;
+    remainingDebtCarryForward = debitoPreesistente - debitoSaldabile;
     const saldaTuttoIlDebito = debitoSaldabile === debitoPreesistente;
 
     if (debitoSaldato) {
-      debitoSaldato.value = debitoSaldabile;
+      debitoSaldato.value = debitoPreesistente;
       debitoSaldato.disabled = true;
     }
     if (saldaDebitoCheckbox) {
@@ -236,7 +238,7 @@ function handleContoProduttoreInput(id, saldo) {
       creditoLasciato.disabled = true;
     }
     if (debitoLasciato) {
-      debitoLasciato.value = '';
+      debitoLasciato.value = remainingDebtCarryForward > 0 ? remainingDebtCarryForward : '';
       debitoLasciato.disabled = true;
     }
   } else if (diff < 0) {
@@ -254,17 +256,17 @@ function handleContoProduttoreInput(id, saldo) {
       creditoLasciato.disabled = true;
     }
     if (debitoLasciato) {
-      debitoLasciato.value = '';
+      debitoLasciato.value = remainingDebtCarryForward > 0 ? remainingDebtCarryForward : '';
       debitoLasciato.disabled = true;
     }
   }
 
-  // Update new total debt display
+  // Update debt status display in section title
   const remainingDebtEl = document.getElementById(`remainingDebt_${id}`);
   if (remainingDebtEl) {
     if (debitoSaldabileUsed > 0) {
-      const remaining = debitoPreesistente - debitoSaldabileUsed;
-      remainingDebtEl.textContent = remaining > 0 ? ` → rimanente: €${formatNumber(remaining)}` : ' → saldato!';
+      // Remaining debt is shown in the debitoLasciato field; only show "saldato!" when fully paid
+      remainingDebtEl.textContent = remainingDebtCarryForward === 0 ? ' → saldato!' : '';
     } else if (diff < 0 && debitoPreesistente > 0) {
       remainingDebtEl.textContent = ` → nuovo totale: €${formatNumber(debitoPreesistente + Math.abs(diff))}`;
     } else {
@@ -479,7 +481,7 @@ function buildDebitoSection(id, nome, saldo, saldoText, saldoClass) {
   return `
     <div class="flow-section flow-debito">
       <div class="flow-section-title">
-        <span>DEBITO <span class="saldo-info ${saldoClass}">${escapeHtml(saldoText)}</span><span id="remainingDebt_${id}" class="remaining-debt-info"></span></span>
+        <span>DEBITO INIZIALE <span class="saldo-info ${saldoClass}">${escapeHtml(saldoText)}</span><span id="remainingDebt_${id}" class="remaining-debt-info"></span></span>
       </div>
       <div class="checkbox-group">
         <input type="checkbox" id="saldaDebito_${id}" onchange="toggleSaldaDebito(${id}, ${saldo})">
