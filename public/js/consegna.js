@@ -404,11 +404,13 @@ function loadExistingParticipantData(id, saldo) {
   const creditoField = document.getElementById(`credito_${id}`);
   if (creditoField && movimento.credito_lasciato) {
     creditoField.value = movimento.credito_lasciato;
+    creditoField.disabled = true;
   }
 
   const debitoField = document.getElementById(`debito_${id}`);
   if (debitoField && movimento.debito_lasciato) {
     debitoField.value = movimento.debito_lasciato;
+    debitoField.disabled = true;
   }
 
   const debitoSaldatoField = document.getElementById(`debitoSaldato_${id}`);

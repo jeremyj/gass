@@ -142,10 +142,10 @@ function createMovimentiTable(movimenti) {
         <th class="col-nome">Partecipante</th>
         <th class="col-num">Conto</th>
         <th class="col-num">Saldato</th>
-        <th class="col-num">+Credito</th>
-        <th class="col-num">+Debito</th>
-        <th class="col-num">-Credito</th>
-        <th class="col-num">-Debito</th>
+        <th class="col-num">Lascia Credito</th>
+        <th class="col-num">Lascia Debito</th>
+        <th class="col-num">Usa Credito</th>
+        <th class="col-num">Salda Debito</th>
         <th class="col-note">Note</th>
       </tr>
     </thead>

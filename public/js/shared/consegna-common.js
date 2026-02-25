@@ -192,6 +192,7 @@ function handleContoProduttoreInput(id, saldo) {
   }
   if (debitoSaldato) {
     debitoSaldato.value = '';
+    debitoSaldato.dataset.submitValue = '';
     debitoSaldato.disabled = true;
   }
   if (saldaDebitoCheckbox) {

@@ -189,7 +189,7 @@ function populateExistingMovimento(id) {
     const field = document.getElementById(fieldId);
     if (field && value !== '') {
       field.value = value;
-      if (fieldId.includes('usaCredito_') || fieldId.includes('debitoSaldato_')) {
+      if (!fieldId.startsWith('contoProduttore_') && !fieldId.startsWith('importo_') && !fieldId.startsWith('note_')) {
         field.disabled = true;
       }
     }
