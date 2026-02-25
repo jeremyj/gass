@@ -239,7 +239,7 @@ function renderTransactionsTable(transactions) {
   }
 
   const rows = transactions.map(t => {
-    const saldoEffect = (t.credito_lasciato || 0) - (t.debito_lasciato || 0);
+    const saldoEffect = (t.credito_lasciato || 0) - (t.debito_lasciato || 0) - (t.usa_credito || 0) + (t.debito_saldato || 0);
     let effectClass = '';
     let effectText = 'Pari';
 
