@@ -156,6 +156,9 @@ function renderParticipant(id) {
   container.appendChild(card);
 
   populateExistingMovimento(id);
+  if (document.getElementById(`contoProduttore_${id}`)?.value) {
+    handleContoProduttoreInput(id, saldo);
+  }
   syncDebitoCreditoVisibility(id);
 }
 

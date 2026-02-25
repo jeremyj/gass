@@ -362,6 +362,9 @@ function renderParticipant(id) {
   // Load existing data if available (with timeout to ensure DOM is ready)
   setTimeout(() => {
     loadExistingParticipantData(id, saldo);
+    if (document.getElementById(`contoProduttore_${id}`)?.value) {
+      handleContoProduttoreInput(id, saldo);
+    }
     syncDebitoCreditoVisibility(id);
     // Save original values after form is fully loaded
     setTimeout(() => saveOriginalParticipantValues(id), 10);
