@@ -30,26 +30,6 @@ router.get('/:date', (req, res) => {
       LIMIT 1
     `).get(date);
 
-    if (!consegna) {
-      console.log(`[CONSEGNA] ${timestamp} - No consegna found for ${date}`);
-      return res.json({
-        success: true,
-        found: false,
-        lasciatoPrecedente: previousConsegna?.lasciato_in_cassa ?? null
-      });
-    }
-
-    console.log(`[CONSEGNA] ${timestamp} - Found consegna for ${date} (ID: ${consegna.id})`);
-
-    const movimenti = db.prepare(`
-      SELECT m.*, p.display_name AS nome, p.id as partecipante_id
-      FROM movimenti m
-      JOIN users p ON m.partecipante_id = p.id
-      WHERE m.consegna_id = ?
-    `).all(consegna.id);
-
-    console.log(`[CONSEGNA] ${timestamp} - Retrieved ${movimenti.length} movimenti for consegna ${consegna.id}`);
-
     // Calculate saldo before this consegna for each participant.
     // Use stored saldo minus movements on/after this date — same logic as POST handler —
     // so that initial balances stored in users.saldo are correctly included.
@@ -71,6 +51,27 @@ router.get('/:date', (req, res) => {
     saldoRows.forEach(row => {
       saldiBefore[row.partecipante_id] = row.saldo || 0;
     });
+
+    if (!consegna) {
+      console.log(`[CONSEGNA] ${timestamp} - No consegna found for ${date}`);
+      return res.json({
+        success: true,
+        found: false,
+        lasciatoPrecedente: previousConsegna?.lasciato_in_cassa ?? null,
+        saldiBefore
+      });
+    }
+
+    console.log(`[CONSEGNA] ${timestamp} - Found consegna for ${date} (ID: ${consegna.id})`);
+
+    const movimenti = db.prepare(`
+      SELECT m.*, p.display_name AS nome, p.id as partecipante_id
+      FROM movimenti m
+      JOIN users p ON m.partecipante_id = p.id
+      WHERE m.consegna_id = ?
+    `).all(consegna.id);
+
+    console.log(`[CONSEGNA] ${timestamp} - Retrieved ${movimenti.length} movimenti for consegna ${consegna.id}`);
 
     // Apply dynamic calculations
     const processedConsegna = applyDynamicCalculations(consegna, previousConsegna?.lasciato_in_cassa);

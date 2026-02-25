@@ -198,8 +198,10 @@ function handleContoProduttoreInput(id, saldo) {
     saldaDebitoCheckbox.checked = false;
   }
 
+  let debitoSaldabileUsed = 0;
   if (shouldAutoCompensate && diff > 0 && debitoPreesistente > 0) {
     const debitoSaldabile = Math.min(diff, debitoPreesistente);
+    debitoSaldabileUsed = debitoSaldabile;
     const saldaTuttoIlDebito = debitoSaldabile === debitoPreesistente;
 
     if (debitoSaldato) {
@@ -212,8 +214,10 @@ function handleContoProduttoreInput(id, saldo) {
     diff = diff - debitoSaldabile;
   }
 
+  let creditoUsabileUsed = 0;
   if (shouldAutoCompensate && diff < 0 && creditoPreesistente > 0) {
     const creditoUsabile = Math.min(Math.abs(diff), creditoPreesistente);
+    creditoUsabileUsed = creditoUsabile;
     const usaTuttoIlCredito = creditoUsabile === creditoPreesistente;
 
     if (usaCredito) {
@@ -252,6 +256,32 @@ function handleContoProduttoreInput(id, saldo) {
     if (debitoLasciato) {
       debitoLasciato.value = '';
       debitoLasciato.disabled = true;
+    }
+  }
+
+  // Update new total debt display
+  const remainingDebtEl = document.getElementById(`remainingDebt_${id}`);
+  if (remainingDebtEl) {
+    if (debitoSaldabileUsed > 0) {
+      const remaining = debitoPreesistente - debitoSaldabileUsed;
+      remainingDebtEl.textContent = remaining > 0 ? ` → rimanente: €${formatNumber(remaining)}` : ' → saldato!';
+    } else if (diff < 0 && debitoPreesistente > 0) {
+      remainingDebtEl.textContent = ` → nuovo totale: €${formatNumber(debitoPreesistente + Math.abs(diff))}`;
+    } else {
+      remainingDebtEl.textContent = '';
+    }
+  }
+
+  // Update new total credit display
+  const remainingCreditEl = document.getElementById(`remainingCredit_${id}`);
+  if (remainingCreditEl) {
+    if (creditoUsabileUsed > 0) {
+      const remaining = creditoPreesistente - creditoUsabileUsed;
+      remainingCreditEl.textContent = remaining > 0 ? ` → rimanente: €${formatNumber(remaining)}` : ' → esaurito!';
+    } else if (diff > 0 && creditoPreesistente > 0) {
+      remainingCreditEl.textContent = ` → nuovo totale: €${formatNumber(creditoPreesistente + diff)}`;
+    } else {
+      remainingCreditEl.textContent = '';
     }
   }
 
@@ -429,7 +459,7 @@ function buildCreditoSection(id, nome, saldo, saldoText, saldoClass) {
   return `
     <div class="flow-section flow-credito">
       <div class="flow-section-title">
-        <span>CREDITO <span class="saldo-info ${saldoClass}">${escapeHtml(saldoText)}</span></span>
+        <span>CREDITO <span class="saldo-info ${saldoClass}">${escapeHtml(saldoText)}</span><span id="remainingCredit_${id}" class="remaining-debt-info"></span></span>
       </div>
       <div class="checkbox-group">
         <input type="checkbox" id="usaInteroCreditoCheckbox_${id}" onchange="toggleUsaInteroCredito(${id}, ${saldo})">
@@ -449,7 +479,7 @@ function buildDebitoSection(id, nome, saldo, saldoText, saldoClass) {
   return `
     <div class="flow-section flow-debito">
       <div class="flow-section-title">
-        <span>DEBITO <span class="saldo-info ${saldoClass}">${escapeHtml(saldoText)}</span></span>
+        <span>DEBITO <span class="saldo-info ${saldoClass}">${escapeHtml(saldoText)}</span><span id="remainingDebt_${id}" class="remaining-debt-info"></span></span>
       </div>
       <div class="checkbox-group">
         <input type="checkbox" id="saldaDebito_${id}" onchange="toggleSaldaDebito(${id}, ${saldo})">

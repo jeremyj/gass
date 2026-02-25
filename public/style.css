@@ -749,6 +749,13 @@ body {
     color: #0c5460;
 }
 
+.remaining-debt-info {
+    font-size: 12px;
+    font-weight: normal;
+    color: var(--color-text-muted);
+    margin-left: 4px;
+}
+
 .flow-section {
     background: var(--color-bg);
     border-radius: var(--radius-md);

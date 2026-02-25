@@ -105,7 +105,7 @@ function loadNewConsegna(result) {
 
   // Clear movements
   existingConsegnaMovimenti = null;
-  saldiBefore = {};
+  saldiBefore = result.saldiBefore || {};
 
   // Set trovato from previous lasciato, formatted
   trovatoField.value = formatNumber(result.lasciatoPrecedente ?? 0);
