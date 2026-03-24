@@ -51,7 +51,7 @@ router.get('/login', async (req, res) => {
     req.session.oidcNonce = nonce;
 
     const url = client.authorizationUrl({
-      scope: 'openid profile email',
+      scope: 'openid profile email groups',
       state,
       nonce,
     });

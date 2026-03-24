@@ -26,6 +26,13 @@ services:
       timeout: 5s
       retries: 5
 
+  postfix-relay:
+    image: mwader/postfix-relay:latest
+    restart: unless-stopped
+    environment:
+      POSTFIX_myhostname: ${AUTHENTIK_HOST}
+      ALLOWED_SENDER_DOMAINS: x86.it
+
   server:
     image: ghcr.io/goauthentik/server:2026.2.1
     restart: unless-stopped
@@ -37,6 +44,12 @@ services:
       AUTHENTIK_POSTGRESQL__NAME: authentik
       AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
       AUTHENTIK_REDIS__HOST: redis
+      # Email via postfix-relay
+      AUTHENTIK_EMAIL__HOST: postfix-relay
+      AUTHENTIK_EMAIL__PORT: 25
+      AUTHENTIK_EMAIL__FROM: ${EMAIL_FROM}
+      AUTHENTIK_EMAIL__USE_TLS: "false"
+      AUTHENTIK_EMAIL__USE_SSL: "false"
       # nginx-proxy
       VIRTUAL_HOST: ${AUTHENTIK_HOST}
       VIRTUAL_PORT: 9000
@@ -67,6 +80,12 @@ services:
       AUTHENTIK_POSTGRESQL__NAME: authentik
       AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
       AUTHENTIK_REDIS__HOST: redis
+      # Email via postfix-relay
+      AUTHENTIK_EMAIL__HOST: postfix-relay
+      AUTHENTIK_EMAIL__PORT: 25
+      AUTHENTIK_EMAIL__FROM: ${EMAIL_FROM}
+      AUTHENTIK_EMAIL__USE_TLS: "false"
+      AUTHENTIK_EMAIL__USE_SSL: "false"
     volumes:
       - /data/authentik/data/media:/media
       - /data/authentik/data/certs:/certs
