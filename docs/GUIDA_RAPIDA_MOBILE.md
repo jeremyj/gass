@@ -5,7 +5,7 @@ date: "Marzo 2026"
 
 # Accesso
 
-Apri il browser e vai all'indirizzo dell'applicazione. Inserisci le tue credenziali e clicca **Accedi**.
+Apri il browser e vai su **https://gass.x86.it**. Inserisci le tue credenziali e clicca **Accedi**.
 
 Per cambiare la tua password clicca il pulsante **🔑** in alto a destra.
 
