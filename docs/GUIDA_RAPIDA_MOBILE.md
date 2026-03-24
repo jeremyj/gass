@@ -23,7 +23,7 @@ Usa il pulsante **📅** per scegliere la data. Le date con **punto verde** hann
 
 La sezione **💰 CASSA** (espandibile) mostra i totali della giornata — tutti calcolati automaticamente, non si inserisce nulla.
 
-![Sezione Cassa e lista movimenti](screenshots/m02-consegna.png){ width=45% }
+![](screenshots/m02-consegna.png){ width=45% }
 
 ## Registrare un Movimento
 
