@@ -80,6 +80,13 @@ function createApp() {
   const authRouter = require('./routes/auth');
   const usersRouter = require('./routes/users');
 
+  // OIDC routes (only when OIDC_ISSUER is configured)
+  if (process.env.OIDC_ISSUER) {
+    const oidcRouter = require('./routes/oidc');
+    app.use('/auth/oidc', oidcRouter);
+    console.log('[APP] OIDC authentication enabled, issuer:', process.env.OIDC_ISSUER);
+  }
+
   // API routes first so their auth middleware (401) takes precedence over
   // the pages router's requireAuthForPages redirect (302)
   app.use('/api/auth', authRouter);

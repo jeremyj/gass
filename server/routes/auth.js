@@ -68,11 +68,21 @@ router.post('/login', loginLimiter, async (req, res) => {
       });
     });
 
+    // When OIDC is enabled, only admin users may use local login
+    if (process.env.OIDC_ISSUER && user.is_admin !== 1) {
+      console.log(`[AUTH] ${timestamp} - Local login rejected for non-admin user (OIDC enabled): ${username}`);
+      return res.status(403).json({
+        error: 'Local login disabled',
+        message: 'Usa il pulsante "Accedi con Authentik" per accedere'
+      });
+    }
+
     // Create session
     req.session.userId = user.id;
     req.session.username = user.username;
     req.session.displayName = user.display_name;
     req.session.isAdmin = user.is_admin === 1;
+    req.session.authMethod = 'local';
 
     console.log(`[AUTH] ${timestamp} - Login successful: ${username} (ID: ${user.id}, Admin: ${user.is_admin === 1})`);
 
@@ -124,6 +134,16 @@ router.post('/logout', (req, res) => {
 });
 
 /**
+ * GET /api/auth/config
+ * Return auth configuration visible to the frontend (no secrets)
+ */
+router.get('/config', (req, res) => {
+  res.json({
+    oidcEnabled: !!process.env.OIDC_ISSUER
+  });
+});
+
+/**
  * GET /api/auth/session
  * Check current session status and return user info
  */
@@ -138,7 +158,8 @@ router.get('/session', (req, res) => {
         id: req.session.userId,
         username: req.session.username,
         displayName: req.session.displayName,
-        isAdmin: req.session.isAdmin || false
+        isAdmin: req.session.isAdmin || false,
+        authMethod: req.session.authMethod || 'local'
       }
     });
   } else {
@@ -162,6 +183,14 @@ router.post('/change-password', async (req, res) => {
     return res.status(401).json({
       success: false,
       error: 'Non autenticato'
+    });
+  }
+
+  // OIDC users change password via Authentik, not here
+  if (req.session.authMethod === 'oidc') {
+    return res.status(403).json({
+      success: false,
+      error: 'Cambia la password direttamente su Authentik'
     });
   }
 

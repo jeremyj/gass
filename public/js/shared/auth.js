@@ -115,8 +115,9 @@ async function checkSession() {
       if (userDisplay) {
         userDisplay.textContent = `👤 ${data.user.username}`;
 
-        // Inject change password button if not already present
-        if (!document.getElementById('btn-change-password')) {
+        // Inject change password button only for local-auth users
+        const isOidc = data.user.authMethod === 'oidc';
+        if (!isOidc && !document.getElementById('btn-change-password')) {
           const btn = document.createElement('button');
           btn.id = 'btn-change-password';
           btn.type = 'button';
@@ -164,6 +165,12 @@ function isAdmin() {
 // Handle logout
 async function handleLogout() {
   if (!confirm('Sei sicuro di voler uscire?')) {
+    return;
+  }
+
+  // OIDC users: redirect to Authentik end-session
+  if (currentUser && currentUser.authMethod === 'oidc') {
+    window.location.href = '/auth/oidc/logout';
     return;
   }
 
