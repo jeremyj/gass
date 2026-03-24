@@ -23,6 +23,8 @@ Usa il pulsante **📅** per scegliere la data. Le date con **punto verde** hann
 
 La sezione **💰 CASSA** (espandibile) mostra i totali della giornata — tutti calcolati automaticamente, non si inserisce nulla.
 
+![Sezione Cassa e lista movimenti](screenshots/m02-consegna.png){ width=45% }
+
 ## Registrare un Movimento
 
 1. Nella sezione **📦 MOVIMENTI** seleziona il **partecipante** dal menu
@@ -34,8 +36,7 @@ La sezione **💰 CASSA** (espandibile) mostra i totali della giornata — tutti
 
 > Se il partecipante ha debiti/crediti pregressi, vengono compensati automaticamente.
 
-![Consegna del 24/02: cassa e sezione movimenti](screenshots/m02-consegna.png){ width=45% }
-![Modulo di inserimento movimento per un partecipante](screenshots/m02b-movimento.png){ width=45% }
+![Modulo di inserimento per un partecipante con debito](screenshots/m02b-movimento.png){ width=45% }
 
 ## Chiudere la Consegna
 
