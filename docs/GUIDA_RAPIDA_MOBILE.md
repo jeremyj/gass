@@ -35,6 +35,7 @@ La sezione **💰 CASSA** (espandibile) mostra i totali della giornata — tutti
 > Se il partecipante ha debiti/crediti pregressi, vengono compensati automaticamente.
 
 ![Consegna del 24/02: cassa e sezione movimenti](screenshots/m02-consegna.png){ width=45% }
+![Modulo di inserimento movimento per un partecipante](screenshots/m02b-movimento.png){ width=45% }
 
 ## Chiudere la Consegna
 
