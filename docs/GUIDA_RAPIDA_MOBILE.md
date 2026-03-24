@@ -40,7 +40,9 @@ La sezione **💰 CASSA** (espandibile) mostra i totali della giornata — tutti
 
 ## Chiudere la Consegna
 
-Nella sezione **💰 CASSA**, clicca **🔒 Chiudi Consegna** per bloccare la giornata. Solo un amministratore può riaprirla.
+Dopo aver salvato almeno un movimento, nella sezione **💰 CASSA** compare il tasto **🔒 Chiudi Consegna** — cliccalo per bloccare la giornata. Solo un amministratore può riaprirla.
+
+![Sezione Cassa con tasto Chiudi Consegna](screenshots/m02c-chiudi.png){ width=45% }
 
 ---
 
