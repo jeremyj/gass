@@ -16,21 +16,34 @@
 
 /* Background: Italian farmer's market (set in Brand > Background field instead of CSS) */
 
-/* Login card */
+/* Login card — compact */
 .pf-c-login__main {
+    max-width: 360px;
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(2px);
 }
 
+.pf-c-login__main-body {
+    padding: 1.25rem 1.5rem;
+}
+
 /* Card header: brand title */
 .pf-c-login__main-header {
-    padding-bottom: 1rem;
+    padding: 1.25rem 1.5rem 0.5rem;
 }
 
 .pf-c-login__main-header .pf-c-title {
     color: #2c3e50;
     font-weight: 600;
+    font-size: 1.1rem;
+}
+
+/* Logo above card */
+.pf-c-login__header img,
+.pf-c-brand img {
+    max-height: 48px;
+    width: auto;
 }
 
 /* Primary submit button */
