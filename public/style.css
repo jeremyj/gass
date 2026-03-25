@@ -755,11 +755,19 @@ body {
     gap: 8px;
 }
 
+.flow-section-title > span .saldo-info {
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    font-size: inherit;
+    font-weight: bold;
+}
+
 .remaining-debt-info {
-    font-size: 12px;
+    font-size: inherit;
     font-weight: normal;
-    color: var(--color-text-muted);
-    letter-spacing: 0.02em;
+    color: inherit;
+    opacity: 0.75;
 }
 
 .flow-section {
