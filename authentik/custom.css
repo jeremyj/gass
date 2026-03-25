@@ -27,6 +27,8 @@
 
 .pf-c-login__main {
     max-width: 360px;
+    width: 100%;
+    justify-self: center;
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
