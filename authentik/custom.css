@@ -16,16 +16,22 @@
 
 /* ===== BACKGROUND (all screen sizes) ===== */
 
-/* PatternFly only applies background at ≥1200px by default */
 .pf-c-login {
     background-image: var(--ak-global--background-image) !important;
     background-size: cover !important;
     background-position: center !important;
 }
 
-/* ===== CARD ===== */
+/* ===== GRID: center columns for viewports wider than 1280px ===== */
 
-.pf-c-login__main {
+ak-flow-executor {
+    justify-content: center;
+}
+
+/* ===== CARD ===== */
+/* Use ::part() — the only way to reach inside ak-flow-executor's shadow DOM */
+
+ak-flow-executor::part(main) {
     max-width: 360px;
     width: 100%;
     justify-self: center;
@@ -34,63 +40,10 @@
 }
 
 /* Logo + title area */
-.pf-c-login__main-header.pf-c-brand {
-    padding: 1rem 1.5rem 0.5rem !important;
-    text-align: center !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-}
-
-.pf-c-login__main-header .pf-c-title {
-    color: #2c3e50;
-    font-weight: 600;
-    font-size: 1.1rem;
-}
-
-.pf-c-brand img {
-    max-height: 48px;
-    width: auto;
-    margin-bottom: 0.5rem;
-}
-
-
-/* ===== BUTTONS ===== */
-
-.pf-c-button.pf-m-primary {
-    background-color: #3498db;
-    border-color: #3498db;
-    font-weight: 500;
-    border-radius: 4px;
-    transition: background-color 0.2s ease;
-}
-
-.pf-c-button.pf-m-primary:hover,
-.pf-c-button.pf-m-primary:focus {
-    background-color: #2980b9;
-    border-color: #2980b9;
-}
-
-/* ===== INPUTS ===== */
-
-.pf-c-form-control {
-    border-radius: 4px;
-    border: 1px solid #dee2e6;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.pf-c-form-control:focus {
-    border-color: #3498db;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
-    outline: none;
-}
-
-/* ===== LINKS ===== */
-
-a, .pf-c-button.pf-m-link {
-    color: #3498db;
-}
-
-a:hover, .pf-c-button.pf-m-link:hover {
-    color: #2980b9;
+ak-flow-executor::part(branding) {
+    padding: 1rem 1.5rem 0.5rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
