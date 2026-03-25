@@ -3,7 +3,8 @@
    Matches GASS design system: blue #3498db, navy #2c3e50
    ============================================================ */
 
-/* Override PatternFly primary color variables */
+/* ===== COLORS ===== */
+
 :root {
     --pf-global--primary-color--100: #3498db;
     --pf-global--primary-color--200: #2980b9;
@@ -12,50 +13,53 @@
     --pf-global--active-color--100: #3498db;
     --pf-global--BorderColor--200: #dee2e6;
     --pf-global--FontFamily--sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    /* Background image on all screen sizes (PF only sets it at ≥1200px by default) */
+    --pf-c-background-image--BackgroundImage: var(--ak-global--background-image);
+    --pf-c-background-image--BackgroundImage-2x: var(--ak-global--background-image);
+    --pf-c-background-image--BackgroundImage--sm: var(--ak-global--background-image);
+    --pf-c-background-image--BackgroundImage--sm-2x: var(--ak-global--background-image);
+    --pf-c-background-image--BackgroundImage--lg: var(--ak-global--background-image);
 }
 
-/* ===== LAYOUT: center card in viewport ===== */
+/* ===== LAYOUT ===== */
 
-/* Fix container to viewport height so flex centering works */
+/* Background: apply on all screen sizes (PF only sets it at ≥1200px by default) */
 .pf-c-login {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    height: 100vh !important;
-    min-height: unset !important;
-    padding: 0 !important;
-    position: relative;
-    overflow: hidden;
+    background-image: var(--ak-global--background-image) !important;
+    background-size: cover !important;
+    background-position: center !important;
 }
 
-/* Pull footer out of flex flow so it doesn't push card down */
-.pf-c-login__footer {
-    position: absolute !important;
-    bottom: 1rem;
-    left: 0;
-    right: 0;
-    justify-content: center;
-    color: rgba(255, 255, 255, 0.8);
+/* Let PatternFly's responsive grid do its job.
+   Only center the card within its grid cell. */
+.pf-c-login__main {
+    align-self: center;
+    max-width: 360px;
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* Page header (logo area) — collapse spacing */
+/* Collapse empty page-level header above card */
 .pf-c-login__header {
     padding: 0 !important;
     margin: 0 !important;
 }
 
-/* ===== CARD ===== */
-
-.pf-c-login__main {
-    max-width: 360px;
-    width: 100%;
-    margin: 0 auto !important;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+/* Footer stays in grid flow */
+.pf-c-login__footer {
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.8);
 }
 
-/* Card header: logo + title */
+/* Remove excess bottom padding from stage component */
+ak-stage-identification {
+    padding-bottom: 0 !important;
+}
+
+/* ===== CARD HEADER (logo + title) ===== */
+
 .pf-c-login__main-header,
 .pf-c-login__main-header.pf-c-brand {
     padding: 0.75rem 1.5rem 0.5rem !important;
@@ -71,7 +75,6 @@
     font-size: 1.1rem;
 }
 
-/* Logo image */
 .pf-c-login__main-header img,
 .pf-c-brand img {
     max-height: 48px;
@@ -79,17 +82,13 @@
     margin-bottom: 0.5rem;
 }
 
-/* Card body */
+/* ===== CARD BODY ===== */
+
 .pf-c-login__main-body {
     padding: 0 1.5rem 1.5rem !important;
 }
 
-/* Remove excess bottom padding from stage component (in S1, reachable) */
-ak-stage-identification {
-    padding-bottom: 0 !important;
-}
-
-/* ===== FORM — center labels and fields ===== */
+/* ===== FORM ===== */
 
 .pf-c-form__group {
     text-align: center;
@@ -118,7 +117,7 @@ ak-stage-identification {
     border-color: #2980b9;
 }
 
-/* ===== FORM INPUTS ===== */
+/* ===== INPUTS ===== */
 
 .pf-c-form-control {
     border-radius: 4px;
