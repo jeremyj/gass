@@ -96,8 +96,8 @@ a:hover, .pf-c-button.pf-m-link:hover {
 
 /* Page-level header (logo area above card) */
 .pf-c-login__header {
-    padding-top: 2rem;
-    padding-bottom: 1rem;
+    padding-top: 0;
+    padding-bottom: 0.5rem;
 }
 
 /* Page-level footer */
