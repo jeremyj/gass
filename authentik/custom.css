@@ -14,36 +14,55 @@
     --pf-global--FontFamily--sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* Background: Italian farmer's market (set in Brand > Background field instead of CSS) */
+/* ===== LAYOUT: center card in viewport ===== */
 
-/* Center modal on page */
+/* Fix container to viewport height so flex centering works */
 .pf-c-login {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding-top: 0 !important;
-    min-height: 100vh;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 100vh !important;
+    min-height: unset !important;
+    padding: 0 !important;
+    position: relative;
+    overflow: hidden;
 }
 
-/* Login card — compact */
+/* Pull footer out of flex flow so it doesn't push card down */
+.pf-c-login__footer {
+    position: absolute !important;
+    bottom: 1rem;
+    left: 0;
+    right: 0;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Page header (logo area) — collapse spacing */
+.pf-c-login__header {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* ===== CARD ===== */
+
 .pf-c-login__main {
     max-width: 360px;
     width: 100%;
-    margin: 0 auto;
+    margin: 0 !important;
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(2px);
 }
 
-.pf-c-login__main-body {
-    padding: 1.25rem 1.5rem;
-}
-
-/* Card header: brand title — centered */
-.pf-c-login__main-header {
-    padding: 1.25rem 1.5rem 0.5rem;
-    text-align: center;
+/* Card header: logo + title */
+.pf-c-login__main-header,
+.pf-c-login__main-header.pf-c-brand {
+    padding: 1.5rem 1.5rem 1rem !important;
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
 }
 
 .pf-c-login__main-header .pf-c-title {
@@ -52,14 +71,32 @@
     font-size: 1.1rem;
 }
 
-/* Logo above card */
-.pf-c-login__header img,
+/* Logo image */
+.pf-c-login__main-header img,
 .pf-c-brand img {
     max-height: 48px;
     width: auto;
+    margin-bottom: 0.5rem;
 }
 
-/* Primary submit button */
+/* Card body */
+.pf-c-login__main-body {
+    padding: 0 1.5rem 1.5rem !important;
+}
+
+/* ===== FORM — center labels and fields ===== */
+
+.pf-c-form__group {
+    text-align: center;
+}
+
+.pf-c-form__label {
+    display: flex !important;
+    justify-content: center;
+}
+
+/* ===== BUTTONS ===== */
+
 .pf-c-button.pf-m-primary {
     background-color: #3498db;
     border-color: #3498db;
@@ -74,7 +111,8 @@
     border-color: #2980b9;
 }
 
-/* Form inputs */
+/* ===== FORM INPUTS ===== */
+
 .pf-c-form-control {
     border-radius: 4px;
     border: 1px solid #dee2e6;
@@ -87,22 +125,12 @@
     outline: none;
 }
 
-/* Links */
+/* ===== LINKS ===== */
+
 a, .pf-c-button.pf-m-link {
     color: #3498db;
 }
 
 a:hover, .pf-c-button.pf-m-link:hover {
     color: #2980b9;
-}
-
-/* Page-level header (logo area above card) */
-.pf-c-login__header {
-    padding: 0 0 0.5rem 0 !important;
-    margin: 0 !important;
-}
-
-/* Page-level footer */
-.pf-c-login__footer {
-    color: rgba(255, 255, 255, 0.8);
 }
