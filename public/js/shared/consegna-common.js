@@ -161,6 +161,10 @@ function handleContoProduttoreInput(id, saldo) {
   const debitoSaldatoValue = debitoSaldato ? parseAmount(debitoSaldato.value) : 0;
 
   if (importoSaldatoValue === 0 && usaCreditoValue === 0 && debitoSaldatoValue === 0 && contoProduttoreValue === 0) {
+    const remainingCreditEl = document.getElementById(`remainingCredit_${id}`);
+    if (remainingCreditEl) remainingCreditEl.textContent = '';
+    const remainingDebtEl = document.getElementById(`remainingDebt_${id}`);
+    if (remainingDebtEl) remainingDebtEl.textContent = '';
     syncDebitoCreditoVisibility(id);
     return;
   }
