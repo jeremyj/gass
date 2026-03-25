@@ -47,6 +47,11 @@ router.get('/logs', (req, res) => {
   res.sendFile(path.join(__dirname, '../../public', 'logs-desktop.html'));
 });
 
+router.get('/cambia-password', (req, res) => {
+  if (!req.session.requirePasswordChange) return res.redirect('/consegna');
+  res.sendFile(path.join(__dirname, '../../public', 'change-password-oidc.html'));
+});
+
 // Redirect root to consegna
 router.get('/', (req, res) => {
   res.redirect('/consegna');
