@@ -102,6 +102,9 @@ router.get('/callback', async (req, res) => {
 
     const isAdmin = Array.isArray(groups) && groups.includes(OIDC_ADMIN_GROUP);
 
+    // Sync admin status from OIDC groups to DB (requireAdmin middleware checks DB, not session)
+    db.prepare('UPDATE users SET is_admin = ? WHERE id = ?').run(isAdmin ? 1 : 0, user.id);
+
     await new Promise((resolve, reject) => {
       req.session.regenerate((err) => {
         if (err) reject(err);
