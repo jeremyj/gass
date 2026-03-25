@@ -272,9 +272,9 @@ function handleContoProduttoreInput(id, saldo) {
   if (remainingDebtEl) {
     if (debitoSaldabileUsed > 0) {
       // Remaining debt is shown in the debitoLasciato field; only show "saldato!" when fully paid
-      remainingDebtEl.textContent = remainingDebtCarryForward === 0 ? ' ▶️ debito saldato' : '';
+      remainingDebtEl.textContent = remainingDebtCarryForward === 0 ? '👉debito saldato' : '';
     } else if (diff < 0 && debitoPreesistente > 0) {
-      remainingDebtEl.textContent = ` ▶️ nuovo debito €${formatNumber(debitoPreesistente + Math.abs(diff))}`;
+      remainingDebtEl.textContent = `👉nuovo debito €${formatNumber(debitoPreesistente + Math.abs(diff))}`;
     } else {
       remainingDebtEl.textContent = '';
     }
@@ -285,17 +285,17 @@ function handleContoProduttoreInput(id, saldo) {
   if (remainingCreditEl) {
     if (creditoUsabileUsed > 0) {
       const remaining = creditoPreesistente - creditoUsabileUsed;
-      remainingCreditEl.textContent = remaining > 0 ? ` ▶️ nuovo credito €${formatNumber(remaining)}` : ' ▶️ credito esaurito';
+      remainingCreditEl.textContent = remaining > 0 ? `👉nuovo credito €${formatNumber(remaining)}` : '👉credito esaurito';
     } else if (diff > 0 && creditoPreesistente > 0) {
-      remainingCreditEl.textContent = ` ▶️ nuovo credito €${formatNumber(creditoPreesistente + diff)}`;
+      remainingCreditEl.textContent = `👉nuovo credito €${formatNumber(creditoPreesistente + diff)}`;
     } else if (diff < 0 && creditoPreesistente > 0) {
       const newCredit = Math.round((creditoPreesistente + diff) * 100) / 100;
       if (newCredit > 0) {
-        remainingCreditEl.textContent = ` ▶️ nuovo credito €${formatNumber(newCredit)}`;
+        remainingCreditEl.textContent = `👉nuovo credito €${formatNumber(newCredit)}`;
       } else if (newCredit === 0) {
-        remainingCreditEl.textContent = ' ▶️ credito esaurito';
+        remainingCreditEl.textContent = '👉credito esaurito';
       } else {
-        remainingCreditEl.textContent = ` ▶️ nuovo debito €${formatNumber(-newCredit)}`;
+        remainingCreditEl.textContent = `👉nuovo debito €${formatNumber(-newCredit)}`;
       }
     } else {
       remainingCreditEl.textContent = '';
@@ -476,7 +476,7 @@ function buildCreditoSection(id, nome, saldo, saldoText, saldoClass) {
   return `
     <div class="flow-section flow-credito">
       <div class="flow-section-title">
-        <span>CREDITO <span class="saldo-info ${saldoClass}">${escapeHtml(saldoText)}</span><span id="remainingCredit_${id}" class="remaining-debt-info"></span></span>
+        <span>CREDITO<span class="saldo-info ${saldoClass}">${escapeHtml(saldoText)}</span><span id="remainingCredit_${id}" class="remaining-debt-info"></span></span>
       </div>
       <div class="checkbox-group">
         <input type="checkbox" id="usaInteroCreditoCheckbox_${id}" onchange="toggleUsaInteroCredito(${id}, ${saldo})">
@@ -496,7 +496,7 @@ function buildDebitoSection(id, nome, saldo, saldoText, saldoClass) {
   return `
     <div class="flow-section flow-debito">
       <div class="flow-section-title">
-        <span>DEBITO INIZIALE <span class="saldo-info ${saldoClass}">${escapeHtml(saldoText)}</span><span id="remainingDebt_${id}" class="remaining-debt-info"></span></span>
+        <span>DEBITO INIZIALE<span class="saldo-info ${saldoClass}">${escapeHtml(saldoText)}</span><span id="remainingDebt_${id}" class="remaining-debt-info"></span></span>
       </div>
       <div class="checkbox-group">
         <input type="checkbox" id="saldaDebito_${id}" onchange="toggleSaldaDebito(${id}, ${saldo})">
