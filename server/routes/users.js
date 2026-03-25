@@ -24,7 +24,7 @@ router.use(requireAdmin);
 router.put('/:id', async (req, res) => {
   const timestamp = new Date().toISOString();
   const { id } = req.params;
-  const { displayName, newPassword, isAdmin } = req.body;
+  const { displayName, newPassword } = req.body;
 
   console.log(`[USERS] ${timestamp} - Admin ${req.session.username} updating user ID: ${id}`);
 
@@ -59,21 +59,6 @@ router.put('/:id', async (req, res) => {
       params.push(await bcrypt.hash(newPassword, 12));
     }
 
-    if (isAdmin !== undefined) {
-      // Prevent removing admin from last admin
-      if (!isAdmin) {
-        const adminCount = db.prepare('SELECT COUNT(*) as count FROM users WHERE is_admin = 1').get().count;
-        if (adminCount === 1 && user.is_admin === 1) {
-          return res.status(400).json({
-            success: false,
-            error: 'Impossibile rimuovere i privilegi admin dall\'ultimo amministratore'
-          });
-        }
-      }
-      updates.push('is_admin = ?');
-      params.push(isAdmin ? 1 : 0);
-    }
-
     if (updates.length === 0) {
       return res.status(400).json({
         success: false,
@@ -97,10 +82,6 @@ router.put('/:id', async (req, res) => {
     if (newPassword !== undefined && newPassword.length > 0) {
       changes.push('password reset');
     }
-    if (isAdmin !== undefined && isAdmin !== (user.is_admin === 1)) {
-      changes.push(`admin: ${user.is_admin === 1} → ${isAdmin}`);
-    }
-
     // Log the user edit event
     db.prepare(`
       INSERT INTO activity_logs (event_type, target_user_id, actor_user_id, details, created_at)

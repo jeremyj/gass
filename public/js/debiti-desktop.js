@@ -347,7 +347,6 @@ async function showEditUserModal(id) {
     document.getElementById('edit-user-username').textContent = user.username;
     document.getElementById('edit-user-displayname').value = user.displayName;
     document.getElementById('edit-user-password').value = '';
-    document.getElementById('edit-user-isadmin').checked = user.isAdmin;
     document.getElementById('edit-user-error').style.display = 'none';
 
     document.getElementById('edit-user-modal').style.display = 'flex';
@@ -393,7 +392,6 @@ async function deleteUserFromModal() {
 async function submitEditUser() {
   const displayName = document.getElementById('edit-user-displayname').value.trim();
   const newPassword = document.getElementById('edit-user-password').value;
-  const isAdmin = document.getElementById('edit-user-isadmin').checked;
   const errorDiv = document.getElementById('edit-user-error');
 
   if (!displayName) {
@@ -408,7 +406,7 @@ async function submitEditUser() {
     return;
   }
 
-  const data = { displayName, isAdmin };
+  const data = { displayName };
   if (newPassword) {
     data.newPassword = newPassword;
   }

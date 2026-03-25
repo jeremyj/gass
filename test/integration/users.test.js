@@ -92,22 +92,14 @@ describe('PUT /api/users/:id', () => {
     expect(res.status).toBe(400);
   });
 
-  it('promotes user to admin', async () => {
+  it('ignores isAdmin field (admin status managed via OIDC groups)', async () => {
     const userId = createUser(db, { username: 'mario', displayName: 'Mario', isAdmin: false });
 
-    const res = await adminAgent.put(`/api/users/${userId}`).send({ isAdmin: true });
+    const res = await adminAgent.put(`/api/users/${userId}`).send({ displayName: 'Mario', isAdmin: true });
     expect(res.status).toBe(200);
 
     const user = db.prepare('SELECT is_admin FROM users WHERE id = ?').get(userId);
-    expect(user.is_admin).toBe(1);
-  });
-
-  it('cannot remove admin from last admin', async () => {
-    const adminUser = db.prepare('SELECT id FROM users WHERE username = ?').get('admin');
-
-    const res = await adminAgent.put(`/api/users/${adminUser.id}`).send({ isAdmin: false });
-    expect(res.status).toBe(400);
-    expect(res.body.error).toContain('ultimo');
+    expect(user.is_admin).toBe(0); // isAdmin is ignored
   });
 
   it('returns 400 when no fields to update', async () => {
