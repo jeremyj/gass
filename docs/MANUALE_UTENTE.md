@@ -123,10 +123,12 @@ Il sistema compensa automaticamente crediti e debiti nelle due direzioni:
 Le sezioni CREDITO e DEBITO appaiono solo quando sono rilevanti per il partecipante e per l'importo inserito:
 
 - **Sezione CREDITO** (visibile solo se il partecipante ha credito e l'importo copre il conto):
+  - Il titolo mostra in tempo reale il nuovo saldo (es. `CREDITO €50 👉 nuovo credito €20`)
   - ☑️ **Usa intero credito**: Spuntato automaticamente quando il sistema usa tutto il credito disponibile
   - **Usa credito**: Importo di credito utilizzato (sola lettura, gestito dal sistema)
 
 - **Sezione DEBITO** (visibile solo se il partecipante ha debito e l'importo non copre interamente il conto):
+  - Il titolo mostra in tempo reale il nuovo saldo (es. `DEBITO INIZIALE €26 👉 nuovo debito €58`)
   - ☑️ **Salda intero debito**: Spuntato automaticamente quando il sistema salda tutto il debito
   - **Salda parziale**: Importo parziale di debito da saldare (alternativo alla casella "salda intero")
 
