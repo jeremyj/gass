@@ -58,6 +58,11 @@ ak-stage-identification {
     padding-bottom: 0 !important;
 }
 
+/* Hide inner flow card subtitle ("Sign in to continue to GASS") */
+.pf-c-login__main-header:not(.pf-c-brand) {
+    display: none !important;
+}
+
 /* ===== CARD HEADER (logo + title) ===== */
 
 .pf-c-login__main-header,
