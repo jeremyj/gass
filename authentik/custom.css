@@ -52,10 +52,6 @@
     margin-bottom: 0.5rem;
 }
 
-/* Remove excess bottom padding from stage component */
-ak-stage-identification {
-    padding-bottom: 0 !important;
-}
 
 /* ===== BUTTONS ===== */
 
