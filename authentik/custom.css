@@ -11,63 +11,29 @@
     --pf-global--link--Color: #3498db;
     --pf-global--link--Color--hover: #2980b9;
     --pf-global--active-color--100: #3498db;
-    --pf-global--BorderColor--200: #dee2e6;
     --pf-global--FontFamily--sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-
-    /* Background image on all screen sizes (PF only sets it at ≥1200px by default) */
-    --pf-c-background-image--BackgroundImage: var(--ak-global--background-image);
-    --pf-c-background-image--BackgroundImage-2x: var(--ak-global--background-image);
-    --pf-c-background-image--BackgroundImage--sm: var(--ak-global--background-image);
-    --pf-c-background-image--BackgroundImage--sm-2x: var(--ak-global--background-image);
-    --pf-c-background-image--BackgroundImage--lg: var(--ak-global--background-image);
 }
 
-/* ===== LAYOUT ===== */
+/* ===== BACKGROUND (all screen sizes) ===== */
 
-/* Background: apply on all screen sizes (PF only sets it at ≥1200px by default) */
+/* PatternFly only applies background at ≥1200px by default */
 .pf-c-login {
     background-image: var(--ak-global--background-image) !important;
     background-size: cover !important;
     background-position: center !important;
 }
 
-/* Let PatternFly's responsive grid do its job.
-   Only center the card within its grid cell. */
+/* ===== CARD ===== */
+
 .pf-c-login__main {
-    align-self: center;
     max-width: 360px;
-    width: 100%;
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* Collapse empty page-level header above card */
-.pf-c-login__header {
-    padding: 0 !important;
-    margin: 0 !important;
-}
-
-/* Footer stays in grid flow */
-.pf-c-login__footer {
-    justify-content: center;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-/* Remove excess bottom padding from stage component */
-ak-stage-identification {
-    padding-bottom: 0 !important;
-}
-
-/* Hide inner flow card subtitle ("Sign in to continue to GASS") */
-.pf-c-login__main-header:not(.pf-c-brand) {
-    display: none !important;
-}
-
-/* ===== CARD HEADER (logo + title) ===== */
-
-.pf-c-login__main-header,
+/* Logo + title area */
 .pf-c-login__main-header.pf-c-brand {
-    padding: 0.75rem 1.5rem 0.5rem !important;
+    padding: 1rem 1.5rem 0.5rem !important;
     text-align: center !important;
     display: flex !important;
     flex-direction: column !important;
@@ -80,30 +46,15 @@ ak-stage-identification {
     font-size: 1.1rem;
 }
 
-.pf-c-login__main-header img,
 .pf-c-brand img {
     max-height: 48px;
     width: auto;
     margin-bottom: 0.5rem;
 }
 
-/* ===== CARD BODY ===== */
-
-.pf-c-login__main-body {
-    padding: 0 1.5rem 1.5rem !important;
-}
-
-/* ===== FORM ===== */
-
-.pf-c-form__group {
-    text-align: center;
-    margin-bottom: 1rem;
-}
-
-.pf-c-form__label {
-    display: flex !important;
-    justify-content: center;
-    margin-bottom: 6px !important;
+/* Remove excess bottom padding from stage component */
+ak-stage-identification {
+    padding-bottom: 0 !important;
 }
 
 /* ===== BUTTONS ===== */
