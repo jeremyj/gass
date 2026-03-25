@@ -50,7 +50,7 @@
 .pf-c-login__main {
     max-width: 360px;
     width: 100%;
-    margin: 0 !important;
+    margin: 0 auto !important;
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
@@ -88,11 +88,13 @@
 
 .pf-c-form__group {
     text-align: center;
+    margin-bottom: 1rem;
 }
 
 .pf-c-form__label {
     display: flex !important;
     justify-content: center;
+    margin-bottom: 6px !important;
 }
 
 /* ===== BUTTONS ===== */
