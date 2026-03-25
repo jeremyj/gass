@@ -205,12 +205,10 @@ router.post('/change-password', async (req, res) => {
 
 /**
  * GET /auth/oidc/logout
- * Destroy local session and redirect to Authentik end-session endpoint.
- * Passes id_token_hint so Authentik auto-redirects back to GASS.
+ * Destroy local session, invalidate Authentik session via API, redirect to /login.
  */
-router.get('/logout', async (req, res) => {
+router.get('/logout', (req, res) => {
   const username = req.session?.username || 'unknown';
-  const idToken = req.session?.idToken;
   const timestamp = new Date().toISOString();
 
   console.log(`[OIDC] ${timestamp} - Logout request from user: ${username}`);
@@ -218,18 +216,26 @@ router.get('/logout', async (req, res) => {
   req.session.destroy(async (err) => {
     if (err) console.error('[OIDC] Session destroy error:', err.message);
 
-    try {
-      const client = await getOidcClient();
-      const endSessionUrl = client.issuer.metadata.end_session_endpoint;
-      if (endSessionUrl) {
-        const logoutUrl = new URL(endSessionUrl);
-        if (idToken) logoutUrl.searchParams.set('id_token_hint', idToken);
-        logoutUrl.searchParams.set('post_logout_redirect_uri', OIDC_REDIRECT_URI.replace('/auth/oidc/callback', '/login'));
-        return res.redirect(logoutUrl.toString());
+    // Invalidate Authentik sessions server-side so the user is fully logged out
+    if (AUTHENTIK_API_TOKEN && username !== 'unknown') {
+      try {
+        const headers = { 'Authorization': `Bearer ${AUTHENTIK_API_TOKEN}` };
+        const sessRes = await fetch(
+          `${AUTHENTIK_API_URL}/api/v3/core/authenticated_sessions/?user__username=${encodeURIComponent(username)}`,
+          { headers }
+        );
+        const sessData = await sessRes.json();
+        for (const session of (sessData.results || [])) {
+          await fetch(`${AUTHENTIK_API_URL}/api/v3/core/authenticated_sessions/${session.uuid}/`, {
+            method: 'DELETE', headers
+          });
+        }
+        console.log(`[OIDC] ${timestamp} - Invalidated ${sessData.results?.length ?? 0} Authentik session(s) for ${username}`);
+      } catch (apiErr) {
+        console.error('[OIDC] Failed to invalidate Authentik sessions:', apiErr.message);
       }
-    } catch {
-      // fall through
     }
+
     res.redirect('/login');
   });
 });
