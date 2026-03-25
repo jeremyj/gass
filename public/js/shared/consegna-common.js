@@ -284,6 +284,15 @@ function handleContoProduttoreInput(id, saldo) {
       remainingCreditEl.textContent = remaining > 0 ? ` → rimanente: €${formatNumber(remaining)}` : ' → esaurito!';
     } else if (diff > 0 && creditoPreesistente > 0) {
       remainingCreditEl.textContent = ` → nuovo totale: €${formatNumber(creditoPreesistente + diff)}`;
+    } else if (diff < 0 && creditoPreesistente > 0) {
+      const newCredit = Math.round((creditoPreesistente + diff) * 100) / 100;
+      if (newCredit > 0) {
+        remainingCreditEl.textContent = ` → rimanente: €${formatNumber(newCredit)}`;
+      } else if (newCredit === 0) {
+        remainingCreditEl.textContent = ' → esaurito!';
+      } else {
+        remainingCreditEl.textContent = ` → nuovo debito: €${formatNumber(-newCredit)}`;
+      }
     } else {
       remainingCreditEl.textContent = '';
     }
