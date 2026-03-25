@@ -58,7 +58,7 @@
 /* Card header: logo + title */
 .pf-c-login__main-header,
 .pf-c-login__main-header.pf-c-brand {
-    padding: 1.5rem 1.5rem 1rem !important;
+    padding: 0.75rem 1.5rem 0.5rem !important;
     text-align: center !important;
     display: flex !important;
     flex-direction: column !important;
@@ -82,6 +82,11 @@
 /* Card body */
 .pf-c-login__main-body {
     padding: 0 1.5rem 1.5rem !important;
+}
+
+/* Remove excess bottom padding from stage component (in S1, reachable) */
+ak-stage-identification {
+    padding-bottom: 0 !important;
 }
 
 /* ===== FORM — center labels and fields ===== */
