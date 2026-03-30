@@ -20,6 +20,3 @@ backups/
 
 # Password management scripts
 update-admin-password.js
-
-# Authentik secrets
-authentik/.env
