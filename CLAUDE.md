@@ -86,6 +86,11 @@ Every user is a participant with a saldo. The `partecipanti` table was merged in
 - `requireAdmin` middleware for admin-only routes
 - Default user: admin/admin (first run only, auto-set as admin)
 
+### OIDC / Authentik
+- `server/routes/oidc.js` matches Authentik's `preferred_username` claim **verbatim, no normalization** against local `users.username`. Authentik's account usernames must exactly equal GASS's (no domain suffix, no case difference).
+- 2026-09-14 incident: a 2026-07-15 Authentik-side bulk rename to `<name>@gass.local` (via `authentik-shell`, undocumented in GASS, only recorded in the personal llm-wiki) silently broke all OIDC logins for ~2 months — local admin login still worked, masking it. Fixed by renaming the 30 Authentik accounts back to bare usernames via the Admin API; GASS code was not changed. See `docs/TECHNICAL.md#authentication-oidc--authentik` for the full write-up and the log-grep to diagnose a recurrence.
+- `AUTHENTIK_API_TOKEN` (used only by the first-login password-change flow) has no monitoring/alerting — it silently expired once already (found invalid 2026-09-14, replaced with non-expiring `gass-api-token-v2`). No code fix applied; just a rotated token in Authentik + redeployed env var.
+
 ### Admin Role System
 - `is_admin` column in users table (first user auto-promoted)
 - `isAdmin()` helper in `auth.js` for frontend checks

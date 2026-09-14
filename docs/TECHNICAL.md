@@ -482,6 +482,20 @@ On startup, the application:
 Environment variables:
 - `PORT`: Server port (default: 3000)
 - `DB_PATH`: Database file path (default: `./gass.db`)
+- OIDC/Authentik variables — see [Authentication](#authentication-oidc--authentik) below
+
+## Authentication (OIDC / Authentik)
+
+GASS supports OIDC single sign-on via a self-hosted Authentik instance, active only when `OIDC_ISSUER` is set (`server/routes/oidc.js`). Without it, local username/password login behaves exactly as before.
+
+**Environment variables:**
+- `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_REDIRECT_URI`
+- `OIDC_ADMIN_GROUP` (default `gass-admin`) — Authentik group whose members get `is_admin` synced on each login
+- `AUTHENTIK_API_URL`, `AUTHENTIK_API_TOKEN` — used for the first-login forced-password-change flow (`POST /auth/oidc/change-password`), which calls Authentik's Admin API directly
+
+**User matching:** on callback, GASS looks up `SELECT * FROM users WHERE username = ?` using the token's `preferred_username` claim verbatim — there is no normalization or suffix-stripping. This means **Authentik's `username` field for each account must exactly equal the corresponding row in GASS's local `users.username` column** (case-sensitive, no domain suffix). If an Authentik-side migration or bulk edit changes account usernames (e.g. to a namespaced `user@domain` form), OIDC logins will silently start failing with "user not found" while local admin login keeps working — the mismatch went undetected for ~2 months (2026-07-15 to 2026-09-14) for exactly this reason. When diagnosing OIDC login failures, check `docker logs gass | grep OIDC` for the `Login rejected: username '<x>' not found` line and compare it against `users.username`.
+
+**Admin sync:** admin status is re-derived from the `OIDC_ADMIN_GROUP` claim on every OIDC login and written to `users.is_admin` — it is not editable from GASS's UI/API when OIDC is enabled (see Admin Role System below).
 
 ## Deployment
 
