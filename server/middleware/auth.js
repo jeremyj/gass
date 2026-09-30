@@ -3,6 +3,7 @@
  *
  * Provides session-based authentication for GASS application.
  */
+const util = require('util');
 const db = require('../config/database');
 
 /**
@@ -52,19 +53,22 @@ function requireAdmin(req, res, next) {
 }
 
 /**
- * Middleware to attach user info to request object
- * Does not block unauthenticated requests, just adds user data if available
+ * Replace the session with a fresh one (prevents session fixation)
  */
-function attachUser(req, res, next) {
-  if (req.session && req.session.userId) {
-    req.user = {
-      id: req.session.userId,
-      username: req.session.username,
-      displayName: req.session.displayName,
-      isAdmin: req.session.isAdmin || false
-    };
-  }
-  next();
+function regenerateSession(req) {
+  return util.promisify(req.session.regenerate.bind(req.session))();
+}
+
+/**
+ * Start a logged-in session for user on a freshly regenerated session
+ */
+async function startSession(req, user, { isAdmin, authMethod }) {
+  await regenerateSession(req);
+  req.session.userId = user.id;
+  req.session.username = user.username;
+  req.session.displayName = user.display_name;
+  req.session.isAdmin = isAdmin;
+  req.session.authMethod = authMethod;
 }
 
 /**
@@ -76,7 +80,7 @@ function attachUser(req, res, next) {
  * @returns {object} Audit fields object
  */
 function getAuditFields(req, operation = 'create') {
-  const userId = req.session?.userId || req.user?.id || null;
+  const userId = req.session?.userId || null;
   const timestamp = new Date().toISOString();
 
   if (operation === 'create') {
@@ -99,6 +103,7 @@ function getAuditFields(req, operation = 'create') {
 module.exports = {
   requireAuth,
   requireAdmin,
-  attachUser,
+  regenerateSession,
+  startSession,
   getAuditFields
 };

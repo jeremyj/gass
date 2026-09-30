@@ -326,7 +326,7 @@ function updateSaldoInputs(id, changedField) {
   }
 }
 
-// ===== SAVE/DELETE =====
+// ===== SAVE =====
 
 async function saveSaldo(id) {
   const creditoInput = document.getElementById(`credito-input-${id}`);
@@ -373,35 +373,6 @@ async function saveSaldo(id) {
     }
   } catch (error) {
     showStatus('Errore durante l\'aggiornamento: ' + error.message, 'error');
-  }
-}
-
-async function deleteParticipant(id) {
-  const participant = participants.find(p => p.id === id);
-  const ok = await confirmDialog({
-    title: 'Eliminare il partecipante?',
-    details: [['Partecipante', participant.nome], ['Saldo', `€${formatNumber(participant.saldo || 0)}`]],
-    confirmText: 'Elimina',
-    danger: true
-  });
-  if (!ok) return;
-
-  try {
-    const response = await fetch(`/api/participants/${id}`, {
-      method: 'DELETE',
-    });
-
-    const result = await response.json();
-
-    if (result.success) {
-      showStatus('✓ Partecipante eliminato', 'success');
-      expandedParticipantId = null;
-      loadParticipants();
-    } else {
-      showStatus('Errore: ' + result.error, 'error');
-    }
-  } catch (error) {
-    showStatus('Errore durante l\'eliminazione: ' + error.message, 'error');
   }
 }
 

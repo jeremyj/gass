@@ -4,6 +4,7 @@ const db = require('../config/database');
 const { requireAuth, requireAdmin, getAuditFields } = require('../middleware/auth');
 const { roundToCents, toLocalDateString } = require('../services/calculations');
 const { saldoAt, currentSaldo, recalculateSaldo, getTransactions } = require('../services/saldi');
+const { logActivity } = require('../services/activity');
 
 const router = express.Router();
 
@@ -18,24 +19,20 @@ router.get('/', (req, res) => {
   console.log(`[PARTICIPANTS] ${timestamp} - GET request${date ? ` for date: ${date}` : ''}`);
 
   try {
-    // If date is provided, calculate saldi as of that date
+    let participants = db.prepare(
+      'SELECT id, username, display_name AS nome, saldo, ultima_modifica, is_admin FROM users ORDER BY display_name'
+    ).all();
+
+    // With a date, replay each participant's ledger up to and including it
     if (date) {
-      // Replay each participant's ledger up to and including the requested date
-      const participantsWithSaldi = db.prepare(
-        'SELECT id, username, display_name AS nome, is_admin FROM users ORDER BY display_name'
-      ).all().map(u => {
+      participants = participants.map(u => {
         const { saldo, ultimaModifica } = saldoAt(u.id, date);
         return { ...u, saldo, ultima_modifica: ultimaModifica };
       });
-
-      console.log(`[PARTICIPANTS] ${timestamp} - Successfully calculated saldi for ${date} (${participantsWithSaldi.length} participants)`);
-      res.json({ success: true, participants: participantsWithSaldi });
-    } else {
-      // Return current saldi
-      const participants = db.prepare('SELECT id, username, display_name AS nome, saldo, ultima_modifica, is_admin FROM users ORDER BY display_name').all();
-      console.log(`[PARTICIPANTS] ${timestamp} - Retrieved ${participants.length} participants with current saldi`);
-      res.json({ success: true, participants });
     }
+
+    console.log(`[PARTICIPANTS] ${timestamp} - Retrieved ${participants.length} participants with ${date ? `saldi as of ${date}` : 'current saldi'}`);
+    res.json({ success: true, participants });
   } catch (error) {
     console.error(`[PARTICIPANTS] ${timestamp} - Error fetching participants:`, error);
     res.status(500).json({ success: false, error: 'Errore durante il recupero dei partecipanti' });
@@ -86,10 +83,13 @@ router.put('/:id', requireAdmin, (req, res) => {
         `).run(id, toLocalDateString(), importo, audit.created_by, audit.created_at);
         recalculateSaldo(id, audit);
 
-        db.prepare(`
-          INSERT INTO activity_logs (event_type, target_user_id, actor_user_id, details, created_at)
-          VALUES (?, ?, ?, ?, ?)
-        `).run('saldo_updated', parseInt(id), req.session.userId, `saldo: ${before} → ${saldo}`, timestamp);
+        logActivity({
+          eventType: 'saldo_updated',
+          targetUserId: parseInt(id),
+          actorUserId: req.session.userId,
+          details: `saldo: ${before} → ${saldo}`,
+          createdAt: timestamp
+        });
       })();
 
       console.log(`[PARTICIPANTS] ${timestamp} - Successfully updated participant ID ${id} saldo from ${before}€ to ${saldo}€`);
@@ -135,11 +135,13 @@ router.post('/', requireAdmin, async (req, res) => {
       VALUES (?, ?, ?, 0, 0, ?, ?, ?, ?)
     `).run(username, passwordHash, nome, audit.created_by, audit.created_at, audit.updated_by, audit.updated_at);
 
-    // Log user creation event
-    db.prepare(`
-      INSERT INTO activity_logs (event_type, target_user_id, actor_user_id, details, created_at)
-      VALUES (?, ?, ?, ?, ?)
-    `).run('user_created', result.lastInsertRowid, req.session.userId, `username: ${username}, display_name: ${nome}`, timestamp);
+    logActivity({
+      eventType: 'user_created',
+      targetUserId: result.lastInsertRowid,
+      actorUserId: req.session.userId,
+      details: `username: ${username}, display_name: ${nome}`,
+      createdAt: timestamp
+    });
 
     console.log(`[PARTICIPANTS] ${timestamp} - Successfully created participant: ${nome} (ID: ${result.lastInsertRowid})`);
     res.json({ success: true, id: result.lastInsertRowid });
@@ -172,11 +174,12 @@ router.delete('/:id', requireAdmin, (req, res) => {
     const participant = db.prepare('SELECT display_name, username FROM users WHERE id = ?').get(id);
     db.prepare('DELETE FROM users WHERE id = ?').run(id);
 
-    // Log user deletion event
-    db.prepare(`
-      INSERT INTO activity_logs (event_type, target_user_id, actor_user_id, details, created_at)
-      VALUES (?, ?, ?, ?, ?)
-    `).run('user_deleted', null, req.session.userId, `username: ${participant?.username}, display_name: ${participant?.display_name}`, timestamp);
+    logActivity({
+      eventType: 'user_deleted',
+      actorUserId: req.session.userId,
+      details: `username: ${participant?.username}, display_name: ${participant?.display_name}`,
+      createdAt: timestamp
+    });
 
     console.log(`[PARTICIPANTS] ${timestamp} - Successfully deleted participant: ${participant?.display_name || id} (ID: ${id})`);
     res.json({ success: true });

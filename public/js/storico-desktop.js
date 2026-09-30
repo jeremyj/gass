@@ -26,13 +26,13 @@ function renderStorico(storico) {
     return;
   }
 
-  storico.forEach((consegna, index) => {
-    const section = createConsegnaSection(consegna, index, storico);
+  storico.forEach(consegna => {
+    const section = createConsegnaSection(consegna);
     container.appendChild(section);
   });
 }
 
-function createConsegnaSection(consegna, index, storico) {
+function createConsegnaSection(consegna) {
   const section = document.createElement('div');
   section.className = 'section storico-section';
 
@@ -152,37 +152,6 @@ function createMovimentiTable(movimenti) {
     <tbody>${rows}${totalsRow}</tbody>
   `;
   return table;
-}
-
-// ===== DELETE =====
-
-async function deleteConsegna(id) {
-  const ok = await confirmDialog({
-    title: 'Eliminare la consegna?',
-    message: 'La consegna e tutti i suoi movimenti verranno eliminati, e i saldi dei partecipanti ricalcolati.',
-    confirmText: 'Elimina consegna',
-    danger: true
-  });
-  if (!ok) return;
-
-  showStatus('Eliminazione in corso...', 'success');
-
-  try {
-    const response = await fetch(`/api/consegna/${id}`, {
-      method: 'DELETE',
-    });
-
-    const result = await response.json();
-
-    if (result.success) {
-      showStatus('Consegna eliminata con successo!', 'success');
-      loadStorico();
-    } else {
-      showStatus('Errore: ' + result.error, 'error');
-    }
-  } catch (error) {
-    showStatus('Errore durante l\'eliminazione: ' + error.message, 'error');
-  }
 }
 
 // ===== INITIALIZATION =====

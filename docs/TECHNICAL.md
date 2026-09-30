@@ -340,8 +340,7 @@ These fields are always disabled to prevent manual editing and ensure data integ
 
 #### Calendar Behavior
 - **Opens to Current Month**: Calendar always opens showing today's month
-  - Mobile date picker: Resets to current month via `toggleDatePicker()`
-  - Desktop modal calendar: Resets to current month via `showCalendarModal()`
+  - Date picker (mobile + desktop): Resets to current month via `toggleDatePicker()`
 - **Simplified Legend**: Shows only "Con consegna" indicator
   - Removed redundant "Senza consegna" legend item for cleaner UI
   - All dates without deliveries appear in standard styling (white background)

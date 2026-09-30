@@ -8,6 +8,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const db = require('../config/database');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { logActivity } = require('../services/activity');
 
 const router = express.Router();
 
@@ -39,24 +40,31 @@ router.put('/:id', async (req, res) => {
       });
     }
 
-    // Build update query dynamically
-    const updates = [];
-    const params = [];
+    const name = displayName?.trim();
+    const hasPassword = newPassword !== undefined && newPassword.length > 0;
 
-    if (displayName !== undefined && displayName.trim()) {
-      updates.push('display_name = ?');
-      params.push(displayName.trim());
+    if (hasPassword && newPassword.length < 8) {
+      return res.status(400).json({
+        success: false,
+        error: 'La password deve essere di almeno 8 caratteri'
+      });
     }
 
-    if (newPassword !== undefined && newPassword.length > 0) {
-      if (newPassword.length < 8) {
-        return res.status(400).json({
-          success: false,
-          error: 'La password deve essere di almeno 8 caratteri'
-        });
-      }
+    // Build the update and the activity log details together
+    const updates = [];
+    const params = [];
+    const changes = [];
+
+    if (name) {
+      updates.push('display_name = ?');
+      params.push(name);
+      changes.push(`display_name: "${user.display_name}" → "${name}"`);
+    }
+
+    if (hasPassword) {
       updates.push('password_hash = ?');
       params.push(await bcrypt.hash(newPassword, 12));
+      changes.push('password reset');
     }
 
     if (updates.length === 0) {
@@ -66,27 +74,16 @@ router.put('/:id', async (req, res) => {
       });
     }
 
-    // Add updated_at and id
-    updates.push('updated_at = ?');
-    params.push(timestamp);
-    params.push(id);
+    db.prepare(`UPDATE users SET ${updates.join(', ')}, updated_at = ? WHERE id = ?`)
+      .run(...params, timestamp, id);
 
-    const sql = `UPDATE users SET ${updates.join(', ')} WHERE id = ?`;
-    db.prepare(sql).run(...params);
-
-    // Build details string for activity log
-    const changes = [];
-    if (displayName !== undefined && displayName.trim()) {
-      changes.push(`display_name: "${user.display_name}" → "${displayName.trim()}"`);
-    }
-    if (newPassword !== undefined && newPassword.length > 0) {
-      changes.push('password reset');
-    }
-    // Log the user edit event
-    db.prepare(`
-      INSERT INTO activity_logs (event_type, target_user_id, actor_user_id, details, created_at)
-      VALUES (?, ?, ?, ?, ?)
-    `).run('user_edited', parseInt(id), req.session.userId, changes.join(', '), timestamp);
+    logActivity({
+      eventType: 'user_edited',
+      targetUserId: parseInt(id),
+      actorUserId: req.session.userId,
+      details: changes.join(', '),
+      createdAt: timestamp
+    });
 
     console.log(`[USERS] ${timestamp} - User ${user.username} updated by admin ${req.session.username}`);
 

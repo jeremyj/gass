@@ -8,6 +8,8 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const rateLimit = require('express-rate-limit');
 const db = require('../config/database');
+const { regenerateSession, startSession } = require('../middleware/auth');
+const { logActivity } = require('../services/activity');
 
 const router = express.Router();
 
@@ -60,16 +62,11 @@ router.post('/login', loginLimiter, async (req, res) => {
       });
     }
 
-    // Regenerate session to prevent session fixation
-    await new Promise((resolve, reject) => {
-      req.session.regenerate((err) => {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
+    const isAdmin = user.is_admin === 1;
 
     // When OIDC is enabled, only admin users may use local login
-    if (process.env.OIDC_ISSUER && user.is_admin !== 1) {
+    if (process.env.OIDC_ISSUER && !isAdmin) {
+      await regenerateSession(req);
       console.log(`[AUTH] ${timestamp} - Local login rejected for non-admin user (OIDC enabled): ${username}`);
       return res.status(403).json({
         error: 'Local login disabled',
@@ -77,14 +74,9 @@ router.post('/login', loginLimiter, async (req, res) => {
       });
     }
 
-    // Create session
-    req.session.userId = user.id;
-    req.session.username = user.username;
-    req.session.displayName = user.display_name;
-    req.session.isAdmin = user.is_admin === 1;
-    req.session.authMethod = 'local';
+    await startSession(req, user, { isAdmin, authMethod: 'local' });
 
-    console.log(`[AUTH] ${timestamp} - Login successful: ${username} (ID: ${user.id}, Admin: ${user.is_admin === 1})`);
+    console.log(`[AUTH] ${timestamp} - Login successful: ${username} (ID: ${user.id}, Admin: ${isAdmin})`);
 
     res.json({
       success: true,
@@ -92,7 +84,7 @@ router.post('/login', loginLimiter, async (req, res) => {
         id: user.id,
         username: user.username,
         displayName: user.display_name,
-        isAdmin: user.is_admin === 1
+        isAdmin
       }
     });
 
@@ -236,11 +228,13 @@ router.post('/change-password', async (req, res) => {
     db.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?')
       .run(newHash, timestamp, req.session.userId);
 
-    // Log the password change event
-    db.prepare(`
-      INSERT INTO activity_logs (event_type, target_user_id, actor_user_id, details, created_at)
-      VALUES (?, ?, ?, ?, ?)
-    `).run('password_changed', req.session.userId, req.session.userId, 'Self password change', timestamp);
+    logActivity({
+      eventType: 'password_changed',
+      targetUserId: req.session.userId,
+      actorUserId: req.session.userId,
+      details: 'Self password change',
+      createdAt: timestamp
+    });
 
     console.log(`[AUTH] ${timestamp} - Password changed successfully for user: ${req.session.username}`);
 

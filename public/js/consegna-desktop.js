@@ -146,9 +146,7 @@ function renderParticipant(id) {
   const haCredito = saldo > 0;
   const haDebito = saldo < 0;
 
-  const saldoText = saldo < 0
-    ? `€${formatSaldo(saldo)}`
-    : saldo > 0 ? `€${formatSaldo(saldo)}` : 'IN PARI';
+  const saldoText = saldo !== 0 ? `€${formatSaldo(saldo)}` : 'IN PARI';
   const saldoClass = saldo < 0 ? 'saldo-debito' : saldo > 0 ? 'saldo-credito' : '';
 
   const card = document.createElement('div');
@@ -191,9 +189,6 @@ function populateExistingMovimento(id) {
     const field = document.getElementById(fieldId);
     if (field && value !== '') {
       field.value = value;
-      if (['usaCredito_', 'credito_', 'debito_', 'debitoSaldato_'].some(prefix => fieldId.startsWith(prefix))) {
-        field.disabled = true;
-      }
     }
   }
 
@@ -229,23 +224,19 @@ function buildParticipantCardHTML(id, nome, saldo, saldoText, saldoClass, haCred
       </div>
     </div>
 
-    ${haCredito ? buildCreditoSection(id, nome, saldo, saldoText, saldoClass) : ''}
+    ${haCredito ? buildCreditoSection(id, saldoText, saldoClass) : ''}
 
-    ${haDebito ? buildDebitoSection(id, nome, saldo, saldoText, saldoClass) : ''}
+    ${haDebito ? buildDebitoSection(id, saldoText, saldoClass) : ''}
 
     <div class="flow-section">
       <div class="row">
         <div class="form-group">
           <label>Lascia credito:</label>
-          <input type="text" inputmode="decimal" id="credito_${id}" placeholder="0.00" disabled
-                 oninput="normalizeInputField(this); delete this.dataset.autoCalculated; handleCreditoDebitoInput(${id}, ${saldo})"
-                 onfocus="handleInputFocus(this)">
+          <input type="text" inputmode="decimal" id="credito_${id}" placeholder="0.00" disabled>
         </div>
         <div class="form-group">
           <label>Lascia debito:</label>
-          <input type="text" inputmode="decimal" id="debito_${id}" placeholder="0.00" disabled
-                 oninput="normalizeInputField(this); delete this.dataset.autoCalculated; handleCreditoDebitoInput(${id}, ${saldo})"
-                 onfocus="handleInputFocus(this)">
+          <input type="text" inputmode="decimal" id="debito_${id}" placeholder="0.00" disabled>
         </div>
       </div>
     </div>

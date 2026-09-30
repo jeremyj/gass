@@ -1,7 +1,6 @@
 // ===== STATE MANAGEMENT =====
 
 let participants = [];
-let editingId = null;
 
 // ===== UI HELPERS =====
 
@@ -72,7 +71,6 @@ function createParticipantRow(p) {
 // ===== EDIT SALDO =====
 
 function editSaldo(id) {
-  editingId = id;
   const inputField = document.getElementById(`saldo-edit-${id}`);
 
   document.getElementById(`saldo-view-${id}`).style.display = 'none';
@@ -96,7 +94,6 @@ function cancelEdit(id) {
   document.getElementById(`edit-btn-${id}`).style.display = 'inline-block';
   document.getElementById(`save-btn-${id}`).style.display = 'none';
   document.getElementById(`cancel-btn-${id}`).style.display = 'none';
-  editingId = null;
 }
 
 async function saveSaldo(id) {
@@ -114,7 +111,6 @@ async function saveSaldo(id) {
     if (result.success) {
       showStatus('Saldo aggiornato con successo!', 'success');
       loadParticipants();
-      editingId = null;
     } else {
       showStatus('Errore: ' + result.error, 'error');
     }
@@ -123,7 +119,7 @@ async function saveSaldo(id) {
   }
 }
 
-// ===== ADD/DELETE PARTICIPANT =====
+// ===== ADD PARTICIPANT =====
 
 async function addParticipant() {
   const nome = document.getElementById('new-name').value.trim();
@@ -158,34 +154,6 @@ async function addParticipant() {
     }
   } catch (error) {
     showStatus('Errore durante l\'aggiunta: ' + error.message, 'error');
-  }
-}
-
-async function deleteParticipant(id) {
-  const participant = participants.find(p => p.id === id);
-  const ok = await confirmDialog({
-    title: 'Eliminare il partecipante?',
-    details: [['Partecipante', participant.nome], ['Saldo', `€${formatNumber(participant.saldo || 0)}`]],
-    confirmText: 'Elimina',
-    danger: true
-  });
-  if (!ok) return;
-
-  try {
-    const response = await fetch(`/api/participants/${id}`, {
-      method: 'DELETE',
-    });
-
-    const result = await response.json();
-
-    if (result.success) {
-      showStatus('Partecipante eliminato con successo!', 'success');
-      loadParticipants();
-    } else {
-      showStatus('Errore: ' + result.error, 'error');
-    }
-  } catch (error) {
-    showStatus('Errore durante l\'eliminazione: ' + error.message, 'error');
   }
 }
 

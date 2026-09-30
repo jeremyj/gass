@@ -104,3 +104,19 @@ describe('public endpoints', () => {
     expect(res.body.version).toBe(require('../../package.json').version);
   });
 });
+
+describe('local login with OIDC enabled', () => {
+  it('rejects local login for non-admins when OIDC is enabled, without starting a session', async () => {
+    createUser(db, { username: 'user1', password: 'password1', displayName: 'User1' });
+    const userAgent = request.agent(app);
+    process.env.OIDC_ISSUER = 'https://auth.example.test';
+    try {
+      const res = await userAgent.post('/api/auth/login').send({ username: 'user1', password: 'password1' });
+      expect(res.status).toBe(403);
+    } finally {
+      delete process.env.OIDC_ISSUER;
+    }
+    const session = await userAgent.get('/api/auth/session');
+    expect(session.body.authenticated).toBe(false);
+  });
+});

@@ -4,6 +4,7 @@ const { shouldUseMobileView } = require('../middleware/userAgent');
 const packageJson = require('../../package.json');
 
 const router = express.Router();
+const PUBLIC = path.join(__dirname, '../../public');
 
 // Login page (public, no auth required)
 router.get('/login', (req, res) => {
@@ -11,12 +12,12 @@ router.get('/login', (req, res) => {
   if (req.session && req.session.userId) {
     return res.redirect('/consegna');
   }
-  res.sendFile(path.join(__dirname, '../../public', 'login.html'));
+  res.sendFile(path.join(PUBLIC, 'login.html'));
 });
 
 // One-page guide for new users (public, no auth required)
 router.get('/inbreve', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../public', 'inbreve.html'));
+  res.sendFile(path.join(PUBLIC, 'inbreve.html'));
 });
 
 // API endpoint to get app version (public, no auth required)
@@ -34,32 +35,22 @@ const requireAuthForPages = (req, res, next) => {
 
 router.use(requireAuthForPages);
 
-router.get('/consegna', (req, res) => {
-  const useMobile = shouldUseMobileView(req);
-  const file = useMobile ? 'consegna.html' : 'consegna-desktop.html';
-  res.sendFile(path.join(__dirname, '../../public', file));
-});
-
-router.get('/storico', (req, res) => {
-  const useMobile = shouldUseMobileView(req);
-  const file = useMobile ? 'storico.html' : 'storico-desktop.html';
-  res.sendFile(path.join(__dirname, '../../public', file));
-});
-
-router.get('/debiti', (req, res) => {
-  const useMobile = shouldUseMobileView(req);
-  const file = useMobile ? 'debiti.html' : 'debiti-desktop.html';
-  res.sendFile(path.join(__dirname, '../../public', file));
-});
+// Pages with a mobile and a desktop version: <page>.html / <page>-desktop.html
+for (const page of ['consegna', 'storico', 'debiti']) {
+  router.get(`/${page}`, (req, res) => {
+    const file = shouldUseMobileView(req) ? `${page}.html` : `${page}-desktop.html`;
+    res.sendFile(path.join(PUBLIC, file));
+  });
+}
 
 // Desktop only - admin restriction enforced at API level
 router.get('/logs', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../public', 'logs-desktop.html'));
+  res.sendFile(path.join(PUBLIC, 'logs-desktop.html'));
 });
 
 router.get('/cambia-password', (req, res) => {
   if (!req.session.requirePasswordChange) return res.redirect('/consegna');
-  res.sendFile(path.join(__dirname, '../../public', 'change-password-oidc.html'));
+  res.sendFile(path.join(PUBLIC, 'change-password-oidc.html'));
 });
 
 // Redirect root to consegna

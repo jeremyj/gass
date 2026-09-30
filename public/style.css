@@ -294,30 +294,6 @@ body {
     border-radius: 2px;
 }
 
-/* ===== VIEW SWITCH BUTTON ===== */
-
-.view-switch-btn {
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid white;
-    color: white;
-    padding: 6px 12px;
-    border-radius: var(--radius-pill);
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-top: var(--space-2);
-}
-
-.view-switch-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-.view-switch-btn:active {
-    background: rgba(255, 255, 255, 0.4);
-    transform: scale(0.95);
-}
-
 /* ===== BOTTOM NAV (mobile only) ===== */
 
 .bottom-nav {
@@ -446,112 +422,10 @@ body {
     font-size: 14px;
 }
 
-.smart-input {
-    width: 100%;
-    padding: var(--space-4); /* Mobile default */
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius-md);
-    font-size: 16px;
-    transition: all 0.3s;
-    cursor: text;
-}
-
-/* State: AUTO (readonly appearance but clickable) */
-.smart-input.auto {
-    background: var(--color-readonly-bg);
-    color: var(--color-text-muted);
-    border-color: var(--color-border);
-}
-
-.smart-input.auto::placeholder {
-    color: var(--color-text-light);
-}
-
-/* State: MANUAL (editing) */
-.smart-input.manual {
-    background: #fff5f5;
-    color: var(--color-text);
-    border: 2px solid var(--color-danger);
-    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
-}
-
-.smart-input:focus {
-    outline: none;
-}
-
-/* ===== MODE BADGE ===== */
-
-.mode-badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 700;
-    transition: all 0.3s;
-}
-
-.mode-badge.auto {
-    background: var(--color-info-bg);
-    color: #0c5460;
-}
-
-.mode-badge.manual {
-    background: var(--color-danger-bg);
-    color: var(--color-danger-text);
-}
-
 /* ===== PARTICIPANT COLLAPSED CARD ===== */
-
-.participant-collapsed {
-    background: var(--color-surface);
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: 15px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.participant-collapsed:hover {
-    border-color: var(--color-primary);
-    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
-}
-
-.participant-collapsed.has-data {
-    border-left: 5px solid var(--color-success);
-    background: #f0fff4;
-}
-
-.participant-collapsed.new-entry {
-    border-left: 5px solid var(--color-warning);
-    background: #fffef0;
-}
 
 .participant-info {
     flex: 1;
-}
-
-.participant-name-collapsed {
-    font-weight: bold;
-    font-size: 16px;
-    color: var(--color-text);
-    margin-bottom: 4px;
-}
-
-.participant-status {
-    font-size: 12px;
-    color: var(--color-text-muted);
-}
-
-.participant-saldo-collapsed {
-    font-size: 16px;
-    font-weight: bold;
-    padding: var(--space-2) 14px;
-    border-radius: var(--radius-pill);
-    margin-left: 10px;
 }
 
 /* ===== SALDO CLASSES ===== */
@@ -573,52 +447,10 @@ body {
 
 /* ===== PARTICIPANT EXPANDED CARD ===== */
 
-.participant-expanded {
-    background: var(--color-surface);
-    border-radius: var(--radius-lg);
-    padding: 18px;
-    margin-bottom: 12px;
-    box-shadow: var(--shadow-md);
-    border: 3px solid var(--color-primary);
-}
-
-.participant-expanded.has-data {
-    border-color: var(--color-success);
-}
-
-.participant-expanded.new-entry {
-    border-color: var(--color-warning);
-}
-
-.participant-header-expanded {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 12px;
-    border-bottom: 3px solid var(--color-border);
-}
-
 .participant-name-expanded {
     font-weight: bold;
     font-size: 18px;
     color: var(--color-text);
-}
-
-.participant-section {
-    background: var(--color-bg);
-    border-radius: var(--radius-md);
-    padding: 12px;
-    margin-bottom: 10px;
-}
-
-.participant-section-title {
-    font-weight: 600;
-    font-size: 13px;
-    color: #495057;
-    margin-bottom: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
 /* ===== INPUT FIELD ===== */
@@ -680,23 +512,6 @@ body {
     color: white;
 }
 
-.collapse-btn {
-    background: #ecf0f1;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--color-text-muted);
-    cursor: pointer;
-    width: 100%;
-    margin-top: 10px;
-}
-
-.collapse-btn:hover {
-    background: #d5d8dc;
-}
-
 /* ===== PARTICIPANT CARD FLOW ===== */
 
 .participant-card-flow {
@@ -706,19 +521,6 @@ body {
     margin-bottom: 16px;
     box-shadow: var(--shadow-md);
     border: 3px solid var(--color-primary);
-}
-
-.participant-card-flow.new-entry {
-    border-color: var(--color-warning);
-}
-
-.flow-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 18px;
-    padding-bottom: 12px;
-    border-bottom: 3px solid var(--color-border);
 }
 
 .participant-name {
@@ -841,26 +643,6 @@ body {
     display: flex;
     gap: 10px;
     justify-content: center;
-}
-
-/* ===== CHECKBOX GROUP ===== */
-
-.checkbox-group {
-    display: flex;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.checkbox-group input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-    margin-right: var(--space-2);
-}
-
-.checkbox-group label {
-    font-size: 14px;
-    color: var(--color-text);
-    cursor: pointer;
 }
 
 /* ===== FORM GROUP ===== */
@@ -1001,13 +783,6 @@ body {
     margin-bottom: 10px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-}
-
-.saldo-edit-label {
-    font-size: 12px;
-    color: var(--color-text-muted);
-    margin-bottom: 5px;
-    display: block;
 }
 
 /* ===== SALDO TRANSACTIONS (mobile) ===== */
@@ -1334,18 +1109,6 @@ body {
     display: block;
 }
 
-/* Override indicator (mobile) */
-.override-indicator {
-    display: inline-block;
-    background: var(--color-danger);
-    color: white;
-    padding: 2px 8px;
-    border-radius: var(--radius-sm);
-    font-size: 10px;
-    font-weight: bold;
-    letter-spacing: 0.5px;
-}
-
 /* ===== STATUS MESSAGES ===== */
 
 .status {
@@ -1373,139 +1136,8 @@ body {
     to   { opacity: 1; transform: translateY(0); }
 }
 
-.status-indicator {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    margin-top: 6px;
-}
-
-.status-saved {
-    background: var(--color-success-bg);
-    color: var(--color-success-text);
-}
-
-.status-new {
-    background: var(--color-warning-bg);
-    color: #856404;
-}
-
-/* ===== CALENDAR ===== */
-
-.calendar {
-    background: var(--color-surface);
-    border-radius: var(--radius-md);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    padding: var(--space-5);
-}
-
-.calendar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space-5);
-}
-
-.calendar-header h3 {
-    color: var(--color-text);
-    font-size: 18px;
-}
-
-.calendar-nav {
-    background: var(--color-primary);
-    color: white;
-    border: none;
-    padding: var(--space-2) var(--space-4);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    font-size: 16px;
-    transition: background 0.2s;
-}
-
-.calendar-nav:hover {
-    background: var(--color-primary-hover);
-}
-
-.calendar-weekdays {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
-    margin-bottom: var(--space-2);
-}
-
-.calendar-weekday {
-    text-align: center;
-    font-weight: bold;
-    color: var(--color-text-muted);
-    font-size: 14px;
-    padding: 8px 0;
-}
-
-.calendar-days {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
-}
-
-.calendar-day {
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.2s;
-    border: 2px solid transparent;
-}
-
-.calendar-day:not(.empty):not(.other-month):hover {
-    background: #ecf0f1;
-}
-
-.calendar-day.empty {
-    cursor: default;
-}
-
-.calendar-day.other-month {
-    color: #bdc3c7;
-    cursor: default;
-}
-
-.calendar-day.today {
-    border-color: var(--color-primary);
-    font-weight: bold;
-}
-
-.calendar-day.selected {
-    background: var(--color-primary);
-    color: white;
-    font-weight: bold;
-}
-
-.calendar-day.has-consegna {
-    background: var(--color-success);
-    color: white;
-    font-weight: bold;
-}
-
-.calendar-day.has-consegna:hover {
-    background: var(--color-success-hover);
-}
-
-.calendar-day.selected.has-consegna {
-    background: #16a085;
-}
-
-.calendar-day.no-consegna {
-    color: var(--color-text-light);
-}
-
 /* ===== UTILITY CLASSES ===== */
 
-.hidden          { display: none !important; }
 .initially-hidden { display: none; }
 .modal.initially-hidden { display: none; }
 .input-readonly  { background: var(--color-readonly-bg) !important; cursor: not-allowed !important; color: var(--color-text-muted) !important; border-color: var(--color-border) !important; }
@@ -1835,20 +1467,9 @@ input:disabled {
 .btn-secondary { background: var(--color-surface); color: var(--color-text-muted); border: 2px solid var(--color-border); }
 .btn-secondary:hover { background: var(--color-bg); border-color: #adb5bd; }
 
-.btn-edit-user { background: #6c757d; color: white; font-size: 0.85em; padding: 4px 8px; margin-left: var(--space-2); }
-.btn-edit-user:hover { background: #5a6268; }
-
 button:disabled {
     opacity: 0.65;
     cursor: not-allowed;
-}
-
-/* ===== HISTORICAL NOTE ===== */
-
-.historical-note {
-    color: var(--color-text-light);
-    font-style: italic;
-    font-size: 12px;
 }
 
 /* ===== LOGIN STYLES ===== */
@@ -1931,20 +1552,6 @@ button:disabled {
     border-radius: var(--radius-sm);
     margin-bottom: var(--space-5);
     display: none;
-}
-
-.default-credentials {
-    margin-top: var(--space-5);
-    padding: 15px;
-    background: var(--color-warning-bg);
-    border: 1px solid var(--color-warning);
-    border-radius: var(--radius-sm);
-    font-size: 14px;
-}
-
-.default-credentials strong {
-    display: block;
-    margin-bottom: 5px;
 }
 
 /* ===== MOVIMENTI GIORNO TABLE (mobile) ===== */
@@ -2172,12 +1779,6 @@ button:disabled {
         margin-right: 10px;
     }
 
-    .checkbox-group {
-        display: flex;
-        align-items: center;
-        margin-bottom: 10px;
-    }
-
     select {
         width: 100%;
         padding: 10px;
@@ -2351,16 +1952,6 @@ button:disabled {
         border-top: none;
         border-right: none;
         border-bottom: none;
-    }
-
-    .flow-header {
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
-        gap: 15px;
-        margin-bottom: var(--space-5);
-        padding-bottom: 15px;
-        border-bottom: 2px solid var(--color-border);
     }
 
     .flow-section {
@@ -2546,16 +2137,6 @@ button:disabled {
         border-bottom: none;
     }
 
-    /* --- Storico info table (desktop) --- */
-    .storico-info-table thead tr {
-        background: var(--color-nav-hover);
-        color: white;
-    }
-
-    .storico-info-table tbody tr {
-        background: #E3F2FD;
-    }
-
     .storico-movimenti-title {
         margin-top: var(--space-5);
         margin-bottom: 10px;
@@ -2677,10 +2258,6 @@ button:disabled {
     .big-btn:active {
         transform: none;
         box-shadow: none;
-    }
-
-    .collapse-btn {
-        width: auto;
     }
 
     /* --- App Footer (desktop) --- */

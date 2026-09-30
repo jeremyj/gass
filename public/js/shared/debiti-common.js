@@ -2,7 +2,7 @@
 // Used by both debiti.js (mobile) and debiti-desktop.js
 //
 // Depends on: participants (defined in page-specific JS)
-// Depends on: utils.js, calendar.js (setConsegneDates)
+// Depends on: utils.js
 
 // ===== DATA LOADING =====
 
@@ -28,19 +28,6 @@ async function loadParticipants() {
     }
   } catch (error) {
     showStatus('Errore: ' + error.message, 'error');
-  }
-}
-
-async function loadConsegneDates() {
-  try {
-    const response = await fetch('/api/storico');
-    const result = await response.json();
-
-    if (result.success) {
-      setConsegneDates(result.consegne.map(c => c.data));
-    }
-  } catch (error) {
-    console.error('Error loading consegne dates:', error);
   }
 }
 

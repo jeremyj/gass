@@ -87,7 +87,6 @@ function loadExistingConsegna(result) {
   updatePagatoProduttore();
   updateLasciatoInCassa();
 
-  updateMovimentiCounter();
   renderMovimentiGiorno();
   updateNoteButtonVisibility();
 
@@ -119,7 +118,6 @@ function loadNewConsegna(result) {
   updatePagatoProduttore();
   updateLasciatoInCassa();
 
-  updateMovimentiCounter();
   renderMovimentiGiorno();
   updateNoteButtonVisibility();
 
@@ -349,9 +347,7 @@ function renderParticipant(id) {
   const haCredito = saldo > 0;
   const haDebito = saldo < 0;
 
-  const saldoText = saldo < 0
-    ? `€${formatSaldo(saldo)}`
-    : saldo > 0 ? `€${formatSaldo(saldo)}` : 'IN PARI';
+  const saldoText = saldo !== 0 ? `€${formatSaldo(saldo)}` : 'IN PARI';
   const saldoClass = saldo < 0 ? 'saldo-debito' : saldo > 0 ? 'saldo-credito' : '';
 
   const card = document.createElement('div');
@@ -393,7 +389,6 @@ function loadExistingParticipantData(id, saldo) {
 
   if (usaCreditoField && movimento.usa_credito) {
     usaCreditoField.value = movimento.usa_credito;
-    usaCreditoField.disabled = true; // Always disabled - system-managed
     // Whole credit used: shown in the section title instead of the partial field
     usaCreditoField.dataset.full = saldo > 0 && Math.abs(movimento.usa_credito - saldo) < 0.01 ? 'true' : '';
   }
@@ -411,7 +406,6 @@ function loadExistingParticipantData(id, saldo) {
   const debitoSaldatoField = document.getElementById(`debitoSaldato_${id}`);
   if (debitoSaldatoField && movimento.debito_saldato) {
     debitoSaldatoField.value = movimento.debito_saldato;
-    debitoSaldatoField.disabled = true; // Always disabled - system-managed
   }
 
   const noteField = document.getElementById(`note_${id}`);
@@ -424,9 +418,7 @@ function loadExistingParticipantData(id, saldo) {
     debitoSaldatoField.dataset.full = 'true';
   }
 
-  // Apply business rules to correctly set disabled states based on loaded data
   syncDebitoCreditoVisibility(id);
-  handleCreditoDebitoInput(id, saldo);
 }
 
 function buildParticipantCardHTML(id, nome, saldo, saldoText, saldoClass, haCredito, haDebito) {
@@ -447,22 +439,18 @@ function buildParticipantCardHTML(id, nome, saldo, saldoText, saldoClass, haCred
       </div>
     </div>
 
-    ${haCredito ? buildCreditoSection(id, nome, saldo, saldoText, saldoClass) : ''}
-    ${haDebito ? buildDebitoSection(id, nome, saldo, saldoText, saldoClass) : ''}
+    ${haCredito ? buildCreditoSection(id, saldoText, saldoClass) : ''}
+    ${haDebito ? buildDebitoSection(id, saldoText, saldoClass) : ''}
 
     <div class="flow-section">
       <div class="row">
         <div class="form-group">
           <label>Lascia credito:</label>
-          <input type="text" inputmode="decimal" id="credito_${id}" placeholder="0.00" disabled
-                 oninput="normalizeInputField(this); delete this.dataset.autoCalculated; handleCreditoDebitoInput(${id}, ${saldo})"
-                 onfocus="handleInputFocus(this)">
+          <input type="text" inputmode="decimal" id="credito_${id}" placeholder="0.00" disabled>
         </div>
         <div class="form-group">
           <label>Lascia debito:</label>
-          <input type="text" inputmode="decimal" id="debito_${id}" placeholder="0.00" disabled
-                 oninput="normalizeInputField(this); delete this.dataset.autoCalculated; handleCreditoDebitoInput(${id}, ${saldo})"
-                 onfocus="handleInputFocus(this)">
+          <input type="text" inputmode="decimal" id="debito_${id}" placeholder="0.00" disabled>
         </div>
       </div>
     </div>
@@ -514,12 +502,6 @@ function showParticipantForm() {
   if (infoBadge) infoBadge.style.display = 'none';
   renderParticipant(id);
   updateLasciatoInCassa();
-}
-
-// ===== MOVEMENTS COUNTER =====
-
-function updateMovimentiCounter() {
-  // Counter removed - title is now just "MOVIMENTI"
 }
 
 // ===== UNSAVED CHANGES DETECTION =====
@@ -664,12 +646,6 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
       // Reload consegna data to get updated movements
       await checkDateData();
 
-      // Update movements counter
-      updateMovimentiCounter();
-
-      // Update Pagato Produttore with new total
-      updatePagatoProduttore();
-
       await loadConsegneDates(); // Refresh calendar
 
       // Close participant card after save
@@ -702,18 +678,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     onDateSelected: checkDateData
   });
 
-  try {
-    const response = await fetch('/api/storico');
-    const result = await response.json();
-
-    if (result.success && result.consegne.length > 0) {
-      // Populate consegneDates for calendar indicators
-      const dates = result.consegne.map(c => c.data);
-      setConsegneDates(dates);
-    }
-  } catch (error) {
-    console.error('Error loading storico dates:', error);
-  }
+  await loadConsegneDates();
 
   // Use restoreDateFromStorage which handles reload vs tab navigation
   const dateToLoad = restoreDateFromStorage();

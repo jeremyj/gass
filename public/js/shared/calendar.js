@@ -3,8 +3,6 @@
 
 // ===== STATE MANAGEMENT =====
 
-let currentCalendarYear = new Date().getFullYear();
-let currentCalendarMonth = new Date().getMonth();
 let consegneDates = new Set(); // Store dates with saved consegne
 
 // Date picker state
@@ -20,24 +18,6 @@ let onDateSelected = null; // Called when a date is selected
 function initCalendar(config = {}) {
   if (config.onDateSelected) {
     onDateSelected = config.onDateSelected;
-  }
-  if (config.consegneDates) {
-    consegneDates = new Set(config.consegneDates);
-  }
-}
-
-// ===== CALENDAR MODAL =====
-
-function showCalendarModal() {
-  const calendar = document.getElementById('calendar-container');
-  if (calendar) {
-    // Reset to current month when opening
-    const today = new Date();
-    currentCalendarYear = today.getFullYear();
-    currentCalendarMonth = today.getMonth();
-
-    renderCalendar();
-    calendar.classList.toggle('hidden');
   }
 }
 
@@ -140,138 +120,8 @@ function changePickerMonth(delta, event) {
 }
 
 function selectPickerDate(dateStr) {
-  const dataInput = document.getElementById('data');
-  const dataDisplayInput = document.getElementById('data-display');
-  const headerDateDisplay = document.getElementById('header-date-display');
-
-  if (dataInput) {
-    dataInput.value = dateStr;
-  }
-
-  if (dataDisplayInput) {
-    const [year, month, day] = dateStr.split('-');
-    dataDisplayInput.value = `${day}-${month}-${year}`;
-  }
-
-  // Update header date display
-  if (headerDateDisplay) {
-    const today = toLocalDateString();
-    if (dateStr === today) {
-      headerDateDisplay.textContent = 'Oggi';
-    } else {
-      const [year, month, day] = dateStr.split('-');
-      headerDateDisplay.textContent = '⚠️ ' + `${day}/${month}/${year}`;
-    }
-  }
-
-  // Persist selected date in sessionStorage (for tab navigation)
-  sessionStorage.setItem('gass_selected_date', dateStr);
-
-  renderDatePicker();
-
-  // Call page-specific callback
-  if (onDateSelected) {
-    onDateSelected(dateStr);
-  }
-
-  // Close the date picker after selection
-  toggleDatePicker();
-}
-
-// ===== CALENDAR (for modal) =====
-
-function renderCalendar() {
-  const container = document.getElementById('calendar-container');
-  if (!container) return;
-
-  const monthNames = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
-                      'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
-  const weekDays = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
-
-  const today = new Date();
-  const dataInput = document.getElementById('data');
-  const selectedDate = dataInput ? dataInput.value : '';
-
-  // Get first and last day of month
-  const firstDay = new Date(currentCalendarYear, currentCalendarMonth, 1);
-  const lastDay = new Date(currentCalendarYear, currentCalendarMonth + 1, 0);
-
-  // Adjust firstDay to Monday (1 = Monday, 0 = Sunday)
-  let startDay = firstDay.getDay();
-  startDay = startDay === 0 ? 6 : startDay - 1; // Convert Sunday from 0 to 6
-
-  let html = '<div class="calendar">';
-
-  // Header
-  html += '<div class="calendar-header">';
-  html += `<button type="button" class="calendar-nav" onclick="changeMonth(-1, event)">◀</button>`;
-  html += `<h3>${monthNames[currentCalendarMonth]} ${currentCalendarYear}</h3>`;
-  html += `<button type="button" class="calendar-nav" onclick="changeMonth(1, event)">▶</button>`;
-  html += '</div>';
-
-  // Weekdays
-  html += '<div class="calendar-weekdays">';
-  weekDays.forEach(day => {
-    html += `<div class="calendar-weekday">${day}</div>`;
-  });
-  html += '</div>';
-
-  // Days
-  html += '<div class="calendar-days">';
-
-  // Empty cells before first day
-  for (let i = 0; i < startDay; i++) {
-    html += '<div class="calendar-day empty"></div>';
-  }
-
-  // Days of month
-  for (let day = 1; day <= lastDay.getDate(); day++) {
-    const dateStr = `${currentCalendarYear}-${String(currentCalendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const isToday = dateStr === toLocalDateString(today);
-    const isSelected = dateStr === selectedDate;
-    const hasConsegna = consegneDates.has(dateStr);
-
-    let classes = 'calendar-day';
-    if (isToday) classes += ' today';
-    if (isSelected) classes += ' selected';
-    if (hasConsegna) classes += ' has-consegna';
-    else classes += ' no-consegna';
-
-    html += `<div class="${classes}" onclick="selectDate('${dateStr}')">${day}</div>`;
-  }
-
-  html += '</div>';
-
-  // Legend
-  html += '<div class="calendar-legend">';
-  html += '<div class="calendar-legend-item">';
-  html += '<div class="calendar-legend-color" style="background: #2ecc71;"></div>';
-  html += '<span>Con consegna</span>';
-  html += '</div>';
-  html += '</div>';
-
-  html += '</div>';
-  container.innerHTML = html;
-}
-
-function changeMonth(delta, event) {
-  if (event) {
-    event.stopPropagation();
-  }
-  currentCalendarMonth += delta;
-  if (currentCalendarMonth > 11) {
-    currentCalendarMonth = 0;
-    currentCalendarYear++;
-  } else if (currentCalendarMonth < 0) {
-    currentCalendarMonth = 11;
-    currentCalendarYear--;
-  }
-  renderCalendar();
-}
-
-function selectDate(dateStr) {
   setDateDisplay(dateStr);
-  renderCalendar();
+  toggleDatePicker();
 }
 
 // ===== DATE DISPLAY =====
@@ -307,10 +157,6 @@ function setDateDisplay(dateStr) {
   pickerYear = parseInt(year);
   pickerMonth = parseInt(month) - 1;
 
-  // Also set calendar to same month/year
-  currentCalendarYear = parseInt(year);
-  currentCalendarMonth = parseInt(month) - 1;
-
   // Persist selected date in sessionStorage (for tab navigation)
   sessionStorage.setItem('gass_selected_date', dateStr);
 
@@ -324,16 +170,23 @@ function setDateDisplay(dateStr) {
 
 function setConsegneDates(dates) {
   consegneDates = new Set(dates);
-  // Re-render if calendar/picker is visible
-  const calendarContainer = document.getElementById('calendar-container');
+  // Re-render if picker is visible
   const pickerContainer = document.getElementById('date-picker-container');
-
-  if (calendarContainer && !calendarContainer.classList.contains('hidden')) {
-    renderCalendar();
-  }
-
   if (pickerContainer && pickerContainer.style.display !== 'none') {
     renderDatePicker();
+  }
+}
+
+async function loadConsegneDates() {
+  try {
+    const response = await fetch('/api/storico');
+    const result = await response.json();
+
+    if (result.success) {
+      setConsegneDates(result.consegne.map(c => c.data));
+    }
+  } catch (error) {
+    console.error('Error loading consegne dates:', error);
   }
 }
 

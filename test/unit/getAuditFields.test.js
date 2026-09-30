@@ -25,12 +25,6 @@ describe('getAuditFields', () => {
     expect(fields.created_at).toBeUndefined();
   });
 
-  it('falls back to req.user.id when session.userId is missing', () => {
-    const req = { session: undefined, user: { id: 99 } };
-    const fields = getAuditFields(req, 'create');
-    expect(fields.created_by).toBe(99);
-  });
-
   it('returns null userId when no session and no user', () => {
     const req = { session: undefined, user: undefined };
     const fields = getAuditFields(req, 'create');

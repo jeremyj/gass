@@ -13,6 +13,7 @@
 const express = require('express');
 const { Issuer, generators } = require('openid-client');
 const db = require('../config/database');
+const { startSession } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -105,18 +106,7 @@ router.get('/callback', async (req, res) => {
     // Sync admin status from OIDC groups to DB (requireAdmin middleware checks DB, not session)
     db.prepare('UPDATE users SET is_admin = ? WHERE id = ?').run(isAdmin ? 1 : 0, user.id);
 
-    await new Promise((resolve, reject) => {
-      req.session.regenerate((err) => {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
-
-    req.session.userId = user.id;
-    req.session.username = user.username;
-    req.session.displayName = user.display_name;
-    req.session.isAdmin = isAdmin;
-    req.session.authMethod = 'oidc';
+    await startSession(req, user, { isAdmin, authMethod: 'oidc' });
     req.session.idToken = tokenSet.id_token;
     req.session.requirePasswordChange = requirePasswordChange;
 

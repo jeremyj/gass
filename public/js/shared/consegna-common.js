@@ -4,7 +4,7 @@
 // Depends on these globals defined in page-specific JS:
 //   participants, existingConsegnaMovimenti, saldiBefore,
 //   currentConsegnaId, isConsegnaClosed
-// Depends on: utils.js, calendar.js (setConsegneDates, getSelectedDate), api-client.js (API)
+// Depends on: utils.js, calendar.js (loadConsegneDates, getSelectedDate), api-client.js (API)
 
 // ===== CASSA CALCULATIONS =====
 
@@ -99,19 +99,6 @@ async function loadData(date = null) {
   }
 }
 
-async function loadConsegneDates() {
-  try {
-    const response = await fetch('/api/storico');
-    const result = await response.json();
-
-    if (result.success) {
-      setConsegneDates(result.consegne.map(c => c.data));
-    }
-  } catch (error) {
-    console.error('Error loading consegne dates:', error);
-  }
-}
-
 // ===== RENDERING =====
 
 function renderParticipantSelect() {
@@ -159,30 +146,6 @@ async function toggleConsegnaStatus() {
 
 // ===== CREDIT/DEBIT HANDLING =====
 
-function validateCreditoMax(id, saldo) {
-  const usaCreditoField = document.getElementById(`usaCredito_${id}`);
-  if (!usaCreditoField) return;
-
-  const value = parseAmount(usaCreditoField.value);
-  if (value > saldo) {
-    usaCreditoField.value = saldo;
-    showStatus(`Non puoi usare più di €${formatSaldo(saldo)} di credito`, 'error');
-  }
-}
-
-function handleCreditoDebitoInput(id, saldo) {
-  // Credit/debt fields are always disabled and auto-calculated
-  const creditoLasciato = document.getElementById(`credito_${id}`);
-  const debitoLasciato = document.getElementById(`debito_${id}`);
-  const usaCredito = document.getElementById(`usaCredito_${id}`);
-  const debitoSaldato = document.getElementById(`debitoSaldato_${id}`);
-
-  if (creditoLasciato) creditoLasciato.disabled = true;
-  if (debitoLasciato) debitoLasciato.disabled = true;
-  if (usaCredito) usaCredito.disabled = true;
-  if (debitoSaldato) debitoSaldato.disabled = true;
-}
-
 function handleContoProduttoreInput(id, saldo) {
   const contoProduttore = document.getElementById(`contoProduttore_${id}`);
   const importoSaldato = document.getElementById(`importo_${id}`);
@@ -207,16 +170,6 @@ function handleContoProduttoreInput(id, saldo) {
     return;
   }
 
-  const creditoValue = creditoLasciato ? parseAmount(creditoLasciato.value) : 0;
-  const debitoValue = debitoLasciato ? parseAmount(debitoLasciato.value) : 0;
-
-  const creditoIsManual = creditoLasciato && creditoValue > 0 && creditoLasciato.dataset.autoCalculated !== 'true' && !creditoLasciato.disabled;
-  const debitoIsManual = debitoLasciato && debitoValue > 0 && debitoLasciato.dataset.autoCalculated !== 'true' && !debitoLasciato.disabled;
-
-  if (creditoIsManual || debitoIsManual) {
-    return;
-  }
-
   const shouldAutoCompensate = importoSaldatoValue > 0;
   const debitoPreesistente = saldo < 0 ? Math.abs(saldo) : 0;
   const creditoPreesistente = saldo > 0 ? saldo : 0;
@@ -227,13 +180,11 @@ function handleContoProduttoreInput(id, saldo) {
   if (usaCredito) {
     usaCredito.value = '';
     usaCredito.dataset.full = '';
-    usaCredito.disabled = true;
   }
   if (debitoSaldato) {
     debitoSaldato.value = '';
     debitoSaldato.dataset.submitValue = '';
     debitoSaldato.dataset.full = '';
-    debitoSaldato.disabled = true;
   }
 
   let debitoSaldabileUsed = 0;
@@ -248,7 +199,6 @@ function handleContoProduttoreInput(id, saldo) {
       debitoSaldato.dataset.submitValue = String(debitoPreesistente);
       debitoSaldato.dataset.full = saldaTuttoIlDebito ? 'true' : '';
       debitoSaldato.value = debitoSaldabile;
-      debitoSaldato.disabled = true;
     }
     diff = diff - debitoSaldabile;
   }
@@ -262,37 +212,18 @@ function handleContoProduttoreInput(id, saldo) {
     if (usaCredito) {
       usaCredito.value = creditoUsabile;
       usaCredito.dataset.full = usaTuttoIlCredito ? 'true' : '';
-      usaCredito.disabled = true;
     }
     diff = diff + creditoUsabile;
   }
 
-  if (diff > 0) {
-    if (creditoLasciato) {
-      creditoLasciato.value = diff;
-      creditoLasciato.disabled = true;
-    }
-    if (debitoLasciato) {
-      debitoLasciato.value = remainingDebtCarryForward > 0 ? remainingDebtCarryForward : '';
-      debitoLasciato.disabled = true;
-    }
-  } else if (diff < 0) {
-    if (debitoLasciato) {
+  if (creditoLasciato) {
+    creditoLasciato.value = diff > 0 ? diff : '';
+  }
+  if (debitoLasciato) {
+    if (diff < 0) {
       debitoLasciato.value = -diff;
-      debitoLasciato.disabled = true;
-    }
-    if (creditoLasciato) {
-      creditoLasciato.value = '';
-      creditoLasciato.disabled = true;
-    }
-  } else {
-    if (creditoLasciato) {
-      creditoLasciato.value = '';
-      creditoLasciato.disabled = true;
-    }
-    if (debitoLasciato) {
+    } else {
       debitoLasciato.value = remainingDebtCarryForward > 0 ? remainingDebtCarryForward : '';
-      debitoLasciato.disabled = true;
     }
   }
 
@@ -427,7 +358,7 @@ async function annullaConsegna() {
 
 // ===== SECTION BUILDERS =====
 
-function buildCreditoSection(id, nome, saldo, saldoText, saldoClass) {
+function buildCreditoSection(id, saldoText, saldoClass) {
   return `
     <div class="flow-section flow-credito">
       <div class="flow-section-title">
@@ -435,15 +366,13 @@ function buildCreditoSection(id, nome, saldo, saldoText, saldoClass) {
       </div>
       <div class="form-group">
         <label>Usa credito parziale:</label>
-        <input type="text" inputmode="decimal" id="usaCredito_${id}" placeholder="0.00" disabled
-               oninput="normalizeInputField(this); validateCreditoMax(${id}, ${saldo}); handleContoProduttoreInput(${id}, ${saldo}); handleCreditoDebitoInput(${id}, ${saldo})"
-               onfocus="handleInputFocus(this)">
+        <input type="text" inputmode="decimal" id="usaCredito_${id}" placeholder="0.00" disabled>
       </div>
     </div>
   `;
 }
 
-function buildDebitoSection(id, nome, saldo, saldoText, saldoClass) {
+function buildDebitoSection(id, saldoText, saldoClass) {
   return `
     <div class="flow-section flow-debito">
       <div class="flow-section-title">
@@ -451,9 +380,7 @@ function buildDebitoSection(id, nome, saldo, saldoText, saldoClass) {
       </div>
       <div class="form-group">
         <label>Salda parziale:</label>
-        <input type="text" inputmode="decimal" id="debitoSaldato_${id}" placeholder="0.00" disabled
-               oninput="normalizeInputField(this); syncDebitoCreditoVisibility(${id}); handleContoProduttoreInput(${id}, ${saldo}); handleCreditoDebitoInput(${id}, ${saldo})"
-               onfocus="handleInputFocus(this)">
+        <input type="text" inputmode="decimal" id="debitoSaldato_${id}" placeholder="0.00" disabled>
       </div>
     </div>
   `;

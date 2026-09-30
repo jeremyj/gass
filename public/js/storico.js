@@ -49,7 +49,6 @@ function createConsegnaCard(consegna) {
   header.className = 'storico-consegna-header';
   header.onclick = () => toggleConsegnaCard(consegna.id);
 
-  const dateObj = new Date(consegna.data + 'T00:00:00');
   const dateFormatted = formatDateItalianWithDay(consegna.data);
   const arrow = isExpanded ? '▲' : '▼';
 

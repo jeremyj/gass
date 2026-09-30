@@ -1,14 +1,10 @@
 const express = require('express');
 const db = require('../config/database');
 const { requireAuth, requireAdmin, getAuditFields } = require('../middleware/auth');
-const {
-  calculateTrovatoInCassa,
-  calculateLasciatoInCassa,
-  applyDynamicCalculations,
-  roundToCents
-} = require('../services/calculations');
+const { calculateTrovatoInCassa, roundToCents } = require('../services/calculations');
 const { saldoBeforeConsegna, recalculateSaldo } = require('../services/saldi');
 const { validateConsegnaPayload } = require('../services/validation');
+const { logActivity } = require('../services/activity');
 
 const router = express.Router();
 
@@ -59,19 +55,15 @@ router.get('/:date', (req, res) => {
 
     console.log(`[CONSEGNA] ${timestamp} - Retrieved ${movimenti.length} movimenti for consegna ${consegna.id}`);
 
-    // Apply dynamic calculations
-    const processedConsegna = applyDynamicCalculations(consegna, previousConsegna?.lasciato_in_cassa);
-
     console.log(`[CONSEGNA] ${timestamp} - Successfully processed consegna for ${date}`);
 
     res.json({
       success: true,
       found: true,
       consegna: {
-        ...processedConsegna,
-        chiusa: consegna.chiusa === 1,
-        chiusa_by: consegna.chiusa_by,
-        chiusa_at: consegna.chiusa_at
+        ...consegna,
+        trovato_in_cassa: calculateTrovatoInCassa(consegna, previousConsegna?.lasciato_in_cassa),
+        chiusa: consegna.chiusa === 1
       },
       movimenti,
       saldiBefore,
@@ -99,9 +91,10 @@ router.post('/', (req, res) => {
   }
 
   try {
-    // Check if consegna is closed (non-admins cannot edit)
-    const existingConsegna = db.prepare('SELECT chiusa FROM consegne WHERE data = ?').get(data);
-    if (existingConsegna && existingConsegna.chiusa === 1 && !req.session.isAdmin) {
+    const existingConsegna = db.prepare('SELECT * FROM consegne WHERE data = ?').get(data);
+
+    // Non-admins cannot edit a closed consegna
+    if (existingConsegna?.chiusa === 1 && !req.session.isAdmin) {
       console.log(`[CONSEGNA] ${timestamp} - Rejected: Consegna ${data} is closed and user is not admin`);
       return res.status(403).json({
         success: false,
@@ -110,7 +103,7 @@ router.post('/', (req, res) => {
       });
     }
     const transaction = db.transaction(() => {
-      let consegna = db.prepare('SELECT * FROM consegne WHERE data = ?').get(data);
+      let consegna = existingConsegna;
 
       const consegnaData = [
         trovatoInCassa, pagatoProduttore, lasciatoInCassa, noteGiornata || ''
@@ -136,10 +129,13 @@ router.post('/', (req, res) => {
         consegna = { id: result.lastInsertRowid };
         console.log(`[CONSEGNA] ${timestamp} - Created new consegna ID: ${consegna.id}`);
 
-        db.prepare(`
-          INSERT INTO activity_logs (event_type, actor_user_id, consegna_id, details, created_at)
-          VALUES ('consegna_created', ?, ?, ?, ?)
-        `).run(req.session.userId, consegna.id, `consegna: ${data}`, timestamp);
+        logActivity({
+          eventType: 'consegna_created',
+          actorUserId: req.session.userId,
+          consegnaId: consegna.id,
+          details: `consegna: ${data}`,
+          createdAt: timestamp
+        });
       }
 
       // Upsert movimenti and update saldi
@@ -163,11 +159,6 @@ router.post('/', (req, res) => {
 
       let movimentiCreated = 0;
       let movimentiUpdated = 0;
-
-      const logMovimentoChange = db.prepare(`
-        INSERT INTO activity_logs (event_type, target_user_id, actor_user_id, details, consegna_id, created_at)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `);
 
       partecipanti.forEach(p => {
         // Look up by ID (sent from client as partecipante_id)
@@ -203,14 +194,14 @@ router.post('/', (req, res) => {
 
           // Log movimento change if something actually changed
           if (changes.length > 0) {
-            logMovimentoChange.run(
-              'movimento_changed',
-              partecipante.id,
-              req.session.userId,
-              changes.join(', '),
-              consegna.id,
-              timestamp
-            );
+            logActivity({
+              eventType: 'movimento_changed',
+              targetUserId: partecipante.id,
+              actorUserId: req.session.userId,
+              details: changes.join(', '),
+              consegnaId: consegna.id,
+              createdAt: timestamp
+            });
           }
           movimentiUpdated++;
         } else {
@@ -226,31 +217,25 @@ router.post('/', (req, res) => {
 
       console.log(`[CONSEGNA] ${timestamp} - Movimenti: ${movimentiCreated} created, ${movimentiUpdated} updated`);
 
-      // Recalculate pagato_produttore from movements
-      const movimenti = db.prepare('SELECT * FROM movimenti WHERE consegna_id = ?').all(consegna.id);
+      // Recalculate pagato_produttore and lasciato_in_cassa from movements
+      const movimenti = db.prepare('SELECT conto_produttore, importo_saldato FROM movimenti WHERE consegna_id = ?').all(consegna.id);
       let totalPagato = 0;
-      movimenti.forEach(m => {
-        totalPagato += (m.conto_produttore || 0);
-      });
+      let incassato = 0;
+      for (const m of movimenti) {
+        totalPagato += m.conto_produttore || 0;
+        incassato += m.importo_saldato || 0;
+      }
       totalPagato = roundToCents(totalPagato);
-      const pagatoAudit = getAuditFields(req, 'update');
-      db.prepare('UPDATE consegne SET pagato_produttore = ?, updated_by = ?, updated_at = ? WHERE id = ?')
-        .run(totalPagato, pagatoAudit.updated_by, pagatoAudit.updated_at, consegna.id);
+      incassato = roundToCents(incassato);
+
+      // Use trovato_in_cassa as SQLite stored it, not the raw body value
+      const { trovato_in_cassa: trovato } = db.prepare('SELECT trovato_in_cassa FROM consegne WHERE id = ?').get(consegna.id);
+      const lasciato = roundToCents(trovato + incassato - totalPagato);
+      const cassaAudit = getAuditFields(req, 'update');
+      db.prepare('UPDATE consegne SET pagato_produttore = ?, lasciato_in_cassa = ?, updated_by = ?, updated_at = ? WHERE id = ?')
+        .run(totalPagato, lasciato, cassaAudit.updated_by, cassaAudit.updated_at, consegna.id);
 
       console.log(`[CONSEGNA] ${timestamp} - Calculated pagato_produttore: ${totalPagato}€`);
-
-      // Recalculate lasciato_in_cassa from movements
-      const currentConsegna = db.prepare('SELECT * FROM consegne WHERE id = ?').get(consegna.id);
-      let incassato = 0;
-      movimenti.forEach(m => {
-        incassato += (m.importo_saldato || 0);
-      });
-      incassato = roundToCents(incassato);
-      const lasciato = roundToCents(currentConsegna.trovato_in_cassa + incassato - currentConsegna.pagato_produttore);
-      const lasciatoAudit = getAuditFields(req, 'update');
-      db.prepare('UPDATE consegne SET lasciato_in_cassa = ?, updated_by = ?, updated_at = ? WHERE id = ?')
-        .run(lasciato, lasciatoAudit.updated_by, lasciatoAudit.updated_at, consegna.id);
-
       console.log(`[CONSEGNA] ${timestamp} - Calculated lasciato_in_cassa: ${lasciato}€`);
     });
 
@@ -282,11 +267,6 @@ router.delete('/:id', requireAdmin, (req, res) => {
         SELECT m.* FROM movimenti m WHERE m.consegna_id = ?
       `).all(id);
 
-      const logMovimento = db.prepare(`
-        INSERT INTO activity_logs (event_type, target_user_id, actor_user_id, details, consegna_id, created_at)
-        VALUES ('movimento_created', ?, ?, ?, ?, ?)
-      `);
-
       movimenti.forEach(m => {
         const parts = [];
         if (m.conto_produttore) parts.push(`Conto: €${m.conto_produttore}`);
@@ -296,14 +276,24 @@ router.delete('/:id', requireAdmin, (req, res) => {
         if (m.usa_credito) parts.push(`Usa Cred: €${m.usa_credito}`);
         if (m.debito_saldato) parts.push(`Salda Deb: €${m.debito_saldato}`);
         const details = `consegna: ${consegna.data}, ${parts.join(', ')}`;
-        logMovimento.run(m.partecipante_id, m.created_by || req.session.userId, details, parseInt(id), m.created_at || timestamp);
+        logActivity({
+          eventType: 'movimento_created',
+          targetUserId: m.partecipante_id,
+          actorUserId: m.created_by || req.session.userId,
+          details,
+          consegnaId: parseInt(id),
+          createdAt: m.created_at || timestamp
+        });
       });
 
       // Log the consegna deletion itself
-      db.prepare(`
-        INSERT INTO activity_logs (event_type, actor_user_id, details, consegna_id, created_at)
-        VALUES ('consegna_deleted', ?, ?, ?, ?)
-      `).run(req.session.userId, `consegna: ${consegna.data}`, parseInt(id), timestamp);
+      logActivity({
+        eventType: 'consegna_deleted',
+        actorUserId: req.session.userId,
+        details: `consegna: ${consegna.data}`,
+        consegnaId: parseInt(id),
+        createdAt: timestamp
+      });
 
       db.prepare('DELETE FROM consegne WHERE id = ?').run(id);
 

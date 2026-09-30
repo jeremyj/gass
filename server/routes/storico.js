@@ -1,11 +1,7 @@
 const express = require('express');
 const db = require('../config/database');
 const { requireAuth } = require('../middleware/auth');
-const {
-  calculateTrovatoInCassa,
-  calculateLasciatoInCassa,
-  processConsegneWithDynamicValues
-} = require('../services/calculations');
+const { processConsegneWithDynamicValues } = require('../services/calculations');
 
 const router = express.Router();
 
@@ -44,7 +40,6 @@ router.get('/dettaglio', (req, res) => {
 
   try {
     const consegne = db.prepare('SELECT * FROM consegne ORDER BY data DESC').all();
-    const consegneAsc = [...consegne].reverse();
 
     console.log(`[STORICO] ${timestamp} - Processing ${consegne.length} consegne with movimenti`);
 
@@ -64,30 +59,14 @@ router.get('/dettaglio', (req, res) => {
       movimentiByConsegna[m.consegna_id].push(m);
     });
 
-    let totalMovimenti = 0;
-    const storico = consegneAsc.map((consegna, index) => {
-      const movimenti = movimentiByConsegna[consegna.id] || [];
-      totalMovimenti += movimenti.length;
+    const storico = processConsegneWithDynamicValues(consegne).map(consegna => ({
+      ...consegna,
+      movimenti: movimentiByConsegna[consegna.id] || []
+    }));
 
-      const previousLasciato = index > 0
-        ? (consegneAsc[index - 1].lasciato_in_cassa_calculated ?? consegneAsc[index - 1].lasciato_in_cassa)
-        : undefined;
+    console.log(`[STORICO] ${timestamp} - Successfully processed detailed storico (${allMovimenti.length} total movimenti)`);
 
-      const trovato = calculateTrovatoInCassa(consegna, previousLasciato);
-      const lasciato = calculateLasciatoInCassa(consegna, trovato);
-
-      return {
-        ...consegna,
-        trovato_in_cassa: trovato,
-        lasciato_in_cassa: lasciato,
-        lasciato_in_cassa_calculated: lasciato,
-        movimenti
-      };
-    });
-
-    console.log(`[STORICO] ${timestamp} - Successfully processed detailed storico (${totalMovimenti} total movimenti)`);
-
-    res.json({ success: true, storico: storico.reverse() });
+    res.json({ success: true, storico });
   } catch (error) {
     console.error(`[STORICO] ${timestamp} - Error fetching detailed storico:`, error);
     res.status(500).json({ success: false, error: 'Errore durante il recupero del dettaglio storico' });

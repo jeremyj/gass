@@ -19,14 +19,14 @@
   - `users.js` - User management API (admin-only, edit profile/password/admin status)
   - `storico.js` - History API
   - `logs.js` - Activity log API (admin-only)
-- **Services**: `server/services/calculations.js` - Pure business logic; `server/services/saldi.js` - saldo ledger (DB-backed); `server/services/validation.js` - `POST /api/consegna` payload validation
+- **Services**: `server/services/calculations.js` - Pure business logic; `server/services/saldi.js` - saldo ledger (DB-backed); `server/services/validation.js` - `POST /api/consegna` payload validation; `server/services/activity.js` - `logActivity()`, the only writer of `activity_logs` rows
 - **Middleware**: `server/middleware/` - auth.js, userAgent.js
 
 ### Client-Side
 - **Shared**: `public/js/shared/`
   - `api-client.js` - **Always use `API.*` methods for server calls**
   - `utils.js` - formatNumber, formatDateItalian, parseAmount, showStatus, `confirmDialog` (use instead of `confirm()`), `debitoPagato`/`debitoNuovo`
-  - `calendar.js` - Date picker (mobile + desktop)
+  - `calendar.js` - Date picker (mobile + desktop), `loadConsegneDates()`
   - `consegna-common.js` - Shared consegna business logic (mobile + desktop)
   - `debiti-common.js` - Shared debiti loading and helpers (mobile + desktop)
   - `auth.js` - Session/logout handling
@@ -85,6 +85,7 @@ Every user is a participant with a saldo. The `partecipanti` table was merged in
 - Cookie: 7 days, httpOnly, secure in production
 - `requireAuth` middleware for protected routes
 - `requireAdmin` middleware for admin-only routes
+- `startSession(req, user, { isAdmin, authMethod })` (`middleware/auth.js`) regenerates the session and sets its fields — used by local login and OIDC callback
 - Default user: admin/admin (first run only, auto-set as admin)
 
 ### OIDC / Authentik
@@ -230,7 +231,7 @@ Auto-calculated fields (credito_lasciato, debito_lasciato, usa_credito, debito_s
 **Stack**: Vitest + supertest, `pool: forks` (each test file = isolated Node process)
 
 ```bash
-npm test                    # all 196 tests
+npm test                    # all 198 tests
 npm run test:unit           # pure function tests (no DB/HTTP)
 npm run test:integration    # API tests with in-memory SQLite
 npm run test:coverage       # with coverage report

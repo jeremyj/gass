@@ -13,43 +13,13 @@ function calculateTrovatoInCassa(consegna, previousLasciato) {
   return previousLasciato !== undefined ? roundToCents(previousLasciato) : consegna.trovato_in_cassa;
 }
 
-// Calculate lasciato_in_cassa: always read from database (calculated correctly when saving)
-function calculateLasciatoInCassa(consegna) {
-  return consegna.lasciato_in_cassa;
-}
-
-// Apply dynamic calculations to single consegna
-function applyDynamicCalculations(consegna, previousLasciato) {
-  const trovato = calculateTrovatoInCassa(consegna, previousLasciato);
-  const lasciato = calculateLasciatoInCassa(consegna, trovato);
-
-  return {
-    ...consegna,
-    trovato_in_cassa: trovato,
-    lasciato_in_cassa: lasciato
-  };
-}
-
-// Process array of consegne in chronological order with recursive calculation
+// Fill trovato_in_cassa of each consegna from the previous one's lasciato (chronological order)
 function processConsegneWithDynamicValues(consegne, isAscending = false) {
-  const consegneAsc = isAscending ? consegne : [...consegne].reverse();
-
-  const processed = consegneAsc.map((consegna, index) => {
-    const previousLasciato = index > 0
-      ? (consegneAsc[index - 1].lasciato_in_cassa_calculated ?? consegneAsc[index - 1].lasciato_in_cassa)
-      : undefined;
-
-    const trovato = calculateTrovatoInCassa(consegna, previousLasciato);
-    const lasciato = calculateLasciatoInCassa(consegna, trovato);
-
-    return {
-      ...consegna,
-      trovato_in_cassa: trovato,
-      lasciato_in_cassa: lasciato,
-      lasciato_in_cassa_calculated: lasciato // Store for next iteration
-    };
-  });
-
+  const asc = isAscending ? consegne : [...consegne].reverse();
+  const processed = asc.map((c, i) => ({
+    ...c,
+    trovato_in_cassa: calculateTrovatoInCassa(c, asc[i - 1]?.lasciato_in_cassa)
+  }));
   return isAscending ? processed : processed.reverse();
 }
 
@@ -94,8 +64,6 @@ module.exports = {
   roundToCents,
   toLocalDateString,
   calculateTrovatoInCassa,
-  calculateLasciatoInCassa,
-  applyDynamicCalculations,
   processConsegneWithDynamicValues,
   applySaldoChanges,
   applyEvent,
