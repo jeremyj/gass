@@ -225,8 +225,8 @@ router.post('/change-password', async (req, res) => {
 
     // Hash and update new password
     const newHash = await bcrypt.hash(newPassword, 12);
-    db.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?')
-      .run(newHash, timestamp, req.session.userId);
+    db.prepare('UPDATE users SET password_hash = ?, updated_by = ?, updated_at = ? WHERE id = ?')
+      .run(newHash, req.session.userId, timestamp, req.session.userId);
 
     logActivity({
       eventType: 'password_changed',

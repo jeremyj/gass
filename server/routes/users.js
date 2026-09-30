@@ -74,8 +74,8 @@ router.put('/:id', async (req, res) => {
       });
     }
 
-    db.prepare(`UPDATE users SET ${updates.join(', ')}, updated_at = ? WHERE id = ?`)
-      .run(...params, timestamp, id);
+    db.prepare(`UPDATE users SET ${updates.join(', ')}, updated_by = ?, updated_at = ? WHERE id = ?`)
+      .run(...params, req.session.userId, timestamp, id);
 
     logActivity({
       eventType: 'user_edited',

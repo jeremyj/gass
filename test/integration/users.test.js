@@ -63,8 +63,10 @@ describe('PUT /api/users/:id', () => {
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
 
-    const user = db.prepare('SELECT display_name FROM users WHERE id = ?').get(userId);
+    const user = db.prepare('SELECT display_name, updated_by FROM users WHERE id = ?').get(userId);
     expect(user.display_name).toBe('Mario Bianchi');
+    const adminId = db.prepare("SELECT id FROM users WHERE username = 'admin'").get().id;
+    expect(user.updated_by).toBe(adminId);
 
     const log = db.prepare("SELECT * FROM activity_logs WHERE event_type = 'user_edited'").get();
     expect(log).toBeDefined();
