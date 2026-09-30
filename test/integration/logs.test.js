@@ -100,6 +100,24 @@ describe('GET /api/logs', () => {
     expect(changedEvent.details).not.toContain('consegna:');
   });
 
+  it('does not duplicate a movimento_changed (linked by consegna_id) as movimento_updated', async () => {
+    const userId = db.prepare('SELECT id FROM users WHERE username = ?').get('admin').id;
+    const consegnaId = createConsegna(db, { data: '2026-02-16' });
+    createMovimento(db, {
+      consegnaId, partecipanteId: userId, contoProduttore: 20,
+      createdAt: '2026-02-16T10:00:00.000Z', updatedAt: '2026-02-16T11:00:00.000Z'
+    });
+    db.prepare(`
+      INSERT INTO activity_logs (event_type, target_user_id, actor_user_id, details, consegna_id, created_at)
+      VALUES ('movimento_changed', ?, ?, ?, ?, ?)
+    `).run(userId, userId, 'conto: 10 → 20', consegnaId, '2026-02-16T11:00:00.000Z');
+
+    const res = await adminAgent.get('/api/logs');
+    expect(res.status).toBe(200);
+    expect(res.body.events.some(e => e.event_type === 'movimento_updated')).toBe(false);
+    expect(res.body.total).toBe(res.body.events.length);
+  });
+
   it('includes consegna_created events', async () => {
     const userId = db.prepare('SELECT id FROM users WHERE username = ?').get('admin').id;
     const consegnaId = createConsegna(db, { data: '2026-02-17' });
