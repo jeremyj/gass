@@ -249,11 +249,11 @@ function closeTransactionsModal() {
 document.addEventListener('DOMContentLoaded', async () => {
   initCalendar({ onDateSelected: loadParticipants });
 
+  // Ensure user data is loaded before rendering participant rows
+  await sessionReady;
+
   const dateToLoad = restoreDateFromStorage();
   setDateDisplay(dateToLoad);
-
-  // Ensure user data is loaded before rendering participant rows
-  await checkSession();
 
   if (!isAdmin()) {
     const addBtn = document.getElementById('btn-add-participant');

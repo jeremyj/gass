@@ -311,7 +311,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initCalendar({ onDateSelected: checkDateData });
 
   // Ensure user data is loaded before rendering consegna status
-  await checkSession();
+  await sessionReady;
   await loadConsegneDates();
 
   const dateToLoad = restoreDateFromStorage();

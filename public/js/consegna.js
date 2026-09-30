@@ -347,6 +347,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     onDateSelected: checkDateData
   });
 
+  // Reopen/annulla are admin-only: know the user before rendering the consegna status
+  await sessionReady;
   await loadConsegneDates();
 
   // Use restoreDateFromStorage which handles reload vs tab navigation

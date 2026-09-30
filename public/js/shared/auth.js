@@ -194,7 +194,7 @@ async function handleLogout() {
   }
 }
 
-// Initialize auth on page load
-document.addEventListener('DOMContentLoaded', () => {
-  checkSession();
+// Session check started on page load; await it before anything that uses isAdmin()
+const sessionReady = new Promise(resolve => {
+  document.addEventListener('DOMContentLoaded', () => resolve(checkSession()));
 });

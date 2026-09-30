@@ -291,7 +291,7 @@ async function saveSaldo(id) {
 
 // ===== INITIALIZATION =====
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   // Initialize calendar with page-specific callback
   initCalendar({
     onDateSelected: () => {
@@ -302,6 +302,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Load consegna dates for calendar indicators
   loadConsegneDates();
+
+  // Saldi are editable only by admins: know the user before rendering
+  await sessionReady;
 
   // Restore date from localStorage or use today's date
   const dateToLoad = restoreDateFromStorage();
