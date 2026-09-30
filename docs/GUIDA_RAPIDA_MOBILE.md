@@ -19,7 +19,7 @@ Per cambiare la password in seguito vai su **https://auth.x86.it**, nelle impost
 
 # Consegna
 
-Usa **Cambia data** per scegliere la data. Le date con sfondo colorato e sottolineatura ("Con consegna") hanno già una consegna registrata. Se non esiste ancora una consegna, appare il pulsante **Nuova consegna**.
+Usa **Cambia data** per scegliere la data (**Oggi** torna a oggi). Le date con sfondo colorato e sottolineatura ("Con consegna") hanno già una consegna registrata. Se non esiste ancora una consegna, appare il pulsante **Nuova consegna**.
 
 ![](screenshots/m-calendario.png){ width=45% }
 

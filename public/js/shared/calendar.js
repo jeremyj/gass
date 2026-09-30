@@ -91,15 +91,16 @@ function renderDatePicker() {
   }
   html += '</div>';
 
-  // Legend (only show if we have consegne dates)
+  // Footer: legend (only if we have consegne dates) and the "Oggi" shortcut
+  html += '<div class="date-picker-legend">';
   if (consegneDates.size > 0) {
-    html += '<div class="date-picker-legend">';
     html += '<div class="date-picker-legend-item">';
     html += '<div class="date-picker-legend-color"></div>';
     html += '<span>Con consegna</span>';
     html += '</div>';
-    html += '</div>';
   }
+  html += `<button type="button" class="date-picker-today" onclick="selectPickerDate(toLocalDateString())">Oggi</button>`;
+  html += '</div>';
 
   container.innerHTML = html;
 }

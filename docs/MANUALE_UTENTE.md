@@ -241,7 +241,7 @@ Il calendario è disponibile in tutte le sezioni per facilitare la selezione del
 
 1. Premere **Cambia data**
 2. Utilizzare le frecce per navigare tra i mesi
-3. Cliccare sulla data desiderata
+3. Cliccare sulla data desiderata, oppure su **Oggi** per tornare alla data di oggi
 
 #### Indicatori Visivi
 
@@ -359,7 +359,7 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.13.1
+Sistema GASS Pagamenti - Versione 2.14.0
 - Storico: **Completa consegna** sulle consegne ancora aperte e, per gli amministratori, **Riapri consegna** su quelle chiuse
 - Storico su mobile: la cassa è una voce per riga
 - Testi più piccoli ingranditi ancora

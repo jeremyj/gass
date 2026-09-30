@@ -19,7 +19,7 @@ Per cambiare la password in seguito vai su **https://auth.x86.it**, nelle impost
 
 # Consegna
 
-Pagina principale per registrare i movimenti giornalieri. Usa **Cambia data** per scegliere la data — le date con sfondo colorato e sottolineatura ("Con consegna") hanno già una consegna registrata.
+Pagina principale per registrare i movimenti giornalieri. Usa **Cambia data** per scegliere la data (**Oggi** torna a oggi) — le date con sfondo colorato e sottolineatura ("Con consegna") hanno già una consegna registrata.
 
 ![Il calendario mostra le date con consegne](screenshots/calendario.png){ width=60% }
 
