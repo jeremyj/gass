@@ -5,7 +5,7 @@ const { setupTestDb } = require('../helpers/setup-test-db');
 const db = setupTestDb();
 
 const { setupTestApp } = require('../helpers/setup-app');
-const { createUser, createConsegna, createMovimento, clearConsegne, clearNonAdminUsers } = require('../helpers/seed');
+const { createUser, createConsegna, createMovimento, createRettifica, clearConsegne, clearNonAdminUsers } = require('../helpers/seed');
 const request = require('supertest');
 
 let app, adminAgent;
@@ -69,7 +69,6 @@ describe('POST /api/consegna/ — saldo calculation', () => {
       lasciatoInCassa: 0,
       partecipanti: [{
         partecipante_id: userId,
-        saldaTutto: false,
         importoSaldato: 0,
         usaCredito: 0,
         debitoLasciato: 0,
@@ -97,7 +96,7 @@ describe('POST /api/consegna/ — saldo calculation', () => {
     await adminAgent.post('/api/consegna/').send({
       data: '2026-02-01',
       trovatoInCassa: 0, pagatoProduttore: 0, lasciatoInCassa: 0,
-      partecipanti: [{ partecipante_id: userId, saldaTutto: false, importoSaldato: 0, usaCredito: 0,
+      partecipanti: [{ partecipante_id: userId, importoSaldato: 0, usaCredito: 0,
         debitoLasciato: 0, creditoLasciato: 20, saldaDebitoTotale: false, debitoSaldato: 0,
         contoProduttore: 0, note: '' }]
     });
@@ -109,7 +108,7 @@ describe('POST /api/consegna/ — saldo calculation', () => {
     await adminAgent.post('/api/consegna/').send({
       data: '2026-02-15',
       trovatoInCassa: 0, pagatoProduttore: 0, lasciatoInCassa: 0,
-      partecipanti: [{ partecipante_id: userId, saldaTutto: false, importoSaldato: 0, usaCredito: 0,
+      partecipanti: [{ partecipante_id: userId, importoSaldato: 0, usaCredito: 0,
         debitoLasciato: 0, creditoLasciato: 15, saldaDebitoTotale: false, debitoSaldato: 0,
         contoProduttore: 0, note: '' }]
     });
@@ -122,7 +121,7 @@ describe('POST /api/consegna/ — saldo calculation', () => {
     await adminAgent.post('/api/consegna/').send({
       data: '2026-02-15',
       trovatoInCassa: 0, pagatoProduttore: 0, lasciatoInCassa: 0,
-      partecipanti: [{ partecipante_id: userId, saldaTutto: false, importoSaldato: 0, usaCredito: 0,
+      partecipanti: [{ partecipante_id: userId, importoSaldato: 0, usaCredito: 0,
         debitoLasciato: 0, creditoLasciato: 30, saldaDebitoTotale: false, debitoSaldato: 0,
         contoProduttore: 0, note: '' }]
     });
@@ -137,7 +136,7 @@ describe('POST /api/consegna/ — saldo calculation', () => {
     await adminAgent.post('/api/consegna/').send({
       data: '2026-02-19',
       trovatoInCassa: 100, pagatoProduttore: 0, lasciatoInCassa: 0,
-      partecipanti: [{ partecipante_id: userId, saldaTutto: false, importoSaldato: 50, usaCredito: 0,
+      partecipanti: [{ partecipante_id: userId, importoSaldato: 50, usaCredito: 0,
         debitoLasciato: 0, creditoLasciato: 0, saldaDebitoTotale: false, debitoSaldato: 0,
         contoProduttore: 30, note: '' }]
     });
@@ -154,7 +153,7 @@ describe('POST /api/consegna/ — saldo calculation', () => {
     await adminAgent.post('/api/consegna/').send({
       data: '2026-02-19',
       trovatoInCassa: 100, pagatoProduttore: 0, lasciatoInCassa: 999, // 999 should be overridden
-      partecipanti: [{ partecipante_id: userId, saldaTutto: false, importoSaldato: 50, usaCredito: 0,
+      partecipanti: [{ partecipante_id: userId, importoSaldato: 50, usaCredito: 0,
         debitoLasciato: 0, creditoLasciato: 0, saldaDebitoTotale: false, debitoSaldato: 0,
         contoProduttore: 30, note: '' }]
     });
@@ -173,7 +172,7 @@ describe('POST /api/consegna/ — saldo calculation', () => {
     const res = await userAgent.post('/api/consegna/').send({
       data: '2026-02-19',
       trovatoInCassa: 0, pagatoProduttore: 0, lasciatoInCassa: 0,
-      partecipanti: [{ partecipante_id: userId, saldaTutto: false, importoSaldato: 0, usaCredito: 0,
+      partecipanti: [{ partecipante_id: userId, importoSaldato: 0, usaCredito: 0,
         debitoLasciato: 0, creditoLasciato: 0, saldaDebitoTotale: false, debitoSaldato: 0,
         contoProduttore: 0, note: '' }]
     });
@@ -188,7 +187,7 @@ describe('POST /api/consegna/ — saldo calculation', () => {
     const res = await adminAgent.post('/api/consegna/').send({
       data: '2026-02-19',
       trovatoInCassa: 0, pagatoProduttore: 0, lasciatoInCassa: 0,
-      partecipanti: [{ partecipante_id: userId, saldaTutto: false, importoSaldato: 0, usaCredito: 0,
+      partecipanti: [{ partecipante_id: userId, importoSaldato: 0, usaCredito: 0,
         debitoLasciato: 0, creditoLasciato: 0, saldaDebitoTotale: false, debitoSaldato: 0,
         contoProduttore: 0, note: '' }]
     });
@@ -219,7 +218,7 @@ describe('DELETE /api/consegna/:id', () => {
     await adminAgent.post('/api/consegna/').send({
       data: '2026-02-01',
       trovatoInCassa: 0, pagatoProduttore: 0, lasciatoInCassa: 0,
-      partecipanti: [{ partecipante_id: userId, saldaTutto: false, importoSaldato: 0, usaCredito: 0,
+      partecipanti: [{ partecipante_id: userId, importoSaldato: 0, usaCredito: 0,
         debitoLasciato: 0, creditoLasciato: 20, saldaDebitoTotale: false, debitoSaldato: 0,
         contoProduttore: 0, note: '' }]
     });
@@ -227,7 +226,7 @@ describe('DELETE /api/consegna/:id', () => {
     await adminAgent.post('/api/consegna/').send({
       data: '2026-02-15',
       trovatoInCassa: 0, pagatoProduttore: 0, lasciatoInCassa: 0,
-      partecipanti: [{ partecipante_id: userId, saldaTutto: false, importoSaldato: 0, usaCredito: 0,
+      partecipanti: [{ partecipante_id: userId, importoSaldato: 0, usaCredito: 0,
         debitoLasciato: 0, creditoLasciato: 30, saldaDebitoTotale: false, debitoSaldato: 0,
         contoProduttore: 0, note: '' }]
     });
@@ -243,6 +242,55 @@ describe('DELETE /api/consegna/:id', () => {
     // Saldo should be replayed from remaining consegna (only +20)
     user = db.prepare('SELECT saldo FROM users WHERE id = ?').get(userId);
     expect(user.saldo).toBe(20);
+  });
+});
+
+// ===== LEDGER: manual rettifiche and out-of-order saves =====
+
+function saveConsegna(data, userId, creditoLasciato) {
+  return adminAgent.post('/api/consegna/').send({
+    data, trovatoInCassa: 0, pagatoProduttore: 0, lasciatoInCassa: 0,
+    partecipanti: [{ partecipante_id: userId, importoSaldato: 0, usaCredito: 0,
+      debitoLasciato: 0, creditoLasciato, saldaDebitoTotale: false, debitoSaldato: 0,
+      contoProduttore: 0, note: '' }]
+  });
+}
+
+describe('saldo ledger', () => {
+  it('deleting a consegna keeps manual rettifiche', async () => {
+    const userId = createUser(db, { username: 'mario', password: 'password1', displayName: 'Mario' });
+    await saveConsegna('2026-02-01', userId, 20);
+    await adminAgent.put(`/api/participants/${userId}`).send({ saldo: 100 }); // +80 rettifica
+    await saveConsegna('2026-02-15', userId, 30);
+
+    const c2 = db.prepare("SELECT id FROM consegne WHERE data = '2026-02-15'").get();
+    await adminAgent.delete(`/api/consegna/${c2.id}`);
+
+    expect(db.prepare('SELECT saldo FROM users WHERE id = ?').get(userId).saldo).toBe(100);
+  });
+
+  it('re-saving an earlier consegna keeps the effect of later ones', async () => {
+    const userId = createUser(db, { username: 'mario', password: 'password1', displayName: 'Mario' });
+    await saveConsegna('2026-02-01', userId, 20);
+    await saveConsegna('2026-02-15', userId, 30);
+    await saveConsegna('2026-02-01', userId, 25);
+
+    expect(db.prepare('SELECT saldo FROM users WHERE id = ?').get(userId).saldo).toBe(55);
+  });
+
+  it('saldiBefore includes same-day rettifiche entered before the movimento', async () => {
+    const userId = createUser(db, { username: 'mario', password: 'password1', displayName: 'Mario' });
+    createRettifica(db, { partecipanteId: userId, data: '2026-03-01', importo: -10, createdAt: '2026-03-01T08:00:00.000Z' });
+
+    let res = await adminAgent.get('/api/consegna/2026-03-01');
+    expect(res.body.saldiBefore[userId]).toBe(-10);
+
+    const c = createConsegna(db, { data: '2026-03-01' });
+    createMovimento(db, { consegnaId: c, partecipanteId: userId, saldaDebitoTotale: 1, createdAt: '2026-03-01T09:00:00.000Z' });
+    createRettifica(db, { partecipanteId: userId, data: '2026-03-01', importo: 5, createdAt: '2026-03-01T10:00:00.000Z' });
+
+    res = await adminAgent.get('/api/consegna/2026-03-01');
+    expect(res.body.saldiBefore[userId]).toBe(-10);
   });
 });
 

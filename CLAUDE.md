@@ -19,7 +19,7 @@
   - `users.js` - User management API (admin-only, edit profile/password/admin status)
   - `storico.js` - History API
   - `logs.js` - Activity log API (admin-only)
-- **Services**: `server/services/calculations.js` - Business logic
+- **Services**: `server/services/calculations.js` - Pure business logic; `server/services/saldi.js` - saldo ledger (DB-backed)
 - **Middleware**: `server/middleware/` - auth.js, userAgent.js
 
 ### Client-Side
@@ -64,12 +64,13 @@
 - `users` - Unified user/participant table: authentication (bcrypt, `is_admin`) + saldo tracking (`saldo`, `ultima_modifica`)
 - `consegne` - Daily delivery records (`chiusa`, `chiusa_by`, `chiusa_at` for locking, `riaperta_by`, `riaperta_at` for reopen tracking)
 - `movimenti` - Individual transactions with `conto_produttore`, FK `partecipante_id` → `users(id)`
+- `rettifiche_saldo` - Admin manual saldo edits as dated signed corrections (`importo`)
 
 ### User/Participant Model (v2.0)
 Every user is a participant with a saldo. The `partecipanti` table was merged into `users`:
 - `display_name` = participant name shown in UI
-- `saldo` = current credit/debt balance
-- `ultima_modifica` = last balance change date
+- `saldo` = current credit/debt balance — a **cache** of the ledger (see Saldo Ledger)
+- `ultima_modifica` = date of the last ledger event
 - API returns `nome` (aliased from `display_name`) for frontend compatibility
 
 ### Audit Columns (all tables)
@@ -121,10 +122,16 @@ app.set('trust proxy', 1)  // server.js
 - `pagato_produttore` = `Σ conto_produttore` for all movements
 - `lasciato_in_cassa` = `trovato + incassato - pagato`
 
-### Historical Saldo Calculation
-Query all movements **before** target date, sum effects:
-- `credito_lasciato` adds, `debito_lasciato` subtracts
-- `usa_credito` subtracts, `debito_saldato` adds
+### Saldo Ledger (v2.7)
+Saldo = replay from 0 of the participant's movimenti (via `applySaldoChanges`) + rettifiche (`saldo += importo`), ordered by date then `created_at`. All reads go through `server/services/saldi.js`:
+- `recalculateSaldo(id, audit)` — rebuild the `users.saldo` cache; call it after any movimento/rettifica change for that participant. **Never write `users.saldo` directly.**
+- `saldoAt(id, date)` — historical saldo (events ≤ date)
+- `saldoBeforeConsegna(id, date)` — consegna form start (events before that date's movimento)
+- `getTransactions(id)` — ledger newest-first with `saldo_dopo`
+- `PUT /api/participants/:id` stores `target − ledger saldo` as a rettifica dated `DATE()` (UTC)
+- Deleting a consegna recalculates only participants that had a movimento in it
+- Don't reintroduce flat SQL sums of movimenti for saldi: they ignore the `debito_saldato` clamp and rettifiche
+- `salda_tutto` was removed in v2.7 (no UI since 2025-10, 0 rows set in production); the legacy FK-fix migration in `database.js` still names it because it runs before the column drop
 
 ### Credit/Debt Auto-Compensation
 All compensation fields are disabled (system-managed):
@@ -216,7 +223,7 @@ Auto-calculated fields (credito_lasciato, debito_lasciato, usa_credito, debito_s
 **Stack**: Vitest + supertest, `pool: forks` (each test file = isolated Node process)
 
 ```bash
-npm test                    # all 162 tests
+npm test                    # all 180 tests
 npm run test:unit           # pure function tests (no DB/HTTP)
 npm run test:integration    # API tests with in-memory SQLite
 npm run test:coverage       # with coverage report
@@ -225,7 +232,8 @@ npm run test:coverage       # with coverage report
 ### Architecture
 - `test/helpers/setup-test-db.js` — creates in-memory DB, patches `require.cache` for DB isolation
 - `test/helpers/setup-app.js` — creates supertest agent wrapping `createApp()`
-- `test/helpers/seed.js` — `createUser`, `createConsegna`, `createMovimento`, `loginAs`, `clearConsegne`, `clearNonAdminUsers`
+- `test/helpers/seed.js` — `createUser`, `createConsegna`, `createMovimento`, `createRettifica`, `loginAs`, `clearConsegne`, `clearNonAdminUsers`
+- `createUser({ saldo })` only seeds the cache; a saldo the ledger should know about needs a matching `createRettifica`
 - Call `setupTestDb()` **before** any `require('../../server/app')` in test files
 
 ### Key gotchas

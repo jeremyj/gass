@@ -5,9 +5,9 @@ const {
   calculateTrovatoInCassa,
   calculateLasciatoInCassa,
   applyDynamicCalculations,
-  applySaldoChanges,
   roundToCents
 } = require('../services/calculations');
+const { saldoBeforeConsegna, recalculateSaldo } = require('../services/saldi');
 
 const router = express.Router();
 
@@ -31,26 +31,10 @@ router.get('/:date', (req, res) => {
       LIMIT 1
     `).get(date);
 
-    // Calculate saldo before this consegna for each participant.
-    // Use stored saldo minus movements on/after this date — same logic as POST handler —
-    // so that initial balances stored in users.saldo are correctly included.
-    const saldoRows = db.prepare(`
-      SELECT u.id AS partecipante_id,
-        COALESCE(u.saldo - COALESCE(on_or_after.effect, 0), 0) AS saldo
-      FROM users u
-      LEFT JOIN (
-        SELECT m2.partecipante_id,
-          SUM(m2.credito_lasciato) - SUM(m2.usa_credito) + SUM(m2.debito_saldato) - SUM(m2.debito_lasciato) AS effect
-        FROM movimenti m2
-        JOIN consegne c2 ON m2.consegna_id = c2.id
-        WHERE c2.data >= ?
-        GROUP BY m2.partecipante_id
-      ) on_or_after ON on_or_after.partecipante_id = u.id
-    `).all(date);
-
+    // Saldo each participant's consegna form starts from, replayed from the ledger
     const saldiBefore = {};
-    saldoRows.forEach(row => {
-      saldiBefore[row.partecipante_id] = row.saldo || 0;
+    db.prepare('SELECT id FROM users').all().forEach(u => {
+      saldiBefore[u.id] = saldoBeforeConsegna(u.id, date);
     });
 
     if (!consegna) {
@@ -154,24 +138,20 @@ router.post('/', (req, res) => {
       // Upsert movimenti and update saldi
       const insertMovimento = db.prepare(`
         INSERT INTO movimenti (
-          consegna_id, partecipante_id, salda_tutto, importo_saldato,
+          consegna_id, partecipante_id, importo_saldato,
           usa_credito, debito_lasciato, credito_lasciato,
           salda_debito_totale, debito_saldato, conto_produttore, note,
           created_by, created_at, updated_by, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
 
       const updateMovimento = db.prepare(`
         UPDATE movimenti
-        SET salda_tutto = ?, importo_saldato = ?, usa_credito = ?,
+        SET importo_saldato = ?, usa_credito = ?,
             debito_lasciato = ?, credito_lasciato = ?,
             salda_debito_totale = ?, debito_saldato = ?, conto_produttore = ?, note = ?,
             updated_by = ?, updated_at = ?
         WHERE consegna_id = ? AND partecipante_id = ?
-      `);
-
-      const updateSaldo = db.prepare(`
-        UPDATE users SET saldo = ?, ultima_modifica = ?, updated_by = ?, updated_at = ? WHERE id = ?
       `);
 
       let movimentiCreated = 0;
@@ -191,19 +171,8 @@ router.post('/', (req, res) => {
           SELECT * FROM movimenti WHERE consegna_id = ? AND partecipante_id = ?
         `).get(consegna.id, partecipante.id);
 
-        // Compute saldoBefore BEFORE the upsert so the query sees the existing state.
-        // Use stored saldo minus movements on/after this date: this preserves admin
-        // manual saldo adjustments while correctly handling re-saves of existing consegne.
-        const onOrAfterEffect = db.prepare(`
-          SELECT COALESCE(SUM(m2.credito_lasciato) - SUM(m2.usa_credito) + SUM(m2.debito_saldato) - SUM(m2.debito_lasciato), 0) AS saldo
-          FROM movimenti m2
-          JOIN consegne c2 ON m2.consegna_id = c2.id
-          WHERE m2.partecipante_id = ? AND c2.data >= ?
-        `).get(partecipante.id, data)?.saldo || 0;
-        const saldoBefore = (partecipante.saldo || 0) - onOrAfterEffect;
-
         const movimentoData = [
-          p.saldaTutto ? 1 : 0, p.importoSaldato || 0, p.usaCredito || 0,
+          p.importoSaldato || 0, p.usaCredito || 0,
           p.debitoLasciato || 0, p.creditoLasciato || 0,
           p.saldaDebitoTotale ? 1 : 0, p.debitoSaldato || 0, p.contoProduttore || 0, p.note || ''
         ];
@@ -242,18 +211,7 @@ router.post('/', (req, res) => {
           movimentiCreated++;
         }
 
-        const movimentoForCalc = {
-          salda_tutto: p.saldaTutto ? 1 : 0,
-          usa_credito: p.usaCredito || 0,
-          salda_debito_totale: p.saldaDebitoTotale ? 1 : 0,
-          debito_saldato: p.debitoSaldato || 0,
-          debito_lasciato: p.debitoLasciato || 0,
-          credito_lasciato: p.creditoLasciato || 0
-        };
-
-        const nuovoSaldo = applySaldoChanges(saldoBefore, movimentoForCalc);
-        const saldoAudit = getAuditFields(req, 'update');
-        updateSaldo.run(nuovoSaldo, data, saldoAudit.updated_by, saldoAudit.updated_at, partecipante.id);
+        recalculateSaldo(partecipante.id, getAuditFields(req, 'update'));
       });
 
       console.log(`[CONSEGNA] ${timestamp} - Movimenti: ${movimentiCreated} created, ${movimentiUpdated} updated`);
@@ -339,30 +297,10 @@ router.delete('/:id', (req, res) => {
 
       db.prepare('DELETE FROM consegne WHERE id = ?').run(id);
 
-      const resetAudit = getAuditFields(req, 'update');
-      db.prepare('UPDATE users SET saldo = 0, ultima_modifica = NULL, updated_by = ?, updated_at = ? WHERE 1=1')
-        .run(resetAudit.updated_by, resetAudit.updated_at);
-
-      console.log(`[CONSEGNA] ${timestamp} - Reset all participant saldi to 0`);
-
-      const consegne = db.prepare('SELECT * FROM consegne ORDER BY data ASC').all();
-      console.log(`[CONSEGNA] ${timestamp} - Recalculating saldi for ${consegne.length} remaining consegne`);
-
-      consegne.forEach(c => {
-        const movimenti = db.prepare(`
-          SELECT m.*, p.saldo as current_saldo
-          FROM movimenti m
-          JOIN users p ON m.partecipante_id = p.id
-          WHERE m.consegna_id = ?
-        `).all(c.id);
-
-        movimenti.forEach(m => {
-          const nuovoSaldo = applySaldoChanges(m.current_saldo || 0, m);
-          const saldoAudit = getAuditFields(req, 'update');
-          db.prepare('UPDATE users SET saldo = ?, ultima_modifica = ?, updated_by = ?, updated_at = ? WHERE id = ?')
-            .run(nuovoSaldo, c.data, saldoAudit.updated_by, saldoAudit.updated_at, m.partecipante_id);
-        });
-      });
+      // Only participants with a movimento in the deleted consegna are affected
+      const audit = getAuditFields(req, 'update');
+      movimenti.forEach(m => recalculateSaldo(m.partecipante_id, audit));
+      console.log(`[CONSEGNA] ${timestamp} - Recalculated saldi for ${movimenti.length} participants`);
     });
 
     transaction();

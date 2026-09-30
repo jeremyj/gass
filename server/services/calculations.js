@@ -50,10 +50,6 @@ function processConsegneWithDynamicValues(consegne, isAscending = false) {
 function applySaldoChanges(currentSaldo, movimento) {
   let saldo = currentSaldo;
 
-  if (movimento.salda_tutto) {
-    saldo = 0;
-  }
-
   if (movimento.usa_credito > 0) {
     saldo -= movimento.usa_credito;
   }
@@ -75,11 +71,25 @@ function applySaldoChanges(currentSaldo, movimento) {
   return roundToCents(saldo);
 }
 
+// Apply one ledger event: a movimento, or a manual rettifica (signed amount)
+function applyEvent(saldo, event) {
+  return event.tipo === 'rettifica'
+    ? roundToCents(saldo + event.importo)
+    : applySaldoChanges(saldo, event);
+}
+
+// Ledger order: by date, then by creation time within the same date
+function compareEvents(a, b) {
+  return a.data.localeCompare(b.data) || (a.created_at || '').localeCompare(b.created_at || '');
+}
+
 module.exports = {
   roundToCents,
   calculateTrovatoInCassa,
   calculateLasciatoInCassa,
   applyDynamicCalculations,
   processConsegneWithDynamicValues,
-  applySaldoChanges
+  applySaldoChanges,
+  applyEvent,
+  compareEvents
 };

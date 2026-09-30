@@ -178,7 +178,9 @@ Ogni partecipante può visualizzare il proprio storico movimenti:
 - **Mobile**: Espandere la card del partecipante per vedere le transazioni inline
 - **Desktop**: Cliccare il pulsante "Transazioni" per aprire un modal con la tabella completa
 
-Per ogni transazione vengono mostrati: data, conto produttore, importo saldato, credito/debito lasciato, uso credito, debito saldato.
+Per ogni transazione vengono mostrati: data, conto produttore, importo saldato, credito/debito lasciato, uso credito, debito saldato e il saldo risultante.
+
+Le modifiche manuali del saldo fatte da un amministratore compaiono come **Rettifica manuale** con la data e l'importo della correzione. Restano valide anche se in seguito viene eliminata una consegna.
 
 Tutti gli utenti autenticati possono visualizzare le transazioni di qualsiasi partecipante.
 

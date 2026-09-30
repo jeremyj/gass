@@ -46,7 +46,6 @@ function createDatabase(dbPath) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       consegna_id INTEGER NOT NULL,
       partecipante_id INTEGER NOT NULL,
-      salda_tutto BOOLEAN DEFAULT 0,
       importo_saldato REAL DEFAULT 0,
       usa_credito REAL DEFAULT 0,
       debito_lasciato REAL DEFAULT 0,
@@ -243,6 +242,26 @@ function createDatabase(dbPath) {
   } catch (err) {
     // Table doesn't exist, ignore
   }
+
+  log('\n--- Manual saldo corrections (v2.7) ---');
+
+  // Admin saldo edits are stored as dated, signed corrections so the saldo can
+  // always be rebuilt from movimenti + rettifiche (see server/services/saldi.js)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS rettifiche_saldo (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      partecipante_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      data DATE NOT NULL,
+      importo REAL NOT NULL,
+      note TEXT,
+      created_by INTEGER REFERENCES users(id),
+      created_at DATETIME
+    );
+    CREATE INDEX IF NOT EXISTS idx_rettifiche_partecipante ON rettifiche_saldo(partecipante_id);
+  `);
+
+  // salda_tutto had no UI since 2025-10 and was never set in production
+  safeDropColumn('movimenti', 'salda_tutto');
 
   log('\n--- Data initialization ---');
 

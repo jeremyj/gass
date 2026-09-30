@@ -26,13 +26,13 @@ RESTful API with the following endpoints:
 ```
 GET    /api/participants              - Retrieve all participants with current balances
 GET    /api/participants?date         - Calculate participant balances as of specific date
-GET    /api/participants/:id/transactions - Get movimenti for a participant (any authenticated user)
+GET    /api/participants/:id/transactions - Ledger (movimenti + rettifiche) with running saldo (any authenticated user)
 GET    /api/consegna/:date            - Retrieve delivery data for specific date
 POST   /api/consegna                  - Create or update delivery with movements
-DELETE /api/consegna/:id              - Delete delivery and recalculate all balances
+DELETE /api/consegna/:id              - Delete delivery and recalculate affected balances
 GET    /api/storico                   - Retrieve all deliveries (summary)
 GET    /api/storico/dettaglio         - Retrieve all deliveries with detailed movements
-PUT    /api/participants/:id          - Update participant balance
+PUT    /api/participants/:id          - Set participant balance (stored as a rettifica, admin)
 POST   /api/participants              - Create new participant
 DELETE /api/participants/:id          - Delete participant
 GET    /api/version                   - Get application version from package.json (public, no auth)
@@ -68,8 +68,8 @@ username          TEXT UNIQUE NOT NULL
 password_hash     TEXT NOT NULL
 display_name      TEXT NOT NULL          -- shown as "nome" in API
 is_admin          INTEGER DEFAULT 0
-saldo             REAL DEFAULT 0
-ultima_modifica   DATE
+saldo             REAL DEFAULT 0      -- cache, derived from the ledger
+ultima_modifica   DATE                -- date of the last ledger event
 created_by        TEXT, created_at DATETIME
 updated_by        TEXT, updated_at DATETIME
 ```
@@ -94,7 +94,6 @@ updated_by            TEXT, updated_at DATETIME
 id                    INTEGER PRIMARY KEY
 consegna_id           INTEGER NOT NULL REFERENCES consegne(id)
 partecipante_id       INTEGER NOT NULL REFERENCES users(id)
-salda_tutto           BOOLEAN DEFAULT 0
 importo_saldato       REAL DEFAULT 0
 usa_credito           REAL DEFAULT 0
 debito_lasciato       REAL DEFAULT 0
@@ -105,6 +104,17 @@ conto_produttore      REAL DEFAULT 0
 note                  TEXT
 created_by            TEXT, created_at DATETIME
 updated_by            TEXT, updated_at DATETIME
+```
+
+#### Table: rettifiche_saldo
+Manual saldo corrections (admin edits), one row per edit.
+```sql
+id                INTEGER PRIMARY KEY
+partecipante_id   INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE
+data              DATE NOT NULL
+importo           REAL NOT NULL       -- signed difference applied to the saldo
+note              TEXT
+created_by        INTEGER, created_at DATETIME
 ```
 
 #### Table: activity_logs
@@ -122,47 +132,44 @@ created_at      DATETIME
 - `idx_consegne_data` on consegne(data)
 - `idx_movimenti_consegna` on movimenti(consegna_id)
 - `idx_movimenti_partecipante` on movimenti(partecipante_id)
+- `idx_rettifiche_partecipante` on rettifiche_saldo(partecipante_id)
 
 ## Core Algorithms
 
-### 1. Balance Calculation Algorithm
+### 1. Saldo Ledger
 
-Participant balance is calculated by applying sequential transformations:
+A participant's saldo is **derived**: replay their ledger from 0, oldest first. `users.saldo` and `users.ultima_modifica` are a cache, rebuilt with `recalculateSaldo()` whenever a movimento or rettifica of that participant changes (`server/services/saldi.js`).
+
+Ledger events:
+
+| Event | Source | Effect on saldo |
+|-------|--------|-----------------|
+| movimento | `movimenti` row, dated by its consegna | `applySaldoChanges()` below |
+| rettifica | `rettifiche_saldo` row (admin manual edit) | `saldo += importo` |
+
+Order: by date, then by `created_at` within the same date.
 
 ```javascript
-function applySaldoChanges(currentSaldo, movimento) {
-  let newSaldo = currentSaldo;
-
-  // Step 1: Settle everything
-  if (movimento.salda_tutto) {
-    newSaldo = 0;
-  }
-
-  // Step 2: Use credit
-  if (movimento.usa_credito > 0) {
-    newSaldo -= movimento.usa_credito;
-  }
-
-  // Step 3: Settle all debt or partial debt
-  if (movimento.salda_debito_totale && newSaldo < 0) {
-    newSaldo = 0;
-  } else if (movimento.debito_saldato > 0) {
-    newSaldo = Math.min(0, newSaldo + movimento.debito_saldato);
-  }
-
-  // Step 4: Add new debt
-  if (movimento.debito_lasciato > 0) {
-    newSaldo -= movimento.debito_lasciato;
-  }
-
-  // Step 5: Add new credit
-  if (movimento.credito_lasciato > 0) {
-    newSaldo += movimento.credito_lasciato;
-  }
-
-  return round(newSaldo);
+function applySaldoChanges(saldo, movimento) {
+  if (movimento.usa_credito > 0) saldo -= movimento.usa_credito;
+  if (movimento.salda_debito_totale && saldo < 0) saldo = 0;
+  else if (movimento.debito_saldato > 0 && saldo < 0) saldo = Math.min(0, saldo + movimento.debito_saldato);
+  if (movimento.debito_lasciato > 0) saldo -= movimento.debito_lasciato;
+  if (movimento.credito_lasciato > 0) saldo += movimento.credito_lasciato;
+  return roundToCents(saldo);
 }
 ```
+
+| Question | Function | Events replayed |
+|----------|----------|-----------------|
+| Current saldo | `recalculateSaldo()` | all |
+| Saldo as of date D (`GET /api/participants?date=D`) | `saldoAt()` | dated ≤ D |
+| Starting saldo of the consegna form for D (`saldiBefore`) | `saldoBeforeConsegna()` | before the participant's movimento on D (same-day rettifiche entered earlier count) |
+| Transaction history with running saldo (`saldo_dopo`) | `getTransactions()` | all, returned newest first |
+
+Deleting a consegna recalculates only the participants that had a movimento in it; rettifiche are never touched.
+
+**Manual saldo edit** (`PUT /api/participants/:id`, admin): the admin sets the target saldo; the server stores the difference from the ledger saldo as a rettifica dated `DATE()` (UTC) and logs `saldo_updated`.
 
 ### 2. Cash Calculation Algorithm
 
@@ -185,77 +192,12 @@ Where `incassato` (cash collected) is:
 incassato = SUM(importo_saldato);
 ```
 
-### 3. Dynamic Recalculation Algorithm
+### 3. Precision Handling
 
-When a delivery is deleted or modified, all subsequent balances must be recalculated:
-
-```javascript
-function recalculateAllSaldi() {
-  // Reset all participant balances to zero
-  db.exec("UPDATE partecipanti SET saldo = 0");
-
-  // Get all deliveries in chronological order
-  const consegne = db.query("SELECT * FROM consegne ORDER BY data ASC");
-
-  // For each delivery
-  for (const consegna of consegne) {
-    // Get all movements for this delivery
-    const movimenti = db.query(
-      "SELECT * FROM movimenti WHERE consegna_id = ?",
-      consegna.id
-    );
-
-    // Apply each movement to participant balance
-    for (const movimento of movimenti) {
-      const participant = getParticipant(movimento.partecipante_id);
-      const newSaldo = applySaldoChanges(participant.saldo, movimento);
-      updateParticipantSaldo(movimento.partecipante_id, newSaldo);
-    }
-  }
-}
-```
-
-### 4. Historical Balance Calculation
-
-To calculate balances as of a specific date:
+All monetary results are rounded to cents with `roundToCents()` (`server/services/calculations.js`):
 
 ```javascript
-function calculateSaldiAtDate(targetDate) {
-  const saldi = {};
-
-  // Initialize all participants with zero balance
-  const participants = getAllParticipants();
-  participants.forEach(p => saldi[p.id] = 0);
-
-  // Get all deliveries up to target date
-  const consegne = db.query(
-    "SELECT * FROM consegne WHERE data <= ? ORDER BY data ASC",
-    targetDate
-  );
-
-  // Apply all movements chronologically
-  for (const consegna of consegne) {
-    const movimenti = getMovimentiForConsegna(consegna.id);
-    for (const movimento of movimenti) {
-      saldi[movimento.partecipante_id] = applySaldoChanges(
-        saldi[movimento.partecipante_id],
-        movimento
-      );
-    }
-  }
-
-  return saldi;
-}
-```
-
-### 5. Precision Handling
-
-All monetary calculations use 0.1€ precision to avoid floating-point errors:
-
-```javascript
-function round(value) {
-  return Math.round(value * 10) / 10;
-}
+const roundToCents = (num) => Math.round(num * 100) / 100;
 ```
 
 All user inputs are normalized:
@@ -301,7 +243,6 @@ Cash fields are **always readonly** - no manual override capability in mobile or
 
 #### Participant Movements
 Each movement tracks:
-- `salda_tutto`: Checkbox to settle entire balance to zero
 - `conto_produttore`: Total amount owed to producer for goods received
 - `importo_saldato`: Amount collected from participant
 - `usa_credito`: Use participant's existing credit (system-managed, always disabled, always visible)
@@ -347,7 +288,7 @@ These fields are always disabled to prevent manual editing and ensure data integ
 
 #### Transaction Processing
 1. User enters movement data for each participant
-2. System calculates new balance using `applySaldoChanges()`
+2. System rebuilds each participant's saldo from the ledger (see Saldo Ledger)
 3. System recalculates `pagato_produttore` from all movements
 4. System calculates `lasciato_in_cassa`
 5. On save: Transaction commits all changes atomically
@@ -364,15 +305,14 @@ These fields are always disabled to prevent manual editing and ensure data integ
 - Date picker to view historical balances
 
 #### Transaction History
-- **Desktop**: "Transazioni" button on each row opens a modal with the full movimenti table (`GET /api/participants/:id/transactions`)
+- **Desktop**: "Transazioni" button on each row opens a modal with the full ledger (`GET /api/participants/:id/transactions`)
 - **Mobile**: Expanding a participant card loads and shows transactions inline
-- Auth: non-admin users can only view their own transactions (API returns 403 otherwise)
-- Non-admin users can now expand cards (previously admin-only)
+- Manual edits appear as "Rettifica manuale" rows
+- Any authenticated user can view any participant's transactions
 
 #### Historical View
 - Select any past date
-- System recalculates balances as of that date
-- Uses `calculateSaldiAtDate()` algorithm
+- System replays each ledger up to that date (`saldoAt()`)
 
 ### 3. Storico (Historical Records)
 
@@ -381,7 +321,7 @@ These fields are always disabled to prevent manual editing and ensure data integ
 - Expandable cards showing:
   - **CASSA section**: trovato, pagato, lasciato amounts
   - **MOVIMENTI section**: All participant transactions
-- Delete button to remove delivery and recalculate all balances
+- Delete button to remove delivery and recalculate affected balances
 - Visual indicators for manual overrides (discrepanze)
 
 ### 4. Calendar Component
@@ -446,14 +386,11 @@ All database operations that modify multiple tables use transactions:
 
 ```javascript
 const transaction = db.transaction(() => {
-  // Delete delivery
-  db.run("DELETE FROM consegne WHERE id = ?", id);
+  // Delete delivery (movimenti cascade)
+  db.prepare('DELETE FROM consegne WHERE id = ?').run(id);
 
-  // Delete associated movements
-  db.run("DELETE FROM movimenti WHERE consegna_id = ?", id);
-
-  // Recalculate all balances
-  recalculateAllSaldi();
+  // Rebuild the saldo of each participant that had a movimento in it
+  movimenti.forEach(m => recalculateSaldo(m.partecipante_id, audit));
 });
 
 transaction();
@@ -463,7 +400,7 @@ transaction();
 - Date uniqueness: One delivery per date
 - Participant name uniqueness
 - Non-negative amounts for all monetary fields
-- Balance changes require valid movimento records
+- Balance changes require a movimento or a rettifica
 
 ## Initialization
 

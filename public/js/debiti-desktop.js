@@ -212,7 +212,6 @@ async function showTransactionsModal(id) {
 
   const participant = participants.find(p => p.id === id);
   const name = participant ? participant.nome : '';
-  const currentSaldo = participant ? participant.saldo : 0;
   document.getElementById('transactions-modal-title').textContent = `Transazioni - ${name}`;
   document.getElementById('transactions-modal-body').innerHTML = '<p>Caricamento...</p>';
   document.getElementById('transactions-modal').style.display = 'flex';
@@ -222,7 +221,7 @@ async function showTransactionsModal(id) {
     const result = await response.json();
 
     if (result.success) {
-      renderTransactionsTable(result.transactions, currentSaldo);
+      renderTransactionsTable(result.transactions);
     } else {
       document.getElementById('transactions-modal-body').innerHTML = `<p>Errore: ${escapeHtml(result.error)}</p>`;
     }
@@ -231,7 +230,7 @@ async function showTransactionsModal(id) {
   }
 }
 
-function renderTransactionsTable(transactions, currentSaldo = 0) {
+function renderTransactionsTable(transactions) {
   const body = document.getElementById('transactions-modal-body');
 
   if (transactions.length === 0) {
@@ -239,17 +238,8 @@ function renderTransactionsTable(transactions, currentSaldo = 0) {
     return;
   }
 
-  // Compute running balance after each transaction (transactions ordered newest-first)
-  let balance = currentSaldo;
-  const balancesAfter = [];
-  for (const t of transactions) {
-    balancesAfter.push(balance);
-    const effect = (t.credito_lasciato || 0) - (t.debito_lasciato || 0) - (t.usa_credito || 0) + (t.debito_saldato || 0);
-    balance -= effect;
-  }
-
-  const rows = transactions.map((t, i) => {
-    const balanceAfter = balancesAfter[i];
+  const rows = transactions.map(t => {
+    const balanceAfter = t.saldo_dopo;
     let effectClass = '';
     let effectText = 'Pari';
 
@@ -261,9 +251,20 @@ function renderTransactionsTable(transactions, currentSaldo = 0) {
       effectText = `${formatNumber(balanceAfter)} €`;
     }
 
+    if (t.tipo === 'rettifica') {
+      return `
+      <tr>
+        <td>${formatDateItalian(t.data)}</td>
+        <td colspan="6">Rettifica manuale: ${t.importo > 0 ? '+' : ''}${formatNumber(t.importo)} €</td>
+        <td class="${effectClass}" style="font-weight:bold;">${effectText}</td>
+        <td class="col-note">${escapeHtml(t.note)}</td>
+      </tr>
+    `;
+    }
+
     return `
       <tr>
-        <td>${formatDateItalian(t.consegna_data)}</td>
+        <td>${formatDateItalian(t.data)}</td>
         <td class="col-num">${t.conto_produttore ? '€' + formatNumber(t.conto_produttore) : '-'}</td>
         <td class="col-num">${t.importo_saldato ? '€' + formatNumber(t.importo_saldato) : '-'}</td>
         <td class="col-num col-credito">${t.credito_lasciato ? '€' + formatNumber(t.credito_lasciato) : '-'}</td>

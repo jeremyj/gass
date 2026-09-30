@@ -36,7 +36,7 @@ function createConsegna(db, { data, trovatoInCassa = 0, pagatoProduttore = 0, la
  */
 function createMovimento(db, {
   consegnaId, partecipanteId,
-  saldaTutto = 0, importoSaldato = 0, usaCredito = 0,
+  importoSaldato = 0, usaCredito = 0,
   debitoLasciato = 0, creditoLasciato = 0,
   saldaDebitoTotale = 0, debitoSaldato = 0,
   contoProduttore = 0, note = '',
@@ -45,17 +45,29 @@ function createMovimento(db, {
   const now = new Date().toISOString();
   const result = db.prepare(`
     INSERT INTO movimenti (
-      consegna_id, partecipante_id, salda_tutto, importo_saldato,
+      consegna_id, partecipante_id, importo_saldato,
       usa_credito, debito_lasciato, credito_lasciato,
       salda_debito_totale, debito_saldato, conto_produttore, note,
       created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
-    consegnaId, partecipanteId, saldaTutto, importoSaldato,
+    consegnaId, partecipanteId, importoSaldato,
     usaCredito, debitoLasciato, creditoLasciato,
     saldaDebitoTotale, debitoSaldato, contoProduttore, note,
     createdAt || now, updatedAt || createdAt || now
   );
+  return result.lastInsertRowid;
+}
+
+/**
+ * Create a manual saldo rettifica directly in the test DB.
+ * Returns the inserted row id.
+ */
+function createRettifica(db, { partecipanteId, data, importo, createdAt = null } = {}) {
+  const result = db.prepare(`
+    INSERT INTO rettifiche_saldo (partecipante_id, data, importo, created_at)
+    VALUES (?, ?, ?, ?)
+  `).run(partecipanteId, data, importo, createdAt || `${data}T12:00:00.000Z`);
   return result.lastInsertRowid;
 }
 
@@ -76,6 +88,7 @@ async function loginAs(agent, username, password = 'password123') {
  */
 function clearConsegne(db) {
   db.prepare('DELETE FROM consegne').run();
+  db.prepare('DELETE FROM rettifiche_saldo').run();
   db.prepare('UPDATE users SET saldo = 0, ultima_modifica = NULL').run();
   db.prepare('DELETE FROM activity_logs').run();
 }
@@ -93,9 +106,10 @@ function clearNonAdminUsers(db) {
   db.prepare("UPDATE users SET created_by = NULL, updated_by = NULL WHERE created_by IN (SELECT id FROM users WHERE username != 'admin') OR updated_by IN (SELECT id FROM users WHERE username != 'admin')").run();
   db.prepare("UPDATE consegne SET created_by = NULL, updated_by = NULL, chiusa_by = NULL, riaperta_by = NULL WHERE created_by IN (SELECT id FROM users WHERE username != 'admin') OR updated_by IN (SELECT id FROM users WHERE username != 'admin') OR chiusa_by IN (SELECT id FROM users WHERE username != 'admin') OR riaperta_by IN (SELECT id FROM users WHERE username != 'admin')").run();
   db.prepare("UPDATE movimenti SET created_by = NULL, updated_by = NULL WHERE created_by IN (SELECT id FROM users WHERE username != 'admin') OR updated_by IN (SELECT id FROM users WHERE username != 'admin')").run();
+  db.prepare("DELETE FROM rettifiche_saldo WHERE created_by IN (SELECT id FROM users WHERE username != 'admin')").run();
   db.prepare("DELETE FROM users WHERE username != 'admin'").run();
   // Reset admin's admin status in case a test modified it
   db.prepare("UPDATE users SET is_admin = 1 WHERE username = 'admin'").run();
 }
 
-module.exports = { createUser, createConsegna, createMovimento, loginAs, clearConsegne, clearNonAdminUsers };
+module.exports = { createUser, createConsegna, createMovimento, createRettifica, loginAs, clearConsegne, clearNonAdminUsers };

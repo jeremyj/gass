@@ -5,6 +5,8 @@ const {
   calculateTrovatoInCassa,
   processConsegneWithDynamicValues,
   applySaldoChanges,
+  applyEvent,
+  compareEvents,
 } = require('../../server/services/calculations');
 
 describe('roundToCents', () => {
@@ -43,37 +45,32 @@ describe('calculateTrovatoInCassa', () => {
 
 describe('applySaldoChanges', () => {
   it('returns unchanged saldo with all-zero movimento', () => {
-    const mov = { salda_tutto: 0, usa_credito: 0, salda_debito_totale: 0, debito_saldato: 0, debito_lasciato: 0, credito_lasciato: 0 };
+    const mov = { usa_credito: 0, salda_debito_totale: 0, debito_saldato: 0, debito_lasciato: 0, credito_lasciato: 0 };
     expect(applySaldoChanges(100, mov)).toBe(100);
     expect(applySaldoChanges(-50, mov)).toBe(-50);
     expect(applySaldoChanges(0, mov)).toBe(0);
   });
 
-  it('salda_tutto resets saldo to 0 regardless of current value', () => {
-    const mov = { salda_tutto: 1, usa_credito: 0, salda_debito_totale: 0, debito_saldato: 0, debito_lasciato: 0, credito_lasciato: 0 };
-    expect(applySaldoChanges(200, mov)).toBe(0);
-    expect(applySaldoChanges(-150, mov)).toBe(0);
-  });
 
   it('credito_lasciato adds to saldo', () => {
-    const mov = { salda_tutto: 0, usa_credito: 0, salda_debito_totale: 0, debito_saldato: 0, debito_lasciato: 0, credito_lasciato: 30 };
+    const mov = { usa_credito: 0, salda_debito_totale: 0, debito_saldato: 0, debito_lasciato: 0, credito_lasciato: 30 };
     expect(applySaldoChanges(0, mov)).toBe(30);
     expect(applySaldoChanges(20, mov)).toBe(50);
   });
 
   it('debito_lasciato subtracts from saldo', () => {
-    const mov = { salda_tutto: 0, usa_credito: 0, salda_debito_totale: 0, debito_saldato: 0, debito_lasciato: 15, credito_lasciato: 0 };
+    const mov = { usa_credito: 0, salda_debito_totale: 0, debito_saldato: 0, debito_lasciato: 15, credito_lasciato: 0 };
     expect(applySaldoChanges(0, mov)).toBe(-15);
     expect(applySaldoChanges(30, mov)).toBe(15);
   });
 
   it('usa_credito subtracts from positive saldo', () => {
-    const mov = { salda_tutto: 0, usa_credito: 20, salda_debito_totale: 0, debito_saldato: 0, debito_lasciato: 0, credito_lasciato: 0 };
+    const mov = { usa_credito: 20, salda_debito_totale: 0, debito_saldato: 0, debito_lasciato: 0, credito_lasciato: 0 };
     expect(applySaldoChanges(50, mov)).toBe(30);
   });
 
   it('debito_saldato reduces negative saldo but not below 0', () => {
-    const mov = { salda_tutto: 0, usa_credito: 0, salda_debito_totale: 0, debito_saldato: 10, debito_lasciato: 0, credito_lasciato: 0 };
+    const mov = { usa_credito: 0, salda_debito_totale: 0, debito_saldato: 10, debito_lasciato: 0, credito_lasciato: 0 };
     expect(applySaldoChanges(-15, mov)).toBe(-5);
     // Cannot exceed 0
     expect(applySaldoChanges(-5, mov)).toBe(0);
@@ -82,24 +79,43 @@ describe('applySaldoChanges', () => {
   });
 
   it('salda_debito_totale clears negative saldo entirely', () => {
-    const mov = { salda_tutto: 0, usa_credito: 0, salda_debito_totale: 1, debito_saldato: 0, debito_lasciato: 0, credito_lasciato: 0 };
+    const mov = { usa_credito: 0, salda_debito_totale: 1, debito_saldato: 0, debito_lasciato: 0, credito_lasciato: 0 };
     expect(applySaldoChanges(-100, mov)).toBe(0);
     // No effect on positive saldo
     expect(applySaldoChanges(50, mov)).toBe(50);
   });
 
   it('compound: creditoLasciato accumulates across multiple calls', () => {
-    const mov = { salda_tutto: 0, usa_credito: 0, salda_debito_totale: 0, debito_saldato: 0, debito_lasciato: 0, credito_lasciato: 20 };
+    const mov = { usa_credito: 0, salda_debito_totale: 0, debito_saldato: 0, debito_lasciato: 0, credito_lasciato: 20 };
     let saldo = 0;
     saldo = applySaldoChanges(saldo, mov); // +20 → 20
     saldo = applySaldoChanges(saldo, mov); // +20 → 40
     expect(saldo).toBe(40);
   });
 
-  it('order of operations: salda_tutto runs before credito_lasciato', () => {
-    // salda_tutto zeroes first, then credito_lasciato adds
-    const mov = { salda_tutto: 1, usa_credito: 0, salda_debito_totale: 0, debito_saldato: 0, debito_lasciato: 0, credito_lasciato: 15 };
-    expect(applySaldoChanges(100, mov)).toBe(15);
+});
+
+describe('applyEvent', () => {
+  it('adds a rettifica importo (signed) to the saldo', () => {
+    expect(applyEvent(10, { tipo: 'rettifica', importo: 15 })).toBe(25);
+    expect(applyEvent(10, { tipo: 'rettifica', importo: -30.1 })).toBe(-20.1);
+  });
+
+  it('applies a movimento with applySaldoChanges', () => {
+    const mov = { tipo: 'movimento', usa_credito: 0, salda_debito_totale: 1, debito_saldato: 0, debito_lasciato: 0, credito_lasciato: 0 };
+    expect(applyEvent(-40, mov)).toBe(0);
+  });
+});
+
+describe('compareEvents', () => {
+  it('orders by date, then by creation time within the same date', () => {
+    const events = [
+      { data: '2026-02-01', created_at: '2026-02-01T10:00:00Z', id: 'b' },
+      { data: '2026-01-01', created_at: '2026-01-01T12:00:00Z', id: 'a' },
+      { data: '2026-02-01', created_at: '2026-02-01T09:00:00Z', id: 'c' },
+      { data: '2026-02-01', created_at: null, id: 'd' }
+    ];
+    expect(events.sort(compareEvents).map(e => e.id)).toEqual(['a', 'd', 'c', 'b']);
   });
 });
 

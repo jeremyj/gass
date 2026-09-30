@@ -2,6 +2,8 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const db = require('../config/database');
 const { requireAuth, requireAdmin, getAuditFields } = require('../middleware/auth');
+const { roundToCents } = require('../services/calculations');
+const { saldoAt, currentSaldo, recalculateSaldo, getTransactions } = require('../services/saldi');
 
 const router = express.Router();
 
@@ -18,31 +20,13 @@ router.get('/', (req, res) => {
   try {
     // If date is provided, calculate saldi as of that date
     if (date) {
-      // Derive historical saldo: start from current saldo, subtract all movimenti effect,
-      // then add back the effect of movimenti up to the requested date.
-      // This correctly accounts for initial balances stored in users.saldo before any movimenti.
-      const participantsWithSaldi = db.prepare(`
-        SELECT u.id, u.username, u.display_name AS nome, u.is_admin,
-          COALESCE(u.saldo - COALESCE(all_mv.effect, 0) + COALESCE(date_mv.effect, 0), 0) AS saldo,
-          date_mv.ultima_modifica
-        FROM users u
-        LEFT JOIN (
-          SELECT m.partecipante_id,
-            SUM(m.credito_lasciato) - SUM(m.debito_lasciato) - SUM(m.usa_credito) + SUM(m.debito_saldato) AS effect
-          FROM movimenti m
-          GROUP BY m.partecipante_id
-        ) all_mv ON all_mv.partecipante_id = u.id
-        LEFT JOIN (
-          SELECT m.partecipante_id,
-            SUM(m.credito_lasciato) - SUM(m.debito_lasciato) - SUM(m.usa_credito) + SUM(m.debito_saldato) AS effect,
-            MAX(c.data) AS ultima_modifica
-          FROM movimenti m
-          JOIN consegne c ON m.consegna_id = c.id
-          WHERE c.data <= ?
-          GROUP BY m.partecipante_id
-        ) date_mv ON date_mv.partecipante_id = u.id
-        ORDER BY u.display_name
-      `).all(date);
+      // Replay each participant's ledger up to and including the requested date
+      const participantsWithSaldi = db.prepare(
+        'SELECT id, username, display_name AS nome, is_admin FROM users ORDER BY display_name'
+      ).all().map(u => {
+        const { saldo, ultimaModifica } = saldoAt(u.id, date);
+        return { ...u, saldo, ultima_modifica: ultimaModifica };
+      });
 
       console.log(`[PARTICIPANTS] ${timestamp} - Successfully calculated saldi for ${date} (${participantsWithSaldi.length} participants)`);
       res.json({ success: true, participants: participantsWithSaldi });
@@ -66,13 +50,7 @@ router.get('/:id/transactions', (req, res) => {
   console.log(`[PARTICIPANTS] ${timestamp} - GET transactions for participant ID: ${id}`);
 
   try {
-    const transactions = db.prepare(`
-      SELECT m.*, c.data AS consegna_data
-      FROM movimenti m
-      JOIN consegne c ON m.consegna_id = c.id
-      WHERE m.partecipante_id = ?
-      ORDER BY c.data DESC
-    `).all(id);
+    const transactions = getTransactions(id);
 
     console.log(`[PARTICIPANTS] ${timestamp} - Retrieved ${transactions.length} transactions for participant ID: ${id}`);
     res.json({ success: true, transactions });
@@ -82,7 +60,7 @@ router.get('/:id/transactions', (req, res) => {
   }
 });
 
-// Update participant saldo (admin only)
+// Set participant saldo (admin only): recorded as a dated rettifica for the difference
 router.put('/:id', requireAdmin, (req, res) => {
   const timestamp = new Date().toISOString();
   const { id } = req.params;
@@ -90,21 +68,31 @@ router.put('/:id', requireAdmin, (req, res) => {
 
   console.log(`[PARTICIPANTS] ${timestamp} - PUT request to update participant ID: ${id}, new saldo: ${saldo}€`);
 
+  if (typeof saldo !== 'number' || !Number.isFinite(saldo)) {
+    return res.status(400).json({ success: false, error: 'Saldo non valido' });
+  }
+
   try {
-    const current = db.prepare('SELECT saldo, username, display_name FROM users WHERE id = ?').get(id);
+    const exists = db.prepare('SELECT id FROM users WHERE id = ?').get(id);
+    const before = exists ? currentSaldo(id) : null;
+    const importo = exists ? roundToCents(saldo - before) : 0;
 
-    if (current && current.saldo !== saldo) {
-      const audit = getAuditFields(req, 'update');
-      db.prepare('UPDATE users SET saldo = ?, ultima_modifica = DATE(), updated_by = ?, updated_at = ? WHERE id = ?')
-        .run(saldo, audit.updated_by, audit.updated_at, id);
+    if (importo !== 0) {
+      const audit = getAuditFields(req, 'create');
+      db.transaction(() => {
+        db.prepare(`
+          INSERT INTO rettifiche_saldo (partecipante_id, data, importo, created_by, created_at)
+          VALUES (?, DATE(), ?, ?, ?)
+        `).run(id, importo, audit.created_by, audit.created_at);
+        recalculateSaldo(id, audit);
 
-      // Log saldo modification
-      db.prepare(`
-        INSERT INTO activity_logs (event_type, target_user_id, actor_user_id, details, created_at)
-        VALUES (?, ?, ?, ?, ?)
-      `).run('saldo_updated', parseInt(id), req.session.userId, `saldo: ${current.saldo} → ${saldo}`, timestamp);
+        db.prepare(`
+          INSERT INTO activity_logs (event_type, target_user_id, actor_user_id, details, created_at)
+          VALUES (?, ?, ?, ?, ?)
+        `).run('saldo_updated', parseInt(id), req.session.userId, `saldo: ${before} → ${saldo}`, timestamp);
+      })();
 
-      console.log(`[PARTICIPANTS] ${timestamp} - Successfully updated participant ID ${id} saldo from ${current.saldo}€ to ${saldo}€`);
+      console.log(`[PARTICIPANTS] ${timestamp} - Successfully updated participant ID ${id} saldo from ${before}€ to ${saldo}€`);
     } else {
       console.log(`[PARTICIPANTS] ${timestamp} - No change needed for participant ID ${id}`);
     }

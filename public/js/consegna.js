@@ -682,7 +682,6 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
 
   const partecipantiData = [{
     partecipante_id: currentId,
-    saldaTutto: false,
     contoProduttore, importoSaldato, usaCredito, debitoLasciato, creditoLasciato,
     saldaDebitoTotale, debitoSaldato, note,
   }];
