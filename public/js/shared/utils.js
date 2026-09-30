@@ -22,6 +22,13 @@ function showStatus(message, type) {
   }, 5000);
 }
 
+// Local calendar date as yyyy-mm-dd (toISOString() would give the UTC date)
+function toLocalDateString(date = new Date()) {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
 // Format date from yyyy-mm-dd to dd/mm/yyyy
 function formatDateItalian(dateStr) {
   if (!dateStr) return '-';

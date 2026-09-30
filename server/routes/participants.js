@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const db = require('../config/database');
 const { requireAuth, requireAdmin, getAuditFields } = require('../middleware/auth');
-const { roundToCents } = require('../services/calculations');
+const { roundToCents, toLocalDateString } = require('../services/calculations');
 const { saldoAt, currentSaldo, recalculateSaldo, getTransactions } = require('../services/saldi');
 
 const router = express.Router();
@@ -82,8 +82,8 @@ router.put('/:id', requireAdmin, (req, res) => {
       db.transaction(() => {
         db.prepare(`
           INSERT INTO rettifiche_saldo (partecipante_id, data, importo, created_by, created_at)
-          VALUES (?, DATE(), ?, ?, ?)
-        `).run(id, importo, audit.created_by, audit.created_at);
+          VALUES (?, ?, ?, ?, ?)
+        `).run(id, toLocalDateString(), importo, audit.created_by, audit.created_at);
         recalculateSaldo(id, audit);
 
         db.prepare(`

@@ -7,6 +7,7 @@ const db = setupTestDb();
 const { setupTestApp } = require('../helpers/setup-app');
 const { createUser, createConsegna, createMovimento, createRettifica, clearConsegne, clearNonAdminUsers } = require('../helpers/seed');
 const request = require('supertest');
+const { toLocalDateString } = require('../../server/services/calculations');
 
 let app, adminAgent;
 
@@ -200,7 +201,8 @@ describe('PUT /api/participants/:id', () => {
 
     const r = db.prepare('SELECT * FROM rettifiche_saldo WHERE partecipante_id = ? ORDER BY id DESC').get(userId);
     expect(r.importo).toBe(32.5);
-    expect(r.data).toBe(user.ultima_modifica);
+    expect(r.data).toBe(toLocalDateString());
+    expect(user.ultima_modifica).toBe(r.data);
 
     const log = db.prepare("SELECT * FROM activity_logs WHERE event_type = 'saldo_updated'").get();
     expect(log.details).toBe('saldo: -12.5 → 20');

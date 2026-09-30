@@ -128,7 +128,7 @@ Saldo = replay from 0 of the participant's movimenti (via `applySaldoChanges`) +
 - `saldoAt(id, date)` — historical saldo (events ≤ date)
 - `saldoBeforeConsegna(id, date)` — consegna form start (events before that date's movimento)
 - `getTransactions(id)` — ledger newest-first with `saldo_dopo`
-- `PUT /api/participants/:id` stores `target − ledger saldo` as a rettifica dated `DATE()` (UTC)
+- `PUT /api/participants/:id` stores `target − ledger saldo` as a rettifica dated today (local)
 - Deleting a consegna recalculates only participants that had a movimento in it
 - Don't reintroduce flat SQL sums of movimenti for saldi: they ignore the `debito_saldato` clamp and rettifiche
 - `salda_tutto` was removed in v2.7 (no UI since 2025-10, 0 rows set in production); the legacy FK-fix migration in `database.js` still names it because it runs before the column drop
@@ -185,6 +185,9 @@ if diff < 0 && has_credit: auto-apply to usa_credito
 - Reopen closed consegne
 - Add participants (desktop) - creates a full user account with username/password
 - Activity logs page (desktop only)
+
+### Dates are local
+Calendar dates (`data`, `ultima_modifica`, "today") are always the **local** date: use `toLocalDateString()` (`utils.js` client-side, `calculations.js` server-side). Never `toISOString().split('T')[0]` or SQLite `DATE()` — both give the UTC date, which is yesterday between 00:00 and 01:00/02:00 in Italy. The image sets `TZ=Europe/Rome` (+ `tzdata`, Alpine has none). Audit timestamps (`created_at`, `updated_at`) stay ISO UTC with `Z`.
 
 ### Currency Display
 `formatNumber()` hides `.00` on whole numbers, shows 2 decimals otherwise

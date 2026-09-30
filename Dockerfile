@@ -11,8 +11,9 @@ RUN npm ci --omit=dev && npm cache clean --force
 # Stage 2: Runtime — clean Alpine image without build tools (~200MB smaller)
 FROM node:20-alpine
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Install dumb-init for proper signal handling, tzdata for local dates
+RUN apk add --no-cache dumb-init tzdata
+ENV TZ=Europe/Rome
 
 # Create non-root user
 RUN addgroup -g 1001 -S gass && \

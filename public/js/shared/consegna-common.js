@@ -50,7 +50,7 @@ async function loadData(date = null) {
   try {
     let url = '/api/participants';
     if (date) {
-      const today = new Date().toISOString().split('T')[0];
+      const today = toLocalDateString();
       if (date !== today) {
         url += `?date=${date}`;
       }

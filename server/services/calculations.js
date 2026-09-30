@@ -1,6 +1,13 @@
 // Round to 0.01€ (1 cent) to avoid floating-point precision errors
 const roundToCents = (num) => Math.round(num * 100) / 100;
 
+// Local calendar date as yyyy-mm-dd (process TZ; the image sets TZ=Europe/Rome)
+function toLocalDateString(date = new Date()) {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
 // Calculate trovato_in_cassa dynamically from previous consegna's lasciato
 function calculateTrovatoInCassa(consegna, previousLasciato) {
   return previousLasciato !== undefined ? roundToCents(previousLasciato) : consegna.trovato_in_cassa;
@@ -85,6 +92,7 @@ function compareEvents(a, b) {
 
 module.exports = {
   roundToCents,
+  toLocalDateString,
   calculateTrovatoInCassa,
   calculateLasciatoInCassa,
   applyDynamicCalculations,

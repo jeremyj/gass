@@ -169,7 +169,7 @@ function applySaldoChanges(saldo, movimento) {
 
 Deleting a consegna recalculates only the participants that had a movimento in it; rettifiche are never touched.
 
-**Manual saldo edit** (`PUT /api/participants/:id`, admin): the admin sets the target saldo; the server stores the difference from the ledger saldo as a rettifica dated `DATE()` (UTC) and logs `saldo_updated`.
+**Manual saldo edit** (`PUT /api/participants/:id`, admin): the admin sets the target saldo; the server stores the difference from the ledger saldo as a rettifica dated today (local date) and logs `saldo_updated`.
 
 ### 2. Cash Calculation Algorithm
 
@@ -455,6 +455,8 @@ docker run -p 3000:3000 -v $(pwd)/data:/app/data gass-pagamenti
 ```
 
 Database persisted in `/app/data/gass.db` volume.
+
+The image sets `TZ=Europe/Rome` (with `tzdata`); all calendar dates are local. Override with `-e TZ=...` if needed.
 
 ## Error Handling
 

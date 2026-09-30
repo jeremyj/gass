@@ -155,7 +155,7 @@ function selectPickerDate(dateStr) {
 
   // Update header date display
   if (headerDateDisplay) {
-    const today = new Date().toISOString().split('T')[0];
+    const today = toLocalDateString();
     if (dateStr === today) {
       headerDateDisplay.textContent = 'Oggi';
     } else {
@@ -227,7 +227,7 @@ function renderCalendar() {
   // Days of month
   for (let day = 1; day <= lastDay.getDate(); day++) {
     const dateStr = `${currentCalendarYear}-${String(currentCalendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const isToday = dateStr === today.toISOString().split('T')[0];
+    const isToday = dateStr === toLocalDateString(today);
     const isSelected = dateStr === selectedDate;
     const hasConsegna = consegneDates.has(dateStr);
 
@@ -295,7 +295,7 @@ function setDateDisplay(dateStr) {
 
   // Update header date display
   if (headerDateDisplay) {
-    const today = new Date().toISOString().split('T')[0];
+    const today = toLocalDateString();
     if (dateStr === today) {
       headerDateDisplay.textContent = 'Oggi';
     } else {
@@ -349,7 +349,7 @@ function restoreDateFromStorage() {
 
   // On reload, always use today's date
   if (isReload) {
-    const today = new Date().toISOString().split('T')[0];
+    const today = toLocalDateString();
     sessionStorage.setItem('gass_selected_date', today);
     return today;
   }
@@ -360,7 +360,7 @@ function restoreDateFromStorage() {
     return savedDate;
   }
 
-  return new Date().toISOString().split('T')[0];
+  return toLocalDateString();
 }
 
 // ===== CLICK OUTSIDE HANDLER =====

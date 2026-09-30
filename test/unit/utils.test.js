@@ -15,7 +15,14 @@ const sandbox = {
 vm.createContext(sandbox);
 vm.runInContext(code, sandbox);
 
-const { escapeHtml, formatDateItalian, parseAmount, roundUpCents, formatNumber, formatSaldo } = sandbox;
+const { escapeHtml, formatDateItalian, parseAmount, roundUpCents, formatNumber, formatSaldo, toLocalDateString } = sandbox;
+
+describe('toLocalDateString', () => {
+  it('uses the local calendar date, not the UTC one', () => {
+    expect(toLocalDateString(new Date(2026, 8, 30, 0, 30))).toBe('2026-09-30');
+    expect(toLocalDateString(new Date(2026, 0, 5, 23, 59))).toBe('2026-01-05');
+  });
+});
 
 describe('escapeHtml', () => {
   it('escapes ampersand', () => {

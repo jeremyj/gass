@@ -10,7 +10,7 @@ async function loadParticipants() {
   try {
     const dateInput = document.getElementById('data');
     const date = dateInput ? dateInput.value : null;
-    const today = new Date().toISOString().split('T')[0];
+    const today = toLocalDateString();
 
     let url = '/api/participants';
     if (date && date !== today) {
@@ -48,6 +48,6 @@ async function loadConsegneDates() {
 
 function isViewingToday() {
   const dateInput = document.getElementById('data');
-  const today = new Date().toISOString().split('T')[0];
+  const today = toLocalDateString();
   return !dateInput || dateInput.value === today;
 }
