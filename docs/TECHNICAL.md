@@ -38,6 +38,8 @@ DELETE /api/participants/:id          - Delete participant
 GET    /api/version                   - Get application version from package.json (public, no auth)
 ```
 
+`GET /inbreve` serves `public/inbreve.html`, a one-page guide for new users (public, no auth, printable on one A4 page).
+
 ### Frontend Structure
 
 #### Desktop Views

@@ -92,6 +92,12 @@ describe('requireAdmin middleware', () => {
 });
 
 describe('public endpoints', () => {
+  it('serves /inbreve without a session', async () => {
+    const res = await request(app).get('/inbreve');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('GASS: come funziona');
+  });
+
   it('serves /api/version without a session', async () => {
     const res = await request(app).get('/api/version');
     expect(res.status).toBe(200);

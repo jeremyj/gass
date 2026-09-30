@@ -12,6 +12,8 @@ GASS Pagamenti è un sistema di gestione finanziaria per gruppi di acquisto soli
 
 ### Primo Accesso
 
+Una guida di una pagina per chi inizia è su https://gass.x86.it/inbreve (non serve il login).
+
 1. Aprire l'applicazione nel browser
 2. Effettuare il login con le credenziali fornite
    - **Username predefinito**: `admin`

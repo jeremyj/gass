@@ -14,6 +14,11 @@ router.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, '../../public', 'login.html'));
 });
 
+// One-page guide for new users (public, no auth required)
+router.get('/inbreve', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../public', 'inbreve.html'));
+});
+
 // API endpoint to get app version (public, no auth required)
 router.get('/api/version', (req, res) => {
   res.json({ version: packageJson.version });

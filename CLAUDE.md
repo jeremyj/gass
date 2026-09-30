@@ -12,7 +12,7 @@
 - **App Factory**: `server/app.js` - Express setup, middleware, route mounting
 - **Database**: `server/config/database.js` - exports `createDatabase(dbPath)` factory + production singleton
 - **Routes**: `server/routes/`
-  - `pages.js` - HTML routing with mobile/desktop detection
+  - `pages.js` - HTML routing with mobile/desktop detection; `/login`, `/inbreve` (user guide, `public/inbreve.html`) and `/api/version` are public
   - `auth.js` - Authentication endpoints (login, logout, password change)
   - `consegna.js` - Delivery API (GET/:date, POST, DELETE/:id)
   - `participants.js` - Participant API (CRUD, saldo management, `GET /:id/transactions` — any authenticated user)

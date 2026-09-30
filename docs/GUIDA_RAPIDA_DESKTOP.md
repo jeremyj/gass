@@ -7,6 +7,8 @@ date: "Marzo 2026"
 
 Apri il browser e vai su **https://gass.x86.it**. Inserisci le tue credenziali e clicca **Accedi**.
 
+Guida in una pagina: **https://gass.x86.it/inbreve**.
+
 Per cambiare la tua password clicca il pulsante **🔑** in alto a destra.
 
 ![](screenshots/01-login.png){ width=50% }
