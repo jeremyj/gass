@@ -15,8 +15,8 @@ const sandbox = {
 vm.createContext(sandbox);
 vm.runInContext(code, sandbox);
 
-const { escapeHtml, formatDateItalian, parseAmount, roundToCents, formatNumber, formatSaldo, toLocalDateString,
-        debitoPagato, debitoNuovo } = sandbox;
+const { escapeHtml, formatDateItalian, parseAmount, roundToCents, formatNumber, toLocalDateString,
+        debitoPagato, debitoNuovo, formatEuro, formatSigned } = sandbox;
 
 describe('toLocalDateString', () => {
   it('uses the local calendar date, not the UTC one', () => {
@@ -116,9 +116,14 @@ describe('formatNumber', () => {
     expect(formatNumber(0)).toBe('0');
   });
 
-  it('displays decimal numbers with 2 decimal places', () => {
-    expect(formatNumber(10.5)).toBe('10.50');
-    expect(formatNumber(3.14)).toBe('3.14');
+  it('displays decimal numbers with 2 decimal places and the Italian comma', () => {
+    expect(formatNumber(10.5)).toBe('10,50');
+    expect(formatNumber(3.14)).toBe('3,14');
+  });
+
+  it('round-trips through parseAmount', () => {
+    expect(parseAmount(formatNumber(10.5))).toBe(10.5);
+    expect(parseAmount(formatNumber(-14.25))).toBe(-14.25);
   });
 
   it('returns empty string for null', () => {
@@ -134,19 +139,16 @@ describe('formatNumber', () => {
   });
 });
 
-describe('formatSaldo', () => {
-  it('formats whole number by removing .0', () => {
-    expect(formatSaldo(5)).toBe('5');
-    expect(formatSaldo(-5)).toBe('5'); // abs value
+describe('formatEuro / formatSigned', () => {
+  it('puts € after the amount', () => {
+    expect(formatEuro(11.5)).toBe('11,50 €');
+    expect(formatEuro(8)).toBe('8 €');
   });
 
-  it('keeps non-zero decimal with 2 places', () => {
-    expect(formatSaldo(5.5)).toBe('5.50');
-    expect(formatSaldo(5.73)).toBe('5.73');
-  });
-
-  it('handles 0', () => {
-    expect(formatSaldo(0)).toBe('0');
+  it('signs credit with + and debt with a typographic minus', () => {
+    expect(formatSigned(6)).toBe('+6 €');
+    expect(formatSigned(-1.5)).toBe('−1,50 €');
+    expect(formatSigned(0)).toBe('0 €');
   });
 });
 

@@ -49,6 +49,7 @@ function loadExistingConsegna(result) {
   trovatoField.value = formatNumber(result.consegna.trovato_in_cassa || 0);
   pagatoField.value = formatNumber(result.consegna.pagato_produttore || 0);
   lasciatoField.value = formatNumber(result.consegna.lasciato_in_cassa || 0);
+  updateIncassato();
   updateCassaWarning();
 
   originalNoteGiornata = result.consegna.note || '';
@@ -76,6 +77,7 @@ function loadNewConsegna(result) {
   trovatoField.value = formatNumber(trovatoValue);
   pagatoField.value = formatNumber(0);
   lasciatoField.value = formatNumber(trovatoValue);
+  updateIncassato();
   updateCassaWarning();
 
   originalNoteGiornata = '';
@@ -93,57 +95,69 @@ function loadNewConsegna(result) {
 
 // ===== RENDERING =====
 
+// Zeros render as "–" so the real figures stand out
+function cell(value, cls = '') {
+  return value ? `<td class="${cls}">${formatNumber(value)}</td>` : '<td class="mute">–</td>';
+}
+
 function renderMovimentiGiorno() {
   const container = document.getElementById('movimenti-giorno');
+  const movimenti = existingConsegnaMovimenti || [];
 
-  if (!existingConsegnaMovimenti || existingConsegnaMovimenti.length === 0) {
+  if (movimenti.length === 0) {
     container.innerHTML = '';
     return;
   }
 
-  const rows = existingConsegnaMovimenti.map((m) => {
-    return `
-      <tr>
-        <td><strong>${escapeHtml(m.nome)}</strong></td>
-        <td class="text-right">${m.conto_produttore ? '€' + formatNumber(m.conto_produttore) : ''}</td>
-        <td class="text-right">${m.importo_saldato ? '€' + formatNumber(m.importo_saldato) : ''}</td>
-        <td class="text-right">${m.credito_lasciato ? '€' + formatNumber(m.credito_lasciato) : ''}</td>
-        <td class="text-right">${debitoNuovo(m) ? '€' + formatNumber(debitoNuovo(m)) : ''}</td>
-        <td class="text-right">${m.usa_credito ? '€' + formatNumber(m.usa_credito) : ''}</td>
-        <td class="text-right">${debitoPagato(m) ? '€' + formatNumber(debitoPagato(m)) : ''}</td>
-        <td>${escapeHtml(m.note || '')}</td>
+  const sum = fn => roundToCents(movimenti.reduce((acc, m) => acc + (fn(m) || 0), 0));
+  const rows = movimenti.map(m => `
+      <tr class="clickable" onclick="openMovimento(${m.partecipante_id})">
+        <td class="nm">${escapeHtml(m.nome)}</td>
+        ${cell(m.conto_produttore)}
+        ${cell(m.importo_saldato)}
+        ${m.credito_lasciato ? `<td class="cr">+${formatNumber(m.credito_lasciato)}</td>` : '<td class="mute">–</td>'}
+        ${debitoNuovo(m) ? `<td class="db">−${formatNumber(debitoNuovo(m))}</td>` : '<td class="mute">–</td>'}
+        ${cell(m.usa_credito)}
+        ${cell(debitoPagato(m))}
+        <td class="nt">${escapeHtml(m.note || '')}</td>
       </tr>
-    `;
-  }).join('');
+    `).join('');
 
   container.innerHTML = `
-    <h3>Movimenti del Giorno</h3>
-    <table class="movimenti-table">
+    <table class="t">
       <thead>
         <tr>
-          <th>Nome</th>
-          <th class="text-right">Conto Produttore</th>
-          <th class="text-right">Importo Saldato</th>
-          <th class="text-right">Lascia Credito</th>
-          <th class="text-right">Lascia Debito</th>
-          <th class="text-right">Usa Credito</th>
-          <th class="text-right">Salda Debito</th>
-          <th>Note</th>
+          <th>Partecipante</th>
+          <th>Conto produttore</th>
+          <th>Importo saldato</th>
+          <th>Lascia credito</th>
+          <th>Lascia debito</th>
+          <th>Usa credito</th>
+          <th>Salda debito</th>
+          <th class="nt">Note</th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>
+      <tfoot>
+        <tr>
+          <td>Totale</td>
+          ${cell(sum(m => m.conto_produttore))}
+          ${cell(sum(m => m.importo_saldato))}
+          ${cell(sum(m => m.credito_lasciato))}
+          ${cell(sum(debitoNuovo))}
+          ${cell(sum(m => m.usa_credito))}
+          ${cell(sum(debitoPagato))}
+          <td></td>
+        </tr>
+      </tfoot>
     </table>
   `;
 }
 
 const PARTICIPANT_BUTTONS_HTML = `
-    <div class="flow-section flow-btn-row">
-      <button type="submit" class="btn-save" id="save-btn-participant-inline">
-        💾 Salva Movimento
-      </button>
-      <button type="button" class="btn-secondary" onclick="clearParticipantForm()">
-        Annulla
-      </button>
+    <div class="entry-actions">
+      <button type="button" class="btn btn-line" onclick="closeParticipant()">Annulla</button>
+      <button type="submit" class="btn btn-go" id="save-btn-participant-inline">Salva movimento</button>
     </div>
   `;
 
@@ -184,7 +198,6 @@ function updateSaveButtonVisibility() {
 
   if (noteGiornataModified) {
     saveBtnCassa.style.display = 'inline-block';
-    saveBtnCassa.textContent = '💾 Salva Note';
   } else {
     saveBtnCassa.style.display = 'none';
   }
@@ -197,39 +210,29 @@ function updateConsegnaStatusUI(consegna) {
   isConsegnaClosed = consegna?.chiusa === true;
 
   const statusSection = document.getElementById('consegna-status-section');
-  const closeBtn = document.getElementById('close-consegna-btn');
-  const closedBadge = document.getElementById('closed-badge');
-
   if (!statusSection) return;
 
+  const closeBtn = document.getElementById('close-consegna-btn');
   const annullaBtn = document.getElementById('btn-annulla-consegna');
 
-  if (currentConsegnaId) {
-    statusSection.style.display = 'flex';
-
-    if (isConsegnaClosed) {
-      closedBadge.style.display = 'inline-block';
-      if (isAdmin()) {
-        closeBtn.style.display = 'inline-block';
-        closeBtn.innerHTML = '🔓 Riapri Consegna';
-        closeBtn.className = 'btn-success';
-      } else {
-        closeBtn.style.display = 'none';
-      }
-      if (annullaBtn) annullaBtn.style.display = 'none';
-      disableConsegnaInputs();
-    } else {
-      closedBadge.style.display = 'none';
-      closeBtn.style.display = 'inline-block';
-      closeBtn.innerHTML = '🔒 Chiudi Consegna';
-      closeBtn.className = 'btn-danger';
-      // Deleting a saved consegna is admin-only (server enforces it too)
-      if (annullaBtn) annullaBtn.style.display = isAdmin() ? 'inline-block' : 'none';
-      enableConsegnaInputs();
-    }
-  } else {
+  if (!currentConsegnaId) {
     statusSection.style.display = 'none';
     enableConsegnaInputs(); // Restore inputs for dates with no consegna
+    return;
+  }
+
+  statusSection.style.display = 'flex';
+  document.getElementById('closed-badge').style.display = isConsegnaClosed ? 'inline' : 'none';
+  document.getElementById('open-badge').style.display = isConsegnaClosed ? 'none' : 'inline';
+  closeBtn.textContent = isConsegnaClosed ? 'Riapri consegna' : 'Chiudi consegna';
+  // Anyone can close; only an admin can reopen or delete a saved consegna (server enforces it too)
+  closeBtn.style.display = !isConsegnaClosed || isAdmin() ? 'inline' : 'none';
+  annullaBtn.style.display = !isConsegnaClosed && isAdmin() ? 'inline' : 'none';
+
+  if (isConsegnaClosed) {
+    disableConsegnaInputs();
+  } else {
+    enableConsegnaInputs();
   }
 }
 
@@ -256,7 +259,7 @@ function enableConsegnaInputs() {
   document.querySelector('.container')?.classList.remove('consegna-closed');
 }
 
-function clearParticipantForm() {
+function closeParticipant() {
   const select = document.getElementById('participant-select');
   select.value = '';
   showParticipantForm();
@@ -290,7 +293,7 @@ async function saveWithParticipant(currentId) {
   try {
     await postConsegna([readMovimentoForm(currentId)]);
 
-    showStatus('Dati salvati con successo!', 'success');
+    showStatus('Movimento salvato', 'success');
     setTimeout(() => {
       document.getElementById('selected-participants').innerHTML = '';
       document.getElementById('participant-select').value = '';

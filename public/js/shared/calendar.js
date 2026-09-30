@@ -95,7 +95,7 @@ function renderDatePicker() {
   if (consegneDates.size > 0) {
     html += '<div class="date-picker-legend">';
     html += '<div class="date-picker-legend-item">';
-    html += '<div class="date-picker-legend-color" style="background: #2ecc71;"></div>';
+    html += '<div class="date-picker-legend-color"></div>';
     html += '<span>Con consegna</span>';
     html += '</div>';
     html += '</div>';
@@ -143,15 +143,17 @@ function setDateDisplay(dateStr) {
     dataInput.value = dateStr;
   }
 
-  // Update header date display
+  // Header: "martedì 4 novembre"; the label above it (data-label / data-today) says whether it's today
   if (headerDateDisplay) {
-    const today = toLocalDateString();
-    if (dateStr === today) {
-      headerDateDisplay.textContent = 'Oggi';
-    } else {
-      headerDateDisplay.textContent = '⚠️ ' + formatDateItalian(dateStr);
-    }
+    headerDateDisplay.textContent = formatDateLong(dateStr);
   }
+  const headerWhen = document.getElementById('header-when');
+  if (headerWhen) {
+    const isToday = dateStr === toLocalDateString();
+    headerWhen.textContent = isToday ? headerWhen.dataset.today : headerWhen.dataset.label;
+    headerWhen.classList.toggle('not-today', !isToday);
+  }
+  applySeason(dateStr);
 
   // Set picker to the same month/year
   pickerYear = parseInt(year);

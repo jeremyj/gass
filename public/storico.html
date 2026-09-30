@@ -4,51 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Storico</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=30">
 </head>
 <body>
-    <div class="container">
-        <div class="page-header">
-            <div class="header-row-top">
-                <h1>📋 STORICO</h1>
+    <header class="stag">
+        <svg class="stag-ill" aria-hidden="true"><use href="#ill-zucca"/></svg>
+        <div class="stag-top">
+            <span class="stag-when">Tutte le consegne</span>
+            <div class="header-actions">
                 <span id="user-display" class="user-name"></span>
-            </div>
-            <div class="header-row-bottom">
-                <div class="header-actions">
-                    <button type="button" onclick="handleLogout()" class="logout-btn" title="Esci"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
-                </div>
+                <button type="button" onclick="handleLogout()" class="icon-btn" title="Esci" aria-label="Esci"><svg aria-hidden="true"><use href="#i-esci"/></svg></button>
             </div>
         </div>
+        <h1>Storico</h1>
+        <p id="season-produce" class="stag-prod"></p>
+    </header>
 
-        <div id="status" class="status"></div>
+    <main class="container">
+        <div id="status" class="status" role="status"></div>
+        <ul id="storico-list" class="storico-list"></ul>
+    </main>
 
-        <div id="storico-list"></div>
-    </div>
-
-    <!-- Bottom Navigation -->
-    <div class="bottom-nav">
-        <a href="/consegna" class="bottom-nav-item">
-            <span class="bottom-nav-icon">📦</span>
-            Consegna
-        </a>
-        <a href="/debiti" class="bottom-nav-item">
-            <span class="bottom-nav-icon">💰</span>
-            Saldi
-        </a>
-        <a href="/storico" class="bottom-nav-item active">
-            <span class="bottom-nav-icon">📋</span>
-            Storico
-        </a>
-    </div>
+    <nav class="bottom-nav">
+        <a href="/consegna" class="bottom-nav-item"><svg aria-hidden="true"><use href="#i-consegna"/></svg>Consegna</a>
+        <a href="/debiti" class="bottom-nav-item"><svg aria-hidden="true"><use href="#i-saldi"/></svg>Saldi</a>
+        <a href="/storico" class="bottom-nav-item active"><svg aria-hidden="true"><use href="#i-storico"/></svg>Storico</a>
+    </nav>
 
     <footer class="app-footer">
         <span id="app-version"></span>
     </footer>
 
-    <script src="js/shared/utils.js"></script>
+    <script src="js/shared/utils.js?v=30"></script>
+    <script src="js/shared/season.js?v=30"></script>
     <script src="js/shared/api-client.js"></script>
-    <script src="js/shared/auth.js"></script>
+    <script src="js/shared/auth.js?v=30"></script>
     <script src="js/shared/version.js"></script>
-    <script src="js/storico.js?v=6"></script>
+    <script src="js/storico.js?v=30"></script>
 </body>
 </html>

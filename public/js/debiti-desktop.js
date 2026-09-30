@@ -32,37 +32,46 @@ function renderParticipants() {
     const row = createParticipantRow(p);
     tbody.appendChild(row);
   });
+
+  // Why "Modifica saldo" is missing on a past date
+  const hint = document.getElementById('saldi-hint');
+  if (hint) {
+    const showHint = isAdmin() && !isViewingToday();
+    hint.style.display = showHint ? 'block' : 'none';
+    if (showHint) {
+      hint.textContent = `"Modifica saldo" compare solo alla data di oggi. Stai guardando il ${formatDateLong(document.getElementById('data').value)}.`;
+    }
+  }
 }
 
 function createParticipantRow(p) {
   const row = document.createElement('tr');
-  const saldoClass = p.saldo < 0 ? 'saldo-debito' : p.saldo > 0 ? 'saldo-credito' : '';
-  const saldoText = formatNumber(p.saldo);
-  const adminBadge = p.is_admin ? '<span class="admin-badge">Admin</span>' : '';
+  const saldo = saldoLabel(p.saldo);
+  const adminBadge = p.is_admin ? '<span class="admin-badge">admin</span>' : '';
 
   const canEdit = isAdmin() && isViewingToday();
 
   row.innerHTML = `
-    ${isAdmin() ? `<td>${escapeHtml(p.username) || '-'}${adminBadge}</td>` : ''}
-    <td><strong>${escapeHtml(p.nome)}</strong></td>
-    <td class="${saldoClass}">
-      <span id="saldo-view-${p.id}">€${saldoText}</span>
-      <input type="text" inputmode="decimal" id="saldo-edit-${p.id}" value="${p.saldo}"
-             class="initially-hidden"
+    <td class="nm">${escapeHtml(p.nome)}</td>
+    ${isAdmin() ? `<td class="left">${escapeHtml(p.username) || '–'}${adminBadge}</td>` : ''}
+    <td>
+      <span id="saldo-view-${p.id}" class="pill ${saldo.cls}">${saldo.amount} ${saldo.word}</span>
+      <input type="text" inputmode="decimal" id="saldo-edit-${p.id}" value="${formatNumber(p.saldo)}"
+             class="saldo-input initially-hidden" aria-label="Nuovo saldo (negativo = debito)"
              oninput="normalizeInputField(this)"
              onfocus="handleInputFocus(this)"
              onkeydown="if(event.key==='Enter'){event.preventDefault();saveSaldo(${p.id})}">
     </td>
     <td>${formatDateItalian(p.ultima_modifica)}</td>
-    ${isAdmin() ? `<td style="white-space: nowrap">
-      <button onclick="editSaldo(${p.id})" id="edit-btn-${p.id}" ${canEdit ? '' : 'disabled'}>Modifica Saldo</button>
-      <button onclick="saveSaldo(${p.id})" id="save-btn-${p.id}" class="btn-save initially-hidden">Salva</button>
-      <button onclick="cancelEdit(${p.id})" id="cancel-btn-${p.id}" class="initially-hidden">Annulla</button>
-      <button onclick="showEditUserModal(${p.id})">Modifica Utente</button>
-      <button onclick="showTransactionsModal(${p.id})">Transazioni</button>
-    </td>` : `<td>
-      <button onclick="showTransactionsModal(${p.id})">Transazioni</button>
-    </td>`}
+    <td class="lk">
+      <button type="button" class="link-btn" onclick="showTransactionsModal(${p.id})">Transazioni</button>
+      ${isAdmin() ? `<button type="button" class="link-btn" onclick="showEditUserModal(${p.id})">Modifica utente</button>` : ''}
+      ${canEdit ? `
+        <button type="button" class="link-btn" onclick="editSaldo(${p.id})" id="edit-btn-${p.id}">Modifica saldo</button>
+        <button type="button" class="link-btn initially-hidden" onclick="saveSaldo(${p.id})" id="save-btn-${p.id}">Salva</button>
+        <button type="button" class="link-btn initially-hidden" onclick="cancelEdit(${p.id})" id="cancel-btn-${p.id}">Annulla</button>
+      ` : ''}
+    </td>
   `;
 
   return row;
@@ -79,16 +88,14 @@ function editSaldo(id) {
   document.getElementById(`save-btn-${id}`).style.display = 'inline-block';
   document.getElementById(`cancel-btn-${id}`).style.display = 'inline-block';
 
-  if (inputField.value === '0' || inputField.value === '0.0' || inputField.value === '0.00') {
-    inputField.value = '';
-  }
+  handleInputFocus(inputField);
   inputField.focus();
   inputField.select();
 }
 
 function cancelEdit(id) {
   const participant = participants.find(p => p.id === id);
-  document.getElementById(`saldo-edit-${id}`).value = participant.saldo;
+  document.getElementById(`saldo-edit-${id}`).value = formatNumber(participant.saldo);
   document.getElementById(`saldo-view-${id}`).style.display = 'inline';
   document.getElementById(`saldo-edit-${id}`).style.display = 'none';
   document.getElementById(`edit-btn-${id}`).style.display = 'inline-block';
@@ -97,7 +104,7 @@ function cancelEdit(id) {
 }
 
 async function saveSaldo(id) {
-  const newSaldo = parseFloat(document.getElementById(`saldo-edit-${id}`).value);
+  const newSaldo = parseAmount(document.getElementById(`saldo-edit-${id}`).value);
 
   try {
     await API.put(`/api/participants/${id}`, { saldo: newSaldo });
@@ -145,7 +152,7 @@ function injectTransactionsModal() {
       <div class="modal-content modal-content-wide">
         <div class="modal-header-row">
           <h3 id="transactions-modal-title">Transazioni</h3>
-          <button type="button" class="modal-close-btn" onclick="closeTransactionsModal()">&times;</button>
+          <button type="button" class="modal-close-btn" onclick="closeTransactionsModal()" aria-label="Chiudi">&times;</button>
         </div>
         <div id="transactions-modal-body">
           <p>Caricamento...</p>
@@ -162,7 +169,7 @@ async function showTransactionsModal(id) {
 
   const participant = participants.find(p => p.id === id);
   const name = participant ? participant.nome : '';
-  document.getElementById('transactions-modal-title').textContent = `Transazioni - ${name}`;
+  document.getElementById('transactions-modal-title').textContent = `Transazioni di ${name}`;
   document.getElementById('transactions-modal-body').innerHTML = '<p>Caricamento...</p>';
   document.getElementById('transactions-modal').style.display = 'flex';
 
@@ -182,58 +189,50 @@ function renderTransactionsTable(transactions) {
     return;
   }
 
+  const num = (value, cls = '') => value ? `<td class="${cls}">${formatNumber(value)}</td>` : '<td class="mute">–</td>';
   const rows = transactions.map(t => {
-    const balanceAfter = t.saldo_dopo;
-    let effectClass = '';
-    let effectText = 'Pari';
-
-    if (balanceAfter > 0) {
-      effectClass = 'saldo-credito';
-      effectText = `+${formatNumber(balanceAfter)} €`;
-    } else if (balanceAfter < 0) {
-      effectClass = 'saldo-debito';
-      effectText = `${formatNumber(balanceAfter)} €`;
-    }
+    const saldo = saldoLabel(t.saldo_dopo);
+    const saldoCell = `<td><span class="pill ${saldo.cls}">${saldo.amount}</span></td>`;
 
     if (t.tipo === 'rettifica') {
       return `
       <tr>
-        <td>${formatDateItalian(t.data)}</td>
-        <td colspan="6">Rettifica manuale: ${t.importo > 0 ? '+' : ''}${formatNumber(t.importo)} €</td>
-        <td class="${effectClass}" style="font-weight:bold;">${effectText}</td>
-        <td class="col-note">${escapeHtml(t.note)}</td>
+        <td class="left">${formatDateItalian(t.data)}</td>
+        <td colspan="6" class="left">Rettifica manuale ${formatSigned(t.importo)}</td>
+        ${saldoCell}
+        <td class="nt">${escapeHtml(t.note)}</td>
       </tr>
     `;
     }
 
     return `
       <tr>
-        <td>${formatDateItalian(t.data)}</td>
-        <td class="col-num">${t.conto_produttore ? '€' + formatNumber(t.conto_produttore) : '-'}</td>
-        <td class="col-num">${t.importo_saldato ? '€' + formatNumber(t.importo_saldato) : '-'}</td>
-        <td class="col-num col-credito">${t.credito_lasciato ? '€' + formatNumber(t.credito_lasciato) : '-'}</td>
-        <td class="col-num col-debito">${debitoNuovo(t) ? '€' + formatNumber(debitoNuovo(t)) : '-'}</td>
-        <td class="col-num col-credito">${t.usa_credito ? '€' + formatNumber(t.usa_credito) : '-'}</td>
-        <td class="col-num col-debito">${debitoPagato(t) ? '€' + formatNumber(debitoPagato(t)) : '-'}</td>
-        <td class="${effectClass}" style="font-weight:bold;">${effectText}</td>
-        <td class="col-note">${escapeHtml(t.note)}</td>
+        <td class="left">${formatDateItalian(t.data)}</td>
+        ${num(t.conto_produttore)}
+        ${num(t.importo_saldato)}
+        ${num(t.credito_lasciato, 'cr')}
+        ${num(debitoNuovo(t), 'db')}
+        ${num(t.usa_credito)}
+        ${num(debitoPagato(t))}
+        ${saldoCell}
+        <td class="nt">${escapeHtml(t.note)}</td>
       </tr>
     `;
   }).join('');
 
   body.innerHTML = `
-    <table class="transactions-table">
+    <table class="t">
       <thead>
         <tr>
-          <th>Data</th>
-          <th class="col-num">Conto</th>
-          <th class="col-num">Saldato</th>
-          <th class="col-num">Lascia Credito</th>
-          <th class="col-num">Lascia Debito</th>
-          <th class="col-num">Usa Credito</th>
-          <th class="col-num">Salda Debito</th>
-          <th>Saldo</th>
-          <th class="col-note">Note</th>
+          <th class="left">Data</th>
+          <th>Conto</th>
+          <th>Saldato</th>
+          <th>Lascia credito</th>
+          <th>Lascia debito</th>
+          <th>Usa credito</th>
+          <th>Salda debito</th>
+          <th>Saldo dopo</th>
+          <th class="nt">Note</th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>

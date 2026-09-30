@@ -113,7 +113,7 @@ async function checkSession() {
       // Display user info in header
       const userDisplay = document.getElementById('user-display');
       if (userDisplay) {
-        userDisplay.textContent = `👤 ${data.user.username}`;
+        userDisplay.textContent = data.user.username;
 
         // Inject change password button only for local-auth users
         const isOidc = data.user.authMethod === 'oidc';
@@ -121,16 +121,19 @@ async function checkSession() {
           const btn = document.createElement('button');
           btn.id = 'btn-change-password';
           btn.type = 'button';
-          btn.className = 'btn-change-password';
-          btn.textContent = '🔑';
-          btn.title = 'Cambia Password';
+          btn.title = 'Cambia password';
           btn.onclick = showPasswordModal;
-          // Mobile: insert into .header-actions before the logout button
-          // Desktop: insert after user-display in the nav
+          // Mobile: key icon in .header-actions before the logout button
+          // Desktop: text link after user-display in the nav
           const actions = document.querySelector('.header-actions');
           if (actions) {
+            btn.className = 'icon-btn';
+            btn.setAttribute('aria-label', 'Cambia password');
+            btn.innerHTML = '<svg aria-hidden="true"><use href="#i-chiave"/></svg>';
             actions.insertBefore(btn, actions.firstChild);
           } else {
+            btn.className = 'link-btn';
+            btn.textContent = 'Cambia password';
             userDisplay.parentNode.insertBefore(btn, userDisplay.nextSibling);
           }
         }
@@ -139,7 +142,7 @@ async function checkSession() {
       // Show logs nav item only for admins
       const navLogs = document.getElementById('nav-logs');
       if (navLogs) {
-        navLogs.style.display = data.user.isAdmin ? '' : 'none';
+        navLogs.classList.toggle('initially-hidden', !data.user.isAdmin);
       }
 
       return data.user;

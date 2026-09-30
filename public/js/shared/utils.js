@@ -36,15 +36,15 @@ function formatDateItalian(dateStr) {
   return `${day}/${month}/${year}`;
 }
 
-// Replace comma with dot and validate decimal input in real-time
+// Replace dot with the Italian decimal comma and validate decimal input in real-time
 function normalizeInputField(input) {
-  if (input.value.includes(',')) {
+  if (input.value.includes('.')) {
     const cursorPos = input.selectionStart;
-    input.value = input.value.replace(',', '.');
+    input.value = input.value.replace('.', ',');
     input.setSelectionRange(cursorPos, cursorPos);
   }
 
-  const valid = /^-?\d*\.?\d*$/.test(input.value);
+  const valid = /^-?\d*,?\d*$/.test(input.value);
   if (!valid && input.value !== '') {
     input.value = input.value.slice(0, -1);
   }
@@ -52,7 +52,7 @@ function normalizeInputField(input) {
 
 // Clear zero values on input focus for easier editing
 function handleInputFocus(input) {
-  if (input.value === '0' || input.value === '0.0' || input.value === '0.00') {
+  if (parseAmount(input.value) === 0) {
     input.value = '';
   }
 }
@@ -76,17 +76,25 @@ function roundToCents(amount) {
   return Math.round(amount * 100) / 100;
 }
 
-// Format saldo for display (remove unnecessary .0)
-function formatSaldo(val) {
-  return formatNumber(Math.abs(val));
-}
-
-// Format a number for display, hiding .00 decimals
+// Format a number for display with the Italian decimal comma, hiding ,00 decimals.
+// Also written into readonly inputs: parseAmount reads it back.
 function formatNumber(value) {
   if (value === null || value === undefined) return '';
   const num = roundToCents(parseFloat(value));
   if (isNaN(num)) return '';
-  return num % 1 === 0 ? num.toString() : num.toFixed(2);
+  return num % 1 === 0 ? num.toString() : num.toFixed(2).replace('.', ',');
+}
+
+// "11,50 €" — display only
+function formatEuro(value) {
+  return `${formatNumber(value)} €`;
+}
+
+// "+6 €" / "−1 €" (typographic minus) — display only, never written into inputs
+function formatSigned(value) {
+  const num = roundToCents(parseFloat(value) || 0);
+  if (num === 0) return '0 €';
+  return `${num > 0 ? '+' : '−'}${formatEuro(Math.abs(num))}`;
 }
 
 // On a partial debt payoff a movimento stores the whole prior debt in debito_saldato and the

@@ -20,7 +20,7 @@ function renderStorico(storico) {
   container.innerHTML = '';
 
   if (storico.length === 0) {
-    container.innerHTML = '<p class="empty-state">Nessuna consegna registrata</p>';
+    container.innerHTML = '<li class="empty-state">Nessuna consegna registrata</li>';
     return;
   }
 
@@ -32,162 +32,72 @@ function renderStorico(storico) {
 
 function createConsegnaCard(consegna) {
   const isExpanded = expandedConsegnaId === consegna.id;
-  const card = document.createElement('div');
-  card.className = 'storico-consegna-card';
-  if (isExpanded) {
-    card.classList.add('expanded');
-  }
+  const card = document.createElement('li');
+  card.className = 'storico-consegna-card' + (isExpanded ? ' expanded' : '');
 
-  // Header (sempre visibile)
-  const header = document.createElement('div');
+  // Header (always visible)
+  const header = document.createElement('button');
+  header.type = 'button';
   header.className = 'storico-consegna-header';
+  header.setAttribute('aria-expanded', String(isExpanded));
   header.onclick = () => toggleConsegnaCard(consegna.id);
-
-  const dateFormatted = formatDateItalianWithDay(consegna.data);
-  const arrow = isExpanded ? '▲' : '▼';
-
   header.innerHTML = `
-    <div class="storico-consegna-date">
-      📦 ${dateFormatted}
-    </div>
-    <span class="storico-arrow">${arrow}</span>
+    <span class="storico-consegna-date">${formatDateLong(consegna.data)}</span>
+    <span class="storico-consegna-meta">${consegna.chiusa ? 'chiusa' : 'aperta'}, in cassa ${formatEuro(consegna.lasciato_in_cassa)}</span>
   `;
-
   card.appendChild(header);
 
-  // Content (espandibile)
   if (isExpanded) {
     const content = document.createElement('div');
     content.className = 'storico-consegna-content';
-
-    // Sezione CASSA
-    const cassaSection = createCassaSection(consegna);
-    content.appendChild(cassaSection);
-
-    // Sezione MOVIMENTI
+    content.appendChild(createCassaSection(consegna));
     if (consegna.movimenti && consegna.movimenti.length > 0) {
-      const movimentiSection = createMovimentiSection(consegna.movimenti);
-      content.appendChild(movimentiSection);
+      content.appendChild(createMovimentiSection(consegna.movimenti));
     }
-
     card.appendChild(content);
   }
 
   return card;
 }
 
+// Same sum as the consegna page: trovato + incassato − pagato = lasciato
 function createCassaSection(consegna) {
+  const incassato = (consegna.movimenti || []).reduce((sum, m) => sum + (m.importo_saldato || 0), 0);
   const section = document.createElement('div');
-  section.className = 'storico-cassa-section';
-
-  // TROVATO IN CASSA
-  const trovatoDiv = document.createElement('div');
-  trovatoDiv.className = 'storico-cassa-item';
-  trovatoDiv.innerHTML = `
-    <div class="storico-cassa-label">TROVATO IN CASSA</div>
-    <div class="storico-cassa-value">
-      ${formatNumber(consegna.trovato_in_cassa)} €
-    </div>
+  section.className = 'conto conto-small';
+  section.innerHTML = `
+    <div><label>Trovato</label><span class="conto-val">${formatNumber(consegna.trovato_in_cassa)}</span></div>
+    <div><label>Incassato</label><span class="conto-val"><i>+</i>${formatNumber(roundToCents(incassato))}</span></div>
+    <div><label>Pagato</label><span class="conto-val"><i>−</i>${formatNumber(consegna.pagato_produttore)}</span></div>
+    <div class="tot"><label>In cassa</label><span class="conto-val"><i>=</i>${formatNumber(consegna.lasciato_in_cassa)}</span></div>
   `;
-  section.appendChild(trovatoDiv);
-
-  // PAGATO PRODUTTORE
-  const pagatoDiv = document.createElement('div');
-  pagatoDiv.className = 'storico-cassa-item';
-  pagatoDiv.innerHTML = `
-    <div class="storico-cassa-label">PAGATO PRODUTTORE</div>
-    <div class="storico-cassa-value">
-      ${formatNumber(consegna.pagato_produttore)} €
-    </div>
-  `;
-  section.appendChild(pagatoDiv);
-
-  // LASCIATO IN CASSA
-  const lasciatoDiv = document.createElement('div');
-  lasciatoDiv.className = 'storico-cassa-item';
-  lasciatoDiv.innerHTML = `
-    <div class="storico-cassa-label">LASCIATO IN CASSA</div>
-    <div class="storico-cassa-value lasciato">
-      ${formatNumber(consegna.lasciato_in_cassa)} €
-    </div>
-  `;
-  section.appendChild(lasciatoDiv);
-
   return section;
 }
 
 function createMovimentiSection(movimenti) {
-  const section = document.createElement('div');
-  section.className = 'storico-movimenti-section';
-
-  const title = document.createElement('div');
-  title.className = 'storico-movimenti-title';
-  title.innerHTML = `👥 MOVIMENTI`;
-  section.appendChild(title);
-
-  movimenti.forEach(m => {
-    const card = createParticipantMovimentoCard(m);
-    section.appendChild(card);
-  });
-
-  return section;
+  const list = document.createElement('ul');
+  list.className = 'mov-list';
+  list.innerHTML = movimenti.map(createParticipantMovimentoItem).join('');
+  return list;
 }
 
-function createParticipantMovimentoCard(m) {
-  const card = document.createElement('div');
-
-  // Calcola saldo finale
+function createParticipantMovimentoItem(m) {
   const saldoFinale = (m.credito_lasciato || 0) - (m.debito_lasciato || 0);
+  const cls = saldoFinale > 0 ? 'cr' : saldoFinale < 0 ? 'db' : '';
+  const word = saldoFinale > 0 ? 'credito' : saldoFinale < 0 ? 'debito' : 'in pari';
 
-  let cardClass = 'storico-participant-card';
-  let saldoBadgeClass = 'storico-saldo-badge';
-  let saldoText = '0.00 €';
+  const details = [`conto <b>${formatNumber(m.conto_produttore || 0)}</b>`, `pagato <b>${formatNumber(m.importo_saldato || 0)}</b>`];
+  if (debitoPagato(m)) details.push(`salda debito <b>${formatNumber(debitoPagato(m))}</b>`);
+  if (m.usa_credito) details.push(`usa credito <b>${formatNumber(m.usa_credito)}</b>`);
 
-  if (saldoFinale > 0) {
-    cardClass += ' credito';
-    saldoBadgeClass += ' credito';
-    saldoText = `+${formatNumber(saldoFinale)} €`;
-  } else if (saldoFinale < 0) {
-    cardClass += ' debito';
-    saldoBadgeClass += ' debito';
-    saldoText = `${formatNumber(saldoFinale)} €`;
-  } else {
-    cardClass += ' pari';
-    saldoBadgeClass += ' pari';
-    saldoText = '0 €';
-  }
-
-  card.className = cardClass;
-
-  const noteIcon = m.note ? ` <span class="note-icon clickable">ℹ️</span>` : '';
-
-  card.innerHTML = `
-    <div class="storico-participant-header">
-      <div class="storico-participant-name">👤 ${escapeHtml(m.nome)}${noteIcon}</div>
-    </div>
-    <div class="storico-participant-details">
-      ${m.conto_produttore ? `Conto: ${formatNumber(m.conto_produttore)} €` : ''}
-      ${m.importo_saldato ? ` • Pagato: ${formatNumber(m.importo_saldato)} €` : ''}
-      ${debitoPagato(m) ? ` • Salda debito: ${formatNumber(debitoPagato(m))} €` : ''}
-      ${m.usa_credito ? ` • Usa credito: ${formatNumber(m.usa_credito)} €` : ''}
-      ${!m.conto_produttore && !m.importo_saldato && !m.usa_credito && !m.debito_saldato ? 'Pari' : ''}
-    </div>
-    ${m.note ? `<div class="storico-participant-note">📝 ${escapeHtml(m.note)}</div>` : ''}
+  return `
+    <li>
+      <span class="nm">${escapeHtml(m.nome)}</span>
+      <span class="sub">${details.join(', ')}</span>
+      <span class="esito ${cls}"><b>${formatSigned(saldoFinale)}</b><small>${word}</small></span>
+      ${m.note ? `<span class="nota">${escapeHtml(m.note)}</span>` : ''}
+    </li>
   `;
-
-  // Add click handler for note icon
-  if (m.note) {
-    const noteIconEl = card.querySelector('.note-icon');
-    const noteDiv = card.querySelector('.storico-participant-note');
-    if (noteIconEl && noteDiv) {
-      noteIconEl.addEventListener('click', (e) => {
-        e.stopPropagation();
-        noteDiv.classList.toggle('show');
-      });
-    }
-  }
-
-  return card;
 }
 
 function toggleConsegnaCard(id) {

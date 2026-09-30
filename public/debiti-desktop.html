@@ -4,96 +4,111 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Saldi</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=30">
 </head>
 <body>
     <nav class="nav-menu">
+        <span class="brand">GASS Torpignattara</span>
         <ul>
-            <li><a href="/consegna">📦 Consegna</a></li>
-            <li><a href="/debiti" class="active">💰 Saldi</a></li>
-            <li><a href="/storico">📋 Storico</a></li>
-            <li id="nav-logs" class="initially-hidden"><a href="/logs">📝 Logs</a></li>
-            <li class="nav-spacer"><span class="nav-user-tab"><span id="user-display"></span></span></li>
-            <li><a href="#" class="nav-logout-tab" onclick="handleLogout(); return false;" title="Esci"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></a></li>
+            <li><a href="/consegna">Consegna</a></li>
+            <li><a href="/debiti" class="active">Saldi</a></li>
+            <li><a href="/storico">Storico</a></li>
+            <li id="nav-logs" class="initially-hidden"><a href="/logs">Attività</a></li>
         </ul>
+        <div class="nav-user">
+            <span id="user-display"></span>
+            <button type="button" class="link-btn" onclick="handleLogout()">Esci</button>
+        </div>
     </nav>
 
-    <div class="container">
-        <div class="page-header">
-            <h1>💰 SALDI</h1>
+    <header class="stag">
+        <svg class="stag-ill" aria-hidden="true"><use href="#ill-zucca"/></svg>
+        <div id="header-when" class="stag-when" data-label="Saldi al" data-today="Saldi di oggi">Saldi di oggi</div>
+        <h1 id="header-date-display"></h1>
+        <p id="season-produce" class="stag-prod"></p>
+        <div class="stag-acts">
             <div class="header-date-section">
-                <span id="header-date-display">Oggi</span>
-                <button type="button" class="change-date-btn" onclick="toggleDatePicker()">📅</button>
+                <button type="button" class="change-date-btn ghost" onclick="toggleDatePicker()">Cambia data</button>
                 <div id="date-picker-container" class="date-picker-popup initially-hidden"></div>
             </div>
+            <button id="btn-add-participant" type="button" class="ghost" onclick="showAddForm()">+ Aggiungi partecipante</button>
         </div>
+    </header>
+
+    <main class="container">
         <input type="hidden" id="data" required>
         <input type="hidden" id="data-display">
 
-        <div id="status" class="status"></div>
+        <div id="status" class="status" role="status"></div>
 
-        <div class="section">
-            <h2>Partecipanti</h2>
-            <button id="btn-add-participant" class="btn-add" onclick="showAddForm()">+ Aggiungi Partecipante</button>
-
-            <div id="add-form" class="initially-hidden" style="margin-top: 15px;">
-                <form onsubmit="event.preventDefault(); addParticipant();">
+        <div id="add-form" class="panel initially-hidden">
+            <h2>Nuovo partecipante</h2>
+            <form onsubmit="event.preventDefault(); addParticipant();">
+                <div class="form-row">
                     <div class="form-group">
-                        <label>Nome Completo:</label>
-                        <input type="text" id="new-name" placeholder="Nome e Cognome" required>
+                        <label for="new-name">Nome completo</label>
+                        <input type="text" id="new-name" placeholder="Nome e cognome" required>
                     </div>
                     <div class="form-group">
-                        <label>Username:</label>
+                        <label for="new-username">Username</label>
                         <input type="text" id="new-username" placeholder="username" required>
                     </div>
                     <div class="form-group">
-                        <label>Password:</label>
-                        <input type="password" id="new-password" placeholder="min. 8 caratteri" required minlength="8">
+                        <label for="new-password">Password</label>
+                        <input type="password" id="new-password" placeholder="almeno 8 caratteri" required minlength="8">
                     </div>
-                    <button type="submit" class="btn-save">Salva</button>
-                    <button type="button" onclick="hideAddForm()">Annulla</button>
-                </form>
-            </div>
-
-            <table id="participants-table">
-                <thead>
-                    <tr>
-                        <th id="th-username">Username</th>
-                        <th>Nome</th>
-                        <th>Saldo (€)</th>
-                        <th>Ultima Modifica</th>
-                        <th>Azioni</th>
-                    </tr>
-                </thead>
-                <tbody id="participants-body">
-                </tbody>
-            </table>
+                </div>
+                <div class="entry-actions">
+                    <button type="button" class="btn btn-line" onclick="hideAddForm()">Annulla</button>
+                    <button type="submit" class="btn btn-go">Aggiungi partecipante</button>
+                </div>
+            </form>
         </div>
-    </div>
+
+        <div class="d-head2">
+            <h2>Partecipanti</h2>
+            <div id="saldi-totals" class="tots"></div>
+        </div>
+
+        <table id="participants-table" class="t">
+            <thead>
+                <tr>
+                    <th>Partecipante</th>
+                    <th id="th-username" class="left">Username</th>
+                    <th>Saldo</th>
+                    <th>Ultimo movimento</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="participants-body">
+            </tbody>
+        </table>
+        <p id="saldi-hint" class="hint initially-hidden"></p>
+    </main>
 
     <!-- Edit User Modal (Admin only) -->
     <div id="edit-user-modal" class="modal initially-hidden">
         <div class="modal-content">
-            <h3>Modifica Utente</h3>
+            <h3>Modifica utente</h3>
             <form onsubmit="event.preventDefault(); submitEditUser();">
                 <div class="form-group">
-                    <label>Username:</label>
-                    <span id="edit-user-username" style="font-weight: bold;"></span>
-                    <small style="color: #666;">(non modificabile)</small>
+                    <label>Username</label>
+                    <span id="edit-user-username" class="static-value"></span>
+                    <small class="hint">non si può modificare</small>
                 </div>
                 <div class="form-group">
-                    <label>Nome Completo:</label>
+                    <label for="edit-user-displayname">Nome completo</label>
                     <input type="text" id="edit-user-displayname" required>
                 </div>
                 <div class="form-group">
-                    <label>Nuova Password:</label>
+                    <label for="edit-user-password">Nuova password</label>
                     <input type="password" id="edit-user-password" placeholder="Lascia vuoto per non modificare" minlength="8">
                 </div>
                 <div id="edit-user-error" class="error-message initially-hidden"></div>
                 <div class="modal-buttons">
-                    <button type="button" class="btn-delete" onclick="deleteUserFromModal()" style="margin-right: auto;">Elimina Utente</button>
-                    <button type="submit" class="btn-save">Salva</button>
-                    <button type="button" onclick="closeEditUserModal()">Annulla</button>
+                    <button type="button" class="btn btn-danger push-left" onclick="deleteUserFromModal()">Elimina utente</button>
+                    <button type="button" class="btn btn-line" onclick="closeEditUserModal()">Annulla</button>
+                    <button type="submit" class="btn btn-go">Salva</button>
                 </div>
             </form>
         </div>
@@ -103,12 +118,13 @@
         <span id="app-version"></span>
     </footer>
 
-    <script src="js/shared/utils.js"></script>
-    <script src="js/shared/calendar.js"></script>
+    <script src="js/shared/utils.js?v=30"></script>
+    <script src="js/shared/season.js?v=30"></script>
+    <script src="js/shared/calendar.js?v=30"></script>
     <script src="js/shared/api-client.js"></script>
-    <script src="js/shared/debiti-common.js"></script>
-    <script src="js/shared/auth.js"></script>
+    <script src="js/shared/debiti-common.js?v=30"></script>
+    <script src="js/shared/auth.js?v=30"></script>
     <script src="js/shared/version.js"></script>
-    <script src="js/debiti-desktop.js?v=7"></script>
+    <script src="js/debiti-desktop.js?v=30"></script>
 </body>
 </html>

@@ -29,152 +29,94 @@ function renderParticipants() {
 
 function createParticipantCard(p) {
   const isExpanded = expandedParticipantId === p.id;
+  const saldo = saldoLabel(p.saldo);
+  const adminBadge = p.is_admin ? '<span class="admin-badge">admin</span>' : '';
 
-  const card = document.createElement('div');
-
-  // Determine card class based on saldo type
-  let cardClass = 'saldo-card-collapsed';
-  let saldoBadgeClass = 'saldo-amount-badge';
-  let saldoText = '0.00 €';
-
-  if (p.saldo < 0) {
-    cardClass += ' has-debito';
-    saldoBadgeClass += ' saldo-debito';
-    saldoText = `${formatNumber(p.saldo)} €`;
-  } else if (p.saldo > 0) {
-    cardClass += ' has-credito';
-    saldoBadgeClass += ' saldo-credito';
-    saldoText = `+${formatNumber(p.saldo)} €`;
-  } else {
-    cardClass += ' is-pari';
-    saldoBadgeClass += ' saldo-pari';
-    saldoText = '0 €';
-  }
-
-  if (isExpanded) {
-    card.className = 'saldo-card-expanded';
-    if (p.saldo < 0) {
-      card.classList.add('has-debito');
-    } else if (p.saldo > 0) {
-      card.classList.add('has-credito');
-    }
-  } else {
-    card.className = cardClass;
-  }
-
-  const adminBadge = p.is_admin ? '<span class="admin-badge">Admin</span>' : '';
+  const card = document.createElement('li');
+  const summary = `
+    <span class="nm">${escapeHtml(p.nome)}${adminBadge}</span>
+    <span class="sub">ultimo movimento ${formatDateItalian(p.ultima_modifica)}</span>
+    <span class="esito ${saldo.cls}"><b>${saldo.amount}</b><small>${saldo.word}</small></span>
+  `;
 
   if (!isExpanded) {
-    // Collapsed view
     card.onclick = () => toggleParticipantCard(p.id);
-    card.innerHTML = `
-      <div class="saldo-info-left">
-        <div class="saldo-name">👤 ${escapeHtml(p.nome)}${adminBadge}</div>
-        <div class="saldo-last-date">Ultimo movimento: ${formatDateItalian(p.ultima_modifica)}</div>
-      </div>
-      <div class="${saldoBadgeClass}">
-        ${saldoText}
-      </div>
-    `;
-  } else {
-    // Expanded view
-    const canEdit = isAdmin() && isViewingToday();
+    card.innerHTML = summary;
+    return card;
+  }
 
-    let editSectionHtml = '';
-    if (canEdit) {
-      editSectionHtml = `
-        <div class="saldo-edit-section">
-          <div class="saldo-edit-title">✏️ Modifica Saldo Attuale</div>
-          <div class="input-row">
-            <div>
-              <label style="font-size: 12px; color: #6c757d; margin-bottom: 5px; display: block;">Nuovo Credito</label>
-              <input type="text"
-                     inputmode="decimal"
-                     id="credito-input-${p.id}"
-                     class="input-field"
-                     value="${p.saldo > 0 ? p.saldo : ''}"
-                     placeholder="0.00"
-                     oninput="normalizeInputField(this); updateSaldoInputs(${p.id}, 'credito')"
-                     onfocus="handleInputFocus(this)"
-                     ${p.saldo < 0 ? 'disabled style="opacity: 0.5;"' : ''}>
-            </div>
-            <div>
-              <label style="font-size: 12px; color: #6c757d; margin-bottom: 5px; display: block;">Nuovo Debito</label>
-              <input type="text"
-                     inputmode="decimal"
-                     id="debito-input-${p.id}"
-                     class="input-field"
-                     value="${p.saldo < 0 ? Math.abs(p.saldo) : ''}"
-                     placeholder="0.00"
-                     oninput="normalizeInputField(this); updateSaldoInputs(${p.id}, 'debito')"
-                     onfocus="handleInputFocus(this)"
-                     ${p.saldo > 0 ? 'disabled style="opacity: 0.5;"' : ''}>
-            </div>
+  card.className = 'open';
+  const canEdit = isAdmin() && isViewingToday();
+
+  let editSectionHtml = '';
+  if (canEdit) {
+    editSectionHtml = `
+      <div class="saldo-edit-section">
+        <h3>Modifica saldo</h3>
+        <div class="input-row">
+          <div class="form-group">
+            <label for="credito-input-${p.id}">Nuovo credito</label>
+            <input type="text"
+                   inputmode="decimal"
+                   id="credito-input-${p.id}"
+                   class="input-field"
+                   value="${p.saldo > 0 ? formatNumber(p.saldo) : ''}"
+                   placeholder="0"
+                   oninput="normalizeInputField(this); updateSaldoInputs(${p.id}, 'credito')"
+                   onfocus="handleInputFocus(this)"
+                   ${p.saldo < 0 ? 'disabled' : ''}>
+          </div>
+          <div class="form-group">
+            <label for="debito-input-${p.id}">Nuovo debito</label>
+            <input type="text"
+                   inputmode="decimal"
+                   id="debito-input-${p.id}"
+                   class="input-field"
+                   value="${p.saldo < 0 ? formatNumber(Math.abs(p.saldo)) : ''}"
+                   placeholder="0"
+                   oninput="normalizeInputField(this); updateSaldoInputs(${p.id}, 'debito')"
+                   onfocus="handleInputFocus(this)"
+                   ${p.saldo > 0 ? 'disabled' : ''}>
           </div>
         </div>
+        <p class="hint">La modifica manuale registra una rettifica con la data di oggi.</p>
+        <button class="btn btn-go btn-block" onclick="saveSaldo(${p.id})">Salva saldo</button>
+      </div>
+    `;
+  }
 
-        <div class="info-badge info-badge-warning">
-          ⚠️ Modifica manuale del saldo. Usa con attenzione.
-        </div>
+  card.innerHTML = `
+    <div class="saldo-header-expanded clickable" id="header-${p.id}">${summary}</div>
+    ${editSectionHtml}
+    <div class="saldo-transactions-section" id="transactions-${p.id}">
+      <h3>Transazioni</h3>
+      <div class="transactions-loading">Caricamento…</div>
+    </div>
+    <button class="btn btn-line btn-block" onclick="toggleParticipantCard(${p.id})">Chiudi</button>
+  `;
 
-        <button class="big-btn big-btn-success" onclick="saveSaldo(${p.id})">
-          💾 Salva Modifiche
-        </button>
-      `;
+  // Add click handler to header and load transactions after render
+  setTimeout(() => {
+    const header = document.getElementById(`header-${p.id}`);
+    if (header) {
+      header.addEventListener('click', () => toggleParticipantCard(p.id));
     }
 
-    card.innerHTML = `
-      <div class="saldo-header-expanded clickable" id="header-${p.id}">
-        <div>
-          <div class="participant-name-expanded">👤 ${escapeHtml(p.nome)}${adminBadge}</div>
-          <div class="saldo-last-date">Ultimo movimento: ${formatDateItalian(p.ultima_modifica)}</div>
-        </div>
-        <div class="${saldoBadgeClass}">
-          ${saldoText}
-        </div>
-      </div>
+    if (canEdit) {
+      const creditoInput = document.getElementById(`credito-input-${p.id}`);
+      const debitoInput = document.getElementById(`debito-input-${p.id}`);
 
-      ${editSectionHtml}
-
-      <div class="saldo-transactions-section" id="transactions-${p.id}">
-        <div class="saldo-edit-title">📋 Transazioni</div>
-        <div class="transactions-loading">Caricamento...</div>
-      </div>
-
-      <button class="big-btn big-btn-secondary" onclick="toggleParticipantCard(${p.id})">
-        ✖️ Chiudi
-      </button>
-    `;
-
-    // Add click handler to header and load transactions after render
-    setTimeout(() => {
-      const header = document.getElementById(`header-${p.id}`);
-      if (header) {
-        header.addEventListener('click', (e) => {
-          // Don't close if clicking on input fields or buttons
-          if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
-            toggleParticipantCard(p.id);
-          }
-        });
+      if (p.saldo >= 0 && creditoInput) {
+        creditoInput.focus();
+        creditoInput.select();
+      } else if (p.saldo < 0 && debitoInput) {
+        debitoInput.focus();
+        debitoInput.select();
       }
+    }
 
-      if (canEdit) {
-        const creditoInput = document.getElementById(`credito-input-${p.id}`);
-        const debitoInput = document.getElementById(`debito-input-${p.id}`);
-
-        if (p.saldo >= 0 && creditoInput) {
-          creditoInput.focus();
-          creditoInput.select();
-        } else if (p.saldo < 0 && debitoInput) {
-          debitoInput.focus();
-          debitoInput.select();
-        }
-      }
-
-      // Load transactions
-      loadTransactions(p.id);
-    }, 100);
-  }
+    loadTransactions(p.id);
+  }, 100);
 
   return card;
 }
@@ -196,49 +138,37 @@ async function loadTransactions(participantId) {
     transactionsCache[participantId] = result.transactions;
     renderTransactions(container, result.transactions);
   } catch (error) {
-    container.innerHTML = `<div class="saldo-edit-title">📋 Transazioni</div><p class="empty-state">Errore: ${escapeHtml(error.message)}</p>`;
+    container.innerHTML = `<h3>Transazioni</h3><p class="empty-state">Errore: ${escapeHtml(error.message)}</p>`;
   }
 }
 
 function renderTransactions(container, transactions) {
   if (transactions.length === 0) {
-    container.innerHTML = `<div class="saldo-edit-title">📋 Transazioni</div><p class="empty-state">Nessuna transazione</p>`;
+    container.innerHTML = `<h3>Transazioni</h3><p class="empty-state">Nessuna transazione</p>`;
     return;
   }
 
-  let html = '<div class="saldo-edit-title">📋 Transazioni</div>';
+  let html = '<h3>Transazioni</h3>';
   html += '<div class="transactions-list">';
 
   transactions.forEach(t => {
-    const balanceAfter = t.saldo_dopo;
-    let effectClass = 'tx-pari';
-    let effectText = 'Pari';
-
-    if (balanceAfter > 0) {
-      effectClass = 'tx-credito';
-      effectText = `+${formatNumber(balanceAfter)} €`;
-    } else if (balanceAfter < 0) {
-      effectClass = 'tx-debito';
-      effectText = `${formatNumber(balanceAfter)} €`;
-    }
+    const saldo = saldoLabel(t.saldo_dopo);
 
     const details = [];
-    if (t.tipo === 'rettifica') details.push(`Rettifica manuale: ${t.importo > 0 ? '+' : ''}${formatNumber(t.importo)} €`);
-    if (t.conto_produttore) details.push(`Conto: ${formatNumber(t.conto_produttore)} €`);
-    if (t.importo_saldato) details.push(`Pagato: ${formatNumber(t.importo_saldato)} €`);
-    if (t.usa_credito) details.push(`Usa credito: ${formatNumber(t.usa_credito)} €`);
-    if (debitoPagato(t)) details.push(`Salda debito: ${formatNumber(debitoPagato(t))} €`);
+    if (t.tipo === 'rettifica') details.push(`rettifica manuale ${formatSigned(t.importo)}`);
+    if (t.conto_produttore) details.push(`conto ${formatEuro(t.conto_produttore)}`);
+    if (t.importo_saldato) details.push(`pagato ${formatEuro(t.importo_saldato)}`);
+    if (t.usa_credito) details.push(`usa credito ${formatEuro(t.usa_credito)}`);
+    if (debitoPagato(t)) details.push(`salda debito ${formatEuro(debitoPagato(t))}`);
 
     html += `
-      <div class="transaction-item ${effectClass}">
+      <div class="transaction-item">
         <div class="transaction-header">
           <span class="transaction-date">${formatDateItalian(t.data)}</span>
-          <span class="transaction-effect ${effectClass}">${effectText}</span>
+          <span class="transaction-effect ${saldo.cls}">${saldo.amount} ${saldo.word}</span>
         </div>
-        <div class="transaction-details">
-          ${details.length > 0 ? details.join(' · ') : 'Pari'}
-        </div>
-        ${t.note ? `<div class="transaction-note">📝 ${escapeHtml(t.note)}</div>` : ''}
+        <div class="transaction-details">${details.length > 0 ? details.join(', ') : 'nessun importo'}</div>
+        ${t.note ? `<div class="transaction-note">${escapeHtml(t.note)}</div>` : ''}
       </div>
     `;
   });
@@ -349,7 +279,7 @@ async function saveSaldo(id) {
 
   try {
     await API.put(`/api/participants/${id}`, { saldo: newSaldo });
-    showStatus('✓ Saldo aggiornato', 'success');
+    showStatus('Saldo aggiornato', 'success');
     expandedParticipantId = null;
     originalSaldoValues = {}; // Clear saved values after successful save
     transactionsCache = {}; // Clear transactions cache

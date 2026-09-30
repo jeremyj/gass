@@ -4,101 +4,102 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Consegna</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=30">
 </head>
 <body>
     <nav class="nav-menu">
+        <span class="brand">GASS Torpignattara</span>
         <ul>
-            <li><a href="/consegna" class="active">📦 Consegna</a></li>
-            <li><a href="/debiti">💰 Saldi</a></li>
-            <li><a href="/storico">📋 Storico</a></li>
-            <li id="nav-logs" class="initially-hidden"><a href="/logs">📝 Logs</a></li>
-            <li class="nav-spacer"><span class="nav-user-tab"><span id="user-display"></span></span></li>
-            <li><a href="#" class="nav-logout-tab" onclick="handleLogout(); return false;" title="Esci"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></a></li>
+            <li><a href="/consegna" class="active">Consegna</a></li>
+            <li><a href="/debiti">Saldi</a></li>
+            <li><a href="/storico">Storico</a></li>
+            <li id="nav-logs" class="initially-hidden"><a href="/logs">Attività</a></li>
         </ul>
+        <div class="nav-user">
+            <span id="user-display"></span>
+            <button type="button" class="link-btn" onclick="handleLogout()">Esci</button>
+        </div>
     </nav>
 
-    <div class="container">
-        <div class="page-header">
-            <h1>📦 CONSEGNA</h1>
+    <header class="stag">
+        <svg class="stag-ill" aria-hidden="true"><use href="#ill-zucca"/></svg>
+        <div id="header-when" class="stag-when" data-label="Consegna di" data-today="Consegna di oggi">Consegna di oggi</div>
+        <h1 id="header-date-display"></h1>
+        <p id="season-produce" class="stag-prod"></p>
+        <div class="stag-acts">
             <div class="header-date-section">
-                <span id="header-date-display">Oggi</span>
-                <button type="button" class="change-date-btn" onclick="toggleDatePicker()">📅</button>
+                <button type="button" class="change-date-btn ghost" onclick="toggleDatePicker()">Cambia data</button>
                 <div id="date-picker-container" class="date-picker-popup initially-hidden"></div>
             </div>
+            <div id="consegna-status-section" class="stato initially-hidden">
+                <span id="closed-badge" class="stato-label chiusa initially-hidden">Consegna chiusa</span>
+                <span id="open-badge" class="stato-label aperta">Consegna aperta</span>
+                <button type="button" id="close-consegna-btn" class="link-btn" onclick="toggleConsegnaStatus()">Chiudi consegna</button>
+                <button type="button" id="btn-annulla-consegna" class="link-btn initially-hidden" onclick="annullaConsegna()">Annulla consegna</button>
+            </div>
         </div>
+    </header>
+
+    <main class="container">
         <input type="hidden" id="data" required>
         <input type="hidden" id="data-display">
 
-        <div id="status" class="status"></div>
+        <div id="status" class="status" role="status"></div>
 
-        <form id="consegna-form" onsubmit="event.preventDefault(); saveData();">
-        <div class="section">
-            <h2>Dati Giornata</h2>
-            <div class="form-group">
-                <label>Trovato in cassa:</label>
-                <input type="text" inputmode="decimal" id="trovatoInCassa" placeholder="0.00" readonly class="input-readonly">
-            </div>
-            <div class="form-group">
-                <label>Pagato Produttore:</label>
-                <input type="text" inputmode="decimal" id="pagatoProduttore" placeholder="0.00" readonly class="input-readonly">
-            </div>
-            <div class="form-group">
-                <label>Lasciato in cassa:</label>
-                <input type="text" inputmode="decimal" id="lasciatoInCassa" placeholder="0.00" readonly class="input-readonly">
+        <form id="consegna-form" class="d-grid" onsubmit="event.preventDefault(); saveData();">
+            <aside class="cassa-v" aria-label="Cassa">
+                <p>
+                    <label for="trovatoInCassa">Trovato in cassa</label>
+                    <input type="text" id="trovatoInCassa" readonly tabindex="-1">
+                </p>
+                <p>
+                    <label for="incassatoCassa">+ Incassato</label>
+                    <output id="incassatoCassa">0</output>
+                </p>
+                <p>
+                    <label for="pagatoProduttore">− Pagato al produttore</label>
+                    <input type="text" id="pagatoProduttore" readonly tabindex="-1">
+                </p>
+                <p class="tot">
+                    <label for="lasciatoInCassa">= Lasciato in cassa</label>
+                    <input type="text" id="lasciatoInCassa" readonly tabindex="-1">
+                </p>
                 <div id="cassa-warning" class="cassa-warning initially-hidden" role="alert"></div>
-            </div>
-            <div id="note-giornata-group" class="form-group initially-hidden">
-                <label>Note:</label>
-                <input type="text" id="noteGiornata" placeholder="Note per questa consegna" oninput="onNoteGiornataChange()">
-            </div>
-            <button type="submit" class="btn-save initially-hidden" id="save-btn-cassa" style="margin-top: 20px;">Salva Movimenti</button>
-
-            <!-- Chiudi/Riapri Consegna -->
-            <div id="consegna-status-section" class="initially-hidden" style="margin-top: 20px;">
-                <span id="closed-badge" class="closed-badge initially-hidden">
-                    🔒 Consegna chiusa
-                </span>
-                <div class="consegna-action-buttons">
-                    <button type="button" id="close-consegna-btn" class="btn-danger" onclick="toggleConsegnaStatus()">
-                        🔒 Chiudi Consegna
-                    </button>
-                    <button type="button" id="btn-annulla-consegna" class="btn-danger initially-hidden" onclick="annullaConsegna()">
-                        🗑️ Annulla Consegna
-                    </button>
+                <div id="note-giornata-group" class="form-group note-giornata initially-hidden">
+                    <label for="noteGiornata">Note della giornata</label>
+                    <input type="text" id="noteGiornata" placeholder="Aggiungi una nota" oninput="onNoteGiornataChange()">
+                    <button type="submit" class="btn btn-go initially-hidden" id="save-btn-cassa">Salva note</button>
                 </div>
-            </div>
-        </div>
+            </aside>
 
-        <button type="button" id="btn-nuova-consegna" class="btn-save initially-hidden" onclick="startNuovaConsegna()">📦 Nuova Consegna</button>
+            <section>
+                <button type="button" id="btn-nuova-consegna" class="btn btn-go initially-hidden" onclick="startNuovaConsegna()">Nuova consegna</button>
 
-        <div id="section-partecipanti" class="section initially-hidden">
-            <h2>Partecipanti</h2>
-            <div class="form-group">
-                <label>Seleziona partecipante:</label>
-                <select id="participant-select" onchange="showParticipantForm()">
-                    <option value="">-- Seleziona un partecipante --</option>
-                </select>
-            </div>
-
-            <div id="selected-participants"></div>
-
-            <div id="movimenti-giorno" style="margin-top: 30px;"></div>
-        </div>
-
+                <div id="section-partecipanti" class="initially-hidden">
+                    <div class="d-bar">
+                        <h2>Movimenti</h2>
+                        <select id="participant-select" class="add-select" onchange="showParticipantForm()" aria-label="Aggiungi partecipante">
+                            <option value="">+ Aggiungi partecipante</option>
+                        </select>
+                    </div>
+                    <div id="movimenti-giorno"></div>
+                    <div id="selected-participants"></div>
+                </div>
+            </section>
         </form>
-    </div>
+    </main>
 
     <footer class="app-footer">
         <span id="app-version"></span>
     </footer>
 
-    <script src="js/shared/utils.js"></script>
-    <script src="js/shared/calendar.js"></script>
+    <script src="js/shared/utils.js?v=30"></script>
+    <script src="js/shared/season.js?v=30"></script>
+    <script src="js/shared/calendar.js?v=30"></script>
     <script src="js/shared/api-client.js"></script>
-    <script src="js/shared/consegna-common.js"></script>
-    <script src="js/shared/auth.js"></script>
+    <script src="js/shared/consegna-common.js?v=30"></script>
+    <script src="js/shared/auth.js?v=30"></script>
     <script src="js/shared/version.js"></script>
-    <script src="js/consegna-desktop.js?v=20"></script>
+    <script src="js/consegna-desktop.js?v=30"></script>
 </body>
 </html>

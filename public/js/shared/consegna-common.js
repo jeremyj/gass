@@ -19,18 +19,21 @@ function calculatePagatoProduttore() {
   return roundToCents(totalPagato);
 }
 
+function calculateIncassato() {
+  const movimenti = existingConsegnaMovimenti || [];
+  return roundToCents(movimenti.reduce((sum, m) => sum + (m.importo_saldato || 0), 0));
+}
+
 function calculateLasciatoInCassa() {
   const trovatoInCassa = parseAmount(document.getElementById('trovatoInCassa').value);
   const pagatoProduttore = parseAmount(document.getElementById('pagatoProduttore').value);
+  return roundToCents(trovatoInCassa + calculateIncassato() - pagatoProduttore);
+}
 
-  let incassato = 0;
-  if (existingConsegnaMovimenti && existingConsegnaMovimenti.length > 0) {
-    existingConsegnaMovimenti.forEach(m => {
-      incassato += (m.importo_saldato || 0);
-    });
-  }
-
-  return roundToCents(trovatoInCassa + incassato - pagatoProduttore);
+// Incassato is display-only (the cassa row shows the whole sum trovato + incassato − pagato)
+function updateIncassato() {
+  const field = document.getElementById('incassatoCassa');
+  if (field) field.value = formatNumber(calculateIncassato());
 }
 
 function updatePagatoProduttore() {
@@ -43,6 +46,7 @@ function updateLasciatoInCassa() {
   const lasciatoField = document.getElementById('lasciatoInCassa');
   const value = calculateLasciatoInCassa();
   lasciatoField.value = formatNumber(value);
+  updateIncassato();
   updateCassaWarning();
 }
 
@@ -56,7 +60,7 @@ function updateCassaWarning() {
   lasciatoField.classList.toggle('input-cassa-negativa', negativa);
   if (warning) {
     warning.textContent = negativa
-      ? `⚠️ Cassa negativa: mancano €${formatSaldo(lasciato)}. Controlla i movimenti prima di chiudere.`
+      ? `Cassa negativa: mancano ${formatEuro(Math.abs(lasciato))}. Controlla i movimenti prima di chiudere.`
       : '';
     warning.style.display = negativa ? 'block' : 'none';
   }
@@ -64,13 +68,12 @@ function updateCassaWarning() {
 
 // Summary of the current consegna shown in close/annulla confirmations
 function consegnaSummaryDetails() {
-  const movimenti = existingConsegnaMovimenti || [];
-  const incassato = movimenti.reduce((sum, m) => sum + (m.importo_saldato || 0), 0);
+  const amount = id => formatEuro(parseAmount(document.getElementById(id).value));
   return [
-    ['Movimenti', String(movimenti.length)],
-    ['Incassato', `€${formatNumber(roundToCents(incassato))}`],
-    ['Pagato produttore', `€${document.getElementById('pagatoProduttore').value || '0'}`],
-    ['Lasciato in cassa', `€${document.getElementById('lasciatoInCassa').value || '0'}`]
+    ['Movimenti', String((existingConsegnaMovimenti || []).length)],
+    ['Incassato', formatEuro(calculateIncassato())],
+    ['Pagato produttore', amount('pagatoProduttore')],
+    ['Lasciato in cassa', amount('lasciatoInCassa')]
   ];
 }
 
@@ -100,7 +103,7 @@ function renderParticipantSelect() {
   const select = document.getElementById('participant-select');
   if (!select) return;
 
-  select.innerHTML = '<option value="">-- Seleziona un partecipante --</option>';
+  select.innerHTML = '<option value="">+ Aggiungi partecipante</option>';
 
   participants.forEach(p => {
     const option = document.createElement('option');
@@ -108,6 +111,22 @@ function renderParticipantSelect() {
     option.textContent = p.nome;
     select.appendChild(option);
   });
+}
+
+// Open a saved movimento from the day's list (same as picking the participant in the select)
+function openMovimento(id) {
+  const select = document.getElementById('participant-select');
+  if (isConsegnaClosed || !select) return;
+  select.value = id;
+  showParticipantForm();
+  document.getElementById('selected-participants')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// The day's movimenti, shown as a list (mobile) or table (desktop): the outcome of one movimento
+function esitoMovimento(m) {
+  if (m.credito_lasciato > 0) return { cls: 'cr', amount: formatSigned(m.credito_lasciato), word: 'credito' };
+  if (m.debito_lasciato > 0) return { cls: 'db', amount: formatSigned(-m.debito_lasciato), word: 'debito' };
+  return { cls: '', amount: '0 €', word: 'in pari' };
 }
 
 // ===== CONSEGNA STATUS =====
@@ -193,7 +212,7 @@ function handleContoProduttoreInput(id, saldo) {
     if (debitoSaldato) {
       debitoSaldato.dataset.submitValue = String(debitoPreesistente);
       debitoSaldato.dataset.full = saldaTuttoIlDebito ? 'true' : '';
-      debitoSaldato.value = debitoSaldabile;
+      debitoSaldato.value = formatNumber(debitoSaldabile);
     }
     diff = diff - debitoSaldabile;
   }
@@ -205,20 +224,20 @@ function handleContoProduttoreInput(id, saldo) {
     const usaTuttoIlCredito = creditoUsabile === creditoPreesistente;
 
     if (usaCredito) {
-      usaCredito.value = creditoUsabile;
+      usaCredito.value = formatNumber(creditoUsabile);
       usaCredito.dataset.full = usaTuttoIlCredito ? 'true' : '';
     }
     diff = diff + creditoUsabile;
   }
 
   if (creditoLasciato) {
-    creditoLasciato.value = diff > 0 ? diff : '';
+    creditoLasciato.value = diff > 0 ? formatNumber(diff) : '';
   }
   if (debitoLasciato) {
     if (diff < 0) {
-      debitoLasciato.value = -diff;
+      debitoLasciato.value = formatNumber(-diff);
     } else {
-      debitoLasciato.value = remainingDebtCarryForward > 0 ? remainingDebtCarryForward : '';
+      debitoLasciato.value = remainingDebtCarryForward > 0 ? formatNumber(remainingDebtCarryForward) : '';
     }
   }
 
@@ -227,9 +246,9 @@ function handleContoProduttoreInput(id, saldo) {
   if (remainingDebtEl) {
     if (debitoSaldabileUsed > 0) {
       // Remaining debt is shown in the debitoLasciato field; only show "saldato!" when fully paid
-      remainingDebtEl.textContent = remainingDebtCarryForward === 0 ? '👉 debito saldato' : '';
+      remainingDebtEl.textContent = remainingDebtCarryForward === 0 ? 'Debito saldato per intero' : '';
     } else if (diff < 0 && debitoPreesistente > 0) {
-      remainingDebtEl.textContent = `👉 nuovo debito €${formatNumber(debitoPreesistente + Math.abs(diff))}`;
+      remainingDebtEl.textContent = `Debito totale dopo oggi: ${formatEuro(debitoPreesistente + Math.abs(diff))}`;
     } else {
       remainingDebtEl.textContent = '';
     }
@@ -240,17 +259,17 @@ function handleContoProduttoreInput(id, saldo) {
   if (remainingCreditEl) {
     if (creditoUsabileUsed > 0) {
       const remaining = creditoPreesistente - creditoUsabileUsed;
-      remainingCreditEl.textContent = remaining > 0 ? `👉 nuovo credito €${formatNumber(remaining)}` : '👉 credito esaurito';
+      remainingCreditEl.textContent = remaining > 0 ? `Credito dopo oggi: ${formatEuro(remaining)}` : 'Credito usato per intero';
     } else if (diff > 0 && creditoPreesistente > 0) {
-      remainingCreditEl.textContent = `👉 nuovo credito €${formatNumber(creditoPreesistente + diff)}`;
+      remainingCreditEl.textContent = `Credito totale dopo oggi: ${formatEuro(creditoPreesistente + diff)}`;
     } else if (diff < 0 && creditoPreesistente > 0) {
       const newCredit = Math.round((creditoPreesistente + diff) * 100) / 100;
       if (newCredit > 0) {
-        remainingCreditEl.textContent = `👉 nuovo credito €${formatNumber(newCredit)}`;
+        remainingCreditEl.textContent = `Credito dopo oggi: ${formatEuro(newCredit)}`;
       } else if (newCredit === 0) {
-        remainingCreditEl.textContent = '👉 credito esaurito';
+        remainingCreditEl.textContent = 'Credito usato per intero';
       } else {
-        remainingCreditEl.textContent = `👉 nuovo debito €${formatNumber(-newCredit)}`;
+        remainingCreditEl.textContent = `Debito dopo oggi: ${formatEuro(-newCredit)}`;
       }
     } else {
       remainingCreditEl.textContent = '';
@@ -274,6 +293,33 @@ function syncPartialFieldVisibility(id, fieldId) {
 function syncDebitoCreditoVisibility(id) {
   syncPartialFieldVisibility(id, 'debitoSaldato');
   syncPartialFieldVisibility(id, 'usaCredito');
+  syncResultVisibility(id);
+
+  // The steps box shows only when it has a partial line or a status note in it
+  const passi = document.getElementById(`passi_${id}`);
+  if (passi) {
+    const lines = [...passi.querySelectorAll('.computed')].some(el => el.style.display !== 'none');
+    const notes = [...passi.querySelectorAll('.passo-note')].some(el => el.textContent !== '');
+    passi.style.display = lines || notes ? '' : 'none';
+  }
+}
+
+// The result shows "Lascia credito" or "Lascia debito" only when set, "In pari" otherwise
+function syncResultVisibility(id) {
+  const shown = {};
+  ['credito', 'debito'].forEach(fieldId => {
+    const field = document.getElementById(`${fieldId}_${id}`);
+    shown[fieldId] = !!field && parseAmount(field.value) > 0;
+    const group = field && field.closest('.form-group');
+    if (group) group.style.display = shown[fieldId] ? '' : 'none';
+  });
+  const pari = document.getElementById(`pari_${id}`);
+  if (pari) pari.style.display = shown.credito || shown.debito ? 'none' : '';
+  const risult = document.getElementById(`risult_${id}`);
+  if (risult) {
+    risult.classList.toggle('is-cr', shown.credito);
+    risult.classList.toggle('is-db', shown.debito);
+  }
 }
 
 // ===== NUOVA CONSEGNA FLOW =====
@@ -309,15 +355,15 @@ function hideNoteGiornata() {
 function startNuovaConsegna() {
   showPartecipantiSection();
   showNoteGiornata();
-  // Show status section with only annulla button (no consegna yet, so hide close/badge)
+  // Show the status line with only the annulla button (no consegna yet, so hide close/badges)
   const statusSection = document.getElementById('consegna-status-section');
-  if (statusSection) statusSection.style.display = statusSection.closest('.section') ? 'flex' : 'block';
-  const closeBtn = document.getElementById('close-consegna-btn');
-  if (closeBtn) closeBtn.style.display = 'none';
-  const closedBadge = document.getElementById('closed-badge');
-  if (closedBadge) closedBadge.style.display = 'none';
+  if (statusSection) statusSection.style.display = 'flex';
+  ['close-consegna-btn', 'closed-badge', 'open-badge'].forEach(elId => {
+    const el = document.getElementById(elId);
+    if (el) el.style.display = 'none';
+  });
   const annullaBtn = document.getElementById('btn-annulla-consegna');
-  if (annullaBtn) annullaBtn.style.display = statusSection?.closest('.section') ? 'inline-block' : 'block';
+  if (annullaBtn) annullaBtn.style.display = 'inline';
 }
 
 async function annullaConsegna() {
@@ -348,32 +394,21 @@ async function annullaConsegna() {
 
 // ===== SECTION BUILDERS =====
 
-function buildCreditoSection(id, saldoText, saldoClass) {
+// A computed amount shown as a text line ("Salda parte del debito    3 €"); the disabled input
+// keeps the value readMovimentoForm submits
+function buildComputedLine(id, fieldId, label) {
   return `
-    <div class="flow-section flow-credito">
-      <div class="flow-section-title">
-        <span>CREDITO<span class="saldo-info ${saldoClass}">${escapeHtml(saldoText)}</span><span id="remainingCredit_${id}" class="remaining-debt-info"></span></span>
-      </div>
-      <div class="form-group">
-        <label>Usa credito parziale:</label>
-        <input type="text" inputmode="decimal" id="usaCredito_${id}" placeholder="0.00" disabled>
-      </div>
-    </div>
+    <p class="form-group computed">
+      <label for="${fieldId}_${id}">${label}</label>
+      <span><input type="text" id="${fieldId}_${id}" disabled> €</span>
+    </p>
   `;
 }
 
-function buildDebitoSection(id, saldoText, saldoClass) {
-  return `
-    <div class="flow-section flow-debito">
-      <div class="flow-section-title">
-        <span>DEBITO INIZIALE<span class="saldo-info ${saldoClass}">${escapeHtml(saldoText)}</span><span id="remainingDebt_${id}" class="remaining-debt-info"></span></span>
-      </div>
-      <div class="form-group">
-        <label>Salda parziale:</label>
-        <input type="text" inputmode="decimal" id="debitoSaldato_${id}" placeholder="0.00" disabled>
-      </div>
-    </div>
-  `;
+function saldoPrimaText(saldo) {
+  if (saldo > 0) return `credito ${formatSigned(saldo)}`;
+  if (saldo < 0) return `debito ${formatSigned(saldo)}`;
+  return 'in pari';
 }
 
 function createHiddenInput(id, value) {
@@ -397,12 +432,9 @@ function renderParticipant(id, buttonsHtml) {
   const haCredito = saldo > 0;
   const haDebito = saldo < 0;
 
-  const saldoText = saldo !== 0 ? `€${formatSaldo(saldo)}` : 'IN PARI';
-  const saldoClass = saldo < 0 ? 'saldo-debito' : saldo > 0 ? 'saldo-credito' : '';
-
   const card = document.createElement('div');
   card.className = 'participant-card-flow';
-  card.innerHTML = buildParticipantCardHTML(id, saldo, saldoText, saldoClass, haCredito, haDebito, buttonsHtml);
+  card.innerHTML = buildParticipantCardHTML(id, p.nome, saldo, haCredito, haDebito, buttonsHtml);
   addHiddenFields(card, id, haCredito, haDebito);
   container.appendChild(card);
 
@@ -433,7 +465,7 @@ function populateExistingMovimento(id, saldo) {
   for (const [fieldId, value] of Object.entries(fields)) {
     const field = document.getElementById(fieldId);
     if (field && value) {
-      field.value = value;
+      field.value = fieldId.startsWith('note_') ? value : formatNumber(value);
     }
   }
 
@@ -451,48 +483,55 @@ function populateExistingMovimento(id, saldo) {
   syncDebitoCreditoVisibility(id);
 }
 
-function buildParticipantCardHTML(id, saldo, saldoText, saldoClass, haCredito, haDebito, buttonsHtml) {
+function buildParticipantCardHTML(id, nome, saldo, haCredito, haDebito, buttonsHtml) {
+  const saldoClass = saldo > 0 ? 'cr' : saldo < 0 ? 'db' : '';
   return `
-    <div class="flow-section">
-      <div class="flow-section-title">PAGAMENTO</div>
-      <div class="form-group">
-        <label>Conto Produttore:</label>
-        <input type="text" inputmode="decimal" id="contoProduttore_${id}" placeholder="0.00"
-               oninput="normalizeInputField(this); handleContoProduttoreInput(${id}, ${saldo})"
-               onfocus="handleInputFocus(this)">
-      </div>
-      <div class="form-group">
-        <label>Importo saldato:</label>
-        <input type="text" inputmode="decimal" id="importo_${id}" placeholder="0.00"
-               oninput="normalizeInputField(this); handleContoProduttoreInput(${id}, ${saldo}); updateLasciatoInCassa()"
-               onfocus="handleInputFocus(this)">
+    <div class="entry-head">
+      <button type="button" class="entry-back" onclick="closeParticipant(${id})" aria-label="Indietro">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>
+      </button>
+      <div>
+        <h3 class="entry-name">${escapeHtml(nome)}</h3>
+        <span class="pill ${saldoClass}">prima di oggi: ${saldoPrimaText(saldo)}</span>
       </div>
     </div>
 
-    ${haCredito ? buildCreditoSection(id, saldoText, saldoClass) : ''}
-    ${haDebito ? buildDebitoSection(id, saldoText, saldoClass) : ''}
-
-    <div class="flow-section">
-      <div class="row">
-        <div class="form-group">
-          <label>Lascia credito:</label>
-          <input type="text" inputmode="decimal" id="credito_${id}" placeholder="0.00" disabled>
+    <div class="entry-body">
+      <div class="entry-fields">
+        <div class="form-group fld">
+          <label for="contoProduttore_${id}">Conto produttore</label>
+          <span class="fld-in"><input type="text" inputmode="decimal" id="contoProduttore_${id}" placeholder="0"
+                 oninput="normalizeInputField(this); handleContoProduttoreInput(${id}, ${saldo})"
+                 onfocus="handleInputFocus(this)"><span class="unit">€</span></span>
         </div>
-        <div class="form-group">
-          <label>Lascia debito:</label>
-          <input type="text" inputmode="decimal" id="debito_${id}" placeholder="0.00" disabled>
+        <div class="form-group fld">
+          <label for="importo_${id}">Importo saldato</label>
+          <span class="fld-in"><input type="text" inputmode="decimal" id="importo_${id}" placeholder="0"
+                 oninput="normalizeInputField(this); handleContoProduttoreInput(${id}, ${saldo}); updateLasciatoInCassa()"
+                 onfocus="handleInputFocus(this)"><span class="unit">€</span></span>
         </div>
       </div>
-    </div>
 
-    <div class="flow-section">
-      <div class="form-group">
-        <label>Note:</label>
-        <input type="text" id="note_${id}" placeholder="Note aggiuntive">
+      <div class="passi" id="passi_${id}">
+        ${haCredito ? buildComputedLine(id, 'usaCredito', 'Usa parte del credito') : ''}
+        ${haDebito ? buildComputedLine(id, 'debitoSaldato', 'Salda parte del debito') : ''}
+        ${haCredito ? `<p id="remainingCredit_${id}" class="passo-note"></p>` : ''}
+        ${haDebito ? `<p id="remainingDebt_${id}" class="passo-note"></p>` : ''}
       </div>
-    </div>
 
-    ${buttonsHtml}
+      <div class="risult" id="risult_${id}">
+        <div class="cr">${buildComputedLine(id, 'credito', 'Lascia credito')}</div>
+        <div class="db">${buildComputedLine(id, 'debito', 'Lascia debito')}</div>
+        <p id="pari_${id}" class="form-group computed"><label>Esito</label><span>in pari</span></p>
+      </div>
+
+      <div class="form-group fld fld-note">
+        <label for="note_${id}">Note</label>
+        <input type="text" id="note_${id}" placeholder="Aggiungi una nota">
+      </div>
+
+      ${buttonsHtml}
+    </div>
   `;
 }
 

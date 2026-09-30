@@ -15,23 +15,6 @@ let originalNoteGiornata = '';
 let currentConsegnaId = null;
 let isConsegnaClosed = false;
 
-// ===== ACCORDION FUNCTIONS =====
-
-function toggleAccordion(section) {
-  const content = document.getElementById(`content-${section}`);
-  const arrow = document.getElementById(`arrow-${section}`);
-
-  if (content.classList.contains('show')) {
-    content.classList.remove('show');
-    arrow.classList.remove('expanded');
-    arrow.textContent = '▼';
-  } else {
-    content.classList.add('show');
-    arrow.classList.add('expanded');
-    arrow.textContent = '▲';
-  }
-}
-
 // ===== DATA LOADING =====
 
 async function checkDateData() {
@@ -55,9 +38,6 @@ async function checkDateData() {
 
     const select = document.getElementById('participant-select');
     if (select) select.value = '';
-
-    const infoBadge = document.getElementById('participant-info-badge');
-    if (infoBadge) infoBadge.style.display = 'block';
 
     // Clear saved original values
     originalParticipantValues = {};
@@ -160,93 +140,55 @@ function updateConsegnaStatusUI(consegna) {
   isConsegnaClosed = consegna?.chiusa === true;
 
   const statusSection = document.getElementById('consegna-status-section');
-  const closeBtn = document.getElementById('close-consegna-btn');
-  const closedBadge = document.getElementById('closed-badge');
-
   if (!statusSection) return;
 
+  const closeBtn = document.getElementById('close-consegna-btn');
   const annullaBtn = document.getElementById('btn-annulla-consegna');
 
-  // Only show section if consegna exists
-  if (currentConsegnaId) {
-    statusSection.style.display = 'block';
-
-    if (isConsegnaClosed) {
-      closedBadge.style.display = 'block';
-      if (isAdmin()) {
-        closeBtn.style.display = 'block';
-        closeBtn.innerHTML = '🔓 Riapri Consegna';
-        closeBtn.classList.remove('big-btn-danger');
-        closeBtn.classList.add('big-btn-success');
-      } else {
-        closeBtn.style.display = 'none';
-      }
-      if (annullaBtn) annullaBtn.style.display = 'none';
-      // Disable all inputs when consegna is closed (admin must reopen first to edit)
-      disableConsegnaInputs();
-    } else {
-      closedBadge.style.display = 'none';
-      closeBtn.style.display = 'block';
-      closeBtn.innerHTML = '🔒 Chiudi Consegna';
-      closeBtn.classList.remove('big-btn-success');
-      closeBtn.classList.add('big-btn-danger');
-      // Deleting a saved consegna is admin-only (server enforces it too)
-      if (annullaBtn) annullaBtn.style.display = isAdmin() ? 'block' : 'none';
-      enableConsegnaInputs();
-    }
-  } else {
+  // Only show the status line if the consegna exists
+  if (!currentConsegnaId) {
     statusSection.style.display = 'none';
     enableConsegnaInputs(); // Restore inputs/visibility for dates with no consegna
+    return;
+  }
+
+  statusSection.style.display = 'flex';
+  document.getElementById('closed-badge').style.display = isConsegnaClosed ? 'inline' : 'none';
+  document.getElementById('open-badge').style.display = isConsegnaClosed ? 'none' : 'inline';
+  closeBtn.textContent = isConsegnaClosed ? 'Riapri consegna' : 'Chiudi consegna';
+  // Anyone can close; only an admin can reopen or delete a saved consegna (server enforces it too)
+  closeBtn.style.display = !isConsegnaClosed || isAdmin() ? 'inline' : 'none';
+  annullaBtn.style.display = !isConsegnaClosed && isAdmin() ? 'inline' : 'none';
+
+  if (isConsegnaClosed) {
+    disableConsegnaInputs(); // admin must reopen first to edit
+  } else {
+    enableConsegnaInputs();
   }
 }
 
+// A closed consegna keeps its list of movimenti visible, read-only (.consegna-closed hides the add select)
 function disableConsegnaInputs() {
-  // Disable note field
   const noteField = document.getElementById('noteGiornata');
   if (noteField) noteField.disabled = true;
 
-  // Disable participant select
   const select = document.getElementById('participant-select');
   if (select) select.disabled = true;
 
-  // Add closed indicator class to container
   document.querySelector('.container')?.classList.add('consegna-closed');
 
-  // Hide save note button
   const saveNoteBtn = document.getElementById('save-note-btn');
   if (saveNoteBtn) saveNoteBtn.style.display = 'none';
-
-  // Hide movimenti section and ensure cassa is open when consegna is closed
-  const movimentiSection = document.getElementById('section-movimenti');
-  if (movimentiSection) movimentiSection.style.display = 'none';
-
-  // Ensure cassa accordion is open
-  const cassaContent = document.getElementById('content-cassa');
-  const cassaArrow = document.getElementById('arrow-cassa');
-  if (cassaContent && !cassaContent.classList.contains('show')) {
-    cassaContent.classList.add('show');
-    if (cassaArrow) {
-      cassaArrow.classList.add('expanded');
-      cassaArrow.textContent = '▲';
-    }
-  }
 }
 
 function enableConsegnaInputs() {
-  // Enable note field
   const noteField = document.getElementById('noteGiornata');
   if (noteField) noteField.disabled = false;
 
-  // Enable participant select
   const select = document.getElementById('participant-select');
   if (select) select.disabled = false;
 
-  // Remove closed indicator class
   document.querySelector('.container')?.classList.remove('consegna-closed');
-
-  // Restore movimenti section visibility
-  const movimentiSection = document.getElementById('section-movimenti');
-  if (movimentiSection) movimentiSection.style.display = '';
 }
 
 async function saveNoteOnly() {
@@ -280,50 +222,29 @@ function renderMovimentiGiorno() {
   const container = document.getElementById('movimenti-giorno');
   if (!container) return;
 
-  if (!existingConsegnaMovimenti || existingConsegnaMovimenti.length === 0) {
-    container.innerHTML = '';
-    return;
-  }
+  const movimenti = existingConsegnaMovimenti || [];
+  const count = document.getElementById('movimenti-count');
+  if (count) count.textContent = movimenti.length === 1 ? '1 partecipante' : `${movimenti.length} partecipanti`;
 
-  const rows = existingConsegnaMovimenti.map((m) => {
+  container.innerHTML = movimenti.map(m => {
+    const esito = esitoMovimento(m);
     return `
-      <tr>
-        <td><strong>${escapeHtml(m.nome)}</strong></td>
-        <td class="text-right">${m.importo_saldato ? '€' + formatNumber(m.importo_saldato) : ''}</td>
-        <td class="text-right">${m.usa_credito ? '€' + formatNumber(m.usa_credito) : ''}</td>
-        <td class="text-right">${debitoNuovo(m) ? '€' + formatNumber(debitoNuovo(m)) : ''}</td>
-        <td class="text-right">${m.credito_lasciato ? '€' + formatNumber(m.credito_lasciato) : ''}</td>
-        <td class="text-right">${debitoPagato(m) ? '€' + formatNumber(debitoPagato(m)) : ''}</td>
-        <td>${escapeHtml(m.note || '')}</td>
-      </tr>
+      <li onclick="openMovimento(${m.partecipante_id})">
+        <span class="nm">${escapeHtml(m.nome)}</span>
+        <span class="sub">conto <b>${formatNumber(m.conto_produttore || 0)}</b>, pagato <b>${formatNumber(m.importo_saldato || 0)}</b></span>
+        <span class="esito ${esito.cls}"><b>${esito.amount}</b><small>${esito.word}</small></span>
+        ${m.note ? `<span class="nota">${escapeHtml(m.note)}</span>` : ''}
+      </li>
     `;
   }).join('');
-
-  container.innerHTML = `
-    <h3 style="margin-bottom: 10px;">Movimenti del Giorno</h3>
-    <table class="movimenti-giorno-table">
-      <thead><tr>
-        <th>Nome</th>
-        <th class="text-right">Importo Saldato</th>
-        <th class="text-right">Usa Credito</th>
-        <th class="text-right">Debito Lasciato</th>
-        <th class="text-right">Credito Lasciato</th>
-        <th class="text-right">Debito Saldato</th>
-        <th>Note</th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
-  `;
 }
 
 function participantButtonsHTML(id) {
   return `
-    <button class="big-btn big-btn-success" onclick="saveParticipant(${id})">
-      💾 Salva Movimento
-    </button>
-    <button class="big-btn big-btn-secondary" onclick="removeParticipant(${id})">
-      ✖️ Chiudi
-    </button>
+    <div class="entry-actions">
+      <button type="button" class="btn btn-line" onclick="closeParticipant(${id})">Annulla</button>
+      <button type="button" class="btn btn-go" onclick="saveParticipant(${id})">Salva movimento</button>
+    </div>
   `;
 }
 
@@ -338,15 +259,11 @@ function showParticipantForm() {
 
   container.innerHTML = '';
 
-  const infoBadge = document.getElementById('participant-info-badge');
-
   if (!id) {
-    if (infoBadge) infoBadge.style.display = 'block';
     updateLasciatoInCassa();
     return;
   }
 
-  if (infoBadge) infoBadge.style.display = 'none';
   if (renderParticipant(id, participantButtonsHTML(id))) {
     saveOriginalParticipantValues(id);
   }
@@ -369,7 +286,7 @@ function hasUnsavedParticipantChanges(id) {
 
 // ===== PARTICIPANT FORM ACTIONS =====
 
-async function removeParticipant(id) {
+async function closeParticipant(id) {
   // Check for unsaved changes
   if (hasUnsavedParticipantChanges(id)) {
     const ok = await confirmDialog({
@@ -387,11 +304,6 @@ async function removeParticipant(id) {
   const select = document.getElementById('participant-select');
   select.value = '';
 
-  const infoBadge = document.getElementById('participant-info-badge');
-  if (infoBadge) {
-    infoBadge.style.display = 'block';
-  }
-
   // Clear saved values
   delete originalParticipantValues[id];
 
@@ -406,7 +318,7 @@ async function saveWithParticipant(currentId) {
   try {
     await postConsegna([readMovimentoForm(currentId)]);
 
-    showStatus('✓ Movimento salvato', 'success');
+    showStatus('Movimento salvato', 'success');
 
     // Reload consegna data to get updated movements
     await checkDateData();
@@ -419,11 +331,6 @@ async function saveWithParticipant(currentId) {
 
     const select = document.getElementById('participant-select');
     select.value = '';
-
-    const infoBadge = document.getElementById('participant-info-badge');
-    if (infoBadge) {
-      infoBadge.style.display = 'block';
-    }
 
     // Clear saved values
     delete originalParticipantValues[currentId];

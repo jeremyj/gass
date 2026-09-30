@@ -4,25 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Login</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=30">
 </head>
-<body>
+<body class="login-page">
+    <header class="stag">
+        <svg class="stag-ill" aria-hidden="true"><use href="#ill-zucca"/></svg>
+        <div class="stag-when">Gruppo di acquisto solidale</div>
+        <h1>GASS Torpignattara</h1>
+        <p id="season-produce" class="stag-prod"></p>
+    </header>
     <div class="login-container">
-        <div class="login-header">
-            <h1>🌱 GASS Torpignattara</h1>
-        </div>
 
         <div class="login-form">
             <div id="error-message" class="login-error-message"></div>
 
             <!-- Authentik SSO button (shown only when OIDC is enabled) -->
-            <div id="oidc-section" style="display:none; margin-bottom: 1.5rem;">
-                <a href="/auth/oidc/login" class="login-btn" id="oidc-btn" style="display:block; text-align:center; text-decoration:none;">
+            <div id="oidc-section" class="initially-hidden">
+                <a href="/auth/oidc/login" class="btn btn-go btn-block" id="oidc-btn">
                     Accedi
                 </a>
-                <div style="text-align:center; margin-top: 1rem; color: #888; font-size: 0.85em;">
-                    <a href="#" id="show-local-login" style="color: #aaa;">Accesso admin locale</a>
-                </div>
+                <p class="login-alt"><a href="#" id="show-local-login">Accesso admin locale</a></p>
             </div>
 
             <form id="login-form">
@@ -36,11 +37,13 @@
                     <input type="password" id="password" name="password" required>
                 </div>
 
-                <button type="submit" class="login-btn" id="login-btn">Accedi</button>
+                <button type="submit" class="btn btn-go btn-block" id="login-btn">Accedi</button>
             </form>
         </div>
     </div>
 
-    <script src="js/login.js"></script>
+    <script src="js/shared/utils.js?v=30"></script>
+    <script src="js/shared/season.js?v=30"></script>
+    <script src="js/login.js?v=30"></script>
 </body>
 </html>

@@ -87,13 +87,13 @@ function getEventDescription(event) {
 function getEventDetails(event) {
   if (event.event_type === 'movimento_created' || event.event_type === 'movimento_updated' || event.event_type === 'movimento_historical') {
     const parts = [];
-    if (event.conto_produttore) parts.push(`Conto: €${formatNumber(event.conto_produttore)}`);
-    if (event.importo_saldato) parts.push(`Saldato: €${formatNumber(event.importo_saldato)}`);
-    if (event.credito_lasciato) parts.push(`Cred: €${formatNumber(event.credito_lasciato)}`);
-    if (debitoNuovo(event)) parts.push(`Deb: €${formatNumber(debitoNuovo(event))}`);
-    if (event.usa_credito) parts.push(`Usa Cred: €${formatNumber(event.usa_credito)}`);
-    if (debitoPagato(event)) parts.push(`Salda Deb: €${formatNumber(debitoPagato(event))}`);
-    return parts.join(' | ') || (event.details || '-');
+    if (event.conto_produttore) parts.push(`conto ${formatEuro(event.conto_produttore)}`);
+    if (event.importo_saldato) parts.push(`saldato ${formatEuro(event.importo_saldato)}`);
+    if (event.credito_lasciato) parts.push(`lascia credito ${formatEuro(event.credito_lasciato)}`);
+    if (debitoNuovo(event)) parts.push(`lascia debito ${formatEuro(debitoNuovo(event))}`);
+    if (event.usa_credito) parts.push(`usa credito ${formatEuro(event.usa_credito)}`);
+    if (debitoPagato(event)) parts.push(`salda debito ${formatEuro(debitoPagato(event))}`);
+    return parts.join(', ') || (event.details || '-');
   }
   // User management events have details field
   if (event.details) {
@@ -131,7 +131,7 @@ function createLogsTable(events) {
   }).join('');
 
   const table = document.createElement('table');
-  table.className = 'logs-table activity-log';
+  table.className = 't logs-table activity-log';
   table.innerHTML = `
     <thead>
       <tr>
@@ -169,11 +169,11 @@ function renderPagination(data) {
   }
 
   container.innerHTML = `
-    <button onclick="goToPage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}>
+    <button type="button" class="btn btn-line" onclick="goToPage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}>
       &laquo; Precedente
     </button>
     <span class="page-info">Pagina ${currentPage} di ${totalPages} (${data.total} eventi)</span>
-    <button onclick="goToPage(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''}>
+    <button type="button" class="btn btn-line" onclick="goToPage(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''}>
       Successiva &raquo;
     </button>
   `;
