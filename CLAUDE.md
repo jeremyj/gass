@@ -27,7 +27,7 @@
   - `api-client.js` - **Always use `API.*` methods for server calls**
   - `utils.js` - formatNumber, formatDateItalian, parseAmount, showStatus, `confirmDialog` (use instead of `confirm()`), `debitoPagato`/`debitoNuovo`
   - `calendar.js` - Date picker (mobile + desktop), `loadConsegneDates()`
-  - `consegna-common.js` - Shared consegna business logic (mobile + desktop)
+  - `consegna-common.js` - Shared consegna business logic (mobile + desktop): participant card (`renderParticipant(id, buttonsHtml)`, `populateExistingMovimento`), save path (`saveParticipant`, `postConsegna`); page scripts keep only their button row and post-save handling
   - `debiti-common.js` - Shared debiti loading and helpers (mobile + desktop)
   - `auth.js` - Session/logout handling
   - `version.js` - Dynamic version footer
@@ -189,7 +189,7 @@ On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_
 - Edit saldi (debiti page, only for today's date - historical saldi are read-only)
 - Reopen closed consegne
 - Add participants (desktop) - creates a full user account with username/password
-- Delete users (desktop, Modifica Utente) - refused (400) if the user has movimenti or rettifiche (they would CASCADE away); otherwise every non-cascading FK to `users` (activity logs, audit `*_by` columns) is set to NULL first, found dynamically via `pragma_foreign_key_list`
+- Delete users (desktop, Modifica Utente) - refused (400) if the user has movimenti or rettifiche (they would CASCADE away); otherwise every non-cascading FK to `users` (activity logs, audit `*_by` columns) is set to NULL first, found dynamically via `pragma_foreign_key_list`. `manage-users.js delete` bypasses this rule (plain DELETE)
 - Activity logs page (desktop only)
 
 ### Dates are local

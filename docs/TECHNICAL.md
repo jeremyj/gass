@@ -34,9 +34,11 @@ GET    /api/storico                   - Retrieve all deliveries (summary)
 GET    /api/storico/dettaglio         - Retrieve all deliveries with detailed movements
 PUT    /api/participants/:id          - Set participant balance (stored as a rettifica, admin)
 POST   /api/participants              - Create new participant
-DELETE /api/participants/:id          - Delete participant
+DELETE /api/participants/:id          - Delete participant (admin; 400 if the user has movimenti or rettifiche)
 GET    /api/version                   - Get application version from package.json (public, no auth)
 ```
+
+**User deletion:** `movimenti` and `rettifiche_saldo` reference `users` with `ON DELETE CASCADE`, so deleting a user with either would erase their history from past consegne; the route refuses it with 400. For any other user, every non-cascading reference to `users` (`activity_logs.target_user_id`/`actor_user_id`, the `*_by` audit columns) is set to NULL in the same transaction as the delete, so log rows stay. `manage-users.js delete` does a plain `DELETE` and does not apply this rule.
 
 `GET /inbreve` serves `public/inbreve.html`, a one-page guide for new users (public, no auth, printable on one A4 page).
 
@@ -202,6 +204,8 @@ All monetary results are rounded to cents with `roundToCents()` (`server/service
 const roundToCents = (num) => Math.round(num * 100) / 100;
 ```
 
+The client uses the same formula under the same name (`public/js/shared/utils.js`).
+
 All user inputs are normalized:
 ```javascript
 function parseDecimal(value) {
@@ -240,7 +244,7 @@ Cash fields are **always readonly** - no manual override capability in mobile or
   - `incassato = Σ importo_saldato` from all movements
 
 **Display Formatting:**
-- Uses `formatNumber()` to hide unnecessary `.00` decimals on whole numbers
+- Uses `formatNumber()` to hide unnecessary `.00` decimals on whole numbers; it rounds to cents first, so float drift like `20.000000000000004` shows as `20`
 - Shows "42" instead of "42.00" for cleaner UI
 
 #### Participant Movements
