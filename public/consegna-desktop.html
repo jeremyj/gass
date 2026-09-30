@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Consegna</title>
-    <link rel="stylesheet" href="style.css?v=31">
+    <link rel="stylesheet" href="style.css?v=32">
 </head>
 <body>
     <nav class="nav-menu">
@@ -25,7 +25,6 @@
         <div class="stag-art" aria-hidden="true"><svg class="stag-ill"><use href="#ill-zucca"/></svg></div>
         <div id="header-when" class="stag-when" data-label="Consegna di" data-today="Consegna di oggi">Consegna di oggi</div>
         <h1 id="header-date-display"></h1>
-        <p id="season-produce" class="stag-prod"></p>
         <div class="stag-acts">
             <div class="header-date-section">
                 <button type="button" class="change-date-btn ghost" onclick="toggleDatePicker()">Cambia data</button>
@@ -50,7 +49,7 @@
             <aside class="cassa-v" aria-label="Cassa">
                 <p>
                     <label for="trovatoInCassa">Trovato in cassa</label>
-                    <input type="text" id="trovatoInCassa" readonly tabindex="-1">
+                    <output id="trovatoInCassa">0</output>
                 </p>
                 <p>
                     <label for="incassatoCassa">+ Incassato</label>
@@ -58,11 +57,11 @@
                 </p>
                 <p>
                     <label for="pagatoProduttore">− Pagato al produttore</label>
-                    <input type="text" id="pagatoProduttore" readonly tabindex="-1">
+                    <output id="pagatoProduttore">0</output>
                 </p>
                 <p class="tot">
                     <label for="lasciatoInCassa">= Lasciato in cassa</label>
-                    <input type="text" id="lasciatoInCassa" readonly tabindex="-1">
+                    <output id="lasciatoInCassa">0</output>
                 </p>
                 <div id="cassa-warning" class="cassa-warning initially-hidden" role="alert"></div>
                 <div id="note-giornata-group" class="form-group note-giornata initially-hidden">
@@ -94,12 +93,12 @@
     </footer>
 
     <script src="js/shared/utils.js?v=30"></script>
-    <script src="js/shared/season.js?v=30"></script>
+    <script src="js/shared/season.js?v=32"></script>
     <script src="js/shared/calendar.js?v=30"></script>
     <script src="js/shared/api-client.js"></script>
     <script src="js/shared/consegna-common.js?v=31"></script>
-    <script src="js/shared/auth.js?v=30"></script>
+    <script src="js/shared/auth.js?v=32"></script>
     <script src="js/shared/version.js"></script>
-    <script src="js/consegna-desktop.js?v=30"></script>
+    <script src="js/consegna-desktop.js?v=32"></script>
 </body>
 </html>

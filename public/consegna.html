@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Consegna</title>
-    <link rel="stylesheet" href="style.css?v=31">
+    <link rel="stylesheet" href="style.css?v=32">
 </head>
 <body>
     <header class="stag">
@@ -17,7 +17,6 @@
             </div>
         </div>
         <h1 id="header-date-display"></h1>
-        <p id="season-produce" class="stag-prod"></p>
         <div class="header-date-section">
             <button type="button" class="change-date-btn ghost" onclick="toggleDatePicker()">Cambia data</button>
             <div id="date-picker-container" class="date-picker-popup initially-hidden"></div>
@@ -33,7 +32,7 @@
         <section class="conto" aria-label="Cassa">
             <div>
                 <label for="trovatoInCassa">Trovato</label>
-                <input type="text" id="trovatoInCassa" readonly tabindex="-1">
+                <output id="trovatoInCassa">0</output>
             </div>
             <div>
                 <label for="incassatoCassa">Incassato</label>
@@ -41,11 +40,11 @@
             </div>
             <div>
                 <label for="pagatoProduttore">Pagato</label>
-                <span class="conto-val"><i>−</i><input type="text" id="pagatoProduttore" readonly tabindex="-1"></span>
+                <span class="conto-val"><i>−</i><output id="pagatoProduttore">0</output></span>
             </div>
             <div class="tot">
                 <label for="lasciatoInCassa">In cassa</label>
-                <span class="conto-val"><i>=</i><input type="text" id="lasciatoInCassa" readonly tabindex="-1"></span>
+                <span class="conto-val"><i>=</i><output id="lasciatoInCassa">0</output></span>
             </div>
         </section>
         <div id="cassa-warning" class="cassa-warning initially-hidden" role="alert"></div>
@@ -89,12 +88,12 @@
     </footer>
 
     <script src="js/shared/utils.js?v=30"></script>
-    <script src="js/shared/season.js?v=30"></script>
+    <script src="js/shared/season.js?v=32"></script>
     <script src="js/shared/calendar.js?v=30"></script>
     <script src="js/shared/api-client.js"></script>
     <script src="js/shared/consegna-common.js?v=31"></script>
-    <script src="js/shared/auth.js?v=30"></script>
+    <script src="js/shared/auth.js?v=32"></script>
     <script src="js/shared/version.js"></script>
-    <script src="js/consegna.js?v=30"></script>
+    <script src="js/consegna.js?v=32"></script>
 </body>
 </html>
