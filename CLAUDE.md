@@ -99,7 +99,7 @@ Every user is a participant with a saldo. The `partecipanti` table was merged in
 - Manage users: `node manage-users.js admin <username> <on|off>`
 
 ### User Management
-- **Self password change**: All users can change their own password via 🔑 button in header
+- **Self password change**: 🔑 button in header, local-auth accounts only (OIDC users get no button and a 403: they change it in Authentik's user settings, `default-password-change` flow). First OIDC login with Authentik attribute `settings.requirePasswordChange=true` redirects to `/cambia-password`, which sets the new password via the Authentik API and clears the flag (29 of 32 `gass-users` still had it on 2026-09-30, never logged in)
 - **Admin user management**: Admins can edit any user via debiti-desktop page
   - Edit display name
   - Reset password (no current password required)

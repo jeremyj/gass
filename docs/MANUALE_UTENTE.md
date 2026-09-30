@@ -14,19 +14,16 @@ GASS Pagamenti è un sistema di gestione finanziaria per gruppi di acquisto soli
 
 Una guida di una pagina per chi inizia è su https://gass.x86.it/inbreve (non serve il login).
 
-1. Aprire l'applicazione nel browser
-2. Effettuare il login con le credenziali fornite
-   - **Username predefinito**: `admin`
-   - **Password predefinita**: `admin`
-3. **IMPORTANTE**: Cambiare la password predefinita al primo accesso
+1. Aprire https://gass.x86.it e toccare **Accedi**
+2. Nella pagina di Authentik inserire il nome utente e la password provvisoria ricevuti dall'amministratore
+3. Al primo accesso GASS chiede di scegliere una nuova password (almeno 8 caratteri), da scrivere due volte, poi **Salva password**
+
+Dalla volta successiva si entra con il nome utente e la nuova password.
 
 ### Cambiare la Password
 
-Ogni utente può cambiare la propria password autonomamente:
-1. Cliccare sul pulsante 🔑 nell'intestazione della pagina
-2. Inserire la password attuale
-3. Inserire e confermare la nuova password (minimo 4 caratteri)
-4. Cliccare "Salva"
+- **Accesso con Authentik** (tutti i partecipanti): la password si cambia su https://auth.x86.it, dalle impostazioni del proprio utente.
+- **Account locale** (solo amministratore): pulsante 🔑 nell'intestazione, poi password attuale e nuova password (minimo 8 caratteri).
 
 ### Navigazione
 
