@@ -5,7 +5,8 @@ const {
   calculateTrovatoInCassa,
   calculateLasciatoInCassa,
   applyDynamicCalculations,
-  applySaldoChanges
+  applySaldoChanges,
+  roundToCents
 } = require('../services/calculations');
 
 const router = express.Router();
@@ -263,6 +264,7 @@ router.post('/', (req, res) => {
       movimenti.forEach(m => {
         totalPagato += (m.conto_produttore || 0);
       });
+      totalPagato = roundToCents(totalPagato);
       const pagatoAudit = getAuditFields(req, 'update');
       db.prepare('UPDATE consegne SET pagato_produttore = ?, updated_by = ?, updated_at = ? WHERE id = ?')
         .run(totalPagato, pagatoAudit.updated_by, pagatoAudit.updated_at, consegna.id);
@@ -275,7 +277,8 @@ router.post('/', (req, res) => {
       movimenti.forEach(m => {
         incassato += (m.importo_saldato || 0);
       });
-      const lasciato = currentConsegna.trovato_in_cassa + incassato - currentConsegna.pagato_produttore;
+      incassato = roundToCents(incassato);
+      const lasciato = roundToCents(currentConsegna.trovato_in_cassa + incassato - currentConsegna.pagato_produttore);
       const lasciatoAudit = getAuditFields(req, 'update');
       db.prepare('UPDATE consegne SET lasciato_in_cassa = ?, updated_by = ?, updated_at = ? WHERE id = ?')
         .run(lasciato, lasciatoAudit.updated_by, lasciatoAudit.updated_at, consegna.id);
