@@ -14,7 +14,9 @@
   h1 { font-size: 30px; line-height: 1.2; margin: 0 0 8px; }
   p { margin: 0 0 16px; }
   .sub { color: var(--muted); }
-  video { display: block; width: auto; max-width: 100%; max-height: 85vh; margin: 24px auto; border-radius: 12px; background: #000;
+  /* Phone-shaped video (390×844): as wide as the column, never taller than 85% of the visible screen */
+  video { display: block; aspect-ratio: 390 / 844; height: auto; margin: 24px auto;
+          width: min(100%, calc(85vh * 390 / 844)); width: min(100%, calc(85svh * 390 / 844)); border-radius: 12px; background: #000;
           box-shadow: 0 6px 24px rgba(0,0,0,.15); }
   a { color: var(--accent); font-weight: 600; }
 </style>
