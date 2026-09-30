@@ -250,13 +250,9 @@ function enableConsegnaInputs() {
 }
 
 async function saveNoteOnly() {
-  const data = getSelectedDate();
-  const trovatoInCassa = parseAmount(document.getElementById('trovatoInCassa').value);
-  const pagatoProduttore = calculatePagatoProduttore();
-  const lasciatoInCassa = calculateLasciatoInCassa();
   const noteGiornata = document.getElementById('noteGiornata').value || '';
 
-  if (!data) {
+  if (!getSelectedDate()) {
     showStatus('Errore: data non valida', 'error');
     return;
   }
@@ -264,14 +260,7 @@ async function saveNoteOnly() {
   showStatus('Salvataggio note in corso...', 'success');
 
   try {
-    await API.post('/api/consegna', {
-      data,
-      trovatoInCassa,
-      pagatoProduttore,
-      lasciatoInCassa,
-      noteGiornata,
-      partecipanti: [],
-    });
+    await postConsegna([]);
 
     showStatus('Note salvate con successo!', 'success');
     // Reset note modified flag
@@ -509,28 +498,6 @@ function hasUnsavedParticipantChanges(id) {
 
 // ===== PARTICIPANT FORM ACTIONS =====
 
-async function saveParticipant(id) {
-  const data = document.getElementById('data').value;
-  const trovatoInCassa = roundUpCents(parseAmount(document.getElementById('trovatoInCassa').value));
-  const pagatoProduttore = roundUpCents(parseAmount(document.getElementById('pagatoProduttore').value));
-  const noteGiornata = document.getElementById('noteGiornata').value || '';
-
-  if (!data) {
-    showStatus('Inserisci la data', 'error');
-    return;
-  }
-
-  const debitoLasciato = parseAmount(document.getElementById(`debito_${id}`).value);
-  const creditoLasciato = parseAmount(document.getElementById(`credito_${id}`).value);
-
-  if (debitoLasciato > 0 && creditoLasciato > 0) {
-    showStatus(`Errore: non puoi lasciare sia credito che debito contemporaneamente`, 'error');
-    return;
-  }
-
-  await saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteGiornata, id);
-}
-
 async function removeParticipant(id) {
   // Check for unsaved changes
   if (hasUnsavedParticipantChanges(id)) {
@@ -562,56 +529,11 @@ async function removeParticipant(id) {
 
 // ===== SAVE DATA =====
 
-async function saveCassaOnly() {
-  // Read values from DOM
-  const data = document.getElementById('data').value;
-  const trovatoInCassa = roundUpCents(parseAmount(document.getElementById('trovatoInCassa').value));
-  const pagatoProduttore = roundUpCents(parseAmount(document.getElementById('pagatoProduttore').value));
-  const lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
-  const noteGiornata = document.getElementById('noteGiornata').value || '';
-
-  if (!data) {
-    showStatus('Inserisci la data', 'error');
-    return;
-  }
-
-  showStatus('Salvataggio dati cassa in corso...', 'success');
-
-  try {
-    await API.post('/api/consegna', {
-      data, trovatoInCassa, pagatoProduttore, lasciatoInCassa,
-      noteGiornata,
-      partecipanti: [],
-    });
-
-    showStatus('✓ Cassa salvata', 'success');
-    await loadConsegneDates(); // Refresh calendar
-    setTimeout(() => checkDateData(), 1000);
-  } catch (error) {
-    showStatus('Errore durante il salvataggio: ' + error.message, 'error');
-  }
-}
-
-async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteGiornata, currentId) {
+async function saveWithParticipant(currentId) {
   showStatus('Salvataggio in corso...', 'success');
 
-  const p = participants.find(part => part.id === currentId);
-  if (!p) {
-    showStatus('Partecipante non trovato', 'error');
-    return;
-  }
-
-  const partecipantiData = [readMovimentoForm(currentId)];
-
-  // Always read calculated values from DOM
-  const lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
-
   try {
-    await API.post('/api/consegna', {
-      data, trovatoInCassa, pagatoProduttore, lasciatoInCassa,
-      noteGiornata,
-      partecipanti: partecipantiData,
-    });
+    await postConsegna([readMovimentoForm(currentId)]);
 
     showStatus('✓ Movimento salvato', 'success');
 

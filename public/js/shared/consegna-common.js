@@ -4,6 +4,7 @@
 // Depends on these globals defined in page-specific JS:
 //   participants, existingConsegnaMovimenti, saldiBefore,
 //   currentConsegnaId, isConsegnaClosed
+// and these page-specific functions: saveWithParticipant(id), saveCassaOnly() (desktop only)
 // Depends on: utils.js, calendar.js (loadConsegneDates, getSelectedDate), api-client.js (API)
 
 // ===== CASSA CALCULATIONS =====
@@ -403,32 +404,50 @@ function readMovimentoForm(id) {
   };
 }
 
-async function saveData() {
-  const data = document.getElementById('data').value;
-  const trovatoInCassa = roundUpCents(parseAmount(document.getElementById('trovatoInCassa').value));
-  const pagatoProduttore = roundUpCents(parseAmount(document.getElementById('pagatoProduttore').value));
-  const noteGiornata = document.getElementById('noteGiornata').value || '';
+// POST the consegna for the selected date with the current cassa fields and note
+function postConsegna(partecipanti) {
+  const amount = id => roundUpCents(parseAmount(document.getElementById(id).value));
+  return API.post('/api/consegna', {
+    data: document.getElementById('data').value,
+    trovatoInCassa: amount('trovatoInCassa'),
+    pagatoProduttore: amount('pagatoProduttore'),
+    lasciatoInCassa: amount('lasciatoInCassa'),
+    noteGiornata: document.getElementById('noteGiornata').value || '',
+    partecipanti,
+  });
+}
 
-  if (!data) {
+// Validate and save one participant's movimento (saveWithParticipant is page-specific)
+async function saveParticipant(id) {
+  if (!document.getElementById('data').value) {
     showStatus('Inserisci la data', 'error');
     return;
   }
 
-  const select = document.getElementById('participant-select');
-  const currentId = parseInt(select.value);
-
-  if (!currentId) {
-    await saveCassaOnly();
-    return;
-  }
-
-  const debitoLasciato = parseAmount(document.getElementById(`debito_${currentId}`).value);
-  const creditoLasciato = parseAmount(document.getElementById(`credito_${currentId}`).value);
+  const debitoLasciato = parseAmount(document.getElementById(`debito_${id}`).value);
+  const creditoLasciato = parseAmount(document.getElementById(`credito_${id}`).value);
 
   if (debitoLasciato > 0 && creditoLasciato > 0) {
     showStatus(`Errore: non puoi lasciare sia credito che debito contemporaneamente`, 'error');
     return;
   }
 
-  await saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteGiornata, currentId);
+  if (!participants.find(p => p.id === id)) {
+    showStatus('Partecipante non trovato', 'error');
+    return;
+  }
+
+  await saveWithParticipant(id);
+}
+
+// Desktop form submit: cassa only, or the selected participant's movimento
+async function saveData() {
+  const currentId = parseInt(document.getElementById('participant-select').value);
+
+  if (!currentId) {
+    await saveCassaOnly();
+    return;
+  }
+
+  await saveParticipant(currentId);
 }

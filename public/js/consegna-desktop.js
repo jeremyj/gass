@@ -385,26 +385,15 @@ function clearParticipantForm() {
 // ===== SAVE DATA =====
 
 async function saveCassaOnly() {
-  const data = document.getElementById('data').value;
-  const trovatoInCassa = roundUpCents(parseAmount(document.getElementById('trovatoInCassa').value));
-  const pagatoProduttore = roundUpCents(parseAmount(document.getElementById('pagatoProduttore').value));
-  const noteGiornata = document.getElementById('noteGiornata').value || '';
-
-  if (!data) {
+  if (!document.getElementById('data').value) {
     showStatus('Inserisci la data', 'error');
     return;
   }
 
   showStatus('Salvataggio dati cassa in corso...', 'success');
 
-  let lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
-
   try {
-    await API.post('/api/consegna', {
-      data, trovatoInCassa, pagatoProduttore, lasciatoInCassa,
-      noteGiornata,
-      partecipanti: [],
-    });
+    await postConsegna([]);
 
     showStatus('Dati cassa salvati con successo!', 'success');
     originalNoteGiornata = document.getElementById('noteGiornata').value || '';
@@ -415,25 +404,11 @@ async function saveCassaOnly() {
   }
 }
 
-async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteGiornata, currentId) {
+async function saveWithParticipant(currentId) {
   showStatus('Salvataggio in corso...', 'success');
 
-  const p = participants.find(part => part.id === currentId);
-  if (!p) {
-    showStatus('Partecipante non trovato', 'error');
-    return;
-  }
-
-  const partecipantiData = [readMovimentoForm(currentId)];
-
-  let lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
-
   try {
-    await API.post('/api/consegna', {
-      data, trovatoInCassa, pagatoProduttore, lasciatoInCassa,
-      noteGiornata,
-      partecipanti: partecipantiData,
-    });
+    await postConsegna([readMovimentoForm(currentId)]);
 
     showStatus('Dati salvati con successo!', 'success');
     setTimeout(() => {
