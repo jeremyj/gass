@@ -136,117 +136,7 @@ function renderMovimentiGiorno() {
   `;
 }
 
-function renderParticipant(id) {
-  const container = document.getElementById('selected-participants');
-  const p = participants.find(part => part.id === id);
-  if (!p) return;
-
-  const saldo = saldiBefore[id] !== undefined ? saldiBefore[id] : (p.saldo || 0);
-  const haCredito = saldo > 0;
-  const haDebito = saldo < 0;
-
-  const saldoText = saldo !== 0 ? `€${formatSaldo(saldo)}` : 'IN PARI';
-  const saldoClass = saldo < 0 ? 'saldo-debito' : saldo > 0 ? 'saldo-credito' : '';
-
-  const card = document.createElement('div');
-  card.className = 'participant-card-flow';
-  card.innerHTML = buildParticipantCardHTML(id, p.nome, saldo, saldoText, saldoClass, haCredito, haDebito);
-  addHiddenFields(card, id, haCredito, haDebito);
-  container.appendChild(card);
-
-  populateExistingMovimento(id);
-  if (document.getElementById(`contoProduttore_${id}`)?.value) {
-    handleContoProduttoreInput(id, saldo);
-  }
-  syncDebitoCreditoVisibility(id);
-}
-
-function populateExistingMovimento(id) {
-  if (!existingConsegnaMovimenti || existingConsegnaMovimenti.length === 0) {
-    return;
-  }
-
-  const movimento = existingConsegnaMovimenti.find(m => m.partecipante_id === id);
-  if (!movimento) {
-    return;
-  }
-
-  const p = participants.find(part => part.id === id);
-  const saldo = saldiBefore[id] !== undefined ? saldiBefore[id] : (p ? p.saldo || 0 : 0);
-
-  const fields = {
-    [`contoProduttore_${id}`]: movimento.conto_produttore || '',
-    [`importo_${id}`]: movimento.importo_saldato || '',
-    [`usaCredito_${id}`]: movimento.usa_credito || '',
-    [`credito_${id}`]: movimento.credito_lasciato || '',
-    [`debito_${id}`]: movimento.debito_lasciato || '',
-    [`debitoSaldato_${id}`]: movimento.debito_saldato || '',
-    [`note_${id}`]: movimento.note || ''
-  };
-
-  for (const [fieldId, value] of Object.entries(fields)) {
-    const field = document.getElementById(fieldId);
-    if (field && value !== '') {
-      field.value = value;
-    }
-  }
-
-  // Whole credit used / whole debt paid: shown in the section title instead of the partial field
-  const usaCreditoField = document.getElementById(`usaCredito_${id}`);
-  if (usaCreditoField && movimento.usa_credito && saldo > 0 && Math.abs(movimento.usa_credito - saldo) < 0.01) {
-    usaCreditoField.dataset.full = 'true';
-  }
-
-  const debitoSaldatoField = document.getElementById(`debitoSaldato_${id}`);
-  if (debitoSaldatoField && movimento.salda_debito_totale === 1) {
-    debitoSaldatoField.dataset.full = 'true';
-  }
-
-  syncDebitoCreditoVisibility(id);
-}
-
-function buildParticipantCardHTML(id, nome, saldo, saldoText, saldoClass, haCredito, haDebito) {
-  return `
-    <div class="flow-section">
-      <div class="flow-section-title">PAGAMENTO</div>
-      <div class="form-group">
-        <label>Conto Produttore:</label>
-        <input type="text" inputmode="decimal" id="contoProduttore_${id}" placeholder="0.00"
-               oninput="normalizeInputField(this); handleContoProduttoreInput(${id}, ${saldo})"
-               onfocus="handleInputFocus(this)">
-      </div>
-      <div class="form-group">
-        <label>Importo saldato:</label>
-        <input type="text" inputmode="decimal" id="importo_${id}" placeholder="0.00"
-               oninput="normalizeInputField(this); handleContoProduttoreInput(${id}, ${saldo}); updateLasciatoInCassa()"
-               onfocus="handleInputFocus(this)">
-      </div>
-    </div>
-
-    ${haCredito ? buildCreditoSection(id, saldoText, saldoClass) : ''}
-
-    ${haDebito ? buildDebitoSection(id, saldoText, saldoClass) : ''}
-
-    <div class="flow-section">
-      <div class="row">
-        <div class="form-group">
-          <label>Lascia credito:</label>
-          <input type="text" inputmode="decimal" id="credito_${id}" placeholder="0.00" disabled>
-        </div>
-        <div class="form-group">
-          <label>Lascia debito:</label>
-          <input type="text" inputmode="decimal" id="debito_${id}" placeholder="0.00" disabled>
-        </div>
-      </div>
-    </div>
-
-    <div class="flow-section">
-      <div class="form-group">
-        <label>Note:</label>
-        <input type="text" id="note_${id}" placeholder="Note aggiuntive">
-      </div>
-    </div>
-
+const PARTICIPANT_BUTTONS_HTML = `
     <div class="flow-section flow-btn-row">
       <button type="submit" class="btn-save" id="save-btn-participant-inline">
         💾 Salva Movimento
@@ -256,16 +146,6 @@ function buildParticipantCardHTML(id, nome, saldo, saldoText, saldoClass, haCred
       </button>
     </div>
   `;
-}
-
-function addHiddenFields(card, id, haCredito, haDebito) {
-  if (!haCredito) {
-    card.appendChild(createHiddenInput(`usaCredito_${id}`, '0'));
-  }
-  if (!haDebito) {
-    card.appendChild(createHiddenInput(`debitoSaldato_${id}`, '0'));
-  }
-}
 
 function showParticipantForm() {
   const select = document.getElementById('participant-select');
@@ -280,7 +160,7 @@ function showParticipantForm() {
     return;
   }
 
-  renderParticipant(id);
+  renderParticipant(id, PARTICIPANT_BUTTONS_HTML);
   updateLasciatoInCassa();
   updateSaveButtonVisibility();
 }

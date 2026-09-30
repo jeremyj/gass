@@ -316,130 +316,8 @@ function renderMovimentiGiorno() {
   `;
 }
 
-function renderParticipant(id) {
-  const container = document.getElementById('selected-participants');
-  const p = participants.find(part => part.id === id);
-  if (!p) return;
-
-  const saldo = saldiBefore[id] !== undefined ? saldiBefore[id] : (p.saldo || 0);
-  const haCredito = saldo > 0;
-  const haDebito = saldo < 0;
-
-  const saldoText = saldo !== 0 ? `€${formatSaldo(saldo)}` : 'IN PARI';
-  const saldoClass = saldo < 0 ? 'saldo-debito' : saldo > 0 ? 'saldo-credito' : '';
-
-  const card = document.createElement('div');
-  card.className = 'participant-card-flow';
-  card.innerHTML = buildParticipantCardHTML(id, p.nome, saldo, saldoText, saldoClass, haCredito, haDebito);
-  addHiddenFields(card, id, haCredito, haDebito);
-  container.appendChild(card);
-
-  // Load existing data if available (with timeout to ensure DOM is ready)
-  setTimeout(() => {
-    loadExistingParticipantData(id, saldo);
-    if (document.getElementById(`contoProduttore_${id}`)?.value) {
-      handleContoProduttoreInput(id, saldo);
-    }
-    syncDebitoCreditoVisibility(id);
-    // Save original values after form is fully loaded
-    setTimeout(() => saveOriginalParticipantValues(id), 10);
-  }, 0);
-}
-
-function loadExistingParticipantData(id, saldo) {
-  if (!existingConsegnaMovimenti) return;
-
-  const movimento = existingConsegnaMovimenti.find(m => m.partecipante_id === id);
-  if (!movimento) return;
-
-  // Populate fields with existing data
-  const contoProduttoreField = document.getElementById(`contoProduttore_${id}`);
-  if (contoProduttoreField && movimento.conto_produttore) {
-    contoProduttoreField.value = movimento.conto_produttore;
-  }
-
-  const importoField = document.getElementById(`importo_${id}`);
-  if (importoField && movimento.importo_saldato) {
-    importoField.value = movimento.importo_saldato;
-  }
-
-  const usaCreditoField = document.getElementById(`usaCredito_${id}`);
-
-  if (usaCreditoField && movimento.usa_credito) {
-    usaCreditoField.value = movimento.usa_credito;
-    // Whole credit used: shown in the section title instead of the partial field
-    usaCreditoField.dataset.full = saldo > 0 && Math.abs(movimento.usa_credito - saldo) < 0.01 ? 'true' : '';
-  }
-
-  const creditoField = document.getElementById(`credito_${id}`);
-  if (creditoField && movimento.credito_lasciato) {
-    creditoField.value = movimento.credito_lasciato;
-  }
-
-  const debitoField = document.getElementById(`debito_${id}`);
-  if (debitoField && movimento.debito_lasciato) {
-    debitoField.value = movimento.debito_lasciato;
-  }
-
-  const debitoSaldatoField = document.getElementById(`debitoSaldato_${id}`);
-  if (debitoSaldatoField && movimento.debito_saldato) {
-    debitoSaldatoField.value = movimento.debito_saldato;
-  }
-
-  const noteField = document.getElementById(`note_${id}`);
-  if (noteField && movimento.note) {
-    noteField.value = movimento.note;
-  }
-
-  // Whole debt paid: shown in the section title instead of the partial field
-  if (debitoSaldatoField && movimento.salda_debito_totale === 1) {
-    debitoSaldatoField.dataset.full = 'true';
-  }
-
-  syncDebitoCreditoVisibility(id);
-}
-
-function buildParticipantCardHTML(id, nome, saldo, saldoText, saldoClass, haCredito, haDebito) {
+function participantButtonsHTML(id) {
   return `
-    <div class="flow-section">
-      <div class="flow-section-title">PAGAMENTO</div>
-      <div class="form-group">
-        <label>Conto Produttore:</label>
-        <input type="text" inputmode="decimal" id="contoProduttore_${id}" placeholder="0.00"
-               oninput="normalizeInputField(this); handleContoProduttoreInput(${id}, ${saldo})"
-               onfocus="handleInputFocus(this)">
-      </div>
-      <div class="form-group">
-        <label>Importo saldato:</label>
-        <input type="text" inputmode="decimal" id="importo_${id}" placeholder="0.00"
-               oninput="normalizeInputField(this); handleContoProduttoreInput(${id}, ${saldo}); updateLasciatoInCassa()"
-               onfocus="handleInputFocus(this)">
-      </div>
-    </div>
-
-    ${haCredito ? buildCreditoSection(id, saldoText, saldoClass) : ''}
-    ${haDebito ? buildDebitoSection(id, saldoText, saldoClass) : ''}
-
-    <div class="flow-section">
-      <div class="row">
-        <div class="form-group">
-          <label>Lascia credito:</label>
-          <input type="text" inputmode="decimal" id="credito_${id}" placeholder="0.00" disabled>
-        </div>
-        <div class="form-group">
-          <label>Lascia debito:</label>
-          <input type="text" inputmode="decimal" id="debito_${id}" placeholder="0.00" disabled>
-        </div>
-      </div>
-    </div>
-
-    <div class="flow-section">
-      <div class="form-group">
-        <label>Note:</label>
-        <input type="text" id="note_${id}" placeholder="Note aggiuntive">
-      </div>
-    </div>
-
     <button class="big-btn big-btn-success" onclick="saveParticipant(${id})">
       💾 Salva Movimento
     </button>
@@ -447,15 +325,6 @@ function buildParticipantCardHTML(id, nome, saldo, saldoText, saldoClass, haCred
       ✖️ Chiudi
     </button>
   `;
-}
-
-function addHiddenFields(card, id, haCredito, haDebito) {
-  if (!haCredito) {
-    card.appendChild(createHiddenInput(`usaCredito_${id}`, '0'));
-  }
-  if (!haDebito) {
-    card.appendChild(createHiddenInput(`debitoSaldato_${id}`, '0'));
-  }
 }
 
 function showParticipantForm() {
@@ -478,7 +347,9 @@ function showParticipantForm() {
   }
 
   if (infoBadge) infoBadge.style.display = 'none';
-  renderParticipant(id);
+  if (renderParticipant(id, participantButtonsHTML(id))) {
+    saveOriginalParticipantValues(id);
+  }
   updateLasciatoInCassa();
 }
 
