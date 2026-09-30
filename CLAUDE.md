@@ -26,8 +26,8 @@
 - **Shared**: `public/js/shared/`
   - `api-client.js` - **Always use `API.*` methods for server calls**
   - `utils.js` - formatNumber, formatEuro, formatSigned, formatDateItalian, parseAmount, showStatus, `confirmDialog` (use instead of `confirm()`), `debitoPagato`/`debitoNuovo`
-  - `season.js` - season theme: `applySeason(date)` sets `body.s-<stagione>` and the header drawing (4 per season in `SEASONS[*].ills`, rotating weekly by `weekIndex(date)`, Monday-based, so a date always gets the same one); `formatDateLong`; injects the SVG sprite (produce drawings + nav icons, `<use href="#i-…">`)
-  - `calendar.js` - Date picker (mobile + desktop), `loadConsegneDates()`
+  - `season.js` - season theme: `applySeason(date)` sets `body.s-<stagione>` and the header drawing (4 per season in `SEASONS[*].ills`, rotating weekly by `weekIndex(date)`, Monday-based, so a date always gets the same one). The palette changes only with the season, the drawing weekly; only 4 of the 16 drawings (zucca, pomodoro, carciofo, fave) use `--s-*` vars, the rest have fixed colours; `formatDateLong`; injects the SVG sprite (produce drawings + nav icons, `<use href="#i-…">`)
+  - `calendar.js` - Date picker (mobile + desktop), `loadConsegneDates()`; the "Oggi" footer button calls `selectPickerDate(toLocalDateString())`, same path as clicking a day
   - `consegna-common.js` - Shared consegna business logic (mobile + desktop): participant card (`renderParticipant(id, buttonsHtml)`, `populateExistingMovimento`), save path (`saveParticipant`, `postConsegna`), `openMovimento(id)` (click a row of the day's list), `esitoMovimento(m)`; page scripts keep only their button row, `closeParticipant` and post-save handling
   - `debiti-common.js` - Shared debiti loading and helpers (mobile + desktop)
   - `auth.js` - Session/logout handling; `await sessionReady` before rendering anything that depends on `isAdmin()` (else admin-only controls stay hidden when the session response arrives after the page data — this hid "Riapri consegna" on mobile until 2.12.0)
