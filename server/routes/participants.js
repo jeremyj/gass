@@ -171,15 +171,39 @@ router.delete('/:id', requireAdmin, (req, res) => {
       });
     }
 
-    const participant = db.prepare('SELECT display_name, username FROM users WHERE id = ?').get(id);
-    db.prepare('DELETE FROM users WHERE id = ?').run(id);
+    // A participant with financial history stays: deleting would cascade away their movimenti/rettifiche
+    const hasHistory = db.prepare(`
+      SELECT 1 FROM movimenti WHERE partecipante_id = ?
+      UNION ALL SELECT 1 FROM rettifiche_saldo WHERE partecipante_id = ?
+    `).get(id, id);
+    if (hasHistory) {
+      return res.status(400).json({
+        success: false,
+        error: 'Impossibile eliminare: il partecipante ha movimenti o rettifiche di saldo'
+      });
+    }
 
-    logActivity({
-      eventType: 'user_deleted',
-      actorUserId: req.session.userId,
-      details: `username: ${participant?.username}, display_name: ${participant?.display_name}`,
-      createdAt: timestamp
-    });
+    const participant = db.prepare('SELECT display_name, username FROM users WHERE id = ?').get(id);
+
+    db.transaction(() => {
+      // Keep log and audit rows, just unlink them from the deleted user
+      const refs = db.prepare(`
+        SELECT m.name AS tbl, f."from" AS col
+        FROM sqlite_master m, pragma_foreign_key_list(m.name) f
+        WHERE m.type = 'table' AND f."table" = 'users' AND f.on_delete != 'CASCADE'
+      `).all();
+      for (const { tbl, col } of refs) {
+        db.prepare(`UPDATE "${tbl}" SET "${col}" = NULL WHERE "${col}" = ?`).run(id);
+      }
+      db.prepare('DELETE FROM users WHERE id = ?').run(id);
+
+      logActivity({
+        eventType: 'user_deleted',
+        actorUserId: req.session.userId,
+        details: `username: ${participant?.username}, display_name: ${participant?.display_name}`,
+        createdAt: timestamp
+      });
+    })();
 
     console.log(`[PARTICIPANTS] ${timestamp} - Successfully deleted participant: ${participant?.display_name || id} (ID: ${id})`);
     res.json({ success: true });

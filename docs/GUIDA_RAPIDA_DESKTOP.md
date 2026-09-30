@@ -78,4 +78,5 @@ Elenco di tutte le consegne in ordine cronologico inverso, con i dati di cassa e
 | Modificare un saldo | Saldi → **Modifica Saldo** (solo data odierna) |
 | Aggiungere partecipanti | Saldi → **+ Aggiungi Partecipante** |
 | Modificare utenti | Saldi → **Modifica Utente** |
+| Eliminare un utente | Saldi → **Modifica Utente** → **Elimina Utente** (solo se non ha movimenti né rettifiche di saldo) |
 | Log attività | Menu → **📝 Logs** |

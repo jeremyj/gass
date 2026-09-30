@@ -70,7 +70,7 @@ function getEventDescription(event) {
     case 'user_created':
       return `Utente creato`;
     case 'user_edited':
-      return `Utente modificato: <strong>${escapeHtml(event.partecipante_nome || 'N/A')}</strong>`;
+      return `Utente modificato: <strong>${escapeHtml(event.partecipante_nome || 'utente eliminato')}</strong>`;
     case 'user_deleted':
       return `Utente eliminato`;
     case 'password_changed':

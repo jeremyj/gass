@@ -273,6 +273,39 @@ describe('DELETE /api/participants/:id', () => {
     expect(log).toBeDefined();
   });
 
+  it('refuses to delete a participant with movimenti', async () => {
+    const userId = createUser(db, { username: 'withmov', displayName: 'With Mov' });
+    const c = createConsegna(db, { data: '2026-01-10' });
+    createMovimento(db, { consegnaId: c, partecipanteId: userId, importoSaldato: 10, creditoLasciato: 10 });
+
+    const res = await adminAgent.delete(`/api/participants/${userId}`);
+    expect(res.status).toBe(400);
+    expect(db.prepare('SELECT id FROM users WHERE id = ?').get(userId)).toBeDefined();
+  });
+
+  it('refuses to delete a participant with rettifiche', async () => {
+    const userId = createUser(db, { username: 'withrett', displayName: 'With Rett' });
+    createRettifica(db, { partecipanteId: userId, data: '2026-01-10', importo: 5 });
+
+    const res = await adminAgent.delete(`/api/participants/${userId}`);
+    expect(res.status).toBe(400);
+  });
+
+  it('keeps log and audit rows referencing the deleted user, unlinked', async () => {
+    const userId = createUser(db, { username: 'edited', displayName: 'Edited' });
+    await adminAgent.put(`/api/users/${userId}`).send({ displayName: 'Edited 2' });
+    const c = createConsegna(db, { data: '2026-01-11' });
+    db.prepare('UPDATE consegne SET chiusa_by = ? WHERE id = ?').run(userId, c);
+
+    const res = await adminAgent.delete(`/api/participants/${userId}`);
+    expect(res.status).toBe(200);
+
+    const edited = db.prepare("SELECT target_user_id FROM activity_logs WHERE event_type = 'user_edited'").get();
+    expect(edited).toBeDefined();
+    expect(edited.target_user_id).toBeNull();
+    expect(db.prepare('SELECT chiusa_by FROM consegne WHERE id = ?').get(c).chiusa_by).toBeNull();
+  });
+
   it('returns 400 when trying to delete the last user', async () => {
     // admin is the only user after beforeEach cleanup
     const adminId = db.prepare('SELECT id FROM users WHERE username = ?').get('admin').id;

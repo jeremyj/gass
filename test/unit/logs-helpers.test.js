@@ -77,9 +77,9 @@ describe('getEventDescription', () => {
     expect(getEventDescription(event)).toBe('Consegna riaperta');
   });
 
-  it('uses N/A when partecipante_nome is null for user_edited', () => {
+  it('shows "utente eliminato" when the edited user no longer exists', () => {
     const event = { event_type: 'user_edited', partecipante_nome: null };
-    expect(getEventDescription(event)).toContain('N/A');
+    expect(getEventDescription(event)).toContain('utente eliminato');
   });
 
   it('escapes event_type for unknown events', () => {
