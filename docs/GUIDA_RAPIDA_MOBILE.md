@@ -13,28 +13,28 @@ Per cambiare la password in seguito vai su **https://auth.x86.it**, nelle impost
 
 ![](screenshots/01-login.png){ width=50% }
 
-**Navigazione:** barra in basso con tre schede — *Consegna*, *Saldi*, *Storico*.
+**Navigazione:** barra in basso con tre schede — *Consegna*, *Saldi*, *Storico*. In alto compaiono il tuo nome, la chiave (cambia password, solo account locali) e l'icona di uscita (*Esci*). L'intestazione scura cambia colore con la stagione della data scelta.
 
 ---
 
 # Consegna
 
-Usa il pulsante **📅** per scegliere la data. Le date con **punto verde** hanno già una consegna registrata. Se non esiste ancora una consegna, appare il pulsante **📦 Nuova Consegna**.
+Usa **Cambia data** per scegliere la data. Le date con sfondo colorato e sottolineatura ("Con consegna") hanno già una consegna registrata. Se non esiste ancora una consegna, appare il pulsante **Nuova consegna**.
 
 ![](screenshots/m-calendario.png){ width=45% }
 
-La sezione **💰 CASSA** (espandibile) mostra i totali della giornata — tutti calcolati automaticamente, non si inserisce nulla.
+In cima la riga della cassa mostra i totali della giornata come una somma: Trovato, + Incassato, − Pagato, = In cassa — tutti calcolati automaticamente, non si inserisce nulla. Sotto, lo stato (*Consegna aperta* / *Consegna chiusa*) e le *Note della giornata*.
 
 ![](screenshots/m02-consegna.png){ width=45% }
 
 ## Registrare un Movimento
 
-1. Nella sezione **📦 MOVIMENTI** seleziona il **partecipante** dal menu
-2. Si apre il modulo — inserisci:
-   - **Conto Produttore** (quanto deve al produttore)
-   - **Importo Saldato** (quanto porta oggi)
-3. Il sistema calcola automaticamente credito o debito residuo
-4. Clicca **Salva**
+1. Nella sezione **Chi ha ritirato** seleziona il **partecipante** da **+ Aggiungi partecipante** (per modificare un movimento già inserito, tocca la sua riga)
+2. Si apre il modulo a tutto schermo — inserisci:
+   - **Conto produttore** (quanto deve al produttore)
+   - **Importo saldato** (quanto porta oggi)
+3. Il sistema calcola automaticamente credito o debito residuo e lo mostra nel riquadro finale (*Lascia credito*, *Lascia debito* o *Esito: in pari*)
+4. Clicca **Salva movimento**
 
 > Se il partecipante ha debiti/crediti pregressi, vengono compensati automaticamente.
 
@@ -42,27 +42,27 @@ La sezione **💰 CASSA** (espandibile) mostra i totali della giornata — tutti
 
 ## Chiudere la Consegna
 
-Dopo aver salvato almeno un movimento, nella sezione **💰 CASSA** compare il tasto **🔒 Chiudi Consegna** — cliccalo e conferma il riepilogo per bloccare la giornata. Solo un amministratore può riaprirla. Se la cassa è negativa, il campo Lasciato in Cassa è rosso: controlla i movimenti prima di chiudere.
+Dopo aver salvato almeno un movimento, sotto la riga della cassa compare il link **Chiudi consegna** — cliccalo e conferma il riepilogo per bloccare la giornata. Solo un amministratore può riaprirla. Se la cassa è negativa compare l'avviso "Cassa negativa": controlla i movimenti prima di chiudere.
 
-![Sezione Cassa con tasto Chiudi Consegna](screenshots/m02c-chiudi.png){ width=45% }
+![Stato della consegna con link Chiudi consegna](screenshots/m02c-chiudi.png){ width=45% }
 
 ---
 
 # Saldi
 
-Lista di tutti i partecipanti con il saldo attuale. **+** verde = credito, **-** rosso = debito.
+In cima i totali dei crediti e dei debiti, poi la lista **Partecipanti** con il saldo attuale. **+** blu con "credito" = credito, **−** rosso vino con "debito" = debito, grigio "in pari".
 
-Usa il **📅** per vedere i saldi in una data passata.
+Usa **Cambia data** per vedere i saldi in una data passata.
 
-**Tocca una card** per espanderla e vedere lo storico movimenti di quel partecipante.
+**Tocca un nome** per vedere il dettaglio e lo storico movimenti di quel partecipante.
 
-![Saldi e card partecipante espansa](screenshots/m04-saldi-expanded.png){ width=45% }
+![Saldi e dettaglio partecipante](screenshots/m04-saldi-expanded.png){ width=45% }
 
 ---
 
 # Storico
 
-Elenco di tutte le consegne in ordine cronologico inverso. Tocca una consegna per espanderla e vedere cassa e movimenti della giornata.
+Elenco di tutte le consegne in ordine cronologico inverso, con data, stato (aperta/chiusa) e cassa. Tocca una consegna per espanderla e vedere cassa e movimenti della giornata.
 
 ![Pagina Storico](screenshots/m05-storico.png){ width=45% }
 
@@ -72,6 +72,6 @@ Elenco di tutte le consegne in ordine cronologico inverso. Tocca una consegna pe
 
 | Funzione | Come accedervi |
 |---|---|
-| Riaprire consegna chiusa | Consegna → **🔓 Riapri Consegna** |
-| Eliminare una consegna salvata | Consegna → **🗑️ Annulla Consegna** |
-| Modificare un saldo | Saldi → espandi card → **Modifica Saldo** (solo oggi) |
+| Riaprire consegna chiusa | Consegna → **Riapri consegna** |
+| Eliminare una consegna salvata | Consegna → **Annulla consegna** |
+| Modificare un saldo | Saldi → tocca il nome → **Modifica saldo** (solo oggi) |

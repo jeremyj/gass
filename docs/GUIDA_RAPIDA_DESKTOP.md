@@ -13,33 +13,38 @@ Per cambiare la password in seguito vai su **https://auth.x86.it**, nelle impost
 
 ![](screenshots/01-login.png){ width=50% }
 
-**Navigazione:** menu in alto — *Consegna*, *Saldi*, *Storico* (e *Logs* per gli amministratori).
+**Navigazione:** menu in alto — *Consegna*, *Saldi*, *Storico* (e *Attività* per gli amministratori); a destra il tuo nome, *Cambia password* (solo account locali) ed *Esci*. L'intestazione scura cambia colore con la stagione della data scelta.
 
 ---
 
 # Consegna
 
-Pagina principale per registrare i movimenti giornalieri. Usa il pulsante **📅** per scegliere la data — le date con **punto verde** hanno già una consegna registrata.
+Pagina principale per registrare i movimenti giornalieri. Usa **Cambia data** per scegliere la data — le date con sfondo colorato e sottolineatura ("Con consegna") hanno già una consegna registrata.
 
 ![Il calendario mostra le date con consegne](screenshots/calendario.png){ width=60% }
 
-Se per la data selezionata non esiste ancora una consegna, appare il pulsante **📦 Nuova Consegna** — cliccalo per iniziare.
+Se per la data selezionata non esiste ancora una consegna, appare il pulsante **Nuova consegna** — cliccalo per iniziare.
 
 ## Dati Giornata (Cassa)
 
-I tre campi sono **sola lettura** e calcolati automaticamente dal sistema:
+La colonna a sinistra mostra la cassa come una somma, calcolata automaticamente dal sistema (non si scrive nulla):
 
 - **Trovato in cassa** — il lasciato della consegna precedente
-- **Pagato Produttore** — somma dei conti produttore di tutti i movimenti del giorno
-- **Lasciato in cassa** — trovato + incassato - pagato
+- **+ Incassato** — somma degli importi saldati
+- **− Pagato al produttore** — somma dei conti produttore di tutti i movimenti del giorno
+- **= Lasciato in cassa** — trovato + incassato - pagato
+
+Sotto, le **Note della giornata** (con **Salva note** quando cambiano). Lo stato (*Consegna aperta* / *chiusa*) e i pulsanti Chiudi / Riapri / Annulla consegna sono nell'intestazione, accanto a **Cambia data**.
 
 ## Registrare un Movimento
 
-1. Seleziona il **partecipante** dal menu a tendina
-2. Inserisci il **Conto Produttore** (quanto deve al produttore)
-3. Inserisci l'**Importo Saldato** (quanto porta oggi)
-4. Il sistema calcola automaticamente eventuali **Lascia Credito** o **Lascia Debito**
-5. Clicca **Salva Movimento**
+1. Nella sezione **Movimenti** seleziona il **partecipante** da **+ Aggiungi partecipante** (per modificare un movimento già inserito, clicca la sua riga nella tabella)
+2. Sotto la tabella si apre il modulo: inserisci il **Conto produttore** (quanto deve al produttore)
+3. Inserisci l'**Importo saldato** (quanto porta oggi)
+4. Il sistema calcola automaticamente eventuali **Lascia credito** o **Lascia debito** e lo mostra nel riquadro finale
+5. Clicca **Salva movimento**
+
+La tabella ha le colonne Partecipante, Conto produttore, Importo saldato, Lascia credito, Lascia debito, Usa credito, Salda debito, Note e la riga **Totale**; gli zeri sono mostrati come "–".
 
 > Se il partecipante ha un debito o credito pregressi, il sistema li compensa automaticamente — controlla il riepilogo prima di salvare.
 
@@ -47,15 +52,15 @@ I tre campi sono **sola lettura** e calcolati automaticamente dal sistema:
 
 ## Chiudere la Consegna
 
-Dopo aver inserito tutti i movimenti clicca **🔒 Chiudi Consegna** e conferma il riepilogo per bloccare la giornata. Se la cassa è negativa, il campo Lasciato in cassa è rosso: controlla i movimenti prima di chiudere. Solo un amministratore può riaprirla con **🔓 Riapri Consegna**.
+Dopo aver inserito tutti i movimenti clicca **Chiudi consegna** e conferma il riepilogo per bloccare la giornata. Se la cassa è negativa compare l'avviso "Cassa negativa": controlla i movimenti prima di chiudere. Solo un amministratore può riaprirla con **Riapri consegna**.
 
 ---
 
 # Saldi
 
-Panoramica dei saldi di tutti i partecipanti. **Verde** = credito, **Rosso** = debito, **Grigio** = in pari.
+Panoramica dei saldi di tutti i partecipanti. **Blu** con "+" e "credito" = credito, **rosso vino** con "−" e "debito" = debito, **grigio** "0 € in pari".
 
-Usa il **📅** per vedere i saldi in una data passata. Clicca **Transazioni** per vedere lo storico movimenti di un partecipante.
+Usa **Cambia data** per vedere i saldi in una data passata. Clicca **Transazioni** per vedere lo storico movimenti di un partecipante.
 
 ![Pagina Saldi con tabella partecipanti](screenshots/03-saldi.png){ width=100% }
 
@@ -63,7 +68,7 @@ Usa il **📅** per vedere i saldi in una data passata. Clicca **Transazioni** p
 
 # Storico
 
-Elenco di tutte le consegne in ordine cronologico inverso, con i dati di cassa e i movimenti per ogni giornata.
+Elenco di tutte le consegne in ordine cronologico inverso: per ogni giornata la data, lo stato (Aperta/Chiusa), la cassa a sinistra e la tabella dei movimenti con il Totale a destra.
 
 ![Pagina Storico](screenshots/05-storico.png){ width=100% }
 
@@ -73,10 +78,10 @@ Elenco di tutte le consegne in ordine cronologico inverso, con i dati di cassa e
 
 | Funzione | Come accedervi |
 |---|---|
-| Riaprire consegna chiusa | Consegna → **🔓 Riapri Consegna** |
-| Eliminare una consegna salvata | Consegna → **🗑️ Annulla Consegna** |
-| Modificare un saldo | Saldi → **Modifica Saldo** (solo data odierna) |
-| Aggiungere partecipanti | Saldi → **+ Aggiungi Partecipante** |
-| Modificare utenti | Saldi → **Modifica Utente** |
-| Eliminare un utente | Saldi → **Modifica Utente** → **Elimina Utente** (solo se non ha movimenti né rettifiche di saldo) |
-| Log attività | Menu → **📝 Logs** |
+| Riaprire consegna chiusa | Consegna → **Riapri consegna** |
+| Eliminare una consegna salvata | Consegna → **Annulla consegna** |
+| Modificare un saldo | Saldi → **Modifica saldo** (solo data odierna) |
+| Aggiungere partecipanti | Saldi → **+ Aggiungi partecipante** |
+| Modificare utenti | Saldi → **Modifica utente** |
+| Eliminare un utente | Saldi → **Modifica utente** → **Elimina utente** (solo se non ha movimenti né rettifiche di saldo) |
+| Log attività | Menu → **Attività** |

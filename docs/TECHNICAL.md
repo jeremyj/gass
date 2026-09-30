@@ -276,13 +276,13 @@ These fields are always disabled to prevent manual editing and ensure data integ
 
 1. **Creating credit while participant has debt**:
    - Example: Participant has 7€ debt, conto_produttore=15€, importo_saldato=22€
-   - Result: title shows "👉 debito saldato"
+   - Result: the participant form shows the note "Debito saldato per intero"
    - If credit >= debt: Full debt settlement
    - If credit < debt: Partial debt settlement with available credit
 
 2. **Creating debt while participant has credit**:
    - Example: Participant has 10€ credit, conto_produttore=18€, importo_saldato=5€
-   - Result: title shows "👉 credito esaurito", "Lascia debito = 3€"
+   - Result: the form shows the note "Credito usato per intero" and the result box "Lascia debito 3 €"
    - If credit >= debt: Full debt offset
    - If credit < debt: Partial debt reduction
 

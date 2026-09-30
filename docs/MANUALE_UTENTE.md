@@ -23,21 +23,27 @@ Dalla volta successiva si entra con il nome utente e la nuova password.
 ### Cambiare la Password
 
 - **Accesso con Authentik** (tutti i partecipanti): la password si cambia su https://auth.x86.it, dalle impostazioni del proprio utente.
-- **Account locale** (solo amministratore): pulsante 🔑 nell'intestazione, poi password attuale e nuova password (minimo 8 caratteri).
+- **Account locale** (solo amministratore): link **Cambia password** nel menu in alto (sul telefono, icona a forma di chiave nell'intestazione), poi password attuale e nuova password (minimo 8 caratteri).
 
 ### Navigazione
 
 L'applicazione si adatta automaticamente al dispositivo utilizzato:
 
 #### Versione Mobile
+- L'intestazione mostra il nome utente, l'icona della chiave (cambia password, solo account locali) e l'icona di uscita (**Esci**)
 - Navigazione tramite barra inferiore con tre schede:
   - **Consegna**: Registra nuove consegne
   - **Saldi**: Visualizza i saldi dei partecipanti
   - **Storico**: Consulta le consegne passate
 
 #### Versione Desktop
-- Navigazione tramite menu superiore con le stesse tre sezioni
+- Navigazione tramite menu superiore: **Consegna**, **Saldi**, **Storico** e, solo per gli amministratori, **Attività**; a destra il nome utente, **Cambia password** (solo account locali) ed **Esci**
 - Layout ottimizzato per schermi più grandi
+
+#### Intestazione stagionale e importi
+- Ogni pagina ha un'intestazione scura i cui colori seguono la stagione della data selezionata (autunno set–nov, inverno dic–feb, primavera mar–mag, estate giu–ago), con la verdura del mese sotto la data. La riga sopra la data dice "Consegna di oggi" / "Saldi di oggi" per oggi, "Consegna di" / "Saldi al" per un'altra data; l'anno compare solo se non è quello corrente.
+- Gli importi sono nel formato italiano ("11,50 €", senza decimali se interi: "8 €"). Nei campi si può scrivere la virgola o il punto; il campo mostra la virgola.
+- Colori dei saldi (non cambiano con la stagione): **blu** con "+" e la parola "credito", **rosso vino** con "−" e la parola "debito", **grigio** "0 € in pari".
 
 ## Funzionalità
 
@@ -47,54 +53,64 @@ La pagina Consegna permette di registrare i movimenti per una data specifica.
 
 #### Dati Giornata (Cassa)
 
-Tre campi di sola lettura che vengono calcolati automaticamente dal sistema:
+La cassa è una somma calcolata automaticamente dal sistema, non si scrive nulla:
 
-**Trovato in Cassa**
+**Trovato**
 - Denaro trovato in cassa all'inizio della giornata
-- Corrisponde al "Lasciato in Cassa" della consegna precedente
+- Corrisponde a "In cassa" (desktop: "Lasciato in cassa") della consegna precedente
 - Se è la prima consegna, il valore è 0
 
-**Pagato Produttore**
+**+ Incassato**
+- Somma degli importi saldati da tutti i partecipanti
+
+**− Pagato** (desktop: "Pagato al produttore")
 - Importo totale pagato al produttore
-- Calcolato automaticamente sommando tutti i "Conto Produttore" dei partecipanti
+- Calcolato sommando tutti i "Conto produttore" dei partecipanti
 - Si aggiorna in tempo reale quando si inseriscono i movimenti
 
-**Lasciato in Cassa**
+**= In cassa** (desktop: "Lasciato in cassa")
 - Denaro rimasto in cassa alla fine della giornata
 - Calcolato come: `Trovato + Incassato - Pagato`
-- Dove `Incassato` è la somma degli importi saldati da tutti i partecipanti
-- Se il valore è negativo il campo diventa rosso e compare l'avviso "⚠️ Cassa negativa"
+- Se il valore è negativo viene evidenziato con l'avviso "Cassa negativa"
 
-**Note Giornata**
+**Note della giornata**
 - Campo opzionale per annotazioni sulla consegna
-- Può essere salvato indipendentemente dai movimenti tramite il pulsante "Salva Note"
+- Su desktop può essere salvato indipendentemente dai movimenti tramite il pulsante "Salva note", che appare quando le note cambiano
+
+**Mobile**: la cassa è la riga in cima alla pagina; sotto ci sono lo stato ("Consegna aperta" / "Consegna chiusa") con i link **Chiudi consegna** / **Riapri consegna** (e **Annulla consegna** per gli amministratori) e le Note della giornata.
+
+**Desktop**: la colonna a sinistra contiene la cassa e le note; lo stato e i pulsanti Chiudi / Riapri / Annulla consegna sono nell'intestazione, accanto a **Cambia data**.
 
 #### Registrare un Movimento
 
+Se per la data non esiste ancora una consegna, premere **Nuova consegna**.
+
+I movimenti sono elencati sotto **Chi ha ritirato** (mobile) o **Movimenti** (desktop): ogni riga mostra partecipante, conto, pagato e l'esito ("+1 € credito" / "−1 € debito"). Toccare (mobile) o cliccare (desktop) una riga per modificarla. Su desktop la tabella ha le colonne Partecipante, Conto produttore, Importo saldato, Lascia credito, Lascia debito, Usa credito, Salda debito, Note, più la riga **Totale**; gli zeri sono mostrati come "–".
+
 Per registrare un movimento per un partecipante:
 
-1. **Selezionare il partecipante** dalla lista
-2. Si apre un modulo con:
-   - Saldo iniziale del partecipante
-   - Campi per inserire i dati del movimento
-   - Anteprima del nuovo saldo
+1. **Selezionare il partecipante** da **+ Aggiungi partecipante**
+2. Si apre il modulo (su mobile a tutto schermo, con freccia indietro; su desktop sotto la tabella) con:
+   - Il nome e un'etichetta con la situazione prima di oggi ("prima di oggi: credito +5 €", "debito −5 €" o "in pari")
+   - Due campi grandi per inserire i dati del movimento
+   - Le righe calcolate e il riquadro con l'esito
 
 3. **Compilare i campi principali**:
 
-   **Conto Produttore** (obbligatorio)
+   **Conto produttore** (obbligatorio)
    - Importo totale dovuto al produttore per la merce ricevuta
    - Questo è l'importo della spesa, indipendentemente da quanto viene pagato
 
-   **Importo Saldato**
+   **Importo saldato**
    - Denaro effettivamente consegnato dal partecipante
-   - Può essere uguale, maggiore o minore del Conto Produttore
+   - Può essere uguale, maggiore o minore del Conto produttore
 
-4. **Il sistema calcola automaticamente**:
+4. **Il sistema calcola automaticamente** il riquadro dell'esito:
 
-   **Lascia Credito / Lascia Debito**
+   **Lascia credito / Lascia debito / Esito: in pari**
    - Se l'importo saldato è maggiore del conto produttore → si crea un credito
    - Se l'importo saldato è minore del conto produttore → si crea un debito
-   - Questi campi sono di sola lettura e calcolati automaticamente
+   - Sono valori calcolati, non modificabili
 
 #### Gestione Crediti e Debiti
 
@@ -107,26 +123,22 @@ Il sistema compensa automaticamente crediti e debiti nelle due direzioni:
 1. **Quando si crea un credito ma il partecipante ha un debito**:
    - Esempio: Partecipante ha 7€ di debito, Conto=15€, Importo=22€
    - Il sistema automaticamente:
-     - Mostra nel titolo `👉 debito saldato`
+     - Mostra la nota "Debito saldato per intero"
      - Mostra il partecipante "in pari" (saldo 0€)
 
 2. **Quando si crea un debito ma il partecipante ha un credito**:
    - Esempio: Partecipante ha 10€ di credito, Conto=18€, Importo=5€
    - Il sistema automaticamente:
-     - Mostra nel titolo `👉 credito esaurito`
+     - Mostra la nota "Credito usato per intero"
      - Mostra "Lascia debito" di 3€ (invece di 13€)
 
-**Sezioni Credito e Debito**
+**Righe calcolate**
 
-Le sezioni CREDITO e DEBITO appaiono solo quando sono rilevanti per il partecipante e per l'importo inserito:
+Sotto i due campi compaiono, come semplice testo, solo le righe rilevanti per il partecipante e per l'importo inserito:
 
-- **Sezione CREDITO** (visibile solo se il partecipante ha credito e l'importo copre il conto):
-  - Il titolo mostra in tempo reale il nuovo saldo (es. `CREDITO €50 👉 nuovo credito €20`)
-  - **Usa credito parziale**: compare solo quando si usa una parte del credito (sola lettura, gestito dal sistema)
-
-- **Sezione DEBITO** (visibile solo se il partecipante ha debito e l'importo non copre interamente il conto):
-  - Il titolo mostra in tempo reale il nuovo saldo (es. `DEBITO INIZIALE €26 👉 nuovo debito €58`)
-  - **Salda parziale**: compare solo quando si salda una parte del debito (sola lettura, gestito dal sistema)
+- **Usa parte del credito**: compare solo quando si usa una parte del credito
+- **Salda parte del debito**: compare solo quando si salda una parte del debito
+- Note come "Credito dopo oggi: X €", "Credito totale dopo oggi: X €", "Debito dopo oggi: X €", "Debito totale dopo oggi: X €" mostrano il nuovo saldo in tempo reale
 
 Nelle tabelle dei movimenti (Consegna, Storico, Saldi) la colonna **Salda Debito** mostra quanto debito è stato pagato in quella consegna, e **Lascia Debito** solo il debito nuovo. Esempio: debito di 26,73€ pagato per 17,74€ → Salda Debito 17,74€, Lascia Debito vuoto; i 8,99€ ancora dovuti restano nel saldo.
 
@@ -134,21 +146,21 @@ Nelle tabelle dei movimenti (Consegna, Storico, Saldi) la colonna **Salda Debito
 
 Dopo aver registrato tutti i movimenti, è possibile chiudere la consegna:
 
-- **Chiudi Consegna**: Blocca tutte le modifiche per la giornata. Qualsiasi utente può chiudere una consegna. Prima di chiudere viene mostrato un riepilogo (movimenti, incassato, pagato, lasciato in cassa) da confermare.
-- **Riapri Consegna** (solo amministratori): Sblocca la consegna per permettere modifiche successive.
+- **Chiudi consegna**: Blocca tutte le modifiche per la giornata. Qualsiasi utente può chiudere una consegna. Prima di chiudere viene mostrato un riepilogo (movimenti, incassato, pagato, lasciato in cassa) da confermare.
+- **Riapri consegna** (solo amministratori): Sblocca la consegna per permettere modifiche successive.
 
-Quando una consegna è chiusa, tutti i campi sono disabilitati e appare il badge "🔒 Consegna chiusa".
+Quando una consegna è chiusa, lo stato diventa "Consegna chiusa" e non è più possibile modificarla: su mobile l'elenco resta visibile in sola lettura, senza il controllo per aggiungere partecipanti.
 
 #### Salvataggio
 
-- **Pulsante "Salva Movimento"**: Salva il movimento del partecipante corrente
+- **Pulsante "Salva movimento"**: Salva il movimento del partecipante corrente
 - **Pulsante "Annulla"**: Chiude il modulo senza salvare
-- **Pulsante "Salva Note"**: Appare quando si modificano le note giornata, permette di salvare solo le note senza dover salvare movimenti
+- **Pulsante "Salva note"** (desktop): Appare quando si modificano le note della giornata, permette di salvare solo le note senza dover salvare movimenti
 
 #### Cambio Data con Partecipante Aperto
 
 Funzionalità avanzata per confrontare transazioni:
-- Se si cambia data mentre un partecipante è aperto, il sistema:
+- Se si cambia data (**Cambia data**) mentre un partecipante è aperto, il sistema:
   - Carica automaticamente i dati del partecipante per la nuova data
   - Mantiene aperto il modulo del partecipante
   - Aggiorna tutti i campi (saldo, movimenti) per la nuova data
@@ -160,21 +172,18 @@ La pagina Saldi mostra una panoramica dei saldi di tutti i partecipanti.
 
 #### Visualizzazione Saldi Attuali
 
-- Lista di tutti i partecipanti con i loro saldi correnti
-- Codifica a colori:
-  - **Rosso**: Saldo negativo (debito verso il gruppo)
-  - **Verde**: Saldo positivo (credito del partecipante)
-  - **Grigio**: Saldo a zero (in pari)
-- Data dell'ultima modifica per ciascun partecipante
+- **Mobile**: in cima due totali ("Crediti, N persone +X €" e "Debiti, N persone −X €"), poi la lista **Partecipanti**
+- **Desktop**: tabella con Partecipante, Username (solo amministratori), Saldo (etichetta con segno e parola), Ultimo movimento e le azioni come link di testo
+- Colori: **blu** = credito (+), **rosso vino** = debito (−), **grigio** = "0 € in pari"
 
 #### Storico Transazioni
 
 Ogni partecipante può visualizzare il proprio storico movimenti:
 
-- **Mobile**: Espandere la card del partecipante per vedere le transazioni inline
-- **Desktop**: Cliccare il pulsante "Transazioni" per aprire un modal con la tabella completa
+- **Mobile**: Toccare il nome del partecipante per vedere i dettagli e le transazioni
+- **Desktop**: Cliccare il link "Transazioni" per aprire la tabella completa
 
-Per ogni transazione vengono mostrati: data, conto produttore, importo saldato, credito/debito lasciato, uso credito, debito saldato e il saldo risultante.
+Per ogni transazione vengono mostrati: data, conto produttore, importo saldato, credito/debito lasciato, uso credito, debito saldato e il saldo risultante (colonna "Saldo dopo").
 
 Le modifiche manuali del saldo fatte da un amministratore compaiono come **Rettifica manuale** con la data e l'importo della correzione. Restano valide anche se in seguito viene eliminata una consegna.
 
@@ -183,7 +192,7 @@ Tutti gli utenti autenticati possono visualizzare le transazioni di qualsiasi pa
 #### Visualizzazione Storica
 
 Per vedere i saldi in una data passata:
-1. Utilizzare il selettore di data in alto
+1. Premere **Cambia data** in alto
 2. Selezionare la data desiderata
 3. Il sistema ricalcola automaticamente i saldi come erano in quella data
 
@@ -198,14 +207,12 @@ La pagina Storico permette di consultare tutte le consegne registrate.
 #### Visualizzazione
 
 - Le consegne sono mostrate in ordine cronologico inverso (più recenti in alto)
-- Per ogni consegna viene visualizzata:
-  - Data
-  - Dati cassa (trovato, pagato, lasciato)
-  - Lista dei movimenti dei partecipanti
+- **Mobile**: ogni consegna mostra la data completa e "aperta/chiusa, in cassa X €"; toccandola si espande con la riga della cassa (Trovato + Incassato − Pagato = In cassa) e la lista dei partecipanti con l'esito
+- **Desktop**: ogni consegna ha il titolo con la data, l'etichetta Aperta/Chiusa, la colonna della cassa a sinistra e la tabella dei movimenti con la riga Totale a destra
 
 #### Indicatore Note
 
-Quando un movimento ha una nota associata, viene visualizzato un indicatore ℹ️ accanto al nome del partecipante.
+Quando un movimento ha una nota associata, viene visualizzato un indicatore accanto al nome del partecipante.
 
 #### Dettagli Movimento
 
@@ -218,7 +225,7 @@ Per ogni movimento vengono mostrati:
 
 #### Eliminazione Consegna
 
-Solo un amministratore può eliminare una consegna già salvata, con **🗑️ Annulla Consegna** nella pagina Consegna.
+Solo un amministratore può eliminare una consegna già salvata, con **Annulla consegna** nella pagina Consegna.
 
 **ATTENZIONE**:
 - L'eliminazione è permanente
@@ -231,14 +238,14 @@ Il calendario è disponibile in tutte le sezioni per facilitare la selezione del
 
 #### Selezione Data
 
-1. Cliccare sul campo data o sull'icona calendario
+1. Premere **Cambia data**
 2. Utilizzare le frecce per navigare tra i mesi
 3. Cliccare sulla data desiderata
 
 #### Indicatori Visivi
 
 Il calendario mostra:
-- **Sfondo verde**: Date con consegne registrate
+- **Sfondo colorato con sottolineatura**: Date con consegne registrate (legenda "Con consegna")
 - **Evidenziazione**: Data oggi
 - **Selezione**: Data attualmente selezionata
 
@@ -337,13 +344,13 @@ La data dovrebbe essere mantenuta automaticamente tra le sezioni. Se questo non 
 2. Cancellare la cache del browser
 3. Contattare l'amministratore se il problema persiste
 
-### Non Vedo i Campi di Compensazione
+### Non Vedo le Righe di Compensazione
 
-Le sezioni CREDITO e DEBITO sono visibili solo quando applicabili:
+Le righe "Usa parte del credito" e "Salda parte del debito" sono visibili solo quando applicabili:
 - Appaiono solo dopo aver inserito un importo saldato
-- Vengono popolate automaticamente dal sistema
+- Vengono calcolate automaticamente dal sistema
 - Non possono essere modificate manualmente per garantire l'integrità dei dati
-- Se il partecipante non ha credito/debito preesistente, le sezioni non compaiono
+- Se il partecipante non ha credito/debito preesistente, non compaiono
 
 ## Supporto
 
@@ -353,10 +360,10 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 Sistema GASS Pagamenti - Versione 2.5.5
 - Visualizzazione transazioni aperta a tutti gli utenti autenticati (non solo amministratori)
-- Storico transazioni per partecipante nella pagina Saldi (mobile inline, desktop modal)
-- Cambio password autonomo per tutti gli utenti (pulsante 🔑)
+- Storico transazioni per partecipante nella pagina Saldi (mobile e desktop)
+- Cambio password autonomo per tutti gli utenti (link Cambia password)
 - Chiusura/riapertura consegne con blocco modifiche
 - Gestione utenti completa per amministratori (Saldi → Modifica Utente)
-- Sezioni CREDITO/DEBITO condizionali: visibili solo quando rilevanti
+- Righe di compensazione credito/debito visibili solo quando rilevanti
 - Selezione data persistente tra le sezioni
 - Layout ottimizzato per mobile e desktop
