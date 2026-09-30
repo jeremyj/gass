@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GASS mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL@-15..0,300..900,0..1&display=swap" rel="stylesheet">
+<style>
+:root {
+  --carta: #F7F9F6;
+  --bianco: #FFFFFF;
+  --quadretto: #D6E0EA;
+  --inchiostro: #1E2F8C;
+  --inchiostro-soft: #E7EAF6;
+  --rosso: #C4323F;
+  --rosso-soft: #FBEAEC;
+  --foglia: #2D7A3E;
+  --foglia-soft: #E6F2E8;
+  --grafite: #262A31;
+  --matita: #676E7A;
+  --riga: #E3E7EC;
+  --casual: "CASL" 1, "slnt" -6;
+  --linear: "CASL" 0;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #E9ECEF; color: var(--grafite);
+  font-family: "Recursive", system-ui, sans-serif; font-variation-settings: var(--linear);
+  font-size: 16px; line-height: 1.45; }
+.num { font-variant-numeric: tabular-nums; }
+.hand { font-variation-settings: var(--casual); }
+
+/* ---------- mockup board ---------- */
+.board { max-width: 1500px; margin: 0 auto; padding: 32px 16px 80px; }
+.board > h1 { font-variation-settings: var(--casual); font-weight: 800; font-size: 32px; margin: 0 0 4px; }
+.board > p { margin: 0 0 32px; color: var(--matita); max-width: 70ch; }
+.row { display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; margin-bottom: 56px; }
+.cap { font-size: 14px; color: var(--matita); margin: 10px 4px 0; max-width: 390px; }
+.cap b { color: var(--grafite); }
+
+.phone { width: 390px; height: 800px; border-radius: 36px; background: var(--carta);
+  border: 10px solid #1d1f24; overflow: hidden; position: relative; display: flex; flex-direction: column; }
+.desk { width: 1180px; max-width: 100%; border-radius: 10px; background: var(--carta);
+  border: 1px solid #c9ced4; overflow: hidden; }
+
+/* ---------- app: header ---------- */
+.m-head { padding: 18px 20px 12px; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.m-head .when { font-size: 13px; color: var(--matita); }
+.m-head h2 { margin: 0; font-variation-settings: var(--casual); font-weight: 800; font-size: 26px; line-height: 1.1; }
+.datebtn { border: 1.5px solid var(--inchiostro); color: var(--inchiostro); background: var(--bianco);
+  border-radius: 8px; padding: 7px 10px; font: inherit; font-size: 14px; font-weight: 600; display: flex; gap: 6px; align-items: center; }
+.scroll { flex: 1; overflow: hidden; padding: 0 16px 16px; }
+
+/* ---------- the one bold thing: column sum on grid paper ---------- */
+.quaderno { position: relative; background-color: var(--bianco);
+  background-image:
+    linear-gradient(var(--quadretto) 1px, transparent 1px),
+    linear-gradient(90deg, var(--quadretto) 1px, transparent 1px);
+  background-size: 16px 16px; background-position: -1px -1px;
+  border: 1px solid var(--quadretto); border-radius: 4px; padding: 16px 18px 14px 34px; }
+.quaderno::before { content: ""; position: absolute; top: 0; bottom: 0; left: 22px; width: 2px; background: var(--rosso); opacity: .55; }
+.sum { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.sum td { padding: 3px 0; line-height: 26px; background: transparent; }
+.sum td.op { width: 20px; color: var(--matita); font-weight: 600; }
+.sum td.lbl { color: var(--grafite); }
+.sum td.val { text-align: right; font-size: 20px; color: var(--inchiostro); font-weight: 500; }
+.sum tr.tot td { border-top: 2px solid var(--inchiostro); padding-top: 6px; }
+.sum tr.tot td.val { font-size: 30px; font-weight: 800; }
+.sum tr.tot td.lbl { font-weight: 700; }
+.sum .hint { display: block; font-size: 12px; color: var(--matita); line-height: 1.2; }
+
+.statusline { display: flex; align-items: center; justify-content: space-between; margin: 12px 2px 20px; font-size: 14px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-weight: 600; font-size: 13px; }
+.pill.open { background: var(--foglia-soft); color: var(--foglia); }
+.pill.closed { background: var(--rosso-soft); color: var(--rosso); }
+.link { color: var(--inchiostro); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; background: none; border: 0; font: inherit; padding: 0; }
+.link.danger { color: var(--rosso); }
+
+/* ---------- ledger rows ---------- */
+.ledger-h { display: flex; justify-content: space-between; align-items: baseline; margin: 0 2px 6px; }
+.ledger-h h3 { margin: 0; font-variation-settings: var(--casual); font-weight: 700; font-size: 19px; }
+.ledger-h span { font-size: 13px; color: var(--matita); }
+.ledger { list-style: none; margin: 0; padding: 0; background: var(--bianco); border-top: 1px solid var(--riga); }
+.ledger li { display: grid; grid-template-columns: 1fr auto auto; gap: 14px; align-items: center;
+  padding: 11px 4px 11px 12px; border-bottom: 1px solid var(--riga); }
+.ledger .who { font-variation-settings: var(--casual); font-weight: 600; font-size: 17px; }
+.ledger .who small { display: block; font-variation-settings: var(--linear); font-weight: 400; font-size: 12.5px; }
+.ledger .fig { text-align: right; font-variant-numeric: tabular-nums; font-size: 15px; min-width: 52px; }
+.ledger .fig i { display: block; font-style: normal; font-size: 11px; color: var(--matita); }
+.cr { color: var(--foglia); } .db { color: var(--rosso); }
+
+/* ---------- buttons ---------- */
+.btn { font: inherit; font-weight: 700; font-size: 16px; border-radius: 10px; padding: 13px 18px; border: 0; cursor: pointer; }
+.btn.primary { background: var(--inchiostro); color: #fff; }
+.btn.save { background: var(--foglia); color: #fff; }
+.btn.ghost { background: transparent; color: var(--inchiostro); border: 1.5px solid var(--inchiostro); }
+.btn.block { width: 100%; }
+.btn:focus-visible, .datebtn:focus-visible, .link:focus-visible { outline: 3px solid #F2B705; outline-offset: 2px; }
+
+/* ---------- mobile bottom nav ---------- */
+.bnav { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--bianco); border-top: 1px solid var(--riga); padding: 6px 0 14px; }
+.bnav a { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 12px; color: var(--matita); text-decoration: none; font-weight: 600; }
+.bnav a svg { width: 22px; height: 22px; }
+.bnav a.on { color: var(--inchiostro); }
+.bnav a.on span { border-bottom: 2px solid var(--inchiostro); }
+.addbar { padding: 10px 16px; background: var(--carta); }
+
+/* ---------- sheet ---------- */
+.dim { position: absolute; inset: 0; background: rgba(30,35,45,.35); }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; background: var(--bianco); border-radius: 18px 18px 0 0;
+  padding: 10px 20px 20px; box-shadow: 0 -8px 30px rgba(20,25,40,.18); }
+.grab { width: 40px; height: 4px; border-radius: 4px; background: var(--riga); margin: 0 auto 12px; }
+.sheet h4 { margin: 0; font-variation-settings: var(--casual); font-size: 24px; font-weight: 800; }
+.before { font-size: 14px; margin: 2px 0 16px; }
+.fld { margin-bottom: 12px; }
+.fld label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.fld .in { display: flex; align-items: center; border: 1.5px solid #B9C1CC; border-radius: 10px; background: var(--bianco); padding: 0 14px; height: 54px; }
+.fld .in.focus { border-color: var(--inchiostro); box-shadow: 0 0 0 3px var(--inchiostro-soft); }
+.fld .in span { color: var(--matita); margin-right: 8px; }
+.fld .in b { font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--grafite); }
+.receipt { border-top: 1.5px dashed #B9C1CC; margin: 16px 0; padding-top: 10px; font-size: 15px; }
+.receipt div { display: flex; justify-content: space-between; padding: 3px 0; font-variant-numeric: tabular-nums; }
+.receipt .res { font-weight: 700; }
+.sheet .acts { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+
+/* ---------- desktop ---------- */
+.d-top { display: flex; align-items: center; gap: 32px; padding: 0 28px; height: 60px; background: var(--bianco); border-bottom: 1px solid var(--riga); }
+.brand { font-variation-settings: var(--casual); font-weight: 800; font-size: 20px; display: flex; align-items: center; gap: 8px; }
+.brand svg { width: 22px; height: 22px; }
+.d-nav { display: flex; gap: 4px; height: 100%; }
+.d-nav a { display: flex; align-items: center; padding: 0 14px; text-decoration: none; color: var(--matita); font-weight: 600; border-bottom: 3px solid transparent; }
+.d-nav a.on { color: var(--inchiostro); border-bottom-color: var(--inchiostro); }
+.d-user { margin-left: auto; display: flex; gap: 16px; align-items: center; font-size: 14px; color: var(--matita); }
+.d-body { padding: 28px; }
+.d-title { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 22px; }
+.d-title h2 { margin: 0; font-variation-settings: var(--casual); font-weight: 800; font-size: 34px; line-height: 1.05; }
+.d-title .when { font-size: 14px; color: var(--matita); }
+.d-grid { display: grid; grid-template-columns: 320px minmax(0,1fr); gap: 28px; align-items: start; }
+.note { margin-top: 14px; }
+.note label { font-size: 14px; font-weight: 600; display: block; margin-bottom: 4px; }
+.note div { background: var(--bianco); border: 1.5px solid #B9C1CC; border-radius: 8px; padding: 9px 12px; color: var(--grafite); font-size: 15px; }
+
+table.t { width: 100%; border-collapse: collapse; background: var(--bianco); font-size: 15px; }
+.t th { text-align: right; font-weight: 600; font-size: 12.5px; color: var(--matita); padding: 10px 8px; white-space: normal; line-height: 1.2; border-bottom: 2px solid var(--grafite); white-space: nowrap; }
+.t th:first-child, .t td:first-child { text-align: left; }
+.t td { padding: 11px 8px; border-bottom: 1px solid var(--riga); text-align: right; font-variant-numeric: tabular-nums; }
+.t td.name { font-variation-settings: var(--casual); font-weight: 600; font-size: 16px; }
+.t td.empty { color: #C3C8CF; }
+.t tr.editing td { background: var(--inchiostro-soft); }
+.t tr.editing td.in-cell span { display: inline-block; min-width: 70px; border: 1.5px solid var(--inchiostro); background: #fff; border-radius: 6px; padding: 3px 8px; }
+.t tfoot td { font-weight: 700; border-bottom: 0; border-top: 2px solid var(--grafite); }
+.tbl-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.tbl-bar h3 { margin: 0; font-variation-settings: var(--casual); font-weight: 700; font-size: 21px; }
+.select { font: inherit; border: 1.5px solid var(--inchiostro); border-radius: 8px; padding: 8px 12px; color: var(--inchiostro); font-weight: 600; background: #fff; min-width: 260px; display: flex; justify-content: space-between; }
+.rowacts { display: flex; gap: 14px; justify-content: flex-end; font-size: 14px; }
+.tag { font-size: 11px; font-weight: 700; color: var(--inchiostro); border: 1px solid var(--inchiostro); border-radius: 4px; padding: 0 5px; margin-left: 6px; vertical-align: 2px; font-variation-settings: var(--linear); }
+.saldo-bar { display: inline-block; height: 6px; border-radius: 3px; vertical-align: middle; margin-right: 8px; }
+
+/* palette strip */
+.swatches { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 40px; }
+.sw { width: 150px; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #d5dae0; font-size: 13px; }
+.sw div { height: 48px; }
+.sw p { margin: 0; padding: 6px 10px; }
+.sw p b { display: block; font-variation-settings: var(--casual); }
+</style>
+</head>
+<body>
+<div class="board">
+  <h1>GASS: quaderno di cassa</h1>
+  <p>Proposta di restyling. Stessi dati, stesse funzioni, stessi flussi: cambiano palette, tipografia e gerarchia. Le cifre di esempio sono quelle del database locale (consegna del 4 novembre 2025).</p>
+
+  <div class="swatches">
+    <div class="sw"><div style="background:#F7F9F6;border-bottom:1px solid #e3e7ec"></div><p><b>Carta</b>#F7F9F6 sfondo</p></div>
+    <div class="sw"><div style="background:#D6E0EA"></div><p><b>Quadretto</b>#D6E0EA griglia cassa</p></div>
+    <div class="sw"><div style="background:#1E2F8C"></div><p><b>Penna blu</b>#1E2F8C azioni, cifre</p></div>
+    <div class="sw"><div style="background:#C4323F"></div><p><b>Penna rossa</b>#C4323F debiti, pericolo</p></div>
+    <div class="sw"><div style="background:#2D7A3E"></div><p><b>Foglia</b>#2D7A3E crediti, salva</p></div>
+    <div class="sw"><div style="background:#262A31"></div><p><b>Grafite</b>#262A31 testo</p></div>
+  </div>
+
+  <!-- ================= MOBILE ================= -->
+  <div class="row">
+    <div>
+      <div class="phone">
+        <div class="m-head">
+          <div><div class="when">Consegna di</div><h2>martedì 4 novembre</h2></div>
+          <button class="datebtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Cambia</button>
+        </div>
+        <div class="scroll">
+          <div class="quaderno">
+            <table class="sum">
+              <tr><td class="op"></td><td class="lbl">Trovato in cassa<span class="hint">dalla consegna precedente</span></td><td class="val">22</td></tr>
+              <tr><td class="op">+</td><td class="lbl">Incassato</td><td class="val">71</td></tr>
+              <tr><td class="op">−</td><td class="lbl">Pagato al produttore</td><td class="val">85</td></tr>
+              <tr class="tot"><td class="op">=</td><td class="lbl">Lasciato in cassa</td><td class="val">8</td></tr>
+            </table>
+          </div>
+          <div class="statusline">
+            <span class="pill open">● Aperta</span>
+            <button class="link">Chiudi consegna</button>
+          </div>
+          <div class="ledger-h"><h3>Movimenti</h3><span>3 partecipanti</span></div>
+          <ul class="ledger">
+            <li><div class="who">amministratore<small class="cr">lascia €1 di credito</small></div><div class="fig">30<i>conto</i></div><div class="fig">31<i>pagato</i></div></li>
+            <li><div class="who">user<small class="cr">lascia €6 di credito</small></div><div class="fig">20<i>conto</i></div><div class="fig">26<i>pagato</i></div></li>
+            <li><div class="who">jeremy joshua rossi<small class="db">lascia €1 di debito</small></div><div class="fig">15<i>conto</i></div><div class="fig">14<i>pagato</i></div></li>
+          </ul>
+        </div>
+        <div class="addbar"><button class="btn primary block">+ Aggiungi partecipante</button></div>
+        <nav class="bnav">
+          <a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8l9-5 9 5v8l-9 5-9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg><span>Consegna</span></a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Saldi</span></a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Storico</span></a>
+        </nav>
+      </div>
+      <p class="cap"><b>Consegna, mobile.</b> La cassa diventa una somma in colonna su carta a quadretti, con l’operazione scritta per intero. I movimenti sono righe di registro: nome, conto, pagato, e sotto l’esito (credito o debito) in una frase. Il bottone per aggiungere resta sempre sotto il pollice.</p>
+    </div>
+
+    <div>
+      <div class="phone">
+        <div class="m-head">
+          <div><div class="when">Consegna di</div><h2>martedì 4 novembre</h2></div>
+          <button class="datebtn">Cambia</button>
+        </div>
+        <div class="scroll">
+          <div class="quaderno"><table class="sum">
+            <tr><td class="op"></td><td class="lbl">Trovato in cassa</td><td class="val">22</td></tr>
+            <tr><td class="op">+</td><td class="lbl">Incassato</td><td class="val">71</td></tr>
+          </table></div>
+        </div>
+        <div class="dim"></div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <h4>jeremy joshua rossi</h4>
+          <p class="before">Prima di oggi: <b class="db">debito €5</b></p>
+          <div class="fld"><label>Conto produttore</label><div class="in"><span>€</span><b>15</b></div></div>
+          <div class="fld"><label>Importo pagato</label><div class="in focus"><span>€</span><b>18</b></div></div>
+          <div class="receipt">
+            <div><span>Conto di oggi</span><span>15</span></div>
+            <div><span>Pagato</span><span>18</span></div>
+            <div class="cr"><span>Salda parte del debito</span><span>3</span></div>
+            <div class="res db"><span>Resta di debito</span><span>€2</span></div>
+          </div>
+          <div class="fld"><label>Note</label><div class="in" style="height:44px"><span style="font-size:15px">Aggiungi una nota</span></div></div>
+          <div class="acts"><button class="btn ghost">Annulla</button><button class="btn save">Salva movimento</button></div>
+        </div>
+      </div>
+      <p class="cap"><b>Inserimento, mobile.</b> Il partecipante si apre in un foglio dal basso. Solo i due campi da scrivere sono campi; tutto ciò che il sistema calcola (usa credito, salda debito, lascia credito/debito) appare come uno scontrino che si aggiorna mentre scrivi, invece dei campi grigi disabilitati.</p>
+    </div>
+
+    <div>
+      <div class="phone">
+        <div class="m-head"><div><div class="when">Saldi al</div><h2>4 novembre</h2></div><button class="datebtn">Cambia</button></div>
+        <div class="scroll">
+          <div class="ledger-h"><h3>Partecipanti</h3><span>Tocca per i dettagli</span></div>
+          <ul class="ledger">
+            <li><div class="who">amministratore<small>ultimo movimento 4/11</small></div><div></div><div class="fig cr">+€1</div></li>
+            <li><div class="who">jeremy joshua rossi<small>ultimo movimento 4/11</small></div><div></div><div class="fig db">−€1</div></li>
+            <li><div class="who">user<small>ultimo movimento 4/11</small></div><div></div><div class="fig cr">+€6</div></li>
+          </ul>
+        </div>
+        <nav class="bnav">
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8l9-5 9 5v8l-9 5-9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg><span>Consegna</span></a>
+          <a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Saldi</span></a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Storico</span></a>
+        </nav>
+      </div>
+      <p class="cap"><b>Saldi, mobile.</b> Saldo con segno e colore (verde credito, rosso debito) allineato a destra. Toccando una riga si apre lo stesso foglio dal basso con transazioni e, per gli admin, “Modifica saldo”.</p>
+    </div>
+  </div>
+
+  <!-- ================= DESKTOP ================= -->
+  <div class="row">
+    <div>
+      <div class="desk">
+        <div class="d-top">
+          <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="#2D7A3E" stroke-width="2.2"><path d="M12 21V11"/><path d="M12 11C12 7 9 5 5 5c0 4 3 6 7 6zM12 13c0-4 3-6 7-6 0 4-3 6-7 6z"/></svg>GASS Torpignattara</div>
+          <nav class="d-nav"><a class="on">Consegna</a><a>Saldi</a><a>Storico</a><a>Attività</a></nav>
+          <div class="d-user"><span>admin</span><button class="link">Cambia password</button><button class="link">Esci</button></div>
+        </div>
+        <div class="d-body">
+          <div class="d-title">
+            <div><div class="when">Consegna di</div><h2>martedì 4 novembre 2025</h2></div>
+            <button class="datebtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Cambia data</button>
+          </div>
+          <div class="d-grid">
+            <aside>
+              <div class="quaderno">
+                <table class="sum">
+                  <tr><td class="op"></td><td class="lbl">Trovato in cassa<span class="hint">dalla consegna precedente</span></td><td class="val">22</td></tr>
+                  <tr><td class="op">+</td><td class="lbl">Incassato</td><td class="val">71</td></tr>
+                  <tr><td class="op">−</td><td class="lbl">Pagato al produttore</td><td class="val">85</td></tr>
+                  <tr class="tot"><td class="op">=</td><td class="lbl">Lasciato in cassa</td><td class="val">8</td></tr>
+                </table>
+              </div>
+              <div class="note"><label>Note della giornata</label><div>prima consegna</div></div>
+              <div class="statusline" style="margin-top:16px"><span class="pill closed">Chiusa da jeremy</span><button class="link">Riapri consegna</button></div>
+            </aside>
+            <section>
+              <div class="tbl-bar"><h3>Movimenti</h3><div class="select"><span>+ Aggiungi partecipante</span><span>▾</span></div></div>
+              <table class="t">
+                <thead><tr><th>Partecipante</th><th>Conto produttore</th><th>Pagato</th><th>Lascia credito</th><th>Lascia debito</th><th>Usa credito</th><th>Salda debito</th><th>Note</th></tr></thead>
+                <tbody>
+                  <tr><td class="name">amministratore</td><td>30</td><td>31</td><td class="cr">1</td><td class="empty">–</td><td class="empty">–</td><td class="empty">–</td><td></td></tr>
+                  <tr class="editing"><td class="name">user</td><td class="in-cell"><span>20</span></td><td class="in-cell"><span>26</span></td><td class="cr">6</td><td class="empty">–</td><td class="empty">–</td><td class="empty">–</td><td><button class="btn save" style="padding:5px 10px;font-size:13px">Salva</button></td></tr>
+                  <tr><td class="name">jeremy joshua rossi</td><td>15</td><td>14</td><td class="empty">–</td><td class="db">1</td><td class="empty">–</td><td class="empty">–</td><td></td></tr>
+                </tbody>
+                <tfoot><tr><td>Totale</td><td>65</td><td>71</td><td class="cr">7</td><td class="db">1</td><td>–</td><td>–</td><td></td></tr></tfoot>
+              </table>
+            </section>
+          </div>
+        </div>
+      </div>
+      <p class="cap" style="max-width:800px"><b>Consegna, desktop.</b> Cassa a sinistra come colonna fissa, movimenti a destra. Stesso ordine di colonne di oggi, zeri resi come “–” perché le cifre reali si leggano subito. La riga in modifica si evidenzia in blu tenue, i campi calcolati restano testo.</p>
+    </div>
+
+    <div>
+      <div class="desk">
+        <div class="d-top">
+          <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="#2D7A3E" stroke-width="2.2"><path d="M12 21V11"/><path d="M12 11C12 7 9 5 5 5c0 4 3 6 7 6zM12 13c0-4 3-6 7-6 0 4-3 6-7 6z"/></svg>GASS Torpignattara</div>
+          <nav class="d-nav"><a>Consegna</a><a class="on">Saldi</a><a>Storico</a><a>Attività</a></nav>
+          <div class="d-user"><span>admin</span><button class="link">Cambia password</button><button class="link">Esci</button></div>
+        </div>
+        <div class="d-body">
+          <div class="d-title">
+            <div><div class="when">Saldi al</div><h2>4 novembre 2025</h2></div>
+            <div style="display:flex;gap:12px"><button class="btn ghost" style="padding:8px 14px;font-size:14px">+ Aggiungi partecipante</button><button class="datebtn">Cambia data</button></div>
+          </div>
+          <table class="t">
+            <thead><tr><th>Partecipante</th><th style="text-align:left">Username</th><th>Saldo</th><th>Ultimo movimento</th><th></th></tr></thead>
+            <tbody>
+              <tr><td class="name">amministratore</td><td style="text-align:left">admin<span class="tag">admin</span></td><td class="cr"><span class="saldo-bar" style="width:8px;background:var(--foglia)"></span>+€1</td><td>04/11/2025</td><td><div class="rowacts"><button class="link">Transazioni</button><button class="link">Modifica utente</button></div></td></tr>
+              <tr><td class="name">jeremy joshua rossi</td><td style="text-align:left">jeremy<span class="tag">admin</span></td><td class="db"><span class="saldo-bar" style="width:8px;background:var(--rosso)"></span>−€1</td><td>04/11/2025</td><td><div class="rowacts"><button class="link">Transazioni</button><button class="link">Modifica utente</button></div></td></tr>
+              <tr><td class="name">user</td><td style="text-align:left">user</td><td class="cr"><span class="saldo-bar" style="width:48px;background:var(--foglia)"></span>+€6</td><td>04/11/2025</td><td><div class="rowacts"><button class="link">Transazioni</button><button class="link">Modifica utente</button></div></td></tr>
+            </tbody>
+          </table>
+          <p style="font-size:14px;color:var(--matita);margin-top:12px">I saldi si modificano solo alla data di oggi. Stai guardando il 4 novembre 2025.</p>
+        </div>
+      </div>
+      <p class="cap" style="max-width:800px"><b>Saldi, desktop.</b> Tre bottoni pieni per riga diventano link testuali; “Modifica saldo”, quando la data è oggi, compare come terzo link. Una barretta proporzionale fa vedere a colpo d’occhio chi è molto in debito o in credito. Il motivo per cui la modifica è bloccata è scritto, non solo mostrato con un bottone grigio.</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>
