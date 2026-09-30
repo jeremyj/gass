@@ -54,6 +54,10 @@ function createConsegnaCard(consegna) {
     if (consegna.movimenti && consegna.movimenti.length > 0) {
       content.appendChild(createMovimentiSection(consegna.movimenti));
     }
+    const acts = document.createElement('div');
+    acts.className = 'storico-acts';
+    acts.innerHTML = storicoActionsHtml(consegna);
+    content.appendChild(acts);
     card.appendChild(content);
   }
 
@@ -64,12 +68,13 @@ function createConsegnaCard(consegna) {
 function createCassaSection(consegna) {
   const incassato = (consegna.movimenti || []).reduce((sum, m) => sum + (m.importo_saldato || 0), 0);
   const section = document.createElement('div');
-  section.className = 'conto conto-small';
+  section.className = 'cassa-v';
   section.innerHTML = `
-    <div><label>Trovato</label><span class="conto-val">${formatNumber(consegna.trovato_in_cassa)}</span></div>
-    <div><label>Incassato</label><span class="conto-val"><i>+</i>${formatNumber(roundToCents(incassato))}</span></div>
-    <div><label>Pagato</label><span class="conto-val"><i>−</i>${formatNumber(consegna.pagato_produttore)}</span></div>
-    <div class="tot"><label>In cassa</label><span class="conto-val"><i>=</i>${formatNumber(consegna.lasciato_in_cassa)}</span></div>
+    <p><label>Trovato</label><output>${formatNumber(consegna.trovato_in_cassa)}</output></p>
+    <p><label>+ Incassato</label><output>${formatNumber(roundToCents(incassato))}</output></p>
+    <p><label>− Pagato</label><output>${formatNumber(consegna.pagato_produttore)}</output></p>
+    <p class="tot"><label>= In cassa</label><output>${formatNumber(consegna.lasciato_in_cassa)}</output></p>
+    ${consegna.note ? `<div class="nt">Note: <i>${escapeHtml(consegna.note)}</i></div>` : ''}
   `;
   return section;
 }
@@ -124,6 +129,7 @@ function formatDateItalianWithDay(dateStr) {
 
 // ===== INITIALIZATION =====
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await sessionReady; // "Riapri consegna" is admin-only
   loadStorico();
 });

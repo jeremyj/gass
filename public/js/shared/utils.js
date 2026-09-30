@@ -146,3 +146,29 @@ function confirmDialog({ title, message = '', details = [], confirmText = 'Confe
     modal.querySelector('[data-answer="no"]').focus();
   });
 }
+
+// ===== STORICO → CONSEGNA =====
+
+// Open the consegna page on a given date (the page restores it from sessionStorage)
+function openConsegnaOn(dateStr) {
+  sessionStorage.setItem('gass_selected_date', dateStr);
+  window.location.href = '/consegna';
+}
+
+// Admin: reopen a closed consegna and open it for editing (uses API from api-client.js)
+async function riapriConsegna(id, dateStr) {
+  try {
+    await API.post(`/api/consegna/${id}/reopen`, {});
+    openConsegnaOn(dateStr);
+  } catch (error) {
+    showStatus('Errore: ' + error.message, 'error');
+  }
+}
+
+// Links under a consegna in Storico
+function storicoActionsHtml(consegna) {
+  const riapri = consegna.chiusa && isAdmin()
+    ? `<button type="button" class="link-btn" onclick="riapriConsegna(${consegna.id}, '${consegna.data}')">Riapri consegna</button>`
+    : '';
+  return `<button type="button" class="link-btn" onclick="openConsegnaOn('${consegna.data}')">Apri nella consegna</button>${riapri}`;
+}

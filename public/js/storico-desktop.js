@@ -35,6 +35,7 @@ function createConsegnaSection(consegna) {
       <h2>${formatDateLong(consegna.data)}</h2>
       <span class="stato-label ${consegna.chiusa ? 'chiusa' : 'aperta'}">${consegna.chiusa ? 'Chiusa' : 'Aperta'}</span>
       <span class="storico-meta">${(consegna.movimenti?.length || 0) === 1 ? '1 movimento' : `${consegna.movimenti?.length || 0} movimenti`}</span>
+      <span class="storico-acts">${storicoActionsHtml(consegna)}</span>
     </div>
   `;
 
@@ -122,6 +123,7 @@ function createMovimentiTable(movimenti) {
 
 // ===== INITIALIZATION =====
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await sessionReady; // "Riapri consegna" is admin-only
   loadStorico();
 });
