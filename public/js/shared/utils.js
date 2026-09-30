@@ -165,10 +165,12 @@ async function riapriConsegna(id, dateStr) {
   }
 }
 
-// Links under a consegna in Storico
+// Link under a consegna in Storico: finish an open one, or (admin) reopen a closed one
 function storicoActionsHtml(consegna) {
-  const riapri = consegna.chiusa && isAdmin()
+  if (!consegna.chiusa) {
+    return `<button type="button" class="link-btn" onclick="openConsegnaOn('${consegna.data}')">Completa consegna</button>`;
+  }
+  return isAdmin()
     ? `<button type="button" class="link-btn" onclick="riapriConsegna(${consegna.id}, '${consegna.data}')">Riapri consegna</button>`
     : '';
-  return `<button type="button" class="link-btn" onclick="openConsegnaOn('${consegna.data}')">Apri nella consegna</button>${riapri}`;
 }

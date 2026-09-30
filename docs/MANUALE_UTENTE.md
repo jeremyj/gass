@@ -209,7 +209,7 @@ La pagina Storico permette di consultare tutte le consegne registrate.
 - Le consegne sono mostrate in ordine cronologico inverso (più recenti in alto)
 - **Mobile**: ogni consegna mostra la data completa e "aperta/chiusa, in cassa X €"; toccandola si espande con la cassa (Trovato + Incassato − Pagato = In cassa, una voce per riga) e la lista dei partecipanti con l'esito
 - **Desktop**: ogni consegna ha il titolo con la data, l'etichetta Aperta/Chiusa, la colonna della cassa a sinistra e la tabella dei movimenti con la riga Totale a destra
-- **Apri nella consegna** apre quella giornata nella pagina Consegna; per gli amministratori, sulle consegne chiuse, **Riapri consegna** la riapre e la apre per modificarla
+- Sulle consegne ancora aperte, **Completa consegna** apre quella giornata nella pagina Consegna per aggiungere movimenti o chiuderla; per gli amministratori, sulle consegne chiuse, **Riapri consegna** la riapre e la apre per modificarla
 
 #### Indicatore Note
 
@@ -359,8 +359,8 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.13.0
-- Storico: link **Apri nella consegna** e, per gli amministratori, **Riapri consegna** su ogni consegna chiusa
+Sistema GASS Pagamenti - Versione 2.13.1
+- Storico: **Completa consegna** sulle consegne ancora aperte e, per gli amministratori, **Riapri consegna** su quelle chiuse
 - Storico su mobile: la cassa è una voce per riga
 - Testi più piccoli ingranditi ancora
 

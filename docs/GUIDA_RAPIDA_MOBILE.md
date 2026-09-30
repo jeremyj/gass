@@ -62,7 +62,7 @@ Usa **Cambia data** per vedere i saldi in una data passata.
 
 # Storico
 
-Elenco di tutte le consegne in ordine cronologico inverso, con data, stato (aperta/chiusa) e cassa. Tocca una consegna per espanderla e vedere cassa e movimenti della giornata; **Apri nella consegna** la apre nella pagina Consegna.
+Elenco di tutte le consegne in ordine cronologico inverso, con data, stato (aperta/chiusa) e cassa. Tocca una consegna per espanderla e vedere cassa e movimenti della giornata; se è ancora aperta, **Completa consegna** la apre nella pagina Consegna.
 
 ![Pagina Storico](screenshots/m05-storico.png){ width=45% }
 

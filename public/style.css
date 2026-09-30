@@ -445,6 +445,7 @@ body:has(.bottom-nav) { padding-bottom: 72px; }
 .storico-consegna-content .mov-list > li { cursor: default; }
 .storico-consegna-content .cassa-v { margin-bottom: 12px; }
 .storico-acts { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 14px; }
+.storico-acts:empty { display: none; }
 
 /* ===== MODALS ===== */
 
