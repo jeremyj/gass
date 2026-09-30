@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GASS stagioni</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,500;0,700;1,500&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* base, identica in ogni stagione */
+  --calce: #F4F6F2;
+  --carta: #FFFFFF;
+  --inchiostro: #1E2420;
+  --salvia: #5C6760;
+  --riga: #DCE1DA;
+  --credito: #1F57B0;
+  --credito-t: #E6EEFA;
+  --debito: #A3175F;
+  --debito-t: #F8E4EE;
+  /* stagione: autunno (novembre) */
+  --s-deep: #26392F;   /* cavolo nero */
+  --s-acc: #E8890F;    /* zucca */
+  --s-alt: #6E4128;    /* castagna */
+  --s-tint: #FBEEDB;
+  --s-on: #F3E6CF;
+}
+.inverno  { --s-deep: #3D3052; --s-acc: #F2A01F; --s-alt: #7E8E57; --s-tint: #EEE9F3; --s-on: #E4DCEE; }
+.primavera{ --s-deep: #2D5A2A; --s-acc: #9DC65A; --s-alt: #E0445A; --s-tint: #EAF3DC; --s-on: #DDEDC9; --s-prod: #C5E39A; }
+.estate   { --s-deep: #3A2340; --s-acc: #E0412B; --s-alt: #3F8F3E; --s-tint: #FCE7E1; --s-on: #EEDCEF; --s-prod: #F7A48F; }
+
+* { box-sizing: border-box; }
+body { margin: 0; background: #E3E7E2; color: var(--inchiostro); font-family: "Alegreya Sans", system-ui, sans-serif;
+  font-size: 16px; line-height: 1.45; font-variant-numeric: lining-nums tabular-nums; }
+.serif { font-family: "Alegreya", Georgia, serif; }
+a { color: inherit; }
+
+.board { max-width: 1500px; margin: 0 auto; padding: 36px 16px 80px; }
+.board > h1 { font-family: "Alegreya", serif; font-weight: 700; font-size: 46px; line-height: 1.05; margin: 0 0 8px; }
+.board > p { margin: 0 0 30px; color: var(--salvia); max-width: 72ch; font-size: 17px; }
+.row { display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; margin-bottom: 56px; }
+.cap { font-size: 15px; color: var(--salvia); margin: 12px 4px 0; max-width: 390px; }
+.cap b { color: var(--inchiostro); }
+.phone { width: 390px; height: 800px; border-radius: 38px; background: var(--calce); border: 10px solid #22262a;
+  overflow: hidden; position: relative; display: flex; flex-direction: column; }
+.desk { width: 1180px; max-width: 100%; border-radius: 10px; background: var(--calce); border: 1px solid #bcc3bd; overflow: hidden; }
+
+/* ---------- the one bold thing: la testata di stagione ---------- */
+.stag { background: var(--s-deep); color: #fff; position: relative; overflow: hidden; }
+.stag .ill { position: absolute; right: -18px; bottom: -22px; width: 150px; height: 150px; }
+.stag .when { font-size: 15px; color: var(--s-on); }
+.stag h2 { font-family: "Alegreya", serif; font-weight: 700; margin: 0; line-height: 1; }
+.stag .prod { font-family: "Alegreya", serif; font-style: italic; font-weight: 500; color: var(--s-prod, var(--s-acc)); }
+.m-stag { padding: 18px 20px 20px; min-height: 146px; }
+.m-stag h2 { font-size: 38px; max-width: 230px; }
+.m-stag .prod { font-size: 18px; margin-top: 8px; max-width: 220px; line-height: 1.2; }
+.m-stag .cambia { position: absolute; top: 16px; right: 16px; }
+.ghost { font: inherit; font-weight: 700; font-size: 14px; background: rgba(255,255,255,.12); color: #fff; border: 1px solid rgba(255,255,255,.35);
+  border-radius: 8px; padding: 6px 12px; }
+
+/* cassa: un'unica riga di conto */
+.conto { display: grid; grid-template-columns: repeat(4, auto); justify-content: space-between; align-items: end;
+  background: var(--carta); border-bottom: 1px solid var(--riga); padding: 14px 20px 14px; }
+.conto div { display: flex; flex-direction: column; }
+.conto small { font-size: 13px; color: var(--salvia); line-height: 1.2; }
+.conto span { font-family: "Alegreya", serif; font-weight: 700; font-size: 28px; line-height: 1.1; }
+.conto span i { font-style: normal; color: var(--salvia); font-weight: 500; font-size: 20px; margin-right: 3px; }
+.conto .tot { background: var(--s-tint); margin: -14px -20px -14px 0; padding: 14px 20px 14px 16px; border-left: 3px solid var(--s-acc); }
+.conto .tot span { font-size: 34px; }
+
+.scroll { flex: 1; overflow: hidden; }
+.sect { display: flex; justify-content: space-between; align-items: baseline; padding: 18px 20px 6px; }
+.sect h3 { margin: 0; font-family: "Alegreya", serif; font-weight: 700; font-size: 22px; }
+.sect .st { font-size: 14px; color: var(--salvia); }
+.sect .st a { color: var(--s-deep); font-weight: 700; text-underline-offset: 3px; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--s-acc); margin-right: 6px; vertical-align: 1px; }
+
+.list { list-style: none; margin: 0; padding: 0 20px; }
+.list li { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 13px 0; border-bottom: 1px solid var(--riga); align-items: center; }
+.list .nm { font-weight: 700; font-size: 18px; line-height: 1.2; }
+.list .sub { font-size: 14px; color: var(--salvia); grid-column: 1; }
+.list .sub b { color: var(--inchiostro); font-weight: 700; }
+.list .esito { grid-row: 1 / span 2; grid-column: 2; }
+
+/* esito: colori costanti, sempre con segno e parola */
+.es { display: inline-flex; flex-direction: column; align-items: flex-end; line-height: 1.05; }
+.es b { font-family: "Alegreya", serif; font-weight: 700; font-size: 24px; }
+.es small { font-size: 12.5px; font-weight: 700; }
+.es.cr { color: var(--credito); }
+.es.db { color: var(--debito); }
+.pill { display: inline-block; font-weight: 700; font-size: 14px; border-radius: 6px; padding: 1px 8px; }
+.pill.cr { color: var(--credito); background: var(--credito-t); }
+.pill.db { color: var(--debito); background: var(--debito-t); }
+
+.add { margin: 16px 20px 0; width: calc(100% - 40px); font: inherit; font-weight: 700; font-size: 17px; background: transparent; color: var(--s-deep);
+  border: 1.5px dashed var(--s-deep); border-radius: 10px; padding: 13px; }
+
+.bnav { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--carta); border-top: 1px solid var(--riga); padding: 8px 0 16px; }
+.bnav a { text-align: center; font-weight: 700; font-size: 13.5px; color: var(--salvia); display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; padding-top: 4px; }
+.bnav a svg { width: 22px; height: 22px; }
+.bnav a.on { color: var(--s-deep); box-shadow: inset 0 3px 0 var(--s-acc); }
+
+/* entry */
+.e-top { background: var(--s-deep); color: #fff; padding: 14px 18px 18px; display: flex; gap: 12px; align-items: flex-start; }
+.back { width: 38px; height: 38px; flex: none; border-radius: 50%; border: 1px solid rgba(255,255,255,.4); background: rgba(255,255,255,.1); color: #fff; display: grid; place-items: center; }
+.e-top .when { font-size: 14px; color: var(--s-on); }
+.e-top h2 { font-family: "Alegreya", serif; font-weight: 700; font-size: 30px; line-height: 1.05; margin: 2px 0 8px; }
+.e-top .pill.db { background: #fff; }
+.e-body { flex: 1; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+.fld { background: var(--carta); border-radius: 10px; padding: 8px 16px 6px; border: 1.5px solid var(--riga); }
+.fld.focus { border-color: var(--s-deep); box-shadow: inset 0 -4px 0 var(--s-acc); }
+.fld label { font-size: 14px; font-weight: 700; color: var(--salvia); }
+.fld div { font-family: "Alegreya", serif; font-weight: 700; font-size: 44px; line-height: 1.05; }
+.fld div small { font-size: 24px; color: var(--salvia); font-weight: 500; margin-left: 4px; }
+.fld.note div { font-family: "Alegreya Sans", sans-serif; font-weight: 400; font-size: 16px; color: var(--salvia); padding: 2px 0 6px; }
+.passi { margin: 0; padding: 0 0 0 16px; border-left: 3px solid var(--s-acc); font-size: 16px; color: var(--salvia); }
+.passi p { margin: 0; display: flex; justify-content: space-between; }
+.passi p b { color: var(--inchiostro); }
+.risult { display: flex; justify-content: space-between; align-items: center; background: var(--debito-t); border-radius: 10px; padding: 10px 16px; }
+.risult span { font-weight: 700; color: var(--debito); }
+.risult b { font-family: "Alegreya", serif; font-size: 36px; color: var(--debito); line-height: 1.1; }
+.btn { font: inherit; font-weight: 700; font-size: 17px; border-radius: 10px; padding: 14px 18px; border: 0; }
+.btn.go { background: var(--s-deep); color: #fff; }
+.btn.line { background: var(--carta); color: var(--s-deep); border: 1.5px solid var(--s-deep); }
+.btn.sm { font-size: 14px; padding: 7px 14px; border-radius: 8px; }
+.btn:focus-visible, .ghost:focus-visible, a:focus-visible, .add:focus-visible { outline: 3px solid var(--s-acc); outline-offset: 2px; }
+
+/* saldi mobile */
+.tot2 { display: grid; grid-template-columns: 1fr 1fr; background: var(--carta); border-bottom: 1px solid var(--riga); }
+.tot2 div { padding: 12px 20px; }
+.tot2 div + div { border-left: 1px solid var(--riga); }
+.tot2 small { display: block; font-size: 13px; color: var(--salvia); }
+.tot2 b { font-family: "Alegreya", serif; font-size: 26px; }
+.adm { font-size: 12px; font-weight: 700; color: var(--salvia); border: 1px solid var(--riga); border-radius: 4px; padding: 0 5px; margin-left: 6px; vertical-align: 2px; background: var(--carta); }
+
+/* ---------- desktop ---------- */
+.d-top { background: var(--s-deep); color: #fff; display: flex; align-items: center; gap: 30px; height: 56px; padding: 0 28px; border-bottom: 1px solid rgba(255,255,255,.12); }
+.d-top .brand { font-family: "Alegreya", serif; font-weight: 700; font-size: 22px; }
+.d-top nav { display: flex; height: 100%; }
+.d-top nav a { display: flex; align-items: center; padding: 0 15px; font-weight: 700; color: var(--s-on); text-decoration: none; }
+.d-top nav a.on { color: #fff; box-shadow: inset 0 -4px 0 var(--s-acc); }
+.d-top .u { margin-left: auto; font-size: 15px; display: flex; gap: 18px; color: var(--s-on); }
+.d-top .u a { color: #fff; text-underline-offset: 3px; }
+.d-stag { padding: 26px 28px 28px; min-height: 170px; }
+.d-stag h2 { font-size: 52px; }
+.d-stag .prod { font-size: 22px; margin-top: 10px; }
+.d-stag .ill { width: 220px; height: 220px; right: 40px; bottom: -48px; }
+.d-stag .acts { display: flex; gap: 12px; align-items: center; margin-top: 16px; }
+.d-stag .acts span { color: var(--s-on); font-size: 15px; }
+.d-stag .acts a { color: #fff; font-weight: 700; text-underline-offset: 3px; }
+.d-body { padding: 22px 28px 30px; }
+.d-grid { display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: start; }
+.cassa-v { background: var(--carta); border-radius: 10px; border: 1px solid var(--riga); overflow: hidden; }
+.cassa-v p { margin: 0; display: flex; justify-content: space-between; align-items: baseline; padding: 9px 16px; border-bottom: 1px solid var(--riga); font-size: 15px; color: var(--salvia); }
+.cassa-v p b { font-family: "Alegreya", serif; font-size: 22px; color: var(--inchiostro); }
+.cassa-v p.tot { background: var(--s-tint); border-left: 3px solid var(--s-acc); color: var(--inchiostro); font-weight: 700; border-bottom: 0; }
+.cassa-v p.tot b { font-size: 30px; }
+.cassa-v .nt { padding: 10px 16px 14px; font-size: 14px; color: var(--salvia); border-top: 1px solid var(--riga); }
+.cassa-v .nt i { color: var(--inchiostro); }
+.d-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+.d-bar h3 { margin: 0 auto 0 0; font-family: "Alegreya", serif; font-weight: 700; font-size: 26px; }
+.sel { background: var(--carta); border: 1.5px solid var(--riga); border-radius: 8px; padding: 7px 14px; font-weight: 700; color: var(--s-deep); min-width: 250px; display: flex; justify-content: space-between; }
+table.t { width: 100%; border-collapse: collapse; background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; overflow: hidden; }
+.t th { font-size: 14px; font-weight: 700; color: var(--salvia); text-align: right; padding: 11px 10px; border-bottom: 1px solid var(--riga); line-height: 1.2; vertical-align: bottom; }
+.t th:first-child, .t td:first-child { text-align: left; padding-left: 16px; }
+.t th.nt, .t td.nt { text-align: left; }
+.t td { text-align: right; padding: 11px 10px; border-bottom: 1px solid var(--riga); font-size: 16px; }
+.t td.nm { font-weight: 700; white-space: nowrap; }
+.t td.mute { color: #B7BFB9; }
+.t td.cr { color: var(--credito); font-weight: 700; }
+.t td.db { color: var(--debito); font-weight: 700; }
+.t tr.edit td { background: var(--s-tint); }
+.t tr.edit td.ic span { display: inline-block; min-width: 64px; background: #fff; border: 1.5px solid var(--s-deep); border-radius: 6px; padding: 1px 8px; font-weight: 700; }
+.t tfoot td { font-weight: 700; border-bottom: 0; background: #F7F8F6; }
+.hint { font-size: 14px; color: var(--salvia); margin: 12px 0 0; }
+
+.d-head2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.d-head2 .tots { display: flex; gap: 22px; font-size: 15px; color: var(--salvia); }
+.d-head2 .tots b { font-family: "Alegreya", serif; font-size: 22px; margin-left: 4px; }
+.t .lk a { color: var(--s-deep); font-weight: 700; margin-left: 14px; text-underline-offset: 3px; }
+
+/* ---------- strip stagioni ---------- */
+.seasons { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; max-width: 1180px; }
+.sea { background: var(--carta); border-radius: 10px; overflow: hidden; border: 1px solid var(--riga); }
+.sea .stag { padding: 14px 16px 16px; min-height: 118px; }
+.sea .stag .ill { width: 104px; height: 104px; right: -12px; bottom: -16px; }
+.sea .stag h2 { font-size: 26px; }
+.sea .stag .prod { font-size: 15.5px; margin-top: 6px; max-width: 150px; line-height: 1.2; }
+.sea .sw { display: grid; grid-template-columns: repeat(3, 1fr); }
+.sea .sw div { padding: 8px 10px; font-size: 13px; line-height: 1.25; }
+.sea .sw i { display: block; height: 26px; border-radius: 4px; margin-bottom: 5px; }
+.sea .rule { font-size: 13px; color: var(--salvia); padding: 0 12px 10px; }
+.sea .mini { display: flex; gap: 8px; align-items: center; padding: 0 12px 12px; }
+.sea .mini .b { background: var(--s-deep); color: #fff; border-radius: 6px; padding: 3px 10px; font-size: 13px; font-weight: 700; }
+.base { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 18px; }
+.base div { width: 150px; background: var(--carta); border-radius: 8px; overflow: hidden; font-size: 13px; border: 1px solid var(--riga); }
+.base i { display: block; height: 40px; }
+.base p { margin: 0; padding: 6px 10px; }
+.base b { display: block; }
+h2.sec { font-family: "Alegreya", serif; font-size: 28px; margin: 0 0 12px; }
+
+@media (max-width: 900px) { .seasons { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="zucca" viewBox="0 0 100 100">
+      <path d="M49 26 C47 18 50 12 56 8 L60 12 C55 15 54 20 55 26 Z" fill="var(--s-alt)"/>
+      <path d="M56 20 C64 10 78 12 82 20 C72 20 64 22 58 26 Z" fill="#6E8F4E"/>
+      <ellipse cx="30" cy="60" rx="22" ry="30" fill="var(--s-acc)"/>
+      <ellipse cx="70" cy="60" rx="22" ry="30" fill="var(--s-acc)"/>
+      <ellipse cx="50" cy="60" rx="20" ry="33" fill="#F4A13A"/>
+      <path d="M50 28 V93" stroke="rgba(0,0,0,.14)" stroke-width="1.5"/>
+    </symbol>
+    <symbol id="carciofo" viewBox="0 0 100 100">
+      <path d="M48 78 C46 88 44 94 40 99 L46 99 C50 94 52 88 52 78 Z" fill="var(--s-alt)"/>
+      <path d="M50 80 C24 78 16 58 22 40 C30 54 40 62 50 64 Z" fill="var(--s-alt)"/>
+      <path d="M50 80 C76 78 84 58 78 40 C70 54 60 62 50 64 Z" fill="var(--s-alt)"/>
+      <path d="M50 70 C32 66 28 46 34 28 C40 42 46 50 50 52 Z" fill="#8E7AA8"/>
+      <path d="M50 70 C68 66 72 46 66 28 C60 42 54 50 50 52 Z" fill="#8E7AA8"/>
+      <path d="M50 58 C40 50 40 28 50 12 C60 28 60 50 50 58 Z" fill="#B7A5CC"/>
+    </symbol>
+    <symbol id="fave" viewBox="0 0 100 100">
+      <path d="M12 72 C10 48 40 22 80 18 C92 18 94 26 88 34 C74 52 46 78 20 82 C14 82 12 78 12 72 Z" fill="var(--s-acc)"/>
+      <ellipse cx="34" cy="62" rx="9" ry="7" transform="rotate(-35 34 62)" fill="#DDEFB8"/>
+      <ellipse cx="52" cy="48" rx="9" ry="7" transform="rotate(-35 52 48)" fill="#DDEFB8"/>
+      <ellipse cx="70" cy="34" rx="8" ry="6" transform="rotate(-35 70 34)" fill="#DDEFB8"/>
+      <path d="M86 22 C90 14 94 10 98 8" stroke="var(--s-acc)" stroke-width="4" fill="none" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="pomodoro" viewBox="0 0 100 100">
+      <ellipse cx="50" cy="60" rx="38" ry="34" fill="var(--s-acc)"/>
+      <ellipse cx="36" cy="50" rx="8" ry="12" fill="rgba(255,255,255,.22)" transform="rotate(25 36 50)"/>
+      <path d="M50 30 L40 18 L47 29 L30 26 L45 33 L34 42 L50 35 L66 42 L55 33 L70 26 L53 29 L60 18 Z" fill="var(--s-alt)"/>
+      <path d="M50 30 C50 22 52 14 56 10" stroke="var(--s-alt)" stroke-width="4" fill="none" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-consegna" viewBox="0 0 24 24"><path d="M4 10h16l-1.5 10h-13z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 10c0-3 1.8-5 4-5s4 2 4 5" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-saldi" viewBox="0 0 24 24"><path d="M12 4v16M5 8h14M5 8l-3 7h6zM19 8l-3 7h6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-storico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  </defs>
+</svg>
+
+<div class="board">
+  <h1>GASS: stagioni</h1>
+  <p>Alternativa D. Un GAS compra quello che la campagna laziale dà in quel momento, quindi l’app prende il colore della stagione della consegna selezionata: la testata nomina i prodotti del mese e mostra un ortaggio disegnato. Crediti e debiti hanno invece colori fissi, uguali tutto l’anno. Stessi dati della consegna del 4 novembre 2025, quindi autunno.</p>
+
+  <div class="row">
+    <!-- 1. Consegna mobile -->
+    <div>
+      <div class="phone">
+        <header class="stag m-stag">
+          <svg class="ill" aria-hidden="true"><use href="#zucca"/></svg>
+          <div class="when">Consegna di</div>
+          <h2>martedì 4 novembre</h2>
+          <div class="prod">zucca, cavolo nero e castagne</div>
+          <button class="ghost cambia">Cambia data</button>
+        </header>
+        <div class="conto">
+          <div><small>Trovato</small><span>22</span></div>
+          <div><small>Incassato</small><span><i>+</i>71</span></div>
+          <div><small>Pagato</small><span><i>−</i>85</span></div>
+          <div class="tot"><small>In cassa</small><span><i>=</i>8</span></div>
+        </div>
+        <div class="scroll">
+          <div class="sect"><h3>Chi ha ritirato</h3><span class="st"><span class="dot"></span>Aperta, <a href="#">chiudi</a></span></div>
+          <ul class="list">
+            <li><span class="nm">amministratore</span><span class="sub">conto <b>30</b>, pagato <b>31</b></span><span class="esito es cr"><b>+1 €</b><small>credito</small></span></li>
+            <li><span class="nm">user</span><span class="sub">conto <b>20</b>, pagato <b>26</b></span><span class="esito es cr"><b>+6 €</b><small>credito</small></span></li>
+            <li><span class="nm">jeremy joshua rossi</span><span class="sub">conto <b>15</b>, pagato <b>14</b></span><span class="esito es db"><b>−1 €</b><small>debito</small></span></li>
+          </ul>
+          <button class="add">+ Aggiungi partecipante</button>
+        </div>
+        <nav class="bnav">
+          <a class="on" href="#"><svg><use href="#i-consegna"/></svg>Consegna</a>
+          <a href="#"><svg><use href="#i-saldi"/></svg>Saldi</a>
+          <a href="#"><svg><use href="#i-storico"/></svg>Storico</a>
+        </nav>
+      </div>
+      <p class="cap"><b>Consegna, mobile.</b> La testata è l’unico elemento forte: data, prodotti del mese e la zucca, perché è novembre. Sotto, la cassa sta in una sola riga che si legge come un’operazione (22 + 71 − 85 = 8). I movimenti sono righe semplici; l’esito ha sempre segno e parola, non solo colore.</p>
+    </div>
+
+    <!-- 2. Inserimento mobile -->
+    <div>
+      <div class="phone">
+        <header class="e-top">
+          <button class="back" aria-label="Indietro"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></button>
+          <div>
+            <div class="when">4 novembre, movimento di</div>
+            <h2>jeremy joshua rossi</h2>
+            <span class="pill db">prima di oggi: debito −5 €</span>
+          </div>
+        </header>
+        <div class="e-body">
+          <div class="fld"><label>Conto produttore</label><div>15<small>€</small></div></div>
+          <div class="fld focus"><label>Importo saldato</label><div>18<small>€</small></div></div>
+          <div class="passi">
+            <p><span>Copre il conto di oggi</span><b>15</b></p>
+            <p><span>Salda parte del debito</span><b>3</b></p>
+          </div>
+          <div class="risult"><span>Resta di debito</span><b>−2 €</b></div>
+          <div class="fld note"><label>Note</label><div>Aggiungi una nota</div></div>
+          <div style="margin-top:auto;display:grid;grid-template-columns:1fr 2fr;gap:10px">
+            <button class="btn line">Annulla</button><button class="btn go">Salva movimento</button>
+          </div>
+        </div>
+      </div>
+      <p class="cap"><b>Inserimento, mobile.</b> Due soli campi da scrivere, con cifre grandi. Il campo attivo ha il bordo del colore di stagione. Il calcolo automatico è scritto in due righe accanto a una linea arancio; il risultato finale usa il colore fisso del debito, con il segno.</p>
+    </div>
+
+    <!-- 3. Saldi mobile -->
+    <div>
+      <div class="phone">
+        <header class="stag m-stag">
+          <svg class="ill" aria-hidden="true"><use href="#zucca"/></svg>
+          <div class="when">Saldi al</div>
+          <h2>4 novembre 2025</h2>
+          <div class="prod">zucca, cavolo nero e castagne</div>
+          <button class="ghost cambia">Cambia data</button>
+        </header>
+        <div class="tot2">
+          <div><small>Crediti, 2 persone</small><b style="color:var(--credito)">+7 €</b></div>
+          <div><small>Debiti, 1 persona</small><b style="color:var(--debito)">−1 €</b></div>
+        </div>
+        <div class="scroll">
+          <div class="sect"><h3>Partecipanti</h3><span class="st">tocca per i dettagli</span></div>
+          <ul class="list">
+            <li><span class="nm">amministratore</span><span class="sub">ultimo movimento 4/11</span><span class="esito es cr"><b>+1 €</b><small>credito</small></span></li>
+            <li><span class="nm">jeremy joshua rossi</span><span class="sub">ultimo movimento 4/11</span><span class="esito es db"><b>−1 €</b><small>debito</small></span></li>
+            <li><span class="nm">user</span><span class="sub">ultimo movimento 4/11</span><span class="esito es cr"><b>+6 €</b><small>credito</small></span></li>
+          </ul>
+        </div>
+        <nav class="bnav">
+          <a href="#"><svg><use href="#i-consegna"/></svg>Consegna</a>
+          <a class="on" href="#"><svg><use href="#i-saldi"/></svg>Saldi</a>
+          <a href="#"><svg><use href="#i-storico"/></svg>Storico</a>
+        </nav>
+      </div>
+      <p class="cap"><b>Saldi, mobile.</b> Stessa testata, perché anche i saldi sono legati a una data. Due totali in alto (crediti e debiti), poi l’elenco in ordine alfabetico come oggi. Toccando una riga si aprono transazioni e, per gli admin, le modifiche.</p>
+    </div>
+  </div>
+
+  <!-- 4. Consegna desktop -->
+  <div class="row">
+    <div>
+      <div class="desk">
+        <div class="d-top"><span class="brand">GASS Torpignattara</span><nav><a class="on" href="#">Consegna</a><a href="#">Saldi</a><a href="#">Storico</a><a href="#">Attività</a></nav><div class="u"><span>admin</span><a href="#">Cambia password</a><a href="#">Esci</a></div></div>
+        <header class="stag d-stag">
+          <svg class="ill" aria-hidden="true"><use href="#zucca"/></svg>
+          <div class="when">Consegna di</div>
+          <h2>martedì 4 novembre 2025</h2>
+          <div class="prod">in stagione: zucca, cavolo nero e castagne</div>
+          <div class="acts"><button class="ghost">Cambia data</button><span>Chiusa da jeremy.</span><a href="#">Riapri consegna</a></div>
+        </header>
+        <div class="d-body">
+          <div class="d-grid">
+            <div class="cassa-v">
+              <p>Trovato in cassa <b>22</b></p>
+              <p>+ Incassato <b>71</b></p>
+              <p>− Pagato al produttore <b>85</b></p>
+              <p class="tot">= Lasciato in cassa <b>8</b></p>
+              <div class="nt">Note della giornata: <i>prima consegna</i></div>
+            </div>
+            <div>
+              <div class="d-bar"><h3>Movimenti</h3><div class="sel"><span>+ Aggiungi partecipante</span><span>▾</span></div></div>
+              <table class="t">
+                <thead><tr><th>Partecipante</th><th>Conto produttore</th><th>Importo saldato</th><th>Lascia credito</th><th>Lascia debito</th><th>Usa credito</th><th>Salda debito</th><th class="nt">Note</th><th></th></tr></thead>
+                <tbody>
+                  <tr><td class="nm">amministratore</td><td>30</td><td>31</td><td class="cr">+1</td><td class="mute">–</td><td class="mute">–</td><td class="mute">–</td><td class="nt mute">–</td><td></td></tr>
+                  <tr class="edit"><td class="nm">user</td><td class="ic"><span>20</span></td><td class="ic"><span>26</span></td><td class="cr">+6</td><td class="mute">–</td><td class="mute">–</td><td class="mute">–</td><td class="nt mute">–</td><td><button class="btn go sm">Salva</button></td></tr>
+                  <tr><td class="nm">jeremy joshua rossi</td><td>15</td><td>14</td><td class="mute">–</td><td class="db">−1</td><td class="mute">–</td><td class="mute">–</td><td class="nt mute">–</td><td></td></tr>
+                </tbody>
+                <tfoot><tr><td>Totale</td><td>65</td><td>71</td><td>7</td><td>1</td><td>–</td><td>–</td><td></td><td></td></tr></tfoot>
+              </table>
+              <p class="hint">Le colonne calcolate restano testo; si scrivono solo conto produttore e importo saldato.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="cap" style="max-width:820px"><b>Consegna, desktop.</b> La testata di stagione si allarga e ospita data, stato della consegna e Riapri (solo admin). La cassa è una colonna a sinistra, i movimenti a destra con lo stesso ordine di colonne di oggi, Note compresa. Crediti in blu con +, debiti in vinaccia con −; gli zeri diventano “–”.</p>
+    </div>
+  </div>
+
+  <!-- 5. Saldi desktop -->
+  <div class="row">
+    <div>
+      <div class="desk">
+        <div class="d-top"><span class="brand">GASS Torpignattara</span><nav><a href="#">Consegna</a><a class="on" href="#">Saldi</a><a href="#">Storico</a><a href="#">Attività</a></nav><div class="u"><span>admin</span><a href="#">Cambia password</a><a href="#">Esci</a></div></div>
+        <header class="stag d-stag" style="min-height:150px">
+          <svg class="ill" aria-hidden="true"><use href="#zucca"/></svg>
+          <div class="when">Saldi al</div>
+          <h2>4 novembre 2025</h2>
+          <div class="acts"><button class="ghost">Cambia data</button><button class="ghost">+ Aggiungi partecipante</button></div>
+        </header>
+        <div class="d-body">
+          <div class="d-head2">
+            <h3 style="margin:0;font-family:Alegreya,serif;font-size:26px">Partecipanti</h3>
+            <div class="tots"><span>Crediti <b style="color:var(--credito)">+7 €</b></span><span>Debiti <b style="color:var(--debito)">−1 €</b></span></div>
+          </div>
+          <table class="t">
+            <thead><tr><th>Partecipante</th><th style="text-align:left">Username</th><th>Saldo</th><th>Ultimo movimento</th><th></th></tr></thead>
+            <tbody>
+              <tr><td class="nm">amministratore</td><td style="text-align:left">admin<span class="adm">admin</span></td><td><span class="pill cr">+1 € credito</span></td><td>04/11/2025</td><td class="lk"><a href="#">Transazioni</a><a href="#">Modifica utente</a></td></tr>
+              <tr><td class="nm">jeremy joshua rossi</td><td style="text-align:left">jeremy<span class="adm">admin</span></td><td><span class="pill db">−1 € debito</span></td><td>04/11/2025</td><td class="lk"><a href="#">Transazioni</a><a href="#">Modifica utente</a></td></tr>
+              <tr><td class="nm">user</td><td style="text-align:left">user</td><td><span class="pill cr">+6 € credito</span></td><td>04/11/2025</td><td class="lk"><a href="#">Transazioni</a><a href="#">Modifica utente</a></td></tr>
+            </tbody>
+          </table>
+          <p class="hint">Modifica saldo compare solo quando la data è oggi. Stai guardando il 4 novembre 2025.</p>
+        </div>
+      </div>
+      <p class="cap" style="max-width:820px"><b>Saldi, desktop.</b> Tabella semplice, azioni come link testuali. Il saldo è un’etichetta con segno, importo e parola, nei due colori fissi. “Modifica saldo” si aggiunge come terzo link solo alla data di oggi, e la frase sotto spiega perché ora manca.</p>
+    </div>
+  </div>
+
+  <!-- 6. Palette -->
+  <h2 class="sec">Palette</h2>
+  <div class="base">
+    <div><i style="background:#F4F6F2"></i><p><b>Calce</b>#F4F6F2 sfondo</p></div>
+    <div><i style="background:#FFFFFF"></i><p><b>Carta</b>#FFFFFF superfici</p></div>
+    <div><i style="background:#1E2420"></i><p><b>Inchiostro</b>#1E2420 testo</p></div>
+    <div><i style="background:#5C6760"></i><p><b>Salvia</b>#5C6760 testo secondario</p></div>
+    <div><i style="background:#1F57B0"></i><p><b>Credito</b>#1F57B0 sempre con +</p></div>
+    <div><i style="background:#A3175F"></i><p><b>Debito</b>#A3175F sempre con −</p></div>
+  </div>
+  <div class="seasons">
+    <div class="sea">
+      <header class="stag"><svg class="ill" aria-hidden="true"><use href="#zucca"/></svg><div class="when">Autunno, set–nov</div><h2>Novembre</h2><div class="prod">zucca, cavolo nero, castagne</div></header>
+      <div class="sw"><div><i style="background:#26392F"></i>Cavolo nero #26392F</div><div><i style="background:#E8890F"></i>Zucca #E8890F</div><div><i style="background:#6E4128"></i>Castagna #6E4128</div></div>
+      <div class="mini"><span class="b">Salva</span><span class="pill cr">+6 €</span><span class="pill db">−1 €</span></div>
+    </div>
+    <div class="sea inverno">
+      <header class="stag"><svg class="ill" aria-hidden="true"><use href="#carciofo"/></svg><div class="when">Inverno, dic–feb</div><h2>Gennaio</h2><div class="prod">carciofo romanesco, arance, puntarelle</div></header>
+      <div class="sw"><div><i style="background:#3D3052"></i>Carciofo #3D3052</div><div><i style="background:#F2A01F"></i>Arancia #F2A01F</div><div><i style="background:#7E8E57"></i>Foglia #7E8E57</div></div>
+      <div class="mini"><span class="b">Salva</span><span class="pill cr">+6 €</span><span class="pill db">−1 €</span></div>
+    </div>
+    <div class="sea primavera">
+      <header class="stag"><svg class="ill" aria-hidden="true"><use href="#fave"/></svg><div class="when">Primavera, mar–mag</div><h2>Aprile</h2><div class="prod">fave, piselli, fragole</div></header>
+      <div class="sw"><div><i style="background:#2D5A2A"></i>Piselli #2D5A2A</div><div><i style="background:#9DC65A"></i>Fave #9DC65A</div><div><i style="background:#E0445A"></i>Fragola #E0445A</div></div>
+      <div class="mini"><span class="b">Salva</span><span class="pill cr">+6 €</span><span class="pill db">−1 €</span></div>
+    </div>
+    <div class="sea estate">
+      <header class="stag"><svg class="ill" aria-hidden="true"><use href="#pomodoro"/></svg><div class="when">Estate, giu–ago</div><h2>Luglio</h2><div class="prod">pomodori, melanzane, basilico</div></header>
+      <div class="sw"><div><i style="background:#3A2340"></i>Melanzana #3A2340</div><div><i style="background:#E0412B"></i>Pomodoro #E0412B</div><div><i style="background:#3F8F3E"></i>Basilico #3F8F3E</div></div>
+      <div class="mini"><span class="b">Salva</span><span class="pill cr">+6 €</span><span class="pill db">−1 €</span></div>
+    </div>
+  </div>
+  <p class="cap" style="max-width:820px"><b>Stagioni.</b> La stagione si ricava dalla data della consegna selezionata, nel browser: nessun dato nuovo. Cambia solo la testata, la barra di navigazione, i bottoni e i bordi attivi; i prodotti del mese sono una frase fissa per ciascun mese. Credito (blu, +) e debito (vinaccia, −) restano uguali in ogni stagione e non somigliano a nessun colore di stagione.</p>
+</div>
+</body>
+</html>
