@@ -40,7 +40,7 @@ GET    /api/version                   - Get application version from package.jso
 
 **User deletion:** `movimenti` and `rettifiche_saldo` reference `users` with `ON DELETE CASCADE`, so deleting a user with either would erase their history from past consegne; the route refuses it with 400. For any other user, every non-cascading reference to `users` (`activity_logs.target_user_id`/`actor_user_id`, the `*_by` audit columns) is set to NULL in the same transaction as the delete, so log rows stay. `manage-users.js delete` does a plain `DELETE` and does not apply this rule.
 
-`GET /inbreve` serves `public/inbreve.html`, a one-page guide for new users (public, no auth, printable on one A4 page).
+`GET /inbreve` serves `public/inbreve.html`, a one-page guide for new users (public, no auth, printable on one A4 page). `GET /comefunziona` serves `public/comefunziona.html`, the first-access video (`public/video/gass-primo-accesso.mp4`, public, no auth).
 
 ### Frontend Structure
 

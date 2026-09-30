@@ -20,6 +20,11 @@ router.get('/inbreve', (req, res) => {
   res.sendFile(path.join(PUBLIC, 'inbreve.html'));
 });
 
+// First-access video (public, no auth required)
+router.get('/comefunziona', (req, res) => {
+  res.sendFile(path.join(PUBLIC, 'comefunziona.html'));
+});
+
 // API endpoint to get app version (public, no auth required)
 router.get('/api/version', (req, res) => {
   res.json({ version: packageJson.version });

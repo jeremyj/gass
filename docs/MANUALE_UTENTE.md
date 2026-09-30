@@ -12,7 +12,7 @@ GASS Pagamenti è un sistema di gestione finanziaria per gruppi di acquisto soli
 
 ### Primo Accesso
 
-Una guida di una pagina per chi inizia è su https://gass.x86.it/inbreve (non serve il login).
+Una guida di una pagina per chi inizia è su https://gass.x86.it/inbreve e un video del primo accesso su https://gass.x86.it/comefunziona (non serve il login).
 
 1. Aprire https://gass.x86.it e toccare **Accedi**
 2. Nella pagina di Authentik inserire il nome utente e la password provvisoria ricevuti dall'amministratore
@@ -359,7 +359,7 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.14.0
+Sistema GASS Pagamenti - Versione 2.15.0
 - Storico: **Completa consegna** sulle consegne ancora aperte e, per gli amministratori, **Riapri consegna** su quelle chiuse
 - Storico su mobile: la cassa è una voce per riga
 - Testi più piccoli ingranditi ancora
