@@ -113,7 +113,7 @@ docker exec gass node manage-users.js delete john
 - Tabella formattata per listing utenti
 - Messaggi di conferma chiari
 
-⚠️ **Sicurezza**: Utilizzare sempre password forti in produzione (minimo 4 caratteri).
+⚠️ **Sicurezza**: Utilizzare sempre password forti in produzione (minimo 8 caratteri).
 
 ## Stack Tecnologico
 

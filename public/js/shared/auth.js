@@ -22,11 +22,11 @@ function injectChangePasswordModal() {
           </div>
           <div class="form-group">
             <label>Nuova Password:</label>
-            <input type="password" id="new-password" required minlength="4">
+            <input type="password" id="new-password" required minlength="8">
           </div>
           <div class="form-group">
             <label>Conferma Nuova Password:</label>
-            <input type="password" id="confirm-password" required minlength="4">
+            <input type="password" id="confirm-password" required minlength="8">
           </div>
           <div id="password-error" class="error-message" style="display:none;"></div>
           <div class="modal-buttons">
@@ -71,8 +71,8 @@ async function submitPasswordChange() {
     return;
   }
 
-  if (newPassword.length < 4) {
-    errorDiv.textContent = 'La nuova password deve essere di almeno 4 caratteri';
+  if (newPassword.length < 8) {
+    errorDiv.textContent = 'La nuova password deve essere di almeno 8 caratteri';
     errorDiv.style.display = 'block';
     return;
   }

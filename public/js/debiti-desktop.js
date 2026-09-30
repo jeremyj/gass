@@ -120,8 +120,8 @@ async function addParticipant() {
     return;
   }
 
-  if (password.length < 4) {
-    showStatus('La password deve essere di almeno 4 caratteri', 'error');
+  if (password.length < 8) {
+    showStatus('La password deve essere di almeno 8 caratteri', 'error');
     return;
   }
 
@@ -332,8 +332,8 @@ async function submitEditUser() {
     return;
   }
 
-  if (newPassword && newPassword.length < 4) {
-    errorDiv.textContent = 'La password deve essere di almeno 4 caratteri';
+  if (newPassword && newPassword.length < 8) {
+    errorDiv.textContent = 'La password deve essere di almeno 8 caratteri';
     errorDiv.style.display = 'block';
     return;
   }

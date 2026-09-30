@@ -246,8 +246,8 @@ function changePassword(username, newPassword) {
   }
 
   // Validate password length
-  if (newPassword.length < 4) {
-    console.error('Error: Password must be at least 4 characters long');
+  if (newPassword.length < 8) {
+    console.error('Error: Password must be at least 8 characters long');
     process.exit(1);
   }
 
