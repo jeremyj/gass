@@ -25,9 +25,10 @@
 ### Client-Side
 - **Shared**: `public/js/shared/`
   - `api-client.js` - **Always use `API.*` methods for server calls**
-  - `utils.js` - formatNumber, formatDateItalian, parseAmount, showStatus, `confirmDialog` (use instead of `confirm()`), `debitoPagato`/`debitoNuovo`
+  - `utils.js` - formatNumber, formatEuro, formatSigned, formatDateItalian, parseAmount, showStatus, `confirmDialog` (use instead of `confirm()`), `debitoPagato`/`debitoNuovo`
+  - `season.js` - season theme: `applySeason(date)` sets `body.s-<stagione>`, the month's produce line (`#season-produce`) and the header drawing; `formatDateLong`; injects the SVG sprite (produce drawings + nav icons, `<use href="#i-…">`)
   - `calendar.js` - Date picker (mobile + desktop), `loadConsegneDates()`
-  - `consegna-common.js` - Shared consegna business logic (mobile + desktop): participant card (`renderParticipant(id, buttonsHtml)`, `populateExistingMovimento`), save path (`saveParticipant`, `postConsegna`); page scripts keep only their button row and post-save handling
+  - `consegna-common.js` - Shared consegna business logic (mobile + desktop): participant card (`renderParticipant(id, buttonsHtml)`, `populateExistingMovimento`), save path (`saveParticipant`, `postConsegna`), `openMovimento(id)` (click a row of the day's list), `esitoMovimento(m)`; page scripts keep only their button row, `closeParticipant` and post-save handling
   - `debiti-common.js` - Shared debiti loading and helpers (mobile + desktop)
   - `auth.js` - Session/logout handling
   - `version.js` - Dynamic version footer
@@ -38,6 +39,7 @@
 ### HTML Script Loading Order
 ```html
 <script src="js/shared/utils.js"></script>
+<script src="js/shared/season.js"></script>   <!-- every page, login included -->
 <script src="js/shared/calendar.js"></script>
 <script src="js/shared/api-client.js"></script>
 <script src="js/shared/consegna-common.js"></script>  <!-- or debiti-common.js -->
@@ -133,7 +135,7 @@ Saldo = replay from 0 of the participant's movimenti (via `applySaldoChanges`) +
 - Deleting a consegna recalculates only participants that had a movimento in it
 - Don't reintroduce flat SQL sums of movimenti for saldi: they ignore the `debito_saldato` clamp and rettifiche
 - `POST /api/consegna` rejects (400) non-numeric/negative amounts, `usaCredito` above credit and `debitoSaldato` above debt, measured with `saldoBeforeConsegna` — so a stale `users.saldo` cache (e.g. the local dev DB) makes client-computed payoffs fail validation; the ledger is what counts
-- Movimento amounts are stored rounded to cents. Rounding is `Math.round(x*100)/100` (`roundToCents`, same name server and client); `formatNumber` rounds before deciding whether to hide `.00`. Consegne saved before a34ea39 still hold float drift in the cassa columns
+- Movimento amounts are stored rounded to cents. Rounding is `Math.round(x*100)/100` (`roundToCents`, same name server and client); `formatNumber` rounds before deciding whether to hide `,00`. Consegne saved before a34ea39 still hold float drift in the cassa columns
 - `salda_tutto` was removed in v2.7 (no UI since 2025-10, 0 rows set in production); the legacy FK-fix migration in `database.js` still names it because it runs before the column drop
 
 ### Credit/Debt Auto-Compensation
@@ -156,13 +158,21 @@ On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_
 
 ## UI Patterns
 
+### Design ("Stagioni")
+- Mockups of the chosen direction and the alternatives: `design/mockups/` (stagioni = implemented)
+- Season accents are CSS vars `--s-deep/--s-acc/--s-alt/--s-tint/--s-on/--s-prod` overridden by `body.s-inverno|primavera|estate` (autunno is the `:root` default). Credit/debt use `--credito`/`--debito`, never a season colour, and always with a sign and a word (`formatSigned` + "credito"/"debito")
+- Fonts are self-hosted in `public/fonts/` (Alegreya, Alegreya Sans, OFL); no third-party requests
+- No emoji in labels or nav (the activity log keeps its event icons)
+- Bump `?v=` on changed CSS/JS: static files are cached 7 days
+
 ### Mobile
-- Each participant form has embedded Save/Close buttons
-- Cassa accordion open by default
+- Cassa is one row (`.conto`): Trovato + Incassato − Pagato = In cassa; `#incassatoCassa` is a display-only `<output>` filled by `updateIncassato()`
+- The day's movimenti are listed ("Chi ha ritirato"); tapping a row opens it
+- The participant card becomes a full-screen entry at ≤ 768px (pure CSS on `.participant-card-flow`); `#status` is a fixed toast above it
 - Calendar opens to current month
 
 ### Desktop
-- Inline form buttons (Salva Movimento / Annulla)
+- Form card below the table, buttons Annulla / Salva movimento
 - Table column order: Conto Produttore, Importo Saldato, Lascia Credito, Lascia Debito, Usa Credito, Salda Debito
 
 ### Date Selection
@@ -172,15 +182,15 @@ On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_
 - Uses `performance.getEntriesByType('navigation')` to detect reload vs navigation
 
 ### Visibility Sync
-`syncDebitoCreditoVisibility(id)` in `consegna-common.js` shows the read-only partial fields (`debitoSaldato_`, `usaCredito_`) only when part of the debt/credit is used. A full payoff shows only in the section title (`👉 debito saldato` / `👉 credito esaurito`) and is flagged with `dataset.full` on the field, which `readMovimentoForm` sends as `saldaDebitoTotale`. The "Salda intero debito" / "Usa intero credito" checkboxes were removed in 2.9.0: the auto-compensation unchecked them on every recalculation, so they only repeated the title.
+`syncDebitoCreditoVisibility(id)` in `consegna-common.js` shows the computed partial lines (`debitoSaldato_`, `usaCredito_`) only when part of the debt/credit is used, the result line `credito_`/`debito_` only when > 0 (else `pari_`), and hides the `passi_` box when empty. Computed amounts are disabled inputs styled as text lines (`.computed`): their values are what `readMovimentoForm` submits, so keep them as inputs. A full payoff shows only as a note (`remainingDebt_`: "Debito saldato per intero" / `remainingCredit_`: "Credito usato per intero") and is flagged with `dataset.full` on the field, which `readMovimentoForm` sends as `saldaDebitoTotale`. The "Salda intero debito" / "Usa intero credito" checkboxes were removed in 2.9.0: the auto-compensation unchecked them on every recalculation, so they only repeated the title.
 
 ### CSS .initially-hidden pattern
-`.initially-hidden { display: none }` (no `!important`) — JS `element.style.display = 'block/flex'` must be able to override it. Use CSS specificity for modals (`.modal.initially-hidden` 0-2-0 beats `.modal` 0-1-0) rather than `!important`, since `!important` would also block inline style overrides.
+`.initially-hidden { display: none }` (no `!important`) — JS `element.style.display = 'block/flex'` must be able to override it. Setting `style.display = ''` does NOT show an element that still has the class: set an explicit value or toggle the class (the admin "Attività" nav item uses `classList.toggle('initially-hidden')`). Use CSS specificity for modals (`.modal.initially-hidden` 0-2-0 beats `.modal` 0-1-0) rather than `!important`, since `!important` would also block inline style overrides.
 
 ### Consegna Locking
 - "Chiudi Consegna" button in Cassa section (any user can close)
 - "Riapri Consegna" button visible only to admins
-- When closed: all inputs disabled, movimenti section hidden (mobile)
+- When closed: all inputs disabled; `.consegna-closed` hides the add select and makes the list rows inert (the day's list stays visible, read-only)
 - Admin must reopen to edit a closed consegna
 - Negative `lasciatoInCassa` is flagged live (`updateCassaWarning()`, call it after setting the field); close/annulla confirmations show a summary via `consegnaSummaryDetails()`
 
@@ -196,7 +206,7 @@ On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_
 Calendar dates (`data`, `ultima_modifica`, "today") are always the **local** date: use `toLocalDateString()` (`utils.js` client-side, `calculations.js` server-side). Never `toISOString().split('T')[0]` or SQLite `DATE()` — both give the UTC date, which is yesterday between 00:00 and 01:00/02:00 in Italy. The image sets `TZ=Europe/Rome` (+ `tzdata`, Alpine has none). Audit timestamps (`created_at`, `updated_at`) stay ISO UTC with `Z`.
 
 ### Currency Display
-`formatNumber()` hides `.00` on whole numbers, shows 2 decimals otherwise
+Italian format: `formatNumber()` → `11,50` / `8` (hides `,00`); `formatEuro()` → `11,50 €`; `formatSigned()` → `+6 €` / `−1,50 €` (typographic minus, display only). `formatNumber` output is also written into readonly/computed inputs and read back with `parseAmount`, which accepts comma or dot, so never write `formatSigned`/`formatEuro` into an input. `normalizeInputField` turns a typed dot into a comma.
 
 ---
 
@@ -232,7 +242,7 @@ Auto-calculated fields (credito_lasciato, debito_lasciato, usa_credito, debito_s
 **Stack**: Vitest + supertest, `pool: forks` (each test file = isolated Node process)
 
 ```bash
-npm test                    # all 198 tests
+npm test                    # all 201 tests
 npm run test:unit           # pure function tests (no DB/HTTP)
 npm run test:integration    # API tests with in-memory SQLite
 npm run test:coverage       # with coverage report
