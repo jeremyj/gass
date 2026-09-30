@@ -26,11 +26,11 @@
 - **Shared**: `public/js/shared/`
   - `api-client.js` - **Always use `API.*` methods for server calls**
   - `utils.js` - formatNumber, formatEuro, formatSigned, formatDateItalian, parseAmount, showStatus, `confirmDialog` (use instead of `confirm()`), `debitoPagato`/`debitoNuovo`
-  - `season.js` - season theme: `applySeason(date)` sets `body.s-<stagione>`, the month's produce line (`#season-produce`) and the header drawing; `formatDateLong`; injects the SVG sprite (produce drawings + nav icons, `<use href="#i-…">`)
+  - `season.js` - season theme: `applySeason(date)` sets `body.s-<stagione>` and the header drawing (4 per season in `SEASONS[*].ills`, rotating weekly by `weekIndex(date)`, Monday-based, so a date always gets the same one); `formatDateLong`; injects the SVG sprite (produce drawings + nav icons, `<use href="#i-…">`)
   - `calendar.js` - Date picker (mobile + desktop), `loadConsegneDates()`
   - `consegna-common.js` - Shared consegna business logic (mobile + desktop): participant card (`renderParticipant(id, buttonsHtml)`, `populateExistingMovimento`), save path (`saveParticipant`, `postConsegna`), `openMovimento(id)` (click a row of the day's list), `esitoMovimento(m)`; page scripts keep only their button row, `closeParticipant` and post-save handling
   - `debiti-common.js` - Shared debiti loading and helpers (mobile + desktop)
-  - `auth.js` - Session/logout handling
+  - `auth.js` - Session/logout handling; `await sessionReady` before rendering anything that depends on `isAdmin()` (else admin-only controls stay hidden when the session response arrives after the page data — this hid "Riapri consegna" on mobile until 2.12.0)
   - `version.js` - Dynamic version footer
 - **Page-Specific**: `public/js/`
   - Mobile: `consegna.js`, `debiti.js`, `storico.js`
@@ -162,11 +162,12 @@ On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_
 - Mockups of the chosen direction and the alternatives: `design/mockups/` (stagioni = implemented)
 - Season accents are CSS vars `--s-deep/--s-acc/--s-alt/--s-tint/--s-on/--s-prod` overridden by `body.s-inverno|primavera|estate` (autunno is the `:root` default). Credit/debt use `--credito`/`--debito`, never a season colour, and always with a sign and a word (`formatSigned` + "credito"/"debito")
 - Fonts are self-hosted in `public/fonts/` (Alegreya, Alegreya Sans, OFL); no third-party requests
+- Minimum text size is 14px (footer, calendar weekdays); secondary text is 16–17px. Users asked for bigger text in 2.12.0, so don't go below that
 - No emoji in labels or nav (the activity log keeps its event icons)
 - Bump `?v=` on changed CSS/JS: static files are cached 7 days
 
 ### Mobile
-- Cassa is one row (`.conto`): Trovato + Incassato − Pagato = In cassa; `#incassatoCassa` is a display-only `<output>` filled by `updateIncassato()`
+- Cassa is one row (`.conto`): Trovato + Incassato − Pagato = In cassa. All four cassa values (mobile and desktop) are display-only `<output>`s, read and written through `.value` like inputs; `#incassatoCassa` is filled by `updateIncassato()`
 - The day's movimenti are listed ("Chi ha ritirato"); tapping a row opens it
 - The participant card becomes a full-screen entry at ≤ 768px (pure CSS on `.participant-card-flow`); `#status` is a fixed toast above it
 - Calendar opens to current month

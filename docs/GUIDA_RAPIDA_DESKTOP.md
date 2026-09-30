@@ -52,7 +52,7 @@ La tabella ha le colonne Partecipante, Conto produttore, Importo saldato, Lascia
 
 ## Chiudere la Consegna
 
-Dopo aver inserito tutti i movimenti clicca **Chiudi consegna** e conferma il riepilogo per bloccare la giornata. Se la cassa è negativa compare l'avviso "Cassa negativa": controlla i movimenti prima di chiudere. Solo un amministratore può riaprirla con **Riapri consegna**.
+Dopo aver inserito tutti i movimenti clicca **Chiudi consegna** e conferma il riepilogo per bloccare la giornata. Se la cassa è negativa compare l'avviso "Cassa negativa": controlla i movimenti prima di chiudere. Solo un amministratore può riaprirla: **Cambia data**, scegli il giorno, poi **Riapri consegna** nell'intestazione.
 
 ---
 

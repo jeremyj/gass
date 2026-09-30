@@ -41,7 +41,7 @@ L'applicazione si adatta automaticamente al dispositivo utilizzato:
 - Layout ottimizzato per schermi più grandi
 
 #### Intestazione stagionale e importi
-- Ogni pagina ha un'intestazione scura i cui colori seguono la stagione della data selezionata (autunno set–nov, inverno dic–feb, primavera mar–mag, estate giu–ago), con la verdura del mese sotto la data. La riga sopra la data dice "Consegna di oggi" / "Saldi di oggi" per oggi, "Consegna di" / "Saldi al" per un'altra data; l'anno compare solo se non è quello corrente.
+- Ogni pagina ha un'intestazione scura i cui colori seguono la stagione della data selezionata (autunno set–nov, inverno dic–feb, primavera mar–mag, estate giu–ago), con il disegno di un frutto o di una verdura di stagione che cambia ogni settimana. La riga sopra la data dice "Consegna di oggi" / "Saldi di oggi" per oggi, "Consegna di" / "Saldi al" per un'altra data; l'anno compare solo se non è quello corrente.
 - Gli importi sono nel formato italiano ("11,50 €", senza decimali se interi: "8 €"). Nei campi si può scrivere la virgola o il punto; il campo mostra la virgola.
 - Colori dei saldi (non cambiano con la stagione): **blu** con "+" e la parola "credito", **rosso vino** con "−" e la parola "debito", **grigio** "0 € in pari".
 
@@ -147,7 +147,7 @@ Nelle tabelle dei movimenti (Consegna, Storico, Saldi) la colonna **Salda Debito
 Dopo aver registrato tutti i movimenti, è possibile chiudere la consegna:
 
 - **Chiudi consegna**: Blocca tutte le modifiche per la giornata. Qualsiasi utente può chiudere una consegna. Prima di chiudere viene mostrato un riepilogo (movimenti, incassato, pagato, lasciato in cassa) da confermare.
-- **Riapri consegna** (solo amministratori): Sblocca la consegna per permettere modifiche successive.
+- **Riapri consegna** (solo amministratori): Sblocca la consegna per permettere modifiche successive. Per una consegna passata: **Cambia data**, scegli il giorno (i giorni con una consegna sono evidenziati nel calendario), poi **Riapri consegna** accanto a "Consegna chiusa".
 
 Quando una consegna è chiusa, lo stato diventa "Consegna chiusa" e non è più possibile modificarla: su mobile l'elenco resta visibile in sola lettura, senza il controllo per aggiungere partecipanti.
 
@@ -358,7 +358,12 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.11.0
+Sistema GASS Pagamenti - Versione 2.12.0
+- Testi più grandi; il disegno dell'intestazione cambia ogni settimana tra frutta e verdura di stagione
+- Il link **Riapri consegna** a volte non compariva agli amministratori su mobile: corretto
+- Le cifre della cassa (Trovato, Incassato, Pagato, In cassa) non sono più campi toccabili
+
+Versione 2.11.0
 - Nuova grafica "Stagioni": l'intestazione cambia colore con la stagione della data scelta, importi nel formato 11,50 €, crediti in blu e debiti in rosso vino sempre con segno e parola
 - Visualizzazione transazioni aperta a tutti gli utenti autenticati (non solo amministratori)
 - Storico transazioni per partecipante nella pagina Saldi (mobile e desktop)

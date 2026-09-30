@@ -42,7 +42,7 @@ In cima la riga della cassa mostra i totali della giornata come una somma: Trova
 
 ## Chiudere la Consegna
 
-Dopo aver salvato almeno un movimento, sotto la riga della cassa compare il link **Chiudi consegna** — cliccalo e conferma il riepilogo per bloccare la giornata. Solo un amministratore può riaprirla. Se la cassa è negativa compare l'avviso "Cassa negativa": controlla i movimenti prima di chiudere.
+Dopo aver salvato almeno un movimento, sotto la riga della cassa compare il link **Chiudi consegna** — cliccalo e conferma il riepilogo per bloccare la giornata. Solo un amministratore può riaprirla: **Cambia data**, scegli il giorno, poi **Riapri consegna**. Se la cassa è negativa compare l'avviso "Cassa negativa": controlla i movimenti prima di chiudere.
 
 ![Conferma di chiusura con il riepilogo](screenshots/m02c-chiudi.png){ width=45% }
 
