@@ -16,7 +16,7 @@ function calculatePagatoProduttore() {
       totalPagato += (m.conto_produttore || 0);
     });
   }
-  return roundUpCents(totalPagato);
+  return roundToCents(totalPagato);
 }
 
 function calculateLasciatoInCassa() {
@@ -30,7 +30,7 @@ function calculateLasciatoInCassa() {
     });
   }
 
-  return roundUpCents(trovatoInCassa + incassato - pagatoProduttore);
+  return roundToCents(trovatoInCassa + incassato - pagatoProduttore);
 }
 
 function updatePagatoProduttore() {
@@ -68,7 +68,7 @@ function consegnaSummaryDetails() {
   const incassato = movimenti.reduce((sum, m) => sum + (m.importo_saldato || 0), 0);
   return [
     ['Movimenti', String(movimenti.length)],
-    ['Incassato', `€${formatNumber(roundUpCents(incassato))}`],
+    ['Incassato', `€${formatNumber(roundToCents(incassato))}`],
     ['Pagato produttore', `€${document.getElementById('pagatoProduttore').value || '0'}`],
     ['Lasciato in cassa', `€${document.getElementById('lasciatoInCassa').value || '0'}`]
   ];
@@ -514,8 +514,8 @@ function readMovimentoForm(id) {
   const debitoSaldatoEl = document.getElementById(`debitoSaldato_${id}`);
   return {
     partecipante_id: id,
-    contoProduttore: roundUpCents(amount(`contoProduttore_${id}`)),
-    importoSaldato: roundUpCents(amount(`importo_${id}`)),
+    contoProduttore: roundToCents(amount(`contoProduttore_${id}`)),
+    importoSaldato: roundToCents(amount(`importo_${id}`)),
     usaCredito: amount(`usaCredito_${id}`),
     debitoLasciato: amount(`debito_${id}`),
     creditoLasciato: amount(`credito_${id}`),
@@ -527,7 +527,7 @@ function readMovimentoForm(id) {
 
 // POST the consegna for the selected date with the current cassa fields and note
 function postConsegna(partecipanti) {
-  const amount = id => roundUpCents(parseAmount(document.getElementById(id).value));
+  const amount = id => roundToCents(parseAmount(document.getElementById(id).value));
   return API.post('/api/consegna', {
     data: document.getElementById('data').value,
     trovatoInCassa: amount('trovatoInCassa'),

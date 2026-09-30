@@ -15,7 +15,7 @@ const sandbox = {
 vm.createContext(sandbox);
 vm.runInContext(code, sandbox);
 
-const { escapeHtml, formatDateItalian, parseAmount, roundUpCents, formatNumber, formatSaldo, toLocalDateString,
+const { escapeHtml, formatDateItalian, parseAmount, roundToCents, formatNumber, formatSaldo, toLocalDateString,
         debitoPagato, debitoNuovo } = sandbox;
 
 describe('toLocalDateString', () => {
@@ -99,14 +99,14 @@ describe('parseAmount', () => {
   });
 });
 
-describe('roundUpCents', () => {
+describe('roundToCents', () => {
   it('rounds to nearest 0.01', () => {
-    expect(roundUpCents(1.006)).toBe(1.01);
-    expect(roundUpCents(1.004)).toBe(1.0);
+    expect(roundToCents(1.006)).toBe(1.01);
+    expect(roundToCents(1.004)).toBe(1.0);
   });
 
   it('returns whole numbers unchanged', () => {
-    expect(roundUpCents(10)).toBe(10);
+    expect(roundToCents(10)).toBe(10);
   });
 });
 

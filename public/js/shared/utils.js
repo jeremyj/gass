@@ -72,7 +72,7 @@ function parseAmount(value) {
 }
 
 // Round to 0.01€ (1 cent) - matches server-side rounding
-function roundUpCents(amount) {
+function roundToCents(amount) {
   return Math.round(amount * 100) / 100;
 }
 
@@ -84,7 +84,7 @@ function formatSaldo(val) {
 // Format a number for display, hiding .00 decimals
 function formatNumber(value) {
   if (value === null || value === undefined) return '';
-  const num = parseFloat(value);
+  const num = roundToCents(parseFloat(value));
   if (isNaN(num)) return '';
   return num % 1 === 0 ? num.toString() : num.toFixed(2);
 }
@@ -93,7 +93,7 @@ function formatNumber(value) {
 // part still owed in debito_lasciato (so the ledger replay stays right). For display, split it
 // into what was actually paid and what is genuinely new debt.
 function debitoPagato(m) {
-  return m.debito_saldato > 0 ? roundUpCents(m.debito_saldato - (m.debito_lasciato || 0)) : 0;
+  return m.debito_saldato > 0 ? roundToCents(m.debito_saldato - (m.debito_lasciato || 0)) : 0;
 }
 
 function debitoNuovo(m) {
