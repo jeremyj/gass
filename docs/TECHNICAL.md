@@ -244,8 +244,8 @@ Cash fields are **always readonly** - no manual override capability in mobile or
   - `incassato = Σ importo_saldato` from all movements
 
 **Display Formatting:**
-- Uses `formatNumber()` to hide unnecessary `.00` decimals on whole numbers; it rounds to cents first, so float drift like `20.000000000000004` shows as `20`
-- Shows "42" instead of "42.00" for cleaner UI
+- Italian format since 2.11.0: `formatNumber()` gives `11,50` and hides `,00` on whole numbers (`42`); it rounds to cents first, so float drift like `20.000000000000004` shows as `20`. `formatEuro()` adds ` €`, `formatSigned()` gives `+6 €` / `−1,50 €` for credit/debt
+- Typed amounts accept comma or dot (`normalizeInputField` shows a comma); `parseAmount()` reads both, so values written back into readonly fields round-trip
 
 #### Participant Movements
 Each movement tracks:
