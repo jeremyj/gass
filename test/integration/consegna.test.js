@@ -340,3 +340,47 @@ describe('POST /api/consegna/:id/close and /reopen', () => {
     expect(res.status).toBe(404);
   });
 });
+
+// ===== POST / — payload validation =====
+
+describe('POST /api/consegna/ — validation', () => {
+  const movimento = (partecipante_id, fields = {}) => ({
+    partecipante_id, importoSaldato: 0, usaCredito: 0, debitoLasciato: 0, creditoLasciato: 0,
+    saldaDebitoTotale: false, debitoSaldato: 0, contoProduttore: 0, note: '', ...fields
+  });
+
+  it('returns 400 and writes nothing for a non-numeric amount', async () => {
+    const userId = createUser(db, { username: 'mario', password: 'password1', displayName: 'Mario' });
+
+    const res = await adminAgent.post('/api/consegna/').send({
+      data: '2026-02-19', trovatoInCassa: 0,
+      partecipanti: [movimento(userId, { importoSaldato: 'abc' })]
+    });
+    expect(res.status).toBe(400);
+    expect(db.prepare('SELECT COUNT(*) AS n FROM consegne').get().n).toBe(0);
+  });
+
+  it('returns 400 when using more credit than the ledger saldo before the consegna', async () => {
+    const userId = createUser(db, { username: 'mario', password: 'password1', displayName: 'Mario', saldo: 10 });
+    createRettifica(db, { partecipanteId: userId, data: '2026-02-01', importo: 10 });
+
+    const res = await adminAgent.post('/api/consegna/').send({
+      data: '2026-02-19', trovatoInCassa: 0,
+      partecipanti: [movimento(userId, { contoProduttore: 15, usaCredito: 15 })]
+    });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/Credito/);
+  });
+
+  it('stores amounts rounded to cents', async () => {
+    const userId = createUser(db, { username: 'mario', password: 'password1', displayName: 'Mario' });
+
+    const res = await adminAgent.post('/api/consegna/').send({
+      data: '2026-02-19', trovatoInCassa: 0,
+      partecipanti: [movimento(userId, { contoProduttore: 10.004, importoSaldato: 10.004 })]
+    });
+    expect(res.status).toBe(200);
+    const m = db.prepare('SELECT conto_produttore, importo_saldato FROM movimenti WHERE partecipante_id = ?').get(userId);
+    expect(m).toEqual({ conto_produttore: 10, importo_saldato: 10 });
+  });
+});

@@ -163,9 +163,13 @@ async function addParticipant() {
 
 async function deleteParticipant(id) {
   const participant = participants.find(p => p.id === id);
-  if (!confirm(`Sei sicuro di voler eliminare ${participant.nome}?`)) {
-    return;
-  }
+  const ok = await confirmDialog({
+    title: 'Eliminare il partecipante?',
+    details: [['Partecipante', participant.nome], ['Saldo', `€${formatNumber(participant.saldo || 0)}`]],
+    confirmText: 'Elimina',
+    danger: true
+  });
+  if (!ok) return;
 
   try {
     const response = await fetch(`/api/participants/${id}`, {
@@ -268,9 +272,9 @@ function renderTransactionsTable(transactions) {
         <td class="col-num">${t.conto_produttore ? '€' + formatNumber(t.conto_produttore) : '-'}</td>
         <td class="col-num">${t.importo_saldato ? '€' + formatNumber(t.importo_saldato) : '-'}</td>
         <td class="col-num col-credito">${t.credito_lasciato ? '€' + formatNumber(t.credito_lasciato) : '-'}</td>
-        <td class="col-num col-debito">${t.debito_lasciato ? '€' + formatNumber(t.debito_lasciato) : '-'}</td>
+        <td class="col-num col-debito">${debitoNuovo(t) ? '€' + formatNumber(debitoNuovo(t)) : '-'}</td>
         <td class="col-num col-credito">${t.usa_credito ? '€' + formatNumber(t.usa_credito) : '-'}</td>
-        <td class="col-num col-debito">${t.debito_saldato ? '€' + formatNumber(t.debito_saldato) : '-'}</td>
+        <td class="col-num col-debito">${debitoPagato(t) ? '€' + formatNumber(debitoPagato(t)) : '-'}</td>
         <td class="${effectClass}" style="font-weight:bold;">${effectText}</td>
         <td class="col-note">${escapeHtml(t.note)}</td>
       </tr>
@@ -363,9 +367,14 @@ function closeEditUserModal() {
 
 async function deleteUserFromModal() {
   const username = document.getElementById('edit-user-username').textContent;
-  if (!confirm(`Sei sicuro di voler eliminare l'utente "${username}"?\n\nQuesta azione non può essere annullata.`)) {
-    return;
-  }
+  const ok = await confirmDialog({
+    title: "Eliminare l'utente?",
+    message: 'Questa azione non può essere annullata.',
+    details: [['Utente', username]],
+    confirmText: 'Elimina utente',
+    danger: true
+  });
+  if (!ok) return;
 
   try {
     const response = await fetch(`/api/participants/${editingUserId}`, {

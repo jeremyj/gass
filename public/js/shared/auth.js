@@ -164,7 +164,7 @@ function isAdmin() {
 
 // Handle logout
 async function handleLogout() {
-  if (!confirm('Sei sicuro di voler uscire?')) {
+  if (!await confirmDialog({ title: 'Vuoi uscire?', confirmText: 'Esci' })) {
     return;
   }
 

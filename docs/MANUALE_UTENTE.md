@@ -64,6 +64,7 @@ Tre campi di sola lettura che vengono calcolati automaticamente dal sistema:
 - Denaro rimasto in cassa alla fine della giornata
 - Calcolato come: `Trovato + Incassato - Pagato`
 - Dove `Incassato` è la somma degli importi saldati da tutti i partecipanti
+- Se il valore è negativo il campo diventa rosso e compare l'avviso "⚠️ Cassa negativa"
 
 **Note Giornata**
 - Campo opzionale per annotazioni sulla consegna
@@ -132,13 +133,15 @@ Le sezioni CREDITO e DEBITO appaiono solo quando sono rilevanti per il partecipa
   - ☑️ **Salda intero debito**: Spuntato automaticamente quando il sistema salda tutto il debito
   - **Salda parziale**: Importo parziale di debito da saldare (alternativo alla casella "salda intero")
 
+Nelle tabelle dei movimenti (Consegna, Storico, Saldi) la colonna **Salda Debito** mostra quanto debito è stato pagato in quella consegna, e **Lascia Debito** solo il debito nuovo. Esempio: debito di 26,73€ pagato per 17,74€ → Salda Debito 17,74€, Lascia Debito vuoto; i 8,99€ ancora dovuti restano nel saldo.
+
 **Nota**: "Salda intero debito" e "Salda parziale" sono mutuamente esclusivi — quando si inserisce un importo in "Salda parziale", la casella si nasconde automaticamente e viceversa.
 
 #### Chiusura e Riapertura Consegna
 
 Dopo aver registrato tutti i movimenti, è possibile chiudere la consegna:
 
-- **Chiudi Consegna**: Blocca tutte le modifiche per la giornata. Qualsiasi utente può chiudere una consegna.
+- **Chiudi Consegna**: Blocca tutte le modifiche per la giornata. Qualsiasi utente può chiudere una consegna. Prima di chiudere viene mostrato un riepilogo (movimenti, incassato, pagato, lasciato in cassa) da confermare.
 - **Riapri Consegna** (solo amministratori): Sblocca la consegna per permettere modifiche successive.
 
 Quando una consegna è chiusa, tutti i campi sono disabilitati e appare il badge "🔒 Consegna chiusa".

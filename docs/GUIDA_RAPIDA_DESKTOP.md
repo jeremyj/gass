@@ -45,7 +45,7 @@ I tre campi sono **sola lettura** e calcolati automaticamente dal sistema:
 
 ## Chiudere la Consegna
 
-Dopo aver inserito tutti i movimenti clicca **🔒 Chiudi Consegna** per bloccare la giornata. Solo un amministratore può riaprirla con **🔓 Riapri Consegna**.
+Dopo aver inserito tutti i movimenti clicca **🔒 Chiudi Consegna** e conferma il riepilogo per bloccare la giornata. Se la cassa è negativa, il campo Lasciato in cassa è rosso: controlla i movimenti prima di chiudere. Solo un amministratore può riaprirla con **🔓 Riapri Consegna**.
 
 ---
 

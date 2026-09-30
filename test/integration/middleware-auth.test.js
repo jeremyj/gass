@@ -90,3 +90,11 @@ describe('requireAdmin middleware', () => {
     expect(res2.status).toBe(403);
   });
 });
+
+describe('public endpoints', () => {
+  it('serves /api/version without a session', async () => {
+    const res = await request(app).get('/api/version');
+    expect(res.status).toBe(200);
+    expect(res.body.version).toBe(require('../../package.json').version);
+  });
+});

@@ -8,6 +8,7 @@ const {
   roundToCents
 } = require('../services/calculations');
 const { saldoBeforeConsegna, recalculateSaldo } = require('../services/saldi');
+const { validateConsegnaPayload } = require('../services/validation');
 
 const router = express.Router();
 
@@ -91,6 +92,12 @@ router.post('/', (req, res) => {
   console.log(`[CONSEGNA] ${timestamp} - POST request for date: ${data}`);
   console.log(`[CONSEGNA] ${timestamp} - Saving ${partecipanti?.length || 0} participant movements`);
 
+  const validationError = validateConsegnaPayload(req.body, id => saldoBeforeConsegna(id, data));
+  if (validationError) {
+    console.log(`[CONSEGNA] ${timestamp} - Rejected invalid payload: ${validationError}`);
+    return res.status(400).json({ success: false, error: validationError });
+  }
+
   try {
     // Check if consegna is closed (non-admins cannot edit)
     const existingConsegna = db.prepare('SELECT chiusa FROM consegne WHERE data = ?').get(data);
@@ -171,20 +178,23 @@ router.post('/', (req, res) => {
           SELECT * FROM movimenti WHERE consegna_id = ? AND partecipante_id = ?
         `).get(consegna.id, partecipante.id);
 
+        const cents = v => roundToCents(v || 0);
+        const contoProduttore = cents(p.contoProduttore);
+        const importoSaldato = cents(p.importoSaldato);
         const movimentoData = [
-          p.importoSaldato || 0, p.usaCredito || 0,
-          p.debitoLasciato || 0, p.creditoLasciato || 0,
-          p.saldaDebitoTotale ? 1 : 0, p.debitoSaldato || 0, p.contoProduttore || 0, p.note || ''
+          importoSaldato, cents(p.usaCredito),
+          cents(p.debitoLasciato), cents(p.creditoLasciato),
+          p.saldaDebitoTotale ? 1 : 0, cents(p.debitoSaldato), contoProduttore, p.note || ''
         ];
 
         if (existingMovimento) {
           // Track only manually entered fields (not auto-calculated ones)
           const changes = [];
-          if (existingMovimento.conto_produttore !== (p.contoProduttore || 0)) {
-            changes.push(`conto: ${existingMovimento.conto_produttore} → ${p.contoProduttore || 0}`);
+          if (existingMovimento.conto_produttore !== contoProduttore) {
+            changes.push(`conto: ${existingMovimento.conto_produttore} → ${contoProduttore}`);
           }
-          if (existingMovimento.importo_saldato !== (p.importoSaldato || 0)) {
-            changes.push(`saldato: ${existingMovimento.importo_saldato} → ${p.importoSaldato || 0}`);
+          if (existingMovimento.importo_saldato !== importoSaldato) {
+            changes.push(`saldato: ${existingMovimento.importo_saldato} → ${importoSaldato}`);
           }
 
           const updateAudit = getAuditFields(req, 'update');

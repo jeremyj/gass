@@ -103,9 +103,9 @@ function createMovimentiTable(movimenti) {
     conto: acc.conto + (m.conto_produttore || 0),
     saldato: acc.saldato + (m.importo_saldato || 0),
     credito: acc.credito + (m.credito_lasciato || 0),
-    debito: acc.debito + (m.debito_lasciato || 0),
+    debito: acc.debito + debitoNuovo(m),
     usaCredito: acc.usaCredito + (m.usa_credito || 0),
-    saldaDebito: acc.saldaDebito + (m.debito_saldato || 0)
+    saldaDebito: acc.saldaDebito + debitoPagato(m)
   }), { conto: 0, saldato: 0, credito: 0, debito: 0, usaCredito: 0, saldaDebito: 0 });
 
   const rows = movimenti.map(m => `
@@ -114,9 +114,9 @@ function createMovimentiTable(movimenti) {
       <td class="col-num">${m.conto_produttore ? '€' + formatNumber(m.conto_produttore) : '-'}</td>
       <td class="col-num">${m.importo_saldato ? '€' + formatNumber(m.importo_saldato) : '-'}</td>
       <td class="col-num col-credito">${m.credito_lasciato ? '€' + formatNumber(m.credito_lasciato) : '-'}</td>
-      <td class="col-num col-debito">${m.debito_lasciato ? '€' + formatNumber(m.debito_lasciato) : '-'}</td>
+      <td class="col-num col-debito">${debitoNuovo(m) ? '€' + formatNumber(debitoNuovo(m)) : '-'}</td>
       <td class="col-num col-credito">${m.usa_credito ? '€' + formatNumber(m.usa_credito) : '-'}</td>
-      <td class="col-num col-debito">${m.debito_saldato ? '€' + formatNumber(m.debito_saldato) : '-'}</td>
+      <td class="col-num col-debito">${debitoPagato(m) ? '€' + formatNumber(debitoPagato(m)) : '-'}</td>
       <td class="col-note">${escapeHtml(m.note)}</td>
     </tr>
   `).join('');
@@ -157,9 +157,13 @@ function createMovimentiTable(movimenti) {
 // ===== DELETE =====
 
 async function deleteConsegna(id) {
-  if (!confirm('Sei sicuro di voler eliminare questa consegna?')) {
-    return;
-  }
+  const ok = await confirmDialog({
+    title: 'Eliminare la consegna?',
+    message: 'La consegna e tutti i suoi movimenti verranno eliminati, e i saldi dei partecipanti ricalcolati.',
+    confirmText: 'Elimina consegna',
+    danger: true
+  });
+  if (!ok) return;
 
   showStatus('Eliminazione in corso...', 'success');
 

@@ -233,7 +233,7 @@ function renderTransactions(container, transactions) {
     if (t.conto_produttore) details.push(`Conto: ${formatNumber(t.conto_produttore)} €`);
     if (t.importo_saldato) details.push(`Pagato: ${formatNumber(t.importo_saldato)} €`);
     if (t.usa_credito) details.push(`Usa credito: ${formatNumber(t.usa_credito)} €`);
-    if (t.debito_saldato) details.push(`Salda debito: ${formatNumber(t.debito_saldato)} €`);
+    if (debitoPagato(t)) details.push(`Salda debito: ${formatNumber(debitoPagato(t))} €`);
 
     html += `
       <div class="transaction-item ${effectClass}">
@@ -255,13 +255,17 @@ function renderTransactions(container, transactions) {
 
 // ===== CARD INTERACTION =====
 
-function toggleParticipantCard(id) {
+async function toggleParticipantCard(id) {
   if (expandedParticipantId === id) {
     // Trying to close - check for unsaved changes (admin only)
     if (isAdmin() && isViewingToday() && hasUnsavedChanges(id)) {
-      if (!confirm('Ci sono modifiche non salvate. Vuoi chiudere senza salvare?')) {
-        return; // User cancelled, keep card open
-      }
+      const ok = await confirmDialog({
+        title: 'Modifiche non salvate',
+        message: 'Vuoi chiudere senza salvare?',
+        confirmText: 'Chiudi senza salvare',
+        danger: true
+      });
+      if (!ok) return; // User cancelled, keep card open
     }
     expandedParticipantId = null;
     originalSaldoValues = {}; // Clear saved values
@@ -374,9 +378,13 @@ async function saveSaldo(id) {
 
 async function deleteParticipant(id) {
   const participant = participants.find(p => p.id === id);
-  if (!confirm(`Sei sicuro di voler eliminare ${participant.nome}?`)) {
-    return;
-  }
+  const ok = await confirmDialog({
+    title: 'Eliminare il partecipante?',
+    details: [['Partecipante', participant.nome], ['Saldo', `€${formatNumber(participant.saldo || 0)}`]],
+    confirmText: 'Elimina',
+    danger: true
+  });
+  if (!ok) return;
 
   try {
     const response = await fetch(`/api/participants/${id}`, {

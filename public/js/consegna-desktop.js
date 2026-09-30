@@ -50,6 +50,7 @@ function loadExistingConsegna(result) {
   trovatoField.value = formatNumber(result.consegna.trovato_in_cassa || 0);
   pagatoField.value = formatNumber(result.consegna.pagato_produttore || 0);
   lasciatoField.value = formatNumber(result.consegna.lasciato_in_cassa || 0);
+  updateCassaWarning();
 
   originalNoteGiornata = result.consegna.note || '';
   document.getElementById('noteGiornata').value = originalNoteGiornata;
@@ -76,6 +77,7 @@ function loadNewConsegna(result) {
   trovatoField.value = formatNumber(trovatoValue);
   pagatoField.value = formatNumber(0);
   lasciatoField.value = formatNumber(trovatoValue);
+  updateCassaWarning();
 
   originalNoteGiornata = '';
   document.getElementById('noteGiornata').value = '';
@@ -107,9 +109,9 @@ function renderMovimentiGiorno() {
         <td class="text-right">${m.conto_produttore ? '€' + formatNumber(m.conto_produttore) : ''}</td>
         <td class="text-right">${m.importo_saldato ? '€' + formatNumber(m.importo_saldato) : ''}</td>
         <td class="text-right">${m.credito_lasciato ? '€' + formatNumber(m.credito_lasciato) : ''}</td>
-        <td class="text-right">${m.debito_lasciato ? '€' + formatNumber(m.debito_lasciato) : ''}</td>
+        <td class="text-right">${debitoNuovo(m) ? '€' + formatNumber(debitoNuovo(m)) : ''}</td>
         <td class="text-right">${m.usa_credito ? '€' + formatNumber(m.usa_credito) : ''}</td>
-        <td class="text-right">${m.debito_saldato ? '€' + formatNumber(m.debito_saldato) : ''}</td>
+        <td class="text-right">${debitoPagato(m) ? '€' + formatNumber(debitoPagato(m)) : ''}</td>
         <td>${escapeHtml(m.note || '')}</td>
       </tr>
     `;
@@ -451,21 +453,7 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
     return;
   }
 
-  const contoProduttore = roundUpCents(parseAmount(document.getElementById(`contoProduttore_${currentId}`).value));
-  const importoSaldato = roundUpCents(parseAmount(document.getElementById(`importo_${currentId}`).value));
-  const usaCredito = parseAmount(document.getElementById(`usaCredito_${currentId}`)?.value || '0');
-  const debitoLasciato = parseAmount(document.getElementById(`debito_${currentId}`).value);
-  const creditoLasciato = parseAmount(document.getElementById(`credito_${currentId}`).value);
-  const debitoSaldatoEl = document.getElementById(`debitoSaldato_${currentId}`);
-  const debitoSaldato = parseAmount(debitoSaldatoEl?.dataset.submitValue || debitoSaldatoEl?.value || '0');
-  const saldaDebitoTotale = document.getElementById(`saldaDebito_${currentId}`)?.checked || false;
-  const note = document.getElementById(`note_${currentId}`).value || '';
-
-  const partecipantiData = [{
-    partecipante_id: currentId,
-    contoProduttore, importoSaldato, usaCredito, debitoLasciato, creditoLasciato,
-    saldaDebitoTotale, debitoSaldato, note,
-  }];
+  const partecipantiData = [readMovimentoForm(currentId)];
 
   let lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
 

@@ -249,7 +249,7 @@ Each movement tracks:
 - `debito_lasciato`: New debt to carry forward (system-calculated, always disabled)
 - `credito_lasciato`: New credit to carry forward (system-calculated, always disabled)
 - `salda_debito_totale`: Checkbox to settle all existing debt
-- `debito_saldato`: Partial debt settlement amount (system-managed, always disabled, always visible)
+- `debito_saldato`: Partial debt settlement amount (system-managed, always disabled, always visible). On a partial payoff it stores the **whole prior debt** and `debito_lasciato` the part still owed, so the ledger replay (`min(0, saldo + debito_saldato) - debito_lasciato`) is right. The UI never shows the raw pair: `debitoPagato(m)` / `debitoNuovo(m)` in `utils.js` split it into amount paid and genuinely new debt
 
 **Auto-Calculation**: The `credito_lasciato` and `debito_lasciato` fields are calculated values based on the formula:
 ```
@@ -399,8 +399,13 @@ transaction();
 ### Validation Rules
 - Date uniqueness: One delivery per date
 - Participant name uniqueness
-- Non-negative amounts for all monetary fields
 - Balance changes require a movimento or a rettifica
+- `POST /api/consegna` is checked by `server/services/validation.js` before anything is written; failures return 400 with an Italian message:
+  - `data` is `YYYY-MM-DD`, `partecipanti` is an array, `partecipante_id` is an integer
+  - movimento amounts are numbers (or null), finite and ≥ 0; cassa amounts are finite (trovato may be negative)
+  - not both `creditoLasciato` and `debitoLasciato` > 0
+  - `usaCredito` ≤ available credit and `debitoSaldato` ≤ existing debt, both against `saldoBeforeConsegna` (ledger, not the `users.saldo` cache)
+- Stored movimento amounts are rounded to cents
 
 ## Initialization
 
@@ -467,7 +472,9 @@ The image sets `TZ=Europe/Rome` (with `tzdata`); all calendar dates are local. O
 - Transaction rollback on any error
 
 ### Frontend
-- Network errors displayed in alert dialogs
+- Network errors displayed via `showStatus`
+- Confirmations use `confirmDialog()` (`utils.js`, Promise-based modal with optional detail rows), never `window.confirm()`
+- A negative lasciato in cassa is flagged live on the consegna page (`updateCassaWarning()` in `consegna-common.js`)
 - Form validation before submission
 - Graceful degradation for missing data
 - User feedback for all operations (success/failure)

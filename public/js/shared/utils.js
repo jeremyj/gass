@@ -89,4 +89,52 @@ function formatNumber(value) {
   return num % 1 === 0 ? num.toString() : num.toFixed(2);
 }
 
-// View mode switching removed - using only user-agent detection now
+// On a partial debt payoff a movimento stores the whole prior debt in debito_saldato and the
+// part still owed in debito_lasciato (so the ledger replay stays right). For display, split it
+// into what was actually paid and what is genuinely new debt.
+function debitoPagato(m) {
+  return m.debito_saldato > 0 ? roundUpCents(m.debito_saldato - (m.debito_lasciato || 0)) : 0;
+}
+
+function debitoNuovo(m) {
+  return m.debito_saldato > 0 ? 0 : (m.debito_lasciato || 0);
+}
+
+// In-page replacement for confirm(): resolves true/false.
+// details: [[label, value], ...] shown as a list; danger: red confirm button.
+function confirmDialog({ title, message = '', details = [], confirmText = 'Conferma', danger = false }) {
+  return new Promise(resolve => {
+    const modal = document.createElement('div');
+    modal.className = 'modal confirm-modal';
+    const rows = details.map(([label, value]) =>
+      `<div class="confirm-detail"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`
+    ).join('');
+    modal.innerHTML = `
+      <div class="modal-content" role="alertdialog" aria-modal="true">
+        <h3>${escapeHtml(title)}</h3>
+        ${message ? `<p class="confirm-message">${escapeHtml(message)}</p>` : ''}
+        ${rows}
+        <div class="modal-buttons">
+          <button type="button" data-answer="no">Annulla</button>
+          <button type="button" data-answer="yes" class="${danger ? 'btn-danger' : 'btn-save'}">${escapeHtml(confirmText)}</button>
+        </div>
+      </div>
+    `;
+
+    const close = answer => {
+      document.removeEventListener('keydown', onKey);
+      modal.remove();
+      resolve(answer);
+    };
+    const onKey = e => { if (e.key === 'Escape') close(false); };
+
+    modal.addEventListener('click', e => {
+      if (e.target === modal) return close(false);
+      const answer = e.target.closest('[data-answer]')?.dataset.answer;
+      if (answer) close(answer === 'yes');
+    });
+    document.addEventListener('keydown', onKey);
+    document.body.appendChild(modal);
+    modal.querySelector('[data-answer="no"]').focus();
+  });
+}

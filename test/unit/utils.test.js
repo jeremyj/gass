@@ -15,7 +15,8 @@ const sandbox = {
 vm.createContext(sandbox);
 vm.runInContext(code, sandbox);
 
-const { escapeHtml, formatDateItalian, parseAmount, roundUpCents, formatNumber, formatSaldo, toLocalDateString } = sandbox;
+const { escapeHtml, formatDateItalian, parseAmount, roundUpCents, formatNumber, formatSaldo, toLocalDateString,
+        debitoPagato, debitoNuovo } = sandbox;
 
 describe('toLocalDateString', () => {
   it('uses the local calendar date, not the UTC one', () => {
@@ -146,5 +147,25 @@ describe('formatSaldo', () => {
 
   it('handles 0', () => {
     expect(formatSaldo(0)).toBe('0');
+  });
+});
+
+describe('debitoPagato / debitoNuovo', () => {
+  it('partial payoff: shows what was paid, and no new debt', () => {
+    const m = { debito_saldato: 26.73, debito_lasciato: 8.99 };
+    expect(debitoPagato(m)).toBe(17.74);
+    expect(debitoNuovo(m)).toBe(0);
+  });
+
+  it('full payoff', () => {
+    const m = { debito_saldato: 26.73, debito_lasciato: 0 };
+    expect(debitoPagato(m)).toBe(26.73);
+    expect(debitoNuovo(m)).toBe(0);
+  });
+
+  it('new debt without payoff', () => {
+    const m = { debito_saldato: 0, debito_lasciato: 12 };
+    expect(debitoPagato(m)).toBe(0);
+    expect(debitoNuovo(m)).toBe(12);
   });
 });

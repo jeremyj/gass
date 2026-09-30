@@ -96,9 +96,9 @@ function getEventDetails(event) {
     if (event.conto_produttore) parts.push(`Conto: €${formatNumber(event.conto_produttore)}`);
     if (event.importo_saldato) parts.push(`Saldato: €${formatNumber(event.importo_saldato)}`);
     if (event.credito_lasciato) parts.push(`Cred: €${formatNumber(event.credito_lasciato)}`);
-    if (event.debito_lasciato) parts.push(`Deb: €${formatNumber(event.debito_lasciato)}`);
+    if (debitoNuovo(event)) parts.push(`Deb: €${formatNumber(debitoNuovo(event))}`);
     if (event.usa_credito) parts.push(`Usa Cred: €${formatNumber(event.usa_credito)}`);
-    if (event.debito_saldato) parts.push(`Salda Deb: €${formatNumber(event.debito_saldato)}`);
+    if (debitoPagato(event)) parts.push(`Salda Deb: €${formatNumber(debitoPagato(event))}`);
     return parts.join(' | ') || (event.details || '-');
   }
   // User management events have details field

@@ -175,7 +175,7 @@ function createParticipantMovimentoCard(m) {
     <div class="storico-participant-details">
       ${m.conto_produttore ? `Conto: ${formatNumber(m.conto_produttore)} €` : ''}
       ${m.importo_saldato ? ` • Pagato: ${formatNumber(m.importo_saldato)} €` : ''}
-      ${m.debito_saldato ? ` • Salda debito: ${formatNumber(m.debito_saldato)} €` : ''}
+      ${debitoPagato(m) ? ` • Salda debito: ${formatNumber(debitoPagato(m))} €` : ''}
       ${m.usa_credito ? ` • Usa credito: ${formatNumber(m.usa_credito)} €` : ''}
       ${!m.conto_produttore && !m.importo_saldato && !m.usa_credito && !m.debito_saldato ? 'Pari' : ''}
     </div>

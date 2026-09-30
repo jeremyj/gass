@@ -314,9 +314,9 @@ function renderMovimentiGiorno() {
         <td><strong>${escapeHtml(m.nome)}</strong></td>
         <td class="text-right">${m.importo_saldato ? '€' + formatNumber(m.importo_saldato) : ''}</td>
         <td class="text-right">${m.usa_credito ? '€' + formatNumber(m.usa_credito) : ''}</td>
-        <td class="text-right">${m.debito_lasciato ? '€' + formatNumber(m.debito_lasciato) : ''}</td>
+        <td class="text-right">${debitoNuovo(m) ? '€' + formatNumber(debitoNuovo(m)) : ''}</td>
         <td class="text-right">${m.credito_lasciato ? '€' + formatNumber(m.credito_lasciato) : ''}</td>
-        <td class="text-right">${m.debito_saldato ? '€' + formatNumber(m.debito_saldato) : ''}</td>
+        <td class="text-right">${debitoPagato(m) ? '€' + formatNumber(debitoPagato(m)) : ''}</td>
         <td>${escapeHtml(m.note || '')}</td>
       </tr>
     `;
@@ -536,38 +536,16 @@ function updateMovimentiCounter() {
 
 // ===== UNSAVED CHANGES DETECTION =====
 
+// Compare what would be submitted, so the check matches the save exactly
 function saveOriginalParticipantValues(id) {
-  originalParticipantValues[id] = {
-    importo: document.getElementById(`importo_${id}`)?.value || '',
-    usaCredito: document.getElementById(`usaCredito_${id}`)?.value || '',
-    credito: document.getElementById(`credito_${id}`)?.value || '',
-    debito: document.getElementById(`debito_${id}`)?.value || '',
-    debitoSaldato: document.getElementById(`debitoSaldato_${id}`)?.value || '',
-    note: document.getElementById(`note_${id}`)?.value || ''
-  };
+  originalParticipantValues[id] = JSON.stringify(readMovimentoForm(id));
 }
 
 function hasUnsavedParticipantChanges(id) {
   if (!originalParticipantValues[id]) {
     return false;
   }
-
-  const original = originalParticipantValues[id];
-  const current = {
-    importo: document.getElementById(`importo_${id}`)?.value || '',
-    usaCredito: document.getElementById(`usaCredito_${id}`)?.value || '',
-    credito: document.getElementById(`credito_${id}`)?.value || '',
-    debito: document.getElementById(`debito_${id}`)?.value || '',
-    debitoSaldato: document.getElementById(`debitoSaldato_${id}`)?.value || '',
-    note: document.getElementById(`note_${id}`)?.value || ''
-  };
-
-  return original.importo !== current.importo ||
-         original.usaCredito !== current.usaCredito ||
-         original.credito !== current.credito ||
-         original.debito !== current.debito ||
-         original.debitoSaldato !== current.debitoSaldato ||
-         original.note !== current.note;
+  return originalParticipantValues[id] !== JSON.stringify(readMovimentoForm(id));
 }
 
 // ===== PARTICIPANT FORM ACTIONS =====
@@ -594,12 +572,16 @@ async function saveParticipant(id) {
   await saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteGiornata, id);
 }
 
-function removeParticipant(id) {
+async function removeParticipant(id) {
   // Check for unsaved changes
   if (hasUnsavedParticipantChanges(id)) {
-    if (!confirm('Ci sono modifiche non salvate. Vuoi chiudere senza salvare?')) {
-      return; // User cancelled, keep form open
-    }
+    const ok = await confirmDialog({
+      title: 'Modifiche non salvate',
+      message: 'Vuoi chiudere senza salvare?',
+      confirmText: 'Chiudi senza salvare',
+      danger: true
+    });
+    if (!ok) return; // User cancelled, keep form open
   }
 
   const container = document.getElementById('selected-participants');
@@ -670,21 +652,7 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
     return;
   }
 
-  const contoProduttore = roundUpCents(parseAmount(document.getElementById(`contoProduttore_${currentId}`).value));
-  const importoSaldato = roundUpCents(parseAmount(document.getElementById(`importo_${currentId}`).value));
-  const usaCredito = parseAmount(document.getElementById(`usaCredito_${currentId}`)?.value || '0');
-  const debitoLasciato = parseAmount(document.getElementById(`debito_${currentId}`).value);
-  const creditoLasciato = parseAmount(document.getElementById(`credito_${currentId}`).value);
-  const debitoSaldatoEl = document.getElementById(`debitoSaldato_${currentId}`);
-  const debitoSaldato = parseAmount(debitoSaldatoEl?.dataset.submitValue || debitoSaldatoEl?.value || '0');
-  const saldaDebitoTotale = document.getElementById(`saldaDebito_${currentId}`)?.checked || false;
-  const note = document.getElementById(`note_${currentId}`).value || '';
-
-  const partecipantiData = [{
-    partecipante_id: currentId,
-    contoProduttore, importoSaldato, usaCredito, debitoLasciato, creditoLasciato,
-    saldaDebitoTotale, debitoSaldato, note,
-  }];
+  const partecipantiData = [readMovimentoForm(currentId)];
 
   // Always read calculated values from DOM
   const lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));

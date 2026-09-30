@@ -19,13 +19,13 @@
   - `users.js` - User management API (admin-only, edit profile/password/admin status)
   - `storico.js` - History API
   - `logs.js` - Activity log API (admin-only)
-- **Services**: `server/services/calculations.js` - Pure business logic; `server/services/saldi.js` - saldo ledger (DB-backed)
+- **Services**: `server/services/calculations.js` - Pure business logic; `server/services/saldi.js` - saldo ledger (DB-backed); `server/services/validation.js` - `POST /api/consegna` payload validation
 - **Middleware**: `server/middleware/` - auth.js, userAgent.js
 
 ### Client-Side
 - **Shared**: `public/js/shared/`
   - `api-client.js` - **Always use `API.*` methods for server calls**
-  - `utils.js` - formatNumber, formatDateItalian, parseAmount, showStatus
+  - `utils.js` - formatNumber, formatDateItalian, parseAmount, showStatus, `confirmDialog` (use instead of `confirm()`), `debitoPagato`/`debitoNuovo`
   - `calendar.js` - Date picker (mobile + desktop)
   - `consegna-common.js` - Shared consegna business logic (mobile + desktop)
   - `debiti-common.js` - Shared debiti loading and helpers (mobile + desktop)
@@ -131,6 +131,8 @@ Saldo = replay from 0 of the participant's movimenti (via `applySaldoChanges`) +
 - `PUT /api/participants/:id` stores `target − ledger saldo` as a rettifica dated today (local)
 - Deleting a consegna recalculates only participants that had a movimento in it
 - Don't reintroduce flat SQL sums of movimenti for saldi: they ignore the `debito_saldato` clamp and rettifiche
+- `POST /api/consegna` rejects (400) non-numeric/negative amounts, `usaCredito` above credit and `debitoSaldato` above debt, measured with `saldoBeforeConsegna` — so a stale `users.saldo` cache (e.g. the local dev DB) makes client-computed payoffs fail validation; the ledger is what counts
+- Movimento amounts are stored rounded to cents
 - `salda_tutto` was removed in v2.7 (no UI since 2025-10, 0 rows set in production); the legacy FK-fix migration in `database.js` still names it because it runs before the column drop
 
 ### Credit/Debt Auto-Compensation
@@ -140,6 +142,9 @@ diff = importo_saldato - conto_produttore
 if diff > 0 && has_debt: auto-apply to debito_saldato
 if diff < 0 && has_credit: auto-apply to usa_credito
 ```
+
+### debito_saldato Display
+On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_lasciato` the remainder (the client sends `debitoSaldato` from `dataset.submitValue`; the field shows only the part paid now). Never render the raw columns: tables use `debitoPagato(m)` (= saldato − lasciato) and `debitoNuovo(m)` (0 when a debt was being paid). Build the submitted movimento with `readMovimentoForm(id)` (`consegna-common.js`); the mobile unsaved-changes check compares its JSON so it matches the save exactly.
 
 ### Conditional Section Rendering
 - `saldo > 0`: Show CREDITO section, hidden fields for DEBITO
@@ -179,6 +184,7 @@ if diff < 0 && has_credit: auto-apply to usa_credito
 - "Riapri Consegna" button visible only to admins
 - When closed: all inputs disabled, movimenti section hidden (mobile)
 - Admin must reopen to edit a closed consegna
+- Negative `lasciatoInCassa` is flagged live (`updateCassaWarning()`, call it after setting the field); close/annulla confirmations show a summary via `consegnaSummaryDetails()`
 
 ### Admin-Only Features
 - Edit saldi (debiti page, only for today's date - historical saldi are read-only)
@@ -226,7 +232,7 @@ Auto-calculated fields (credito_lasciato, debito_lasciato, usa_credito, debito_s
 **Stack**: Vitest + supertest, `pool: forks` (each test file = isolated Node process)
 
 ```bash
-npm test                    # all 180 tests
+npm test                    # all 196 tests
 npm run test:unit           # pure function tests (no DB/HTTP)
 npm run test:integration    # API tests with in-memory SQLite
 npm run test:coverage       # with coverage report

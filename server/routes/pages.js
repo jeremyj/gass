@@ -14,6 +14,11 @@ router.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, '../../public', 'login.html'));
 });
 
+// API endpoint to get app version (public, no auth required)
+router.get('/api/version', (req, res) => {
+  res.json({ version: packageJson.version });
+});
+
 // Middleware to require authentication for all other pages
 const requireAuthForPages = (req, res, next) => {
   if (req.session && req.session.userId) {
@@ -55,11 +60,6 @@ router.get('/cambia-password', (req, res) => {
 // Redirect root to consegna
 router.get('/', (req, res) => {
   res.redirect('/consegna');
-});
-
-// API endpoint to get app version (public, no auth required)
-router.get('/api/version', (req, res) => {
-  res.json({ version: packageJson.version });
 });
 
 module.exports = router;

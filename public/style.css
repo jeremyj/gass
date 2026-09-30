@@ -1728,12 +1728,59 @@ input:disabled {
     margin: 0;
 }
 
-.modal-buttons button[type="button"]:not(.btn-save) {
+.modal-buttons button[type="button"]:not(.btn-save):not(.btn-danger) {
     background: #6c757d;
 }
 
-.modal-buttons button[type="button"]:not(.btn-save):hover {
+.modal-buttons button[type="button"]:not(.btn-save):not(.btn-danger):hover {
     background: #5a6268;
+}
+
+/* ===== CONFIRM DIALOG (confirmDialog in utils.js) ===== */
+
+.confirm-modal .modal-content {
+    max-width: 420px;
+}
+
+.confirm-message {
+    margin: 0 0 var(--space-4);
+    color: var(--color-text);
+}
+
+.confirm-detail {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    color: var(--color-text-muted);
+}
+
+.confirm-detail strong {
+    color: var(--color-text);
+}
+
+.modal-buttons .btn-save {
+    background: var(--color-success);
+    color: white;
+    border: none;
+}
+
+/* ===== NEGATIVE CASSA WARNING ===== */
+
+.input-cassa-negativa {
+    color: var(--color-danger) !important;
+    border-color: var(--color-danger) !important;
+    font-weight: bold;
+}
+
+.cassa-warning {
+    margin-top: 6px;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    background: #fdecea;
+    color: var(--color-danger);
+    font-size: 14px;
 }
 
 /* ===== ERROR MESSAGE ===== */

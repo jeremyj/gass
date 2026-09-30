@@ -42,6 +42,35 @@ function updateLasciatoInCassa() {
   const lasciatoField = document.getElementById('lasciatoInCassa');
   const value = calculateLasciatoInCassa();
   lasciatoField.value = formatNumber(value);
+  updateCassaWarning();
+}
+
+// Flag a negative lasciato in cassa while the consegna is still being entered
+function updateCassaWarning() {
+  const lasciatoField = document.getElementById('lasciatoInCassa');
+  const warning = document.getElementById('cassa-warning');
+  const lasciato = parseAmount(lasciatoField.value);
+  const negativa = lasciato < 0;
+
+  lasciatoField.classList.toggle('input-cassa-negativa', negativa);
+  if (warning) {
+    warning.textContent = negativa
+      ? `⚠️ Cassa negativa: mancano €${formatSaldo(lasciato)}. Controlla i movimenti prima di chiudere.`
+      : '';
+    warning.style.display = negativa ? 'block' : 'none';
+  }
+}
+
+// Summary of the current consegna shown in close/annulla confirmations
+function consegnaSummaryDetails() {
+  const movimenti = existingConsegnaMovimenti || [];
+  const incassato = movimenti.reduce((sum, m) => sum + (m.importo_saldato || 0), 0);
+  return [
+    ['Movimenti', String(movimenti.length)],
+    ['Incassato', `€${formatNumber(roundUpCents(incassato))}`],
+    ['Pagato produttore', `€${document.getElementById('pagatoProduttore').value || '0'}`],
+    ['Lasciato in cassa', `€${document.getElementById('lasciatoInCassa').value || '0'}`]
+  ];
 }
 
 // ===== DATA LOADING =====
@@ -109,7 +138,16 @@ async function toggleConsegnaStatus() {
       await API.reopenConsegna(currentConsegnaId);
       showStatus('Consegna riaperta', 'success');
     } else {
-      if (!confirm('Sei sicuro di voler chiudere questa consegna? I dati non potranno essere modificati.')) return;
+      const negativa = parseAmount(document.getElementById('lasciatoInCassa').value) < 0;
+      const ok = await confirmDialog({
+        title: 'Chiudere la consegna?',
+        message: (negativa ? '⚠️ La cassa è negativa. ' : '') +
+          'Dopo la chiusura i dati non potranno essere modificati (solo un admin può riaprirla).',
+        details: consegnaSummaryDetails(),
+        confirmText: 'Chiudi consegna',
+        danger: true
+      });
+      if (!ok) return;
       await API.closeConsegna(currentConsegnaId);
       showStatus('Consegna chiusa', 'success');
     }
@@ -448,7 +486,14 @@ function startNuovaConsegna() {
 
 async function annullaConsegna() {
   if (currentConsegnaId) {
-    if (!confirm('Sei sicuro di voler annullare questa consegna? Tutti i movimenti verranno eliminati.')) return;
+    const ok = await confirmDialog({
+      title: 'Annullare la consegna?',
+      message: 'La consegna e tutti i suoi movimenti verranno eliminati, e i saldi dei partecipanti ricalcolati.',
+      details: consegnaSummaryDetails(),
+      confirmText: 'Elimina consegna',
+      danger: true
+    });
+    if (!ok) return;
     try {
       const response = await fetch(`/api/consegna/${currentConsegnaId}`, { method: 'DELETE' });
       const result = await response.json();
@@ -521,6 +566,24 @@ function createHiddenInput(id, value) {
 }
 
 // ===== SAVE DATA =====
+
+// The movimento as it will be submitted. debitoSaldato sends the whole prior debt
+// (dataset.submitValue) while the field displays only the part paid now.
+function readMovimentoForm(id) {
+  const amount = fieldId => parseAmount(document.getElementById(fieldId)?.value || '0');
+  const debitoSaldatoEl = document.getElementById(`debitoSaldato_${id}`);
+  return {
+    partecipante_id: id,
+    contoProduttore: roundUpCents(amount(`contoProduttore_${id}`)),
+    importoSaldato: roundUpCents(amount(`importo_${id}`)),
+    usaCredito: amount(`usaCredito_${id}`),
+    debitoLasciato: amount(`debito_${id}`),
+    creditoLasciato: amount(`credito_${id}`),
+    saldaDebitoTotale: document.getElementById(`saldaDebito_${id}`)?.checked || false,
+    debitoSaldato: parseAmount(debitoSaldatoEl?.dataset.submitValue || debitoSaldatoEl?.value || '0'),
+    note: document.getElementById(`note_${id}`)?.value || ''
+  };
+}
 
 async function saveData() {
   const data = document.getElementById('data').value;
