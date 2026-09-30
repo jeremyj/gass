@@ -32,6 +32,7 @@
   - `debiti-common.js` - Shared debiti loading and helpers (mobile + desktop)
   - `auth.js` - Session/logout handling; `await sessionReady` before rendering anything that depends on `isAdmin()` (else admin-only controls stay hidden when the session response arrives after the page data — this hid "Riapri consegna" on mobile until 2.12.0)
   - `version.js` - Dynamic version footer
+  - `utils.js` also holds the Storico → Consegna links: `openConsegnaOn(date)` (sets `gass_selected_date`, goes to `/consegna`), `riapriConsegna(id, date)` (admin), `storicoActionsHtml(consegna)`
 - **Page-Specific**: `public/js/`
   - Mobile: `consegna.js`, `debiti.js`, `storico.js`
   - Desktop: `consegna-desktop.js`, `debiti-desktop.js`, `storico-desktop.js`, `logs-desktop.js`
@@ -162,7 +163,7 @@ On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_
 - Mockups of the chosen direction and the alternatives: `design/mockups/` (stagioni = implemented)
 - Season accents are CSS vars `--s-deep/--s-acc/--s-alt/--s-tint/--s-on/--s-prod` overridden by `body.s-inverno|primavera|estate` (autunno is the `:root` default). Credit/debt use `--credito`/`--debito`, never a season colour, and always with a sign and a word (`formatSigned` + "credito"/"debito")
 - Fonts are self-hosted in `public/fonts/` (Alegreya, Alegreya Sans, OFL); no third-party requests
-- Minimum text size is 14px (footer, calendar weekdays); secondary text is 16–17px. Users asked for bigger text in 2.12.0, so don't go below that
+- Minimum text size is 16px, body 18px. Users asked twice (2.12.0, 2.13.0) for bigger text, so don't go below that
 - No emoji in labels or nav (the activity log keeps its event icons)
 - Bump `?v=` on changed CSS/JS: static files are cached 7 days
 
@@ -192,7 +193,7 @@ On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_
 - "Chiudi Consegna" button in Cassa section (any user can close)
 - "Riapri Consegna" button visible only to admins
 - When closed: all inputs disabled; `.consegna-closed` hides the add select and makes the list rows inert (the day's list stays visible, read-only)
-- Admin must reopen to edit a closed consegna
+- Admin must reopen to edit a closed consegna: from the Consegna page or from Storico ("Riapri consegna" on closed ones reopens and opens it on the Consegna page). The user did not find the Consegna-page link alone, so keep the Storico one
 - Negative `lasciatoInCassa` is flagged live (`updateCassaWarning()`, call it after setting the field); close/annulla confirmations show a summary via `consegnaSummaryDetails()`
 
 ### Admin-Only Features

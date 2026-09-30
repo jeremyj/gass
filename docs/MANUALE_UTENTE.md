@@ -147,7 +147,7 @@ Nelle tabelle dei movimenti (Consegna, Storico, Saldi) la colonna **Salda Debito
 Dopo aver registrato tutti i movimenti, è possibile chiudere la consegna:
 
 - **Chiudi consegna**: Blocca tutte le modifiche per la giornata. Qualsiasi utente può chiudere una consegna. Prima di chiudere viene mostrato un riepilogo (movimenti, incassato, pagato, lasciato in cassa) da confermare.
-- **Riapri consegna** (solo amministratori): Sblocca la consegna per permettere modifiche successive. Per una consegna passata: **Cambia data**, scegli il giorno (i giorni con una consegna sono evidenziati nel calendario), poi **Riapri consegna** accanto a "Consegna chiusa".
+- **Riapri consegna** (solo amministratori): Sblocca la consegna per permettere modifiche successive. Per una consegna passata: in **Storico**, **Riapri consegna** sotto quella giornata (la riapre e la apre nella pagina Consegna); oppure **Cambia data**, scegli il giorno, poi **Riapri consegna** accanto a "Consegna chiusa".
 
 Quando una consegna è chiusa, lo stato diventa "Consegna chiusa" e non è più possibile modificarla: su mobile l'elenco resta visibile in sola lettura, senza il controllo per aggiungere partecipanti.
 
@@ -207,8 +207,9 @@ La pagina Storico permette di consultare tutte le consegne registrate.
 #### Visualizzazione
 
 - Le consegne sono mostrate in ordine cronologico inverso (più recenti in alto)
-- **Mobile**: ogni consegna mostra la data completa e "aperta/chiusa, in cassa X €"; toccandola si espande con la riga della cassa (Trovato + Incassato − Pagato = In cassa) e la lista dei partecipanti con l'esito
+- **Mobile**: ogni consegna mostra la data completa e "aperta/chiusa, in cassa X €"; toccandola si espande con la cassa (Trovato + Incassato − Pagato = In cassa, una voce per riga) e la lista dei partecipanti con l'esito
 - **Desktop**: ogni consegna ha il titolo con la data, l'etichetta Aperta/Chiusa, la colonna della cassa a sinistra e la tabella dei movimenti con la riga Totale a destra
+- **Apri nella consegna** apre quella giornata nella pagina Consegna; per gli amministratori, sulle consegne chiuse, **Riapri consegna** la riapre e la apre per modificarla
 
 #### Indicatore Note
 
@@ -358,7 +359,12 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.12.0
+Sistema GASS Pagamenti - Versione 2.13.0
+- Storico: link **Apri nella consegna** e, per gli amministratori, **Riapri consegna** su ogni consegna chiusa
+- Storico su mobile: la cassa è una voce per riga
+- Testi più piccoli ingranditi ancora
+
+Versione 2.12.0
 - Testi più grandi; il disegno dell'intestazione cambia ogni settimana tra frutta e verdura di stagione
 - Il link **Riapri consegna** a volte non compariva agli amministratori su mobile: corretto
 - Le cifre della cassa (Trovato, Incassato, Pagato, In cassa) non sono più campi toccabili

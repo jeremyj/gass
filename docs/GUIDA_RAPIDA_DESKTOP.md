@@ -52,7 +52,7 @@ La tabella ha le colonne Partecipante, Conto produttore, Importo saldato, Lascia
 
 ## Chiudere la Consegna
 
-Dopo aver inserito tutti i movimenti clicca **Chiudi consegna** e conferma il riepilogo per bloccare la giornata. Se la cassa è negativa compare l'avviso "Cassa negativa": controlla i movimenti prima di chiudere. Solo un amministratore può riaprirla: **Cambia data**, scegli il giorno, poi **Riapri consegna** nell'intestazione.
+Dopo aver inserito tutti i movimenti clicca **Chiudi consegna** e conferma il riepilogo per bloccare la giornata. Se la cassa è negativa compare l'avviso "Cassa negativa": controlla i movimenti prima di chiudere. Solo un amministratore può riaprirla: in **Storico** con **Riapri consegna**, oppure qui con **Cambia data** e poi **Riapri consegna** nell'intestazione.
 
 ---
 
@@ -68,7 +68,7 @@ Usa **Cambia data** per vedere i saldi in una data passata. Clicca **Transazioni
 
 # Storico
 
-Elenco di tutte le consegne in ordine cronologico inverso: per ogni giornata la data, lo stato (Aperta/Chiusa), la cassa a sinistra e la tabella dei movimenti con il Totale a destra.
+Elenco di tutte le consegne in ordine cronologico inverso: per ogni giornata la data, lo stato (Aperta/Chiusa), la cassa a sinistra e la tabella dei movimenti con il Totale a destra. **Apri nella consegna** apre quella giornata nella pagina Consegna.
 
 ![Pagina Storico](screenshots/05-storico.png){ width=100% }
 
@@ -78,7 +78,7 @@ Elenco di tutte le consegne in ordine cronologico inverso: per ogni giornata la 
 
 | Funzione | Come accedervi |
 |---|---|
-| Riaprire consegna chiusa | Consegna → **Riapri consegna** |
+| Riaprire consegna chiusa | Storico → **Riapri consegna** (accanto alla data), oppure Consegna → **Cambia data** → **Riapri consegna** |
 | Eliminare una consegna salvata | Consegna → **Annulla consegna** |
 | Modificare un saldo | Saldi → **Modifica saldo** (solo data odierna) |
 | Aggiungere partecipanti | Saldi → **+ Aggiungi partecipante** |

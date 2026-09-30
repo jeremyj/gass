@@ -42,7 +42,7 @@ In cima la riga della cassa mostra i totali della giornata come una somma: Trova
 
 ## Chiudere la Consegna
 
-Dopo aver salvato almeno un movimento, sotto la riga della cassa compare il link **Chiudi consegna** — cliccalo e conferma il riepilogo per bloccare la giornata. Solo un amministratore può riaprirla: **Cambia data**, scegli il giorno, poi **Riapri consegna**. Se la cassa è negativa compare l'avviso "Cassa negativa": controlla i movimenti prima di chiudere.
+Dopo aver salvato almeno un movimento, sotto la riga della cassa compare il link **Chiudi consegna** — cliccalo e conferma il riepilogo per bloccare la giornata. Solo un amministratore può riaprirla: in **Storico** con **Riapri consegna**, oppure qui con **Cambia data** e poi **Riapri consegna**. Se la cassa è negativa compare l'avviso "Cassa negativa": controlla i movimenti prima di chiudere.
 
 ![Conferma di chiusura con il riepilogo](screenshots/m02c-chiudi.png){ width=45% }
 
@@ -62,7 +62,7 @@ Usa **Cambia data** per vedere i saldi in una data passata.
 
 # Storico
 
-Elenco di tutte le consegne in ordine cronologico inverso, con data, stato (aperta/chiusa) e cassa. Tocca una consegna per espanderla e vedere cassa e movimenti della giornata.
+Elenco di tutte le consegne in ordine cronologico inverso, con data, stato (aperta/chiusa) e cassa. Tocca una consegna per espanderla e vedere cassa e movimenti della giornata; **Apri nella consegna** la apre nella pagina Consegna.
 
 ![Pagina Storico](screenshots/m05-storico.png){ width=45% }
 
@@ -72,6 +72,6 @@ Elenco di tutte le consegne in ordine cronologico inverso, con data, stato (aper
 
 | Funzione | Come accedervi |
 |---|---|
-| Riaprire consegna chiusa | Consegna → **Riapri consegna** |
+| Riaprire consegna chiusa | Storico → **Riapri consegna** (sotto la giornata espansa), oppure Consegna → **Cambia data** → **Riapri consegna** |
 | Eliminare una consegna salvata | Consegna → **Annulla consegna** |
 | Modificare un saldo | Saldi → tocca il nome → **Modifica saldo** (solo oggi) |
