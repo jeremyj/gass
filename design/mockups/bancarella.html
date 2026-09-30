@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GASS bancarella</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --banco: #EEF1EF;
+  --bianco: #FFFFFF;
+  --tenda: #17563F;
+  --tenda-soft: #DDEBE4;
+  --giallo: #FFE74C;
+  --verde-fluo: #A6EE7A;
+  --rosa-fluo: #FF8FB1;
+  --nero: #000000;
+  --testo: #1C2420;
+  --grigio: #5E6A64;
+  --riga: #D9DFDB;
+  --debito: #B0154A;
+  --credito: #1F7A3A;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #D5DAD7; color: var(--testo); font-family: "Archivo", system-ui, sans-serif;
+  font-size: 16px; line-height: 1.45; font-variant-numeric: tabular-nums; }
+.cond { font-stretch: 62%; font-weight: 800; letter-spacing: .005em; }
+
+.board { max-width: 1500px; margin: 0 auto; padding: 32px 16px 80px; }
+.board > h1 { font-stretch: 62%; font-weight: 900; font-size: 44px; line-height: 1; margin: 0 0 6px; }
+.board > p { margin: 0 0 28px; color: var(--grigio); max-width: 70ch; }
+.row { display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; margin-bottom: 56px; }
+.cap { font-size: 14px; color: var(--grigio); margin: 10px 4px 0; max-width: 390px; }
+.cap b { color: var(--testo); }
+.phone { width: 390px; height: 800px; border-radius: 36px; background: var(--banco); border: 10px solid #1d1f24;
+  overflow: hidden; position: relative; display: flex; flex-direction: column; }
+.desk { width: 1180px; max-width: 100%; border-radius: 10px; background: var(--banco); border: 1px solid #b9c0bc; overflow: hidden; }
+
+/* ---------- price tag: the one bold thing ---------- */
+.tag { position: relative; display: inline-flex; flex-direction: column; align-items: flex-start;
+  background: var(--giallo); color: var(--nero); padding: 10px 18px 12px 30px;
+  clip-path: polygon(14px 0, 100% 0, 100% 100%, 14px 100%, 0 50%); }
+.tag::before { content: ""; position: absolute; left: 12px; top: 50%; width: 8px; height: 8px; margin-top: -4px;
+  border-radius: 50%; background: var(--banco); }
+.tag .l { font-size: 13px; font-weight: 600; line-height: 1.1; }
+.tag .n { font-stretch: 62%; font-weight: 900; line-height: .9; }
+.tag.big { transform: rotate(-2.5deg); padding: 14px 26px 16px 40px; }
+.tag.big .n { font-size: 84px; }
+.tag.big .l { font-size: 16px; }
+.tag.big::before { left: 16px; width: 12px; height: 12px; margin-top: -6px; }
+.tag.sm { padding: 3px 10px 4px 20px; clip-path: polygon(9px 0, 100% 0, 100% 100%, 9px 100%, 0 50%); }
+.tag.sm::before { left: 7px; width: 5px; height: 5px; margin-top: -2.5px; }
+.tag.sm .n { font-size: 22px; }
+.tag.cr { background: var(--verde-fluo); }
+.tag.db { background: var(--rosa-fluo); }
+.tag.zero { background: var(--bianco); border: 0; }
+
+/* ---------- mobile ---------- */
+.m-top { background: var(--tenda); color: #fff; padding: 16px 18px 14px; display: flex; justify-content: space-between; align-items: flex-end; }
+.m-top .k { font-size: 13px; opacity: .8; }
+.m-top h2 { margin: 0; font-stretch: 62%; font-weight: 900; font-size: 34px; line-height: 1; }
+.chip { background: transparent; border: 1.5px solid #fff; color: #fff; border-radius: 999px; font: inherit; font-weight: 700; font-size: 14px; padding: 6px 12px; }
+.scroll { flex: 1; overflow: hidden; padding: 20px 16px; }
+.cassa { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+.cassa-lines { font-size: 14px; line-height: 1.55; color: var(--grigio); }
+.cassa-lines b { color: var(--testo); font-weight: 700; float: right; margin-left: 12px; }
+.bar { display: flex; justify-content: space-between; align-items: center; margin: 18px 0 12px; }
+.bar h3 { margin: 0; font-stretch: 62%; font-weight: 900; font-size: 26px; }
+.state { font-size: 13px; font-weight: 700; color: var(--tenda); }
+.state.closed { color: var(--debito); }
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tile { background: var(--bianco); border-radius: 6px; padding: 12px 12px 12px; display: flex; flex-direction: column; gap: 8px; min-height: 118px; border: 1.5px solid transparent; }
+.tile .nm { font-weight: 800; font-size: 16px; line-height: 1.15; }
+.tile .cp { font-size: 13px; color: var(--grigio); display: flex; justify-content: space-between; }
+.tile .cp b { color: var(--testo); }
+.tile .tag { align-self: flex-start; margin-top: auto; }
+.tile.add { border: 2px dashed var(--tenda); background: transparent; color: var(--tenda); align-items: center; justify-content: center; font-weight: 800; font-size: 16px; text-align: center; }
+.tile.add span { font-size: 34px; line-height: 1; font-weight: 400; }
+.bnav { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--bianco); border-top: 1px solid var(--riga); padding: 8px 0 14px; }
+.bnav a { text-align: center; font-weight: 700; font-size: 13px; color: var(--grigio); display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.bnav a svg { width: 22px; height: 22px; }
+.bnav a.on { color: var(--tenda); }
+.bnav a.on::after { content: ""; width: 26px; height: 3px; border-radius: 2px; background: var(--tenda); }
+
+/* entry screen */
+.e-top { display: flex; align-items: center; gap: 12px; padding: 16px 18px; background: var(--bianco); border-bottom: 1px solid var(--riga); }
+.back { width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--testo); background: none; display: grid; place-items: center; }
+.e-top h2 { margin: 0; font-stretch: 62%; font-weight: 900; font-size: 28px; line-height: 1; }
+.e-top .k { font-size: 13px; color: var(--grigio); }
+.e-body { flex: 1; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.big-in { background: var(--bianco); border-radius: 8px; padding: 10px 16px; border: 2px solid transparent; }
+.big-in.focus { border-color: var(--tenda); }
+.big-in label { font-size: 14px; font-weight: 700; color: var(--grigio); }
+.big-in div { font-stretch: 62%; font-weight: 800; font-size: 46px; line-height: 1.05; }
+.big-in div small { font-size: 26px; color: var(--grigio); font-weight: 600; margin-left: 4px; }
+.calc { display: grid; grid-template-columns: 1fr auto; row-gap: 4px; font-size: 15px; color: var(--grigio); }
+.calc b { text-align: right; color: var(--testo); }
+.e-result { display: flex; align-items: center; justify-content: space-between; }
+.btn { font: inherit; font-weight: 800; font-size: 17px; border-radius: 8px; padding: 15px 18px; border: 0; }
+.btn.go { background: var(--tenda); color: #fff; width: 100%; }
+.btn.line { background: transparent; border: 2px solid var(--tenda); color: var(--tenda); }
+.btn:focus-visible, .chip:focus-visible, a:focus-visible { outline: 3px solid var(--nero); outline-offset: 2px; }
+
+/* ---------- desktop ---------- */
+.d-top { background: var(--tenda); color: #fff; display: flex; align-items: center; gap: 28px; height: 58px; padding: 0 28px; }
+.d-top .brand { font-stretch: 62%; font-weight: 900; font-size: 24px; }
+.d-top nav { display: flex; height: 100%; }
+.d-top nav a { display: flex; align-items: center; padding: 0 16px; font-weight: 700; color: #cfe3d9; }
+.d-top nav a.on { color: #fff; box-shadow: inset 0 -4px 0 var(--giallo); }
+.d-top .u { margin-left: auto; font-size: 14px; display: flex; gap: 18px; color: #cfe3d9; }
+.d-top .u a { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+.d-body { padding: 26px 28px 30px; }
+.d-head { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center; margin-bottom: 26px; }
+.d-head .k { font-size: 14px; color: var(--grigio); }
+.d-head h2 { margin: 0; font-stretch: 62%; font-weight: 900; font-size: 56px; line-height: .95; }
+.d-cassa { display: flex; align-items: center; gap: 22px; }
+.d-cassa .cassa-lines { min-width: 200px; }
+.d-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+.d-bar h3 { margin: 0; font-stretch: 62%; font-weight: 900; font-size: 28px; margin-right: auto; }
+.sel { background: var(--bianco); border: 2px solid var(--tenda); border-radius: 8px; padding: 8px 14px; font-weight: 700; color: var(--tenda); min-width: 260px; display: flex; justify-content: space-between; }
+table.t { width: 100%; border-collapse: collapse; background: var(--bianco); border-radius: 6px; overflow: hidden; }
+.t th { font-size: 13px; font-weight: 700; color: var(--grigio); text-align: right; padding: 12px 10px; border-bottom: 1px solid var(--riga); }
+.t th:first-child, .t td:first-child { text-align: left; padding-left: 16px; }
+.t td { text-align: right; padding: 10px; border-bottom: 1px solid var(--riga); font-size: 16px; }
+.t td.nm { font-weight: 800; }
+.t td.mute { color: #BCC4C0; }
+.t tr.edit td { background: var(--tenda-soft); }
+.t tr.edit td.ic span { display: inline-block; min-width: 72px; background: #fff; border: 2px solid var(--tenda); border-radius: 6px; padding: 2px 8px; font-weight: 700; }
+.t tfoot td { font-weight: 800; border-bottom: 0; background: #F6F8F7; }
+
+.wall { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+.wcard { background: var(--bianco); border-radius: 6px; padding: 14px 14px 12px 16px; display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; }
+.wcard .nm { font-weight: 800; font-size: 17px; }
+.wcard .us { font-size: 13px; color: var(--grigio); }
+.wcard .tag { grid-row: 1 / span 2; grid-column: 2; }
+.wcard .acts { grid-column: 1 / -1; display: flex; gap: 14px; font-size: 14px; border-top: 1px solid var(--riga); padding-top: 8px; margin-top: 6px; }
+.wcard .acts a { color: var(--tenda); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.adm { font-size: 11px; font-weight: 800; background: var(--testo); color: #fff; border-radius: 3px; padding: 1px 5px; margin-left: 6px; vertical-align: 2px; }
+.grp { font-stretch: 62%; font-weight: 900; font-size: 22px; margin: 18px 0 8px; }
+.grp small { font-stretch: 100%; font-weight: 500; font-size: 14px; color: var(--grigio); margin-left: 8px; }
+.sw { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 36px; }
+.sw div { width: 150px; background: #fff; border-radius: 6px; overflow: hidden; font-size: 13px; }
+.sw i { display: block; height: 46px; }
+.sw p { margin: 0; padding: 6px 10px; }
+.sw b { display: block; }
+</style>
+</head>
+<body>
+<div class="board">
+  <h1>GASS: bancarella</h1>
+  <p>Alternativa B. Il riferimento è il banco del mercato: cartellini fluo scritti a pennarello per le cifre che contano (cassa, crediti, debiti), verde tenda per navigazione e azioni. Stessi dati della consegna del 4 novembre 2025.</p>
+
+  <div class="sw">
+    <div><i style="background:#17563F"></i><p><b>Verde tenda</b>#17563F nav, azioni</p></div>
+    <div><i style="background:#FFE74C"></i><p><b>Giallo cartellino</b>#FFE74C cassa</p></div>
+    <div><i style="background:#A6EE7A"></i><p><b>Verde fluo</b>#A6EE7A crediti</p></div>
+    <div><i style="background:#FF8FB1"></i><p><b>Rosa fluo</b>#FF8FB1 debiti</p></div>
+    <div><i style="background:#000"></i><p><b>Pennarello</b>#000000 cifre</p></div>
+    <div><i style="background:#EEF1EF"></i><p><b>Banco</b>#EEF1EF sfondo</p></div>
+  </div>
+
+  <div class="row">
+    <div>
+      <div class="phone">
+        <div class="m-top"><div><div class="k">Consegna di</div><h2>Martedì 4 novembre</h2></div><button class="chip">Cambia</button></div>
+        <div class="scroll">
+          <div class="cassa">
+            <div class="tag big"><span class="l">In cassa</span><span class="n">8 €</span></div>
+            <div class="cassa-lines">Trovato <b>22</b><br>Incassato <b>71</b><br>Pagato <b>85</b></div>
+          </div>
+          <div class="bar"><h3>Chi ha ritirato</h3><span class="state">Aperta · <u>chiudi</u></span></div>
+          <div class="tiles">
+            <div class="tile"><div class="nm">amministratore</div><div class="cp">conto <b>30</b> pagato <b>31</b></div><span class="tag sm cr"><span class="n">+1 €</span></span></div>
+            <div class="tile"><div class="nm">user</div><div class="cp">conto <b>20</b> pagato <b>26</b></div><span class="tag sm cr"><span class="n">+6 €</span></span></div>
+            <div class="tile"><div class="nm">jeremy joshua rossi</div><div class="cp">conto <b>15</b> pagato <b>14</b></div><span class="tag sm db"><span class="n">−1 €</span></span></div>
+            <div class="tile add"><span>+</span>Aggiungi partecipante</div>
+          </div>
+        </div>
+        <nav class="bnav">
+          <a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9h18l-2 11H5z"/><path d="M8 9l2-5M16 9l-2-5"/></svg>Consegna</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 12l-8 8-9-9V3h8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>Saldi</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Storico</a>
+        </nav>
+      </div>
+      <p class="cap"><b>Consegna, mobile.</b> Il cartellino giallo mostra solo quello che conta a fine giornata: quanto resta in cassa. Il resto del conto sta accanto, piccolo. I partecipanti sono tessere in griglia, ognuna col suo cartellino di esito (verde credito, rosa debito); l’ultima tessera serve ad aggiungerne uno.</p>
+    </div>
+
+    <div>
+      <div class="phone">
+        <div class="e-top"><button class="back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 5l-7 7 7 7"/></svg></button><div><div class="k">Prima di oggi: <b style="color:var(--debito)">debito 5 €</b></div><h2>jeremy joshua rossi</h2></div></div>
+        <div class="e-body">
+          <div class="big-in"><label>Conto produttore</label><div>15<small>€</small></div></div>
+          <div class="big-in focus"><label>Ha pagato</label><div>18<small>€</small></div></div>
+          <div class="calc"><span>Paga il conto di oggi</span><b>15</b><span>Salda parte del debito</span><b>3</b></div>
+          <div class="e-result"><span style="font-weight:700">Dopo oggi</span><span class="tag db" style="padding:8px 18px 10px 30px"><span class="l">resta di debito</span><span class="n" style="font-size:44px">2 €</span></span></div>
+          <div class="big-in" style="padding:10px 16px"><label>Note</label><div style="font-size:16px;font-stretch:100%;font-weight:400;color:var(--grigio)">Aggiungi una nota</div></div>
+          <div style="margin-top:auto;display:grid;gap:10px"><button class="btn go">Salva movimento</button></div>
+        </div>
+      </div>
+      <p class="cap"><b>Inserimento, mobile.</b> Una schermata intera per partecipante, numeri grandi e leggibili anche in piedi al banco. Il calcolo automatico è scritto in parole; l’esito finale è un cartellino dello stesso colore che poi appare nella tessera. Indietro chiede conferma se ci sono modifiche, come oggi.</p>
+    </div>
+
+    <div>
+      <div class="phone">
+        <div class="m-top"><div><div class="k">Saldi al</div><h2>4 novembre</h2></div><button class="chip">Cambia</button></div>
+        <div class="scroll">
+          <div class="grp">Debiti<small>1 persona, 1 €</small></div>
+          <div class="wall" style="grid-template-columns:1fr">
+            <div class="wcard"><div class="nm">jeremy joshua rossi</div><div class="us">ultimo movimento 4/11</div><span class="tag sm db"><span class="n">−1 €</span></span></div>
+          </div>
+          <div class="grp">Crediti<small>2 persone, 7 €</small></div>
+          <div class="wall" style="grid-template-columns:1fr">
+            <div class="wcard"><div class="nm">user</div><div class="us">ultimo movimento 4/11</div><span class="tag sm cr"><span class="n">+6 €</span></span></div>
+            <div class="wcard"><div class="nm">amministratore</div><div class="us">ultimo movimento 4/11</div><span class="tag sm cr"><span class="n">+1 €</span></span></div>
+          </div>
+        </div>
+        <nav class="bnav">
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9h18l-2 11H5z"/><path d="M8 9l2-5M16 9l-2-5"/></svg>Consegna</a>
+          <a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 12l-8 8-9-9V3h8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>Saldi</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Storico</a>
+        </nav>
+      </div>
+      <p class="cap"><b>Saldi, mobile.</b> Divisi in due gruppi, debiti prima e crediti poi, ciascuno ordinato per importo, con il totale del gruppo. Chi è in pari va in un terzo gruppo in fondo.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <div class="desk">
+        <div class="d-top"><span class="brand">GASS Torpignattara</span><nav><a class="on">Consegna</a><a>Saldi</a><a>Storico</a><a>Attività</a></nav><div class="u"><span>admin</span><a>Cambia password</a><a>Esci</a></div></div>
+        <div class="d-body">
+          <div class="d-head">
+            <div><div class="k">Consegna di</div><h2>Martedì 4 novembre 2025</h2><div style="margin-top:10px;display:flex;gap:14px;align-items:center"><button class="btn line" style="padding:7px 14px;font-size:14px">Cambia data</button><span class="state closed">Chiusa da jeremy · <u>riapri</u></span></div></div>
+            <div class="d-cassa"><div class="cassa-lines">Trovato <b>22</b><br>Incassato <b>71</b><br>Pagato al produttore <b>85</b><br><i>Note: prima consegna</i></div><div class="tag big"><span class="l">In cassa</span><span class="n">8 €</span></div></div>
+          </div>
+          <div class="d-bar"><h3>Chi ha ritirato</h3><div class="sel"><span>+ Aggiungi partecipante</span><span>▾</span></div></div>
+          <table class="t">
+            <thead><tr><th>Partecipante</th><th>Conto produttore</th><th>Pagato</th><th>Lascia credito</th><th>Lascia debito</th><th>Usa credito</th><th>Salda debito</th><th>Esito</th></tr></thead>
+            <tbody>
+              <tr><td class="nm">amministratore</td><td>30</td><td>31</td><td>1</td><td class="mute">–</td><td class="mute">–</td><td class="mute">–</td><td><span class="tag sm cr"><span class="n">+1 €</span></span></td></tr>
+              <tr class="edit"><td class="nm">user</td><td class="ic"><span>20</span></td><td class="ic"><span>26</span></td><td>6</td><td class="mute">–</td><td class="mute">–</td><td class="mute">–</td><td><button class="btn go" style="width:auto;padding:6px 14px;font-size:14px">Salva</button></td></tr>
+              <tr><td class="nm">jeremy joshua rossi</td><td>15</td><td>14</td><td class="mute">–</td><td>1</td><td class="mute">–</td><td class="mute">–</td><td><span class="tag sm db"><span class="n">−1 €</span></span></td></tr>
+            </tbody>
+            <tfoot><tr><td>Totale</td><td>65</td><td>71</td><td>7</td><td>1</td><td>–</td><td>–</td><td></td></tr></tfoot>
+          </table>
+        </div>
+      </div>
+      <p class="cap" style="max-width:800px"><b>Consegna, desktop.</b> Data enorme in condensato, cassa a destra come cartellino appeso. Tabella con le stesse colonne di oggi, più una colonna “Esito” col cartellino del saldo risultante.</p>
+    </div>
+
+    <div>
+      <div class="desk">
+        <div class="d-top"><span class="brand">GASS Torpignattara</span><nav><a>Consegna</a><a class="on">Saldi</a><a>Storico</a><a>Attività</a></nav><div class="u"><span>admin</span><a>Cambia password</a><a>Esci</a></div></div>
+        <div class="d-body">
+          <div class="d-head"><div><div class="k">Saldi al</div><h2>4 novembre 2025</h2></div><div style="display:flex;gap:10px"><button class="btn line" style="padding:8px 14px;font-size:14px">+ Aggiungi partecipante</button><button class="btn line" style="padding:8px 14px;font-size:14px">Cambia data</button></div></div>
+          <div class="grp">Debiti<small>1 persona, 1 €</small></div>
+          <div class="wall">
+            <div class="wcard"><div class="nm">jeremy joshua rossi</div><div class="us">jeremy<span class="adm">admin</span></div><span class="tag db"><span class="n" style="font-size:32px">−1 €</span></span><div class="acts"><a>Transazioni</a><a>Modifica utente</a></div></div>
+          </div>
+          <div class="grp">Crediti<small>2 persone, 7 €</small></div>
+          <div class="wall">
+            <div class="wcard"><div class="nm">user</div><div class="us">user</div><span class="tag cr"><span class="n" style="font-size:32px">+6 €</span></span><div class="acts"><a>Transazioni</a><a>Modifica utente</a></div></div>
+            <div class="wcard"><div class="nm">amministratore</div><div class="us">admin<span class="adm">admin</span></div><span class="tag cr"><span class="n" style="font-size:32px">+1 €</span></span><div class="acts"><a>Transazioni</a><a>Modifica utente</a></div></div>
+          </div>
+          <p style="font-size:14px;color:var(--grigio);margin-top:16px">I saldi si modificano solo alla data di oggi. Stai guardando il 4 novembre 2025.</p>
+        </div>
+      </div>
+      <p class="cap" style="max-width:800px"><b>Saldi, desktop.</b> Il “muro dei cartellini”: chi deve di più è il primo che vedi. Con 30+ partecipanti resta leggibile perché i gruppi separano subito debiti e crediti.</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>
