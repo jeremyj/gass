@@ -1,6 +1,6 @@
 ---
 title: "GASS Torpignattara - Guida Rapida (Mobile)"
-date: "Marzo 2026"
+date: "Settembre 2026"
 ---
 
 # Accesso
@@ -33,7 +33,7 @@ In cima la riga della cassa mostra i totali della giornata come una somma: Trova
 2. Si apre il modulo a tutto schermo — inserisci:
    - **Conto produttore** (quanto deve al produttore)
    - **Importo saldato** (quanto porta oggi)
-3. Il sistema calcola automaticamente credito o debito residuo e lo mostra nel riquadro finale (*Lascia credito*, *Lascia debito* o *Esito: in pari*)
+3. Il sistema calcola automaticamente credito o debito residuo e lo mostra nel riquadro finale (*Lascia credito*, *Lascia debito* o *Esito: saldato*). Nell'elenco *Chi ha ritirato* ogni riga mostra cosa lascia quel movimento: credito, debito o *saldato*
 4. Clicca **Salva movimento**
 
 > Se il partecipante ha debiti/crediti pregressi, vengono compensati automaticamente.
@@ -44,7 +44,7 @@ In cima la riga della cassa mostra i totali della giornata come una somma: Trova
 
 Dopo aver salvato almeno un movimento, sotto la riga della cassa compare il link **Chiudi consegna** — cliccalo e conferma il riepilogo per bloccare la giornata. Solo un amministratore può riaprirla. Se la cassa è negativa compare l'avviso "Cassa negativa": controlla i movimenti prima di chiudere.
 
-![Stato della consegna con link Chiudi consegna](screenshots/m02c-chiudi.png){ width=45% }
+![Conferma di chiusura con il riepilogo](screenshots/m02c-chiudi.png){ width=45% }
 
 ---
 

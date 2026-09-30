@@ -151,10 +151,12 @@ input:disabled, select:disabled { opacity: .55; cursor: not-allowed; }
   background: var(--s-deep);
   color: #fff;
   padding: 16px 20px 18px;
-  overflow: hidden;
 }
+/* the drawing bleeds off the header's edge; only its wrapper clips, so the date picker can overflow */
+.stag-art { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.stag > :not(.stag-art) { position: relative; z-index: 1; }
 .stag :focus-visible { outline-color: var(--s-acc); }
-.stag-ill { position: absolute; right: -18px; bottom: -22px; width: 150px; height: 150px; pointer-events: none; }
+.stag-ill { position: absolute; right: -18px; bottom: -22px; width: 150px; height: 150px; }
 .stag-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 4px; }
 .stag-when { font-size: 15px; color: var(--s-on); }
 .stag h1 { position: relative; font-size: 36px; max-width: 250px; margin: 2px 0 0; }
@@ -456,8 +458,8 @@ body:has(.bottom-nav) { padding-bottom: 72px; }
 
 /* ===== LOGIN ===== */
 
-.login-page .stag { padding: 36px 24px 40px; }
-.login-page .stag h1 { max-width: none; }
+.login-page .stag { padding: 36px 24px 40px; text-align: center; }
+.login-page .stag h1, .login-page .stag-prod { max-width: none; }
 .login-container { max-width: 420px; margin: 0 auto; padding: 24px 16px; }
 .login-header { margin-bottom: 14px; font-size: 18px; }
 .login-form { padding: 22px; background: var(--carta); border: 1px solid var(--riga); border-radius: 14px; }

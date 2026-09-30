@@ -107,7 +107,7 @@ Per registrare un movimento per un partecipante:
 
 4. **Il sistema calcola automaticamente** il riquadro dell'esito:
 
-   **Lascia credito / Lascia debito / Esito: in pari**
+   **Lascia credito / Lascia debito / Esito: saldato, niente da riportare**
    - Se l'importo saldato è maggiore del conto produttore → si crea un credito
    - Se l'importo saldato è minore del conto produttore → si crea un debito
    - Sono valori calcolati, non modificabili
@@ -124,7 +124,7 @@ Il sistema compensa automaticamente crediti e debiti nelle due direzioni:
    - Esempio: Partecipante ha 7€ di debito, Conto=15€, Importo=22€
    - Il sistema automaticamente:
      - Mostra la nota "Debito saldato per intero"
-     - Mostra il partecipante "in pari" (saldo 0€)
+     - Mostra "Esito: saldato, niente da riportare" (saldo 0€)
 
 2. **Quando si crea un debito ma il partecipante ha un credito**:
    - Esempio: Partecipante ha 10€ di credito, Conto=18€, Importo=5€
@@ -358,7 +358,8 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.5.5
+Sistema GASS Pagamenti - Versione 2.11.0
+- Nuova grafica "Stagioni": l'intestazione cambia colore con la stagione della data scelta, importi nel formato 11,50 €, crediti in blu e debiti in rosso vino sempre con segno e parola
 - Visualizzazione transazioni aperta a tutti gli utenti autenticati (non solo amministratori)
 - Storico transazioni per partecipante nella pagina Saldi (mobile e desktop)
 - Cambio password autonomo per tutti gli utenti (link Cambia password)

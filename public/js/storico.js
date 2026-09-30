@@ -84,7 +84,7 @@ function createMovimentiSection(movimenti) {
 function createParticipantMovimentoItem(m) {
   const saldoFinale = (m.credito_lasciato || 0) - (m.debito_lasciato || 0);
   const cls = saldoFinale > 0 ? 'cr' : saldoFinale < 0 ? 'db' : '';
-  const word = saldoFinale > 0 ? 'credito' : saldoFinale < 0 ? 'debito' : 'in pari';
+  const word = saldoFinale > 0 ? 'credito' : saldoFinale < 0 ? 'debito' : 'saldato';
 
   const details = [`conto <b>${formatNumber(m.conto_produttore || 0)}</b>`, `pagato <b>${formatNumber(m.importo_saldato || 0)}</b>`];
   if (debitoPagato(m)) details.push(`salda debito <b>${formatNumber(debitoPagato(m))}</b>`);
@@ -94,7 +94,7 @@ function createParticipantMovimentoItem(m) {
     <li>
       <span class="nm">${escapeHtml(m.nome)}</span>
       <span class="sub">${details.join(', ')}</span>
-      <span class="esito ${cls}"><b>${formatSigned(saldoFinale)}</b><small>${word}</small></span>
+      <span class="esito ${cls}"><b>${saldoFinale ? formatSigned(saldoFinale) : '–'}</b><small>${word}</small></span>
       ${m.note ? `<span class="nota">${escapeHtml(m.note)}</span>` : ''}
     </li>
   `;

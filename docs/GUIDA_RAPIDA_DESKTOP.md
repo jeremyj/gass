@@ -1,6 +1,6 @@
 ---
 title: "GASS Torpignattara - Guida Rapida (Desktop)"
-date: "Marzo 2026"
+date: "Settembre 2026"
 ---
 
 # Accesso

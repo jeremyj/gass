@@ -126,7 +126,7 @@ function openMovimento(id) {
 function esitoMovimento(m) {
   if (m.credito_lasciato > 0) return { cls: 'cr', amount: formatSigned(m.credito_lasciato), word: 'credito' };
   if (m.debito_lasciato > 0) return { cls: 'db', amount: formatSigned(-m.debito_lasciato), word: 'debito' };
-  return { cls: '', amount: '0 €', word: 'in pari' };
+  return { cls: '', amount: '–', word: 'saldato' }; // nothing left over today; the saldo may still hold older credit/debt
 }
 
 // ===== CONSEGNA STATUS =====
@@ -522,7 +522,7 @@ function buildParticipantCardHTML(id, nome, saldo, haCredito, haDebito, buttonsH
       <div class="risult" id="risult_${id}">
         <div class="cr">${buildComputedLine(id, 'credito', 'Lascia credito')}</div>
         <div class="db">${buildComputedLine(id, 'debito', 'Lascia debito')}</div>
-        <p id="pari_${id}" class="form-group computed"><label>Esito</label><span>in pari</span></p>
+        <p id="pari_${id}" class="form-group computed"><label>Esito</label><span>saldato, niente da riportare</span></p>
       </div>
 
       <div class="form-group fld fld-note">
