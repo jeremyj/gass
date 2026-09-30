@@ -192,17 +192,11 @@ async function loadTransactions(participantId) {
   }
 
   try {
-    const response = await fetch(`/api/participants/${participantId}/transactions`);
-    const result = await response.json();
-
-    if (result.success) {
-      transactionsCache[participantId] = result.transactions;
-      renderTransactions(container, result.transactions);
-    } else {
-      container.innerHTML = `<div class="saldo-edit-title">📋 Transazioni</div><p class="empty-state">Errore: ${result.error}</p>`;
-    }
+    const result = await API.get(`/api/participants/${participantId}/transactions`);
+    transactionsCache[participantId] = result.transactions;
+    renderTransactions(container, result.transactions);
   } catch (error) {
-    container.innerHTML = `<div class="saldo-edit-title">📋 Transazioni</div><p class="empty-state">Errore di connessione</p>`;
+    container.innerHTML = `<div class="saldo-edit-title">📋 Transazioni</div><p class="empty-state">Errore: ${escapeHtml(error.message)}</p>`;
   }
 }
 
@@ -354,23 +348,12 @@ async function saveSaldo(id) {
   }
 
   try {
-    const response = await fetch(`/api/participants/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ saldo: newSaldo }),
-    });
-
-    const result = await response.json();
-
-    if (result.success) {
-      showStatus('✓ Saldo aggiornato', 'success');
-      expandedParticipantId = null;
-      originalSaldoValues = {}; // Clear saved values after successful save
-      transactionsCache = {}; // Clear transactions cache
-      loadParticipants();
-    } else {
-      showStatus('Errore: ' + result.error, 'error');
-    }
+    await API.put(`/api/participants/${id}`, { saldo: newSaldo });
+    showStatus('✓ Saldo aggiornato', 'success');
+    expandedParticipantId = null;
+    originalSaldoValues = {}; // Clear saved values after successful save
+    transactionsCache = {}; // Clear transactions cache
+    loadParticipants();
   } catch (error) {
     showStatus('Errore durante l\'aggiornamento: ' + error.message, 'error');
   }

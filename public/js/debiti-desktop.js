@@ -100,20 +100,9 @@ async function saveSaldo(id) {
   const newSaldo = parseFloat(document.getElementById(`saldo-edit-${id}`).value);
 
   try {
-    const response = await fetch(`/api/participants/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ saldo: newSaldo }),
-    });
-
-    const result = await response.json();
-
-    if (result.success) {
-      showStatus('Saldo aggiornato con successo!', 'success');
-      loadParticipants();
-    } else {
-      showStatus('Errore: ' + result.error, 'error');
-    }
+    await API.put(`/api/participants/${id}`, { saldo: newSaldo });
+    showStatus('Saldo aggiornato con successo!', 'success');
+    loadParticipants();
   } catch (error) {
     showStatus('Errore durante l\'aggiornamento: ' + error.message, 'error');
   }
@@ -137,21 +126,10 @@ async function addParticipant() {
   }
 
   try {
-    const response = await fetch('/api/participants', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nome, username, password }),
-    });
-
-    const result = await response.json();
-
-    if (result.success) {
-      showStatus('Partecipante aggiunto con successo!', 'success');
-      hideAddForm();
-      loadParticipants();
-    } else {
-      showStatus('Errore: ' + result.error, 'error');
-    }
+    await API.post('/api/participants', { nome, username, password });
+    showStatus('Partecipante aggiunto con successo!', 'success');
+    hideAddForm();
+    loadParticipants();
   } catch (error) {
     showStatus('Errore durante l\'aggiunta: ' + error.message, 'error');
   }
@@ -189,16 +167,10 @@ async function showTransactionsModal(id) {
   document.getElementById('transactions-modal').style.display = 'flex';
 
   try {
-    const response = await fetch(`/api/participants/${id}/transactions`);
-    const result = await response.json();
-
-    if (result.success) {
-      renderTransactionsTable(result.transactions);
-    } else {
-      document.getElementById('transactions-modal-body').innerHTML = `<p>Errore: ${escapeHtml(result.error)}</p>`;
-    }
+    const result = await API.get(`/api/participants/${id}/transactions`);
+    renderTransactionsTable(result.transactions);
   } catch (error) {
-    document.getElementById('transactions-modal-body').innerHTML = '<p>Errore di connessione</p>';
+    document.getElementById('transactions-modal-body').innerHTML = `<p>Errore: ${escapeHtml(error.message)}</p>`;
   }
 }
 
@@ -303,14 +275,7 @@ async function showEditUserModal(id) {
   editingUserId = id;
 
   try {
-    const response = await fetch('/api/users');
-    const result = await response.json();
-
-    if (!result.success) {
-      showStatus('Errore: ' + result.error, 'error');
-      return;
-    }
-
+    const result = await API.get('/api/users');
     const user = result.users.find(u => u.id === id);
     if (!user) {
       showStatus('Utente non trovato', 'error');
@@ -345,24 +310,13 @@ async function deleteUserFromModal() {
   if (!ok) return;
 
   try {
-    const response = await fetch(`/api/participants/${editingUserId}`, {
-      method: 'DELETE',
-    });
-
-    const result = await response.json();
-
-    if (result.success) {
-      closeEditUserModal();
-      showStatus('Utente eliminato con successo!', 'success');
-      loadParticipants();
-    } else {
-      const errorDiv = document.getElementById('edit-user-error');
-      errorDiv.textContent = result.error || 'Errore durante l\'eliminazione';
-      errorDiv.style.display = 'block';
-    }
+    await API.delete(`/api/participants/${editingUserId}`);
+    closeEditUserModal();
+    showStatus('Utente eliminato con successo!', 'success');
+    loadParticipants();
   } catch (error) {
     const errorDiv = document.getElementById('edit-user-error');
-    errorDiv.textContent = 'Errore di connessione';
+    errorDiv.textContent = error.message;
     errorDiv.style.display = 'block';
   }
 }
@@ -390,24 +344,12 @@ async function submitEditUser() {
   }
 
   try {
-    const response = await fetch(`/api/users/${editingUserId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-
-    const result = await response.json();
-
-    if (result.success) {
-      closeEditUserModal();
-      showStatus('Utente aggiornato con successo!', 'success');
-      loadParticipants();
-    } else {
-      errorDiv.textContent = result.error || 'Errore durante l\'aggiornamento';
-      errorDiv.style.display = 'block';
-    }
+    await API.put(`/api/users/${editingUserId}`, data);
+    closeEditUserModal();
+    showStatus('Utente aggiornato con successo!', 'success');
+    loadParticipants();
   } catch (error) {
-    errorDiv.textContent = 'Errore di connessione';
+    errorDiv.textContent = error.message;
     errorDiv.style.display = 'block';
   }
 }

@@ -6,14 +6,8 @@ let expandedConsegnaId = null;
 
 async function loadStorico() {
   try {
-    const response = await fetch('/api/storico/dettaglio');
-    const result = await response.json();
-
-    if (result.success) {
-      renderStorico(result.storico);
-    } else {
-      showStatus('Errore: ' + result.error, 'error');
-    }
+    const result = await API.get('/api/storico/dettaglio');
+    renderStorico(result.storico);
   } catch (error) {
     showStatus('Errore: ' + error.message, 'error');
   }

@@ -85,15 +85,9 @@ async function loadData(date = null) {
       }
     }
 
-    const response = await fetch(url);
-    const result = await response.json();
-
-    if (result.success) {
-      participants = result.participants;
-      renderParticipantSelect();
-    } else {
-      showStatus('Errore: ' + result.error, 'error');
-    }
+    const result = await API.get(url);
+    participants = result.participants;
+    renderParticipantSelect();
   } catch (error) {
     showStatus('Errore: ' + error.message, 'error');
   }
@@ -122,7 +116,7 @@ async function toggleConsegnaStatus() {
 
   try {
     if (isConsegnaClosed) {
-      await API.reopenConsegna(currentConsegnaId);
+      await API.post(`/api/consegna/${currentConsegnaId}/reopen`, {});
       showStatus('Consegna riaperta', 'success');
     } else {
       const negativa = parseAmount(document.getElementById('lasciatoInCassa').value) < 0;
@@ -135,7 +129,7 @@ async function toggleConsegnaStatus() {
         danger: true
       });
       if (!ok) return;
-      await API.closeConsegna(currentConsegnaId);
+      await API.post(`/api/consegna/${currentConsegnaId}/close`, {});
       showStatus('Consegna chiusa', 'success');
     }
     await checkDateData();
@@ -336,15 +330,10 @@ async function annullaConsegna() {
     });
     if (!ok) return;
     try {
-      const response = await fetch(`/api/consegna/${currentConsegnaId}`, { method: 'DELETE' });
-      const result = await response.json();
-      if (result.success) {
-        showStatus('Consegna annullata', 'success');
-        await loadConsegneDates();
-        await checkDateData();
-      } else {
-        showStatus('Errore: ' + result.error, 'error');
-      }
+      await API.delete(`/api/consegna/${currentConsegnaId}`);
+      showStatus('Consegna annullata', 'success');
+      await loadConsegneDates();
+      await checkDateData();
     } catch (error) {
       showStatus('Errore: ' + error.message, 'error');
     }

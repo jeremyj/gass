@@ -19,10 +19,9 @@ async function checkDateData() {
   try {
     await loadData(dateValue);
 
-    const response = await fetch(`/api/consegna/${dateValue}`);
-    const result = await response.json();
+    const result = await API.get(`/api/consegna/${dateValue}`);
 
-    if (result.success && result.found) {
+    if (result.found) {
       loadExistingConsegna(result);
     } else {
       loadNewConsegna(result);
@@ -401,26 +400,16 @@ async function saveCassaOnly() {
   let lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
 
   try {
-    const response = await fetch('/api/consegna', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        data, trovatoInCassa, pagatoProduttore, lasciatoInCassa,
-        noteGiornata,
-        partecipanti: [],
-      }),
+    await API.post('/api/consegna', {
+      data, trovatoInCassa, pagatoProduttore, lasciatoInCassa,
+      noteGiornata,
+      partecipanti: [],
     });
 
-    const result = await response.json();
-
-    if (result.success) {
-      showStatus('Dati cassa salvati con successo!', 'success');
-      originalNoteGiornata = document.getElementById('noteGiornata').value || '';
-      noteGiornataModified = false;
-      setTimeout(() => checkDateData(), 1000);
-    } else {
-      showStatus('Errore: ' + result.error, 'error');
-    }
+    showStatus('Dati cassa salvati con successo!', 'success');
+    originalNoteGiornata = document.getElementById('noteGiornata').value || '';
+    noteGiornataModified = false;
+    setTimeout(() => checkDateData(), 1000);
   } catch (error) {
     showStatus('Errore durante il salvataggio: ' + error.message, 'error');
   }
@@ -440,29 +429,19 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
   let lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
 
   try {
-    const response = await fetch('/api/consegna', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        data, trovatoInCassa, pagatoProduttore, lasciatoInCassa,
-        noteGiornata,
-        partecipanti: partecipantiData,
-      }),
+    await API.post('/api/consegna', {
+      data, trovatoInCassa, pagatoProduttore, lasciatoInCassa,
+      noteGiornata,
+      partecipanti: partecipantiData,
     });
 
-    const result = await response.json();
-
-    if (result.success) {
-      showStatus('Dati salvati con successo!', 'success');
-      setTimeout(() => {
-        document.getElementById('selected-participants').innerHTML = '';
-        document.getElementById('participant-select').value = '';
-        checkDateData();
-        updateSaveButtonVisibility();
-      }, 1000);
-    } else {
-      showStatus('Errore: ' + result.error, 'error');
-    }
+    showStatus('Dati salvati con successo!', 'success');
+    setTimeout(() => {
+      document.getElementById('selected-participants').innerHTML = '';
+      document.getElementById('participant-select').value = '';
+      checkDateData();
+      updateSaveButtonVisibility();
+    }, 1000);
   } catch (error) {
     showStatus('Errore durante il salvataggio: ' + error.message, 'error');
   }

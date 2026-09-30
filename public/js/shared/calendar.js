@@ -179,12 +179,8 @@ function setConsegneDates(dates) {
 
 async function loadConsegneDates() {
   try {
-    const response = await fetch('/api/storico');
-    const result = await response.json();
-
-    if (result.success) {
-      setConsegneDates(result.consegne.map(c => c.data));
-    }
+    const result = await API.get('/api/storico');
+    setConsegneDates(result.consegne.map(c => c.data));
   } catch (error) {
     console.error('Error loading consegne dates:', error);
   }

@@ -41,10 +41,9 @@ async function checkDateData() {
   try {
     await loadData(dateValue);
 
-    const response = await fetch(`/api/consegna/${dateValue}`);
-    const result = await response.json();
+    const result = await API.get(`/api/consegna/${dateValue}`);
 
-    if (result.success && result.found) {
+    if (result.found) {
       loadExistingConsegna(result);
     } else {
       loadNewConsegna(result);
@@ -265,32 +264,22 @@ async function saveNoteOnly() {
   showStatus('Salvataggio note in corso...', 'success');
 
   try {
-    const response = await fetch('/api/consegna', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        data,
-        trovatoInCassa,
-        pagatoProduttore,
-        lasciatoInCassa,
-        noteGiornata,
-        partecipanti: [],
-      }),
+    await API.post('/api/consegna', {
+      data,
+      trovatoInCassa,
+      pagatoProduttore,
+      lasciatoInCassa,
+      noteGiornata,
+      partecipanti: [],
     });
 
-    const result = await response.json();
-
-    if (result.success) {
-      showStatus('Note salvate con successo!', 'success');
-      // Reset note modified flag
-      originalNoteGiornata = noteGiornata;
-      noteGiornataModified = false;
-      updateNoteButtonVisibility();
-      // Reload to get fresh data
-      setTimeout(() => checkDateData(), 1000);
-    } else {
-      showStatus('Errore: ' + result.error, 'error');
-    }
+    showStatus('Note salvate con successo!', 'success');
+    // Reset note modified flag
+    originalNoteGiornata = noteGiornata;
+    noteGiornataModified = false;
+    updateNoteButtonVisibility();
+    // Reload to get fresh data
+    setTimeout(() => checkDateData(), 1000);
   } catch (error) {
     showStatus('Errore durante il salvataggio: ' + error.message, 'error');
   }
@@ -589,25 +578,15 @@ async function saveCassaOnly() {
   showStatus('Salvataggio dati cassa in corso...', 'success');
 
   try {
-    const response = await fetch('/api/consegna', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        data, trovatoInCassa, pagatoProduttore, lasciatoInCassa,
-        noteGiornata,
-        partecipanti: [],
-      }),
+    await API.post('/api/consegna', {
+      data, trovatoInCassa, pagatoProduttore, lasciatoInCassa,
+      noteGiornata,
+      partecipanti: [],
     });
 
-    const result = await response.json();
-
-    if (result.success) {
-      showStatus('✓ Cassa salvata', 'success');
-      await loadConsegneDates(); // Refresh calendar
-      setTimeout(() => checkDateData(), 1000);
-    } else {
-      showStatus('Errore: ' + result.error, 'error');
-    }
+    showStatus('✓ Cassa salvata', 'success');
+    await loadConsegneDates(); // Refresh calendar
+    setTimeout(() => checkDateData(), 1000);
   } catch (error) {
     showStatus('Errore durante il salvataggio: ' + error.message, 'error');
   }
@@ -628,43 +607,33 @@ async function saveWithParticipant(data, trovatoInCassa, pagatoProduttore, noteG
   const lasciatoInCassa = roundUpCents(parseAmount(document.getElementById('lasciatoInCassa').value));
 
   try {
-    const response = await fetch('/api/consegna', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        data, trovatoInCassa, pagatoProduttore, lasciatoInCassa,
-        noteGiornata,
-        partecipanti: partecipantiData,
-      }),
+    await API.post('/api/consegna', {
+      data, trovatoInCassa, pagatoProduttore, lasciatoInCassa,
+      noteGiornata,
+      partecipanti: partecipantiData,
     });
 
-    const result = await response.json();
+    showStatus('✓ Movimento salvato', 'success');
 
-    if (result.success) {
-      showStatus('✓ Movimento salvato', 'success');
+    // Reload consegna data to get updated movements
+    await checkDateData();
 
-      // Reload consegna data to get updated movements
-      await checkDateData();
+    await loadConsegneDates(); // Refresh calendar
 
-      await loadConsegneDates(); // Refresh calendar
+    // Close participant card after save
+    const container = document.getElementById('selected-participants');
+    container.innerHTML = '';
 
-      // Close participant card after save
-      const container = document.getElementById('selected-participants');
-      container.innerHTML = '';
+    const select = document.getElementById('participant-select');
+    select.value = '';
 
-      const select = document.getElementById('participant-select');
-      select.value = '';
-
-      const infoBadge = document.getElementById('participant-info-badge');
-      if (infoBadge) {
-        infoBadge.style.display = 'block';
-      }
-
-      // Clear saved values
-      delete originalParticipantValues[currentId];
-    } else {
-      showStatus('Errore: ' + result.error, 'error');
+    const infoBadge = document.getElementById('participant-info-badge');
+    if (infoBadge) {
+      infoBadge.style.display = 'block';
     }
+
+    // Clear saved values
+    delete originalParticipantValues[currentId];
   } catch (error) {
     showStatus('Errore durante il salvataggio: ' + error.message, 'error');
   }

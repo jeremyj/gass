@@ -17,15 +17,9 @@ async function loadParticipants() {
       url += `?date=${date}`;
     }
 
-    const response = await fetch(url);
-    const result = await response.json();
-
-    if (result.success) {
-      participants = result.participants;
-      renderParticipants();
-    } else {
-      showStatus('Errore: ' + result.error, 'error');
-    }
+    const result = await API.get(url);
+    participants = result.participants;
+    renderParticipants();
   } catch (error) {
     showStatus('Errore: ' + error.message, 'error');
   }

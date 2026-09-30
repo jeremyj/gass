@@ -7,17 +7,11 @@ let totalPages = 1;
 
 async function loadLogs(page = 1) {
   try {
-    const response = await fetch(`/api/logs?page=${page}&limit=15`);
-    const result = await response.json();
-
-    if (result.success) {
-      currentPage = result.page;
-      totalPages = result.totalPages;
-      renderLogs(result.events);
-      renderPagination(result);
-    } else {
-      showStatus('Errore: ' + result.error, 'error');
-    }
+    const result = await API.get(`/api/logs?page=${page}&limit=15`);
+    currentPage = result.page;
+    totalPages = result.totalPages;
+    renderLogs(result.events);
+    renderPagination(result);
   } catch (error) {
     showStatus('Errore: ' + error.message, 'error');
   }
