@@ -199,16 +199,16 @@ describe('POST /api/consegna/ — saldo calculation', () => {
 // ===== DELETE /:id =====
 
 describe('DELETE /api/consegna/:id', () => {
-  it('allows non-admin to delete consegna', async () => {
-    const userId = createUser(db, { username: 'user1', password: 'password1', displayName: 'User1' });
+  it('rejects non-admin delete (403) and keeps the consegna', async () => {
+    createUser(db, { username: 'user1', password: 'password1', displayName: 'User1' });
     const consegnaId = createConsegna(db, { data: '2026-02-19' });
 
     const userAgent = request.agent(app);
     await userAgent.post('/api/auth/login').send({ username: 'user1', password: 'password1' });
 
     const res = await userAgent.delete(`/api/consegna/${consegnaId}`);
-    expect(res.status).toBe(200);
-    expect(res.body.success).toBe(true);
+    expect(res.status).toBe(403);
+    expect(db.prepare('SELECT id FROM consegne WHERE id = ?').get(consegnaId)).toBeDefined();
   });
 
   it('deletes consegna and recalculates saldi from scratch', async () => {

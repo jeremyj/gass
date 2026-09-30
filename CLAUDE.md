@@ -171,10 +171,7 @@ On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_
 - Uses `performance.getEntriesByType('navigation')` to detect reload vs navigation
 
 ### Visibility Sync
-`syncDebitoCreditoVisibility(id)` in `consegna-common.js` syncs both debito and credito control visibility. Always call this instead of `syncDebitoVisibility` alone. Rules:
-- No importo → hide all debito/credito controls
-- Importo present but nothing being paid → hide controls
-- Mutual exclusivity: checkbox hidden when partial field has value (and vice versa)
+`syncDebitoCreditoVisibility(id)` in `consegna-common.js` shows the read-only partial fields (`debitoSaldato_`, `usaCredito_`) only when part of the debt/credit is used. A full payoff shows only in the section title (`👉 debito saldato` / `👉 credito esaurito`) and is flagged with `dataset.full` on the field, which `readMovimentoForm` sends as `saldaDebitoTotale`. The "Salda intero debito" / "Usa intero credito" checkboxes were removed in 2.9.0: the auto-compensation unchecked them on every recalculation, so they only repeated the title.
 
 ### CSS .initially-hidden pattern
 `.initially-hidden { display: none }` (no `!important`) — JS `element.style.display = 'block/flex'` must be able to override it. Use CSS specificity for modals (`.modal.initially-hidden` 0-2-0 beats `.modal` 0-1-0) rather than `!important`, since `!important` would also block inline style overrides.
@@ -187,6 +184,7 @@ On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_
 - Negative `lasciatoInCassa` is flagged live (`updateCassaWarning()`, call it after setting the field); close/annulla confirmations show a summary via `consegnaSummaryDetails()`
 
 ### Admin-Only Features
+- Delete a saved consegna (`DELETE /api/consegna/:id` has `requireAdmin`; "Annulla Consegna" is hidden for others once the consegna exists)
 - Edit saldi (debiti page, only for today's date - historical saldi are read-only)
 - Reopen closed consegne
 - Add participants (desktop) - creates a full user account with username/password

@@ -220,25 +220,20 @@ function handleContoProduttoreInput(id, saldo) {
   const shouldAutoCompensate = importoSaldatoValue > 0;
   const debitoPreesistente = saldo < 0 ? Math.abs(saldo) : 0;
   const creditoPreesistente = saldo > 0 ? saldo : 0;
-  const saldaDebitoCheckbox = document.getElementById(`saldaDebito_${id}`);
-  const usaInteroCreditoCheckbox = document.getElementById(`usaInteroCreditoCheckbox_${id}`);
 
   let diff = Math.round((importoSaldatoValue - contoProduttoreValue) * 100) / 100;
 
+  // dataset.full marks a debt paid off / credit used up entirely (shown in the section title, not in the field)
   if (usaCredito) {
     usaCredito.value = '';
+    usaCredito.dataset.full = '';
     usaCredito.disabled = true;
-  }
-  if (usaInteroCreditoCheckbox) {
-    usaInteroCreditoCheckbox.checked = false;
   }
   if (debitoSaldato) {
     debitoSaldato.value = '';
     debitoSaldato.dataset.submitValue = '';
+    debitoSaldato.dataset.full = '';
     debitoSaldato.disabled = true;
-  }
-  if (saldaDebitoCheckbox) {
-    saldaDebitoCheckbox.checked = false;
   }
 
   let debitoSaldabileUsed = 0;
@@ -251,11 +246,9 @@ function handleContoProduttoreInput(id, saldo) {
 
     if (debitoSaldato) {
       debitoSaldato.dataset.submitValue = String(debitoPreesistente);
+      debitoSaldato.dataset.full = saldaTuttoIlDebito ? 'true' : '';
       debitoSaldato.value = debitoSaldabile;
       debitoSaldato.disabled = true;
-    }
-    if (saldaDebitoCheckbox) {
-      saldaDebitoCheckbox.checked = saldaTuttoIlDebito;
     }
     diff = diff - debitoSaldabile;
   }
@@ -268,10 +261,8 @@ function handleContoProduttoreInput(id, saldo) {
 
     if (usaCredito) {
       usaCredito.value = creditoUsabile;
+      usaCredito.dataset.full = usaTuttoIlCredito ? 'true' : '';
       usaCredito.disabled = true;
-    }
-    if (usaInteroCreditoCheckbox) {
-      usaInteroCreditoCheckbox.checked = usaTuttoIlCredito;
     }
     diff = diff + creditoUsabile;
   }
@@ -310,9 +301,9 @@ function handleContoProduttoreInput(id, saldo) {
   if (remainingDebtEl) {
     if (debitoSaldabileUsed > 0) {
       // Remaining debt is shown in the debitoLasciato field; only show "saldato!" when fully paid
-      remainingDebtEl.textContent = remainingDebtCarryForward === 0 ? '👉debito saldato' : '';
+      remainingDebtEl.textContent = remainingDebtCarryForward === 0 ? '👉 debito saldato' : '';
     } else if (diff < 0 && debitoPreesistente > 0) {
-      remainingDebtEl.textContent = `👉nuovo debito €${formatNumber(debitoPreesistente + Math.abs(diff))}`;
+      remainingDebtEl.textContent = `👉 nuovo debito €${formatNumber(debitoPreesistente + Math.abs(diff))}`;
     } else {
       remainingDebtEl.textContent = '';
     }
@@ -323,17 +314,17 @@ function handleContoProduttoreInput(id, saldo) {
   if (remainingCreditEl) {
     if (creditoUsabileUsed > 0) {
       const remaining = creditoPreesistente - creditoUsabileUsed;
-      remainingCreditEl.textContent = remaining > 0 ? `👉nuovo credito €${formatNumber(remaining)}` : '👉credito esaurito';
+      remainingCreditEl.textContent = remaining > 0 ? `👉 nuovo credito €${formatNumber(remaining)}` : '👉 credito esaurito';
     } else if (diff > 0 && creditoPreesistente > 0) {
-      remainingCreditEl.textContent = `👉nuovo credito €${formatNumber(creditoPreesistente + diff)}`;
+      remainingCreditEl.textContent = `👉 nuovo credito €${formatNumber(creditoPreesistente + diff)}`;
     } else if (diff < 0 && creditoPreesistente > 0) {
       const newCredit = Math.round((creditoPreesistente + diff) * 100) / 100;
       if (newCredit > 0) {
-        remainingCreditEl.textContent = `👉nuovo credito €${formatNumber(newCredit)}`;
+        remainingCreditEl.textContent = `👉 nuovo credito €${formatNumber(newCredit)}`;
       } else if (newCredit === 0) {
-        remainingCreditEl.textContent = '👉credito esaurito';
+        remainingCreditEl.textContent = '👉 credito esaurito';
       } else {
-        remainingCreditEl.textContent = `👉nuovo debito €${formatNumber(-newCredit)}`;
+        remainingCreditEl.textContent = `👉 nuovo debito €${formatNumber(-newCredit)}`;
       }
     } else {
       remainingCreditEl.textContent = '';
@@ -343,101 +334,20 @@ function handleContoProduttoreInput(id, saldo) {
   syncDebitoCreditoVisibility(id);
 }
 
-function toggleUsaInteroCredito(id, saldo) {
-  const checkbox = document.getElementById(`usaInteroCreditoCheckbox_${id}`);
-  const usaCreditoField = document.getElementById(`usaCredito_${id}`);
-
-  if (checkbox && usaCreditoField) {
-    if (checkbox.checked) {
-      usaCreditoField.disabled = true;
-      usaCreditoField.value = saldo;
-    } else {
-      usaCreditoField.disabled = false;
-      usaCreditoField.value = '';
-    }
-  }
-
-  handleContoProduttoreInput(id, saldo);
-  handleCreditoDebitoInput(id, saldo);
-}
-
-function toggleSaldaDebito(id, saldo) {
-  const checkbox = document.getElementById(`saldaDebito_${id}`);
-  const debitoField = document.getElementById(`debitoSaldato_${id}`);
-
-  if (checkbox && debitoField) {
-    if (checkbox.checked) {
-      debitoField.disabled = true;
-      debitoField.value = Math.abs(saldo);
-    } else {
-      debitoField.disabled = false;
-      debitoField.value = '';
-    }
-  }
-
-  if (!saldo) {
-    const p = participants.find(part => part.id === id);
-    saldo = saldiBefore[id] !== undefined ? saldiBefore[id] : (p ? p.saldo || 0 : 0);
-  }
-
-  syncDebitoVisibility(id);
-  handleContoProduttoreInput(id, saldo);
-  handleCreditoDebitoInput(id, saldo);
-}
-
-function syncDebitoVisibility(id) {
-  const checkbox = document.getElementById(`saldaDebito_${id}`);
-  const debitoField = document.getElementById(`debitoSaldato_${id}`);
-  if (!checkbox || !debitoField) return;
-
+// The partial field shows only when part of the debt/credit is used; a full payoff shows in the title
+function syncPartialFieldVisibility(id, fieldId) {
+  const field = document.getElementById(`${fieldId}_${id}`);
+  const group = field && field.closest('.form-group');
+  if (!group) return;
   const importo = document.getElementById(`importo_${id}`);
   const hasImporto = importo && parseAmount(importo.value) > 0;
-
-  const checkboxGroup = checkbox.closest('.checkbox-group');
-  const partialGroup = debitoField.closest('.form-group');
-
-  if (!hasImporto) {
-    if (checkboxGroup) checkboxGroup.style.display = 'none';
-    if (partialGroup) partialGroup.style.display = 'none';
-    return;
-  }
-
-  const isChecked = checkbox.checked;
-  const partialValue = parseAmount(debitoField.value);
-
-  // Hide both when no debt is being paid (nothing auto-filled nor manually entered)
-  if (!isChecked && partialValue === 0) {
-    if (checkboxGroup) checkboxGroup.style.display = 'none';
-    if (partialGroup) partialGroup.style.display = 'none';
-    return;
-  }
-
-  // Mutual exclusivity: hide checkbox only when partial has value AND checkbox not checked
-  const hasPartialValue = !isChecked && partialValue > 0;
-  if (checkboxGroup) checkboxGroup.style.display = hasPartialValue ? 'none' : '';
-  if (partialGroup) partialGroup.style.display = isChecked ? 'none' : '';
-}
-
-function syncCreditoVisibility(id) {
-  const checkbox = document.getElementById(`usaInteroCreditoCheckbox_${id}`);
-  const usaCreditoField = document.getElementById(`usaCredito_${id}`);
-  if (!checkbox || !usaCreditoField) return;
-
-  const importo = document.getElementById(`importo_${id}`);
-  const hasImporto = importo && parseAmount(importo.value) > 0;
-
-  const checkboxGroup = checkbox.closest('.checkbox-group');
-  const formGroup = usaCreditoField.closest('.form-group');
-
-  // Show only when importo is present AND credit is being used (checkbox checked or partial entered)
-  const show = hasImporto && (checkbox.checked || parseAmount(usaCreditoField.value) > 0);
-  if (checkboxGroup) checkboxGroup.style.display = show ? '' : 'none';
-  if (formGroup) formGroup.style.display = show ? '' : 'none';
+  const partial = hasImporto && parseAmount(field.value) > 0 && field.dataset.full !== 'true';
+  group.style.display = partial ? '' : 'none';
 }
 
 function syncDebitoCreditoVisibility(id) {
-  syncDebitoVisibility(id);
-  syncCreditoVisibility(id);
+  syncPartialFieldVisibility(id, 'debitoSaldato');
+  syncPartialFieldVisibility(id, 'usaCredito');
 }
 
 // ===== NUOVA CONSEGNA FLOW =====
@@ -523,10 +433,6 @@ function buildCreditoSection(id, nome, saldo, saldoText, saldoClass) {
       <div class="flow-section-title">
         <span>CREDITO<span class="saldo-info ${saldoClass}">${escapeHtml(saldoText)}</span><span id="remainingCredit_${id}" class="remaining-debt-info"></span></span>
       </div>
-      <div class="checkbox-group">
-        <input type="checkbox" id="usaInteroCreditoCheckbox_${id}" onchange="toggleUsaInteroCredito(${id}, ${saldo})">
-        <label for="usaInteroCreditoCheckbox_${id}">Usa intero credito</label>
-      </div>
       <div class="form-group">
         <label>Usa credito parziale:</label>
         <input type="text" inputmode="decimal" id="usaCredito_${id}" placeholder="0.00" disabled
@@ -543,14 +449,10 @@ function buildDebitoSection(id, nome, saldo, saldoText, saldoClass) {
       <div class="flow-section-title">
         <span>DEBITO INIZIALE<span class="saldo-info ${saldoClass}">${escapeHtml(saldoText)}</span><span id="remainingDebt_${id}" class="remaining-debt-info"></span></span>
       </div>
-      <div class="checkbox-group">
-        <input type="checkbox" id="saldaDebito_${id}" onchange="toggleSaldaDebito(${id}, ${saldo})">
-        <label for="saldaDebito_${id}">Salda intero debito</label>
-      </div>
       <div class="form-group">
         <label>Salda parziale:</label>
         <input type="text" inputmode="decimal" id="debitoSaldato_${id}" placeholder="0.00" disabled
-               oninput="normalizeInputField(this); syncDebitoVisibility(${id}); handleContoProduttoreInput(${id}, ${saldo}); handleCreditoDebitoInput(${id}, ${saldo})"
+               oninput="normalizeInputField(this); syncDebitoCreditoVisibility(${id}); handleContoProduttoreInput(${id}, ${saldo}); handleCreditoDebitoInput(${id}, ${saldo})"
                onfocus="handleInputFocus(this)">
       </div>
     </div>
@@ -579,7 +481,7 @@ function readMovimentoForm(id) {
     usaCredito: amount(`usaCredito_${id}`),
     debitoLasciato: amount(`debito_${id}`),
     creditoLasciato: amount(`credito_${id}`),
-    saldaDebitoTotale: document.getElementById(`saldaDebito_${id}`)?.checked || false,
+    saldaDebitoTotale: debitoSaldatoEl?.dataset.full === 'true',
     debitoSaldato: parseAmount(debitoSaldatoEl?.dataset.submitValue || debitoSaldatoEl?.value || '0'),
     note: document.getElementById(`note_${id}`)?.value || ''
   };

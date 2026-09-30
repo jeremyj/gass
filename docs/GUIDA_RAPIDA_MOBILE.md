@@ -73,4 +73,5 @@ Elenco di tutte le consegne in ordine cronologico inverso. Tocca una consegna pe
 | Funzione | Come accedervi |
 |---|---|
 | Riaprire consegna chiusa | Consegna → **🔓 Riapri Consegna** |
+| Eliminare una consegna salvata | Consegna → **🗑️ Annulla Consegna** |
 | Modificare un saldo | Saldi → espandi card → **Modifica Saldo** (solo oggi) |

@@ -264,7 +264,7 @@ router.post('/', (req, res) => {
 });
 
 // Delete consegna and recalculate all saldi
-router.delete('/:id', (req, res) => {
+router.delete('/:id', requireAdmin, (req, res) => {
   const timestamp = new Date().toISOString();
   const { id } = req.params;
 

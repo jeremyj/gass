@@ -197,25 +197,15 @@ function populateExistingMovimento(id) {
     }
   }
 
+  // Whole credit used / whole debt paid: shown in the section title instead of the partial field
   const usaCreditoField = document.getElementById(`usaCredito_${id}`);
-  const usaInteroCreditoCheckbox = document.getElementById(`usaInteroCreditoCheckbox_${id}`);
-
-  if (usaCreditoField && movimento.usa_credito && usaInteroCreditoCheckbox && saldo > 0) {
-    if (Math.abs(movimento.usa_credito - saldo) < 0.01) {
-      usaInteroCreditoCheckbox.checked = true;
-      usaCreditoField.disabled = true;
-    }
+  if (usaCreditoField && movimento.usa_credito && saldo > 0 && Math.abs(movimento.usa_credito - saldo) < 0.01) {
+    usaCreditoField.dataset.full = 'true';
   }
 
-  if (movimento.salda_debito_totale === 1) {
-    const saldaCheckbox = document.getElementById(`saldaDebito_${id}`);
-    if (saldaCheckbox) {
-      saldaCheckbox.checked = true;
-      const debitoSaldatoField = document.getElementById(`debitoSaldato_${id}`);
-      if (debitoSaldatoField) {
-        debitoSaldatoField.disabled = true;
-      }
-    }
+  const debitoSaldatoField = document.getElementById(`debitoSaldato_${id}`);
+  if (debitoSaldatoField && movimento.salda_debito_totale === 1) {
+    debitoSaldatoField.dataset.full = 'true';
   }
 
   syncDebitoCreditoVisibility(id);
@@ -363,7 +353,8 @@ function updateConsegnaStatusUI(consegna) {
       closeBtn.style.display = 'inline-block';
       closeBtn.innerHTML = '🔒 Chiudi Consegna';
       closeBtn.className = 'btn-danger';
-      if (annullaBtn) annullaBtn.style.display = 'inline-block';
+      // Deleting a saved consegna is admin-only (server enforces it too)
+      if (annullaBtn) annullaBtn.style.display = isAdmin() ? 'inline-block' : 'none';
       enableConsegnaInputs();
     }
   } else {

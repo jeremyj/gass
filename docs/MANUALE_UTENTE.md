@@ -110,15 +110,13 @@ Il sistema compensa automaticamente crediti e debiti nelle due direzioni:
 1. **Quando si crea un credito ma il partecipante ha un debito**:
    - Esempio: Partecipante ha 7€ di debito, Conto=15€, Importo=22€
    - Il sistema automaticamente:
-     - Spunta "Salda intero debito"
-     - Popola "Debito saldato" con 7€
+     - Mostra nel titolo `👉 debito saldato`
      - Mostra il partecipante "in pari" (saldo 0€)
 
 2. **Quando si crea un debito ma il partecipante ha un credito**:
    - Esempio: Partecipante ha 10€ di credito, Conto=18€, Importo=5€
    - Il sistema automaticamente:
-     - Spunta "Usa intero credito"
-     - Popola "Usa credito" con 10€
+     - Mostra nel titolo `👉 credito esaurito`
      - Mostra "Lascia debito" di 3€ (invece di 13€)
 
 **Sezioni Credito e Debito**
@@ -127,17 +125,13 @@ Le sezioni CREDITO e DEBITO appaiono solo quando sono rilevanti per il partecipa
 
 - **Sezione CREDITO** (visibile solo se il partecipante ha credito e l'importo copre il conto):
   - Il titolo mostra in tempo reale il nuovo saldo (es. `CREDITO €50 👉 nuovo credito €20`)
-  - ☑️ **Usa intero credito**: Spuntato automaticamente quando il sistema usa tutto il credito disponibile
-  - **Usa credito**: Importo di credito utilizzato (sola lettura, gestito dal sistema)
+  - **Usa credito parziale**: compare solo quando si usa una parte del credito (sola lettura, gestito dal sistema)
 
 - **Sezione DEBITO** (visibile solo se il partecipante ha debito e l'importo non copre interamente il conto):
   - Il titolo mostra in tempo reale il nuovo saldo (es. `DEBITO INIZIALE €26 👉 nuovo debito €58`)
-  - ☑️ **Salda intero debito**: Spuntato automaticamente quando il sistema salda tutto il debito
-  - **Salda parziale**: Importo parziale di debito da saldare (alternativo alla casella "salda intero")
+  - **Salda parziale**: compare solo quando si salda una parte del debito (sola lettura, gestito dal sistema)
 
 Nelle tabelle dei movimenti (Consegna, Storico, Saldi) la colonna **Salda Debito** mostra quanto debito è stato pagato in quella consegna, e **Lascia Debito** solo il debito nuovo. Esempio: debito di 26,73€ pagato per 17,74€ → Salda Debito 17,74€, Lascia Debito vuoto; i 8,99€ ancora dovuti restano nel saldo.
-
-**Nota**: "Salda intero debito" e "Salda parziale" sono mutuamente esclusivi — quando si inserisce un importo in "Salda parziale", la casella si nasconde automaticamente e viceversa.
 
 #### Chiusura e Riapertura Consegna
 
@@ -227,7 +221,7 @@ Per ogni movimento vengono mostrati:
 
 #### Eliminazione Consegna
 
-È possibile eliminare una consegna tramite il pulsante di eliminazione.
+Solo un amministratore può eliminare una consegna già salvata, con **🗑️ Annulla Consegna** nella pagina Consegna.
 
 **ATTENZIONE**:
 - L'eliminazione è permanente
@@ -367,6 +361,5 @@ Sistema GASS Pagamenti - Versione 2.5.5
 - Chiusura/riapertura consegne con blocco modifiche
 - Gestione utenti completa per amministratori (Saldi → Modifica Utente)
 - Sezioni CREDITO/DEBITO condizionali: visibili solo quando rilevanti
-- Mutua esclusività "Salda intero" / "Salda parziale"
 - Selezione data persistente tra le sezioni
 - Layout ottimizzato per mobile e desktop

@@ -29,7 +29,7 @@ GET    /api/participants?date         - Calculate participant balances as of spe
 GET    /api/participants/:id/transactions - Ledger (movimenti + rettifiche) with running saldo (any authenticated user)
 GET    /api/consegna/:date            - Retrieve delivery data for specific date
 POST   /api/consegna                  - Create or update delivery with movements
-DELETE /api/consegna/:id              - Delete delivery and recalculate affected balances
+DELETE /api/consegna/:id              - Delete delivery and recalculate affected balances (admin)
 GET    /api/storico                   - Retrieve all deliveries (summary)
 GET    /api/storico/dettaglio         - Retrieve all deliveries with detailed movements
 PUT    /api/participants/:id          - Set participant balance (stored as a rettifica, admin)
@@ -250,7 +250,7 @@ Each movement tracks:
 - `usa_credito`: Use participant's existing credit (system-managed, always disabled, always visible)
 - `debito_lasciato`: New debt to carry forward (system-calculated, always disabled)
 - `credito_lasciato`: New credit to carry forward (system-calculated, always disabled)
-- `salda_debito_totale`: Checkbox to settle all existing debt
+- `salda_debito_totale`: set when the whole prior debt is paid off (client derives it from the auto-compensation, no checkbox since 2.9.0)
 - `debito_saldato`: Partial debt settlement amount (system-managed, always disabled, always visible). On a partial payoff it stores the **whole prior debt** and `debito_lasciato` the part still owed, so the ledger replay (`min(0, saldo + debito_saldato) - debito_lasciato`) is right. The UI never shows the raw pair: `debitoPagato(m)` / `debitoNuovo(m)` in `utils.js` split it into amount paid and genuinely new debt
 
 **Auto-Calculation**: The `credito_lasciato` and `debito_lasciato` fields are calculated values based on the formula:
@@ -272,13 +272,13 @@ These fields are always disabled to prevent manual editing and ensure data integ
 
 1. **Creating credit while participant has debt**:
    - Example: Participant has 7€ debt, conto_produttore=15€, importo_saldato=22€
-   - Result: Auto-checks "Salda intero debito", populates "Debito saldato = 7€"
+   - Result: title shows "👉 debito saldato"
    - If credit >= debt: Full debt settlement
    - If credit < debt: Partial debt settlement with available credit
 
 2. **Creating debt while participant has credit**:
    - Example: Participant has 10€ credit, conto_produttore=18€, importo_saldato=5€
-   - Result: Auto-checks "Usa intero credito", populates "Usa credito = 10€", shows "Lascia debito = 3€"
+   - Result: title shows "👉 credito esaurito", "Lascia debito = 3€"
    - If credit >= debt: Full debt offset
    - If credit < debt: Partial debt reduction
 

@@ -193,7 +193,8 @@ function updateConsegnaStatusUI(consegna) {
       closeBtn.innerHTML = '🔒 Chiudi Consegna';
       closeBtn.classList.remove('big-btn-success');
       closeBtn.classList.add('big-btn-danger');
-      if (annullaBtn) annullaBtn.style.display = 'block';
+      // Deleting a saved consegna is admin-only (server enforces it too)
+      if (annullaBtn) annullaBtn.style.display = isAdmin() ? 'block' : 'none';
       enableConsegnaInputs();
     }
   } else {
@@ -389,16 +390,12 @@ function loadExistingParticipantData(id, saldo) {
   }
 
   const usaCreditoField = document.getElementById(`usaCredito_${id}`);
-  const usaInteroCreditoCheckbox = document.getElementById(`usaInteroCreditoCheckbox_${id}`);
 
   if (usaCreditoField && movimento.usa_credito) {
     usaCreditoField.value = movimento.usa_credito;
     usaCreditoField.disabled = true; // Always disabled - system-managed
-
-    // If usa_credito equals the full credit amount, check the "usa intero credito" checkbox
-    if (usaInteroCreditoCheckbox && saldo > 0 && Math.abs(movimento.usa_credito - saldo) < 0.01) {
-      usaInteroCreditoCheckbox.checked = true;
-    }
+    // Whole credit used: shown in the section title instead of the partial field
+    usaCreditoField.dataset.full = saldo > 0 && Math.abs(movimento.usa_credito - saldo) < 0.01 ? 'true' : '';
   }
 
   const creditoField = document.getElementById(`credito_${id}`);
@@ -422,16 +419,9 @@ function loadExistingParticipantData(id, saldo) {
     noteField.value = movimento.note;
   }
 
-  // Check and set checkboxes if applicable
-  if (movimento.salda_debito_totale === 1) {
-    const saldaCheckbox = document.getElementById(`saldaDebito_${id}`);
-    if (saldaCheckbox) {
-      saldaCheckbox.checked = true;
-      const debitoSaldatoFieldInner = document.getElementById(`debitoSaldato_${id}`);
-      if (debitoSaldatoFieldInner) {
-        debitoSaldatoFieldInner.disabled = true;
-      }
-    }
+  // Whole debt paid: shown in the section title instead of the partial field
+  if (debitoSaldatoField && movimento.salda_debito_totale === 1) {
+    debitoSaldatoField.dataset.full = 'true';
   }
 
   // Apply business rules to correctly set disabled states based on loaded data
@@ -496,10 +486,8 @@ function buildParticipantCardHTML(id, nome, saldo, saldoText, saldoClass, haCred
 function addHiddenFields(card, id, haCredito, haDebito) {
   if (!haCredito) {
     card.appendChild(createHiddenInput(`usaCredito_${id}`, '0'));
-    card.appendChild(createHiddenInput(`usaInteroCreditoCheckbox_${id}`, 'false'));
   }
   if (!haDebito) {
-    card.appendChild(createHiddenInput(`saldaDebito_${id}`, 'false'));
     card.appendChild(createHiddenInput(`debitoSaldato_${id}`, '0'));
   }
 }

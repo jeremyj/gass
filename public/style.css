@@ -752,7 +752,10 @@ body {
 .flow-section-title > span {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2px 6px;
+    white-space: nowrap; /* each part stays whole; the 👉 part drops below only if it can't fit */
 }
 
 .flow-section-title > span .saldo-info {
@@ -787,8 +790,8 @@ body {
 
 .flow-section-title {
     font-weight: 700;
-    font-size: 14px;
-    letter-spacing: 0.3px;
+    font-size: 13px;
+    letter-spacing: 0;
     color: var(--color-text);
     margin-bottom: 12px;
     display: flex;

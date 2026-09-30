@@ -74,6 +74,7 @@ Elenco di tutte le consegne in ordine cronologico inverso, con i dati di cassa e
 | Funzione | Come accedervi |
 |---|---|
 | Riaprire consegna chiusa | Consegna → **🔓 Riapri Consegna** |
+| Eliminare una consegna salvata | Consegna → **🗑️ Annulla Consegna** |
 | Modificare un saldo | Saldi → **Modifica Saldo** (solo data odierna) |
 | Aggiungere partecipanti | Saldi → **+ Aggiungi Partecipante** |
 | Modificare utenti | Saldi → **Modifica Utente** |
