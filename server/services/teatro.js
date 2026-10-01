@@ -117,6 +117,50 @@ function setNota(db, userId, nota) {
   return { changes: [`${nomeDi(db, userId)}: nota teatro aggiornata`] };
 }
 
+// One-off import of the old sheet: semestri = column semesters, rows = { username, valori, nota }.
+// A number n means owed n and paid n (0 = non dovuto); '-' or empty = not in the GASS.
+// Payments get fonte 'foglio' (dated at the semester's end) so they stay out of the cassa.
+// Re-importing a person replaces their imported rows and payments.
+function importFoglio(db, semestri, rows) {
+  if (!semestri.length || !semestri.every(isSemestre)) return { error: 'Semestri non validi nell\'intestazione' };
+  const byUsername = db.prepare('SELECT id FROM users WHERE username = ?');
+  const prepared = [];
+  for (const r of rows) {
+    const user = byUsername.get(r.username);
+    if (!user) return { error: `Utente non trovato: ${r.username}` };
+    const valori = semestri.map((s, i) => {
+      const v = String(r.valori[i] ?? '').trim().replace(',', '.');
+      return v === '' || v === '-' ? null : Number(v);
+    });
+    if (valori.some(v => v !== null && !(v >= 0))) return { error: `Valore non valido per ${r.username}` };
+    prepared.push({ id: user.id, valori, nota: r.nota });
+  }
+  const end = s => (s.endsWith('-1') ? `${s.slice(0, 4)}-06-30` : `${s.slice(0, 4)}-12-31`);
+  db.transaction(() => {
+    for (const s of semestri) {
+      db.prepare('INSERT OR IGNORE INTO teatro_semestri (semestre, quota) VALUES (?, ?)').run(s, DEFAULT_QUOTA);
+    }
+    for (const p of prepared) {
+      db.prepare("DELETE FROM teatro_pagamenti WHERE user_id = ? AND fonte = 'foglio'").run(p.id);
+      semestri.forEach((s, i) => {
+        const v = p.valori[i];
+        if (v === null) {
+          db.prepare('DELETE FROM teatro_dovuti WHERE user_id = ? AND semestre = ?').run(p.id, s);
+          return;
+        }
+        db.prepare(`INSERT INTO teatro_dovuti (user_id, semestre, dovuto) VALUES (?, ?, ?)
+                    ON CONFLICT(user_id, semestre) DO UPDATE SET dovuto = excluded.dovuto`).run(p.id, s, v);
+        if (v > 0) {
+          db.prepare("INSERT INTO teatro_pagamenti (user_id, data, importo, fonte, created_at) VALUES (?, ?, ?, 'foglio', ?)")
+            .run(p.id, end(s), v, new Date().toISOString());
+        }
+      });
+      if (p.nota !== undefined) db.prepare('UPDATE users SET teatro_nota = ? WHERE id = ?').run(String(p.nota || '').trim() || null, p.id);
+    }
+  })();
+  return { imported: prepared.length };
+}
+
 // Everything the admin Teatro page shows
 function riepilogo(db) {
   const semestri = db.prepare('SELECT semestre, quota FROM teatro_semestri ORDER BY semestre').all()
@@ -139,5 +183,5 @@ function riepilogo(db) {
 
 module.exports = {
   DEFAULT_QUOTA, ensureSemestre, setQuota, setDovuto, statoTeatro, residui, registraPagamento, deletePagamento,
-  addCassa, saldoCassa, quoteDelGiorno, setNota, riepilogo
+  addCassa, saldoCassa, quoteDelGiorno, setNota, riepilogo, importFoglio
 };

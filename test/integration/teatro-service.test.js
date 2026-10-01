@@ -74,3 +74,29 @@ describe('payments', () => {
     expect(deleteUser(db, a)).toMatch(/quote teatro/);
   });
 });
+
+describe('sheet import', () => {
+  it('turns each number into owed and paid, 0 into non dovuto, - into no row, outside the cassa', () => {
+    const a = createUser(db, { username: 'a' });
+    const b = createUser(db, { username: 'b' });
+    const r = T.importFoglio(db, ['2025-2', '2026-1'], [
+      { username: 'a', valori: ['15', '7'], nota: 'da marzo' },
+      { username: 'b', valori: ['-', '0'], nota: '' }
+    ]);
+    expect(r).toEqual({ imported: 2 });
+    expect(T.statoTeatro(db, a).righe.map(x => [x.semestre, x.dovuto, x.pagato])).toEqual([['2025-2', 15, 15], ['2026-1', 7, 7]]);
+    expect(T.statoTeatro(db, b).righe).toEqual([{ semestre: '2026-1', dovuto: 0, pagato: 0, label: '1° sem. 2026' }]);
+    expect(db.prepare('SELECT teatro_nota n FROM users WHERE id = ?').get(a).n).toBe('da marzo');
+    expect(T.saldoCassa(db)).toBe(0);
+    // importing again replaces, no double payments
+    T.importFoglio(db, ['2025-2', '2026-1'], [{ username: 'a', valori: ['15', '7'], nota: 'da marzo' }]);
+    expect(T.statoTeatro(db, a).anticipo).toBe(0);
+  });
+
+  it('refuses unknown usernames and bad values without writing anything', () => {
+    createUser(db, { username: 'a' });
+    expect(T.importFoglio(db, ['2025-2'], [{ username: 'zz', valori: ['15'] }]).error).toMatch(/zz/);
+    expect(T.importFoglio(db, ['2025-2'], [{ username: 'a', valori: ['x'] }]).error).toBeTruthy();
+    expect(db.prepare('SELECT COUNT(*) n FROM teatro_dovuti').get().n).toBe(0);
+  });
+});
