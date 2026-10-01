@@ -269,6 +269,14 @@ table.reg { overflow: visible; }
 .rules li, .qs li { margin: 6px 0; font-size: 17px; }
 .rules li span, .qs li span { color: var(--salvia); }
 .qs { background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; padding: 18px 22px; max-width: 1180px; }
+.coda { list-style: none; margin: 0; padding: 4px 0; counter-reset: c; }
+.coda li { counter-increment: c; display: grid; grid-template-columns: 24px 1fr auto; gap: 6px; padding: 4px 16px; font-size: 15px; }
+.coda li::before { content: counter(c); color: var(--salvia); font-size: 13px; font-weight: 700; align-self: center; }
+.coda li > span:last-child { color: var(--salvia); font-size: 14px; }
+.coda li.nw { background: var(--s-tint); }
+.coda li.more { color: var(--salvia); font-style: italic; }
+.coda li.more::before { content: ""; }
+.tagn { font-size: 12.5px; font-weight: 700; color: var(--s-deep); border: 1px solid var(--s-acc); border-radius: 5px; padding: 0 5px; margin-left: 4px; }
 </style>
 </head>
 <body>
@@ -312,20 +320,21 @@ table.reg { overflow: visible; }
 </svg>
 
 <div class="board">
-  <h1>GASS: turni (2)</h1>
-  <p>Scelta l’agenda su mobile. I due turnisti sono alla pari, niente affiancamento. Sempre le prossime 12 settimane; solo gli admin modificano, da desktop. Le coppie si sorteggiano a ogni <b>giro</b>, come nel foglio. Oggi è giovedì 1 ottobre 2026, utente “jeremy”. L’8 dicembre (Immacolata) è l’esempio di consegna spostata.</p>
+  <h1>GASS: turni (3), coda continua</h1>
+  <p>Agenda su mobile, due turnisti alla pari, sempre le prossime 12 settimane, solo gli admin modificano da desktop. Niente più blocchi: una <b>coda</b> continua. Si parte dal giro del 22 settembre del foglio. Oggi è giovedì 1 ottobre 2026, utente “jeremy”. L’8 dicembre (Immacolata) è l’esempio di consegna spostata.</p>
 
-  <h2 class="sec">Come funziona il giro (dallo storico)</h2>
+  <h2 class="sec">Come funziona la coda</h2>
   <div class="rules">
     <ol>
-      <li><b>Giro</b>: ognuno di quelli “in turno” fa un turno, poi si ricomincia. <span>Nel foglio è un blocco separato da una riga vuota, ~22 persone in ~11 settimane.</span></li>
-      <li><b>Coppie sorteggiate</b> a ogni giro, evitando le coppie del giro precedente. <span>Dal 2022 le coppie cambiano a ogni blocco.</span></li>
-      <li><b>Numero dispari</b>: una persona fa due turni, sorteggiata tra chi non li ha fatti di recente, e salta il giro dopo. <span>“polly ha fatto due turni nel periodo precedente”, “paoletta m” due volte tra marzo e maggio 2026.</span></li>
-      <li><b>Fuori turno</b>: chi al momento non ordina non entra nel giro (interruttore per persona). <span>“no turno elisa, alessandro, alice, albertina”.</span></li>
-      <li><b>Chi entra</b> nel gruppo entra dal giro successivo; <b>chi esce</b> lascia un turno “da coprire” se ne aveva uno nelle 12 settimane.</li>
-      <li><b>Consegna saltata</b>: la coppia di quel giorno va in fondo al giro, che dura una settimana in più. <span>“no turno, Cristina e Marco Zen slittati al 25 nov”, “turno saltato” → “recupero turno”.</span></li>
-      <li><b>Consegna spostata</b> (es. mercoledì): stessa coppia, cambia solo il giorno. <span>“26 (mercoledì) aprile”.</span></li>
-      <li><b>Pause</b> (Natale, agosto): un intervallo senza consegne; il giro riprende dopo, senza perdere nessuno.</li>
+      <li><b>Ordine</b>: in coda c’è chi è in turno, ordinato per data dell’ultimo turno fatto. <span>Si parte dalle date del foglio dal 22 settembre in poi.</span></li>
+      <li><b>Ogni settimana</b> che entra nelle 12, la prende la persona che aspetta da più tempo, insieme alla successiva che non sia stata la sua ultima compagna. <span>Tra chi aspetta da tanto uguale si sorteggia: le coppie cambiano sempre.</span></li>
+      <li><b>Le 12 settimane visibili sono fisse</b>: cambiano solo a mano (scambio, giorno, assegna).</li>
+      <li><b>Dispari</b>: nessun problema, l’ultima di un giro fa coppia con la prima del successivo. Nessuno fa due turni.</li>
+      <li><b>Chi entra</b> va in fondo alla coda. <b>Chi esce</b> lascia un turno “da coprire” se ne aveva uno nelle 12 settimane.</li>
+      <li><b>Fuori turno</b> (non ordina): esce dalla coda; quando rientra, va in fondo.</li>
+      <li><b>Consegna saltata</b>: quel turno non conta, la coppia torna in testa alla coda (recupero automatico).</li>
+      <li><b>Consegna spostata</b> (es. mercoledì): stessa coppia, cambia solo il giorno.</li>
+      <li><b>Pause</b> (Natale, agosto): nessuna consegna, la coda resta ferma e riparte dopo.</li>
     </ol>
   </div>
 
@@ -352,7 +361,7 @@ table.reg { overflow: visible; }
           </ul>
           <div class="mon">Dicembre</div>
           <ul class="ag">
-            <li><div class="dd moved"><b>9</b><small>mer</small></div><div class="who"><div>silke</div><div>Riccardo e camille</div><div class="why">spostata da martedì 8, festa</div></div><div class="tags"></div></li>
+            <li><div class="dd moved"><b>9</b><small>mer</small></div><div class="who"><div>Ilaria</div><div>marco z</div><div class="why">spostata da martedì 8, festa</div></div><div class="tags"></div></li>
           </ul>
         </div>
         <nav class="bnav n4">
@@ -366,7 +375,7 @@ table.reg { overflow: visible; }
     </div>
   </div>
 
-  <h2 class="sec">Desktop: giri, scambi e calendario (solo admin)</h2>
+  <h2 class="sec">Desktop: coda, scambi e calendario (solo admin)</h2>
   <div class="row">
     <div>
       <div class="desk">
@@ -378,7 +387,6 @@ table.reg { overflow: visible; }
               <table class="t reg">
                 <thead><tr><th>Consegna</th><th>Turnista</th><th>Turnista</th><th>Note</th><th></th></tr></thead>
                 <tbody>
-                  <tr class="giro"><td colspan="5"><b>Giro 22 settembre – 1 dicembre</b> · 11 settimane, 22 persone · 2 di 11 fatte</td></tr>
                   <tr class="cur"><td class="d"><b>mar 6 ottobre</b></td><td class="nm">jeremy</td><td class="nm">Sara B</td><td></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
                   <tr><td class="d"><b>mar 13 ottobre</b></td><td class="nm">matias</td><td class="nm">s&amp;p</td><td></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
                   <tr><td class="d"><b>mar 20 ottobre</b></td><td class="nm">francesca b</td><td class="nm">Cristina</td><td></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
@@ -388,18 +396,18 @@ table.reg { overflow: visible; }
                   <tr class="open"><td class="d"><b>mar 17 novembre</b></td><td class="nm"><span class="gone">Irene p</span><span class="warn">da coprire, uscita dal gruppo</span></td><td class="nm">paoletta m</td><td></td><td class="act"><a href="#">Assegna</a><a href="#">Giorno</a></td></tr>
                   <tr><td class="d"><b>mar 24 novembre</b></td><td class="nm">sara b<span class="sw-tag"><svg width="14" height="14"><use href="#i-swap"/></svg>da 1/12</span></td><td class="nm">salvatore</td><td></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
                   <tr><td class="d"><b>mar 1 dicembre</b></td><td class="nm">maurizio<span class="sw-tag"><svg width="14" height="14"><use href="#i-swap"/></svg>da 24/11</span></td><td class="nm">polly</td><td></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
-                  <tr class="giro"><td colspan="5"><b>Giro dall’8 dicembre</b> · sorteggiato, si può rimescolare fino all’inizio<a href="#">Rimescola coppie</a></td></tr>
+                  <tr class="giro"><td colspan="5">Da qui in giù scelti dalla <b>coda</b>: una settimana nuova si aggiunge ogni martedì</td></tr>
                   <tr class="draft"><td class="d" style="position:relative"><b>mer 9 dicembre</b><span class="mv">da mar 8, Immacolata</span>
                     <div class="pop">
                       <h5>Consegna di martedì 8 dicembre</h5>
                       <label><input type="radio" name="g"><span>Normale, martedì 8</span></label>
                       <label><input type="radio" name="g" checked><span>Sposta a <span class="in">mer 9 dic</span><small>stessa coppia, cambia solo il giorno</small></span></label>
-                      <label><input type="radio" name="g"><span>Niente consegna<small>silke e Riccardo e camille vanno in fondo al giro</small></span></label>
+                      <label><input type="radio" name="g"><span>Niente consegna<small>Ilaria e marco z tornano in testa alla coda</small></span></label>
                       <label style="display:block">Motivo <span class="in" style="font-weight:400">festa (Immacolata)</span></label>
                       <div class="bt"><button class="btn line sm">Annulla</button><button class="btn go sm">Salva</button></div>
                     </div>
-                  </td><td class="nm">silke</td><td class="nm">Riccardo e camille</td><td></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
-                  <tr class="draft"><td class="d"><b>mar 15 dicembre</b></td><td class="nm">fernanda</td><td class="nm">marco b</td><td></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
+                  </td><td class="nm">Ilaria</td><td class="nm">marco z</td><td></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
+                  <tr class="draft"><td class="d"><b>mar 15 dicembre</b></td><td class="nm">Rachele</td><td class="nm">silke</td><td></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
                   <tr class="draft"><td class="d"><b>mar 22 dicembre</b></td><td class="nm">Sara B</td><td class="nm">matias</td><td></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
                 </tbody>
               </table>
@@ -407,11 +415,28 @@ table.reg { overflow: visible; }
             </div>
             <div>
               <div class="rbox">
-                <h4>Prossimo giro<small>dall’8 dicembre · 21 persone · 11 settimane</small></h4>
-                <div class="grp"><b>In turno</b><div class="chips"><span>Ilaria</span><span>Rachele</span><span>silke</span><span>marco z</span><span>jeremy</span><span>Sara B</span><span>matias</span><span>s&amp;p</span><span>francesca b</span><span>Cristina</span><span>fernanda</span><span>Simone e laura</span><span>franceska v</span><span>marco b</span><span>Riccardo e camille</span><span>sara e Simone</span><span>sara b</span><span>salvatore</span><span>maurizio</span><span>polly</span><span class="new">stefania · nuova</span></div></div>
+                <h4>Coda<small>dopo il 22 dicembre · chi tocca dopo, in ordine</small></h4>
+                <ol class="coda">
+                  <li><span>jeremy</span><span>6 ott</span></li>
+                  <li><span>s&amp;p</span><span>13 ott</span></li>
+                  <li><span>francesca b</span><span>20 ott</span></li>
+                  <li><span>Cristina</span><span>20 ott</span></li>
+                  <li><span>fernanda</span><span>27 ott</span></li>
+                  <li><span>Simone e laura</span><span>27 ott</span></li>
+                  <li><span>franceska v</span><span>3 nov</span></li>
+                  <li><span>marco b</span><span>3 nov</span></li>
+                  <li><span>Riccardo e camille</span><span>10 nov</span></li>
+                  <li><span>sara e Simone</span><span>10 nov</span></li>
+                  <li><span>paoletta m</span><span>17 nov</span></li>
+                  <li><span>sara b</span><span>24 nov</span></li>
+                  <li><span>salvatore</span><span>24 nov</span></li>
+                  <li><span>maurizio</span><span>1 dic</span></li>
+                  <li><span>polly</span><span>1 dic</span></li>
+                  <li class="nw"><span>stefania <span class="tagn">nuova</span></span><span>—</span></li>
+                  <li class="more"><span>poi Ilaria, marco z, Rachele, silke, Sara B, matias</span><span></span></li>
+                </ol>
                 <div class="grp"><b>Fuori turno (non ordinano)</b><div class="chips"><span class="out">elisa</span><span class="out">alessandro</span><span class="out">alice</span><span class="out">albertina</span></div></div>
-                <div class="grp"><b>Salta questo giro</b><div class="chips"><span class="out">paoletta m · 2 turni nel giro prima</span></div></div>
-                <div class="ft"><span>Dispari: sorteggiato chi fa due turni (<b style="color:var(--inchiostro)">polly</b>), salterà il giro dopo.</span><span>Clic su un nome per spostarlo tra i gruppi.</span></div>
+                <div class="ft"><span>A destra la data dell’ultimo turno. Clic su un nome: metti fuori turno, o rimetti in coda (in fondo).</span><a href="#" style="color:var(--s-deep);font-weight:700">+ Aggiungi in coda</a></div>
               </div>
               <div class="rbox">
                 <h4>Pause</h4>
@@ -424,7 +449,7 @@ table.reg { overflow: visible; }
           </div>
         </div>
       </div>
-      <p class="cap" style="max-width:1180px"><b>Desktop.</b> A sinistra le 12 settimane divise per giro: il giro in corso è fisso, il prossimo è sorteggiato e si può rimescolare finché non inizia. Chi esce lascia un turno “da coprire”, evidenziato. “Giorno” apre il pannello per spostare o saltare una consegna. A destra chi entra nel prossimo giro, chi è fuori turno e chi lo salta; sotto le pause (Natale, agosto con una sola consegna).</p>
+      <p class="cap" style="max-width:1180px"><b>Desktop.</b> A sinistra le 12 settimane: fino al 1 dicembre il foglio, da lì in giù dalla coda (Ilaria e Rachele aspettano dal 22 settembre ma sono state in coppia, quindi si separano). Chi esce lascia un turno “da coprire”, evidenziato. “Giorno” sposta o salta una consegna. A destra la coda in ordine di attesa, chi è fuori turno e le pause.</p>
     </div>
   </div>
 
@@ -432,8 +457,6 @@ table.reg { overflow: visible; }
   <div class="qs">
     <ol>
       <li><b>Coppie e famiglie</b> (“silvia e paolo”, “s&amp;p”, “Riccardo e camille”) sono un solo utente GASS o due? <span>Se sono due, servono “insieme sempre” per farli contare come un turno.</span></li>
-      <li><b>Dispari</b>: va bene che il sistema sorteggi chi fa due turni e lo faccia saltare al giro dopo, come nello storico?</li>
-      <li><b>Turni passati</b>: importare lo storico del foglio (serve per evitare di ripetere coppie e per sapere chi ha fatto due turni) o partire dal giro attuale (22 settembre)?</li>
       <li><b>Fuori turno</b>: attendo la tua verifica su elisa, alessandro, alice, albertina.</li>
     </ol>
   </div>
