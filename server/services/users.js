@@ -37,6 +37,7 @@ function deleteUser(db, id) {
 }
 
 const { toLocalDateString } = require('./calculations');
+const { freeFutureTurni } = require('./turni');
 
 const STATI = ['attivo', 'sospeso', 'disattivato'];
 
@@ -46,8 +47,11 @@ const STATI = ['attivo', 'sospeso', 'disattivato'];
  */
 function setStato(db, id, stato, today = toLocalDateString()) {
   if (!STATI.includes(stato)) return `Stato non valido: ${stato}`;
-  db.prepare('UPDATE users SET stato = ?, turni_dal = CASE WHEN ? = \'attivo\' AND stato != \'attivo\' THEN ? ELSE turni_dal END WHERE id = ?')
-    .run(stato, stato, today, id);
+  db.transaction(() => {
+    db.prepare('UPDATE users SET stato = ?, turni_dal = CASE WHEN ? = \'attivo\' AND stato != \'attivo\' THEN ? ELSE turni_dal END WHERE id = ?')
+      .run(stato, stato, today, id);
+    if (stato !== 'attivo') freeFutureTurni(db, id, today);
+  })();
   return null;
 }
 

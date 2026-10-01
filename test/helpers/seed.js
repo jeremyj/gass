@@ -71,6 +71,16 @@ function createRettifica(db, { partecipanteId, data, importo, createdAt = null }
   return result.lastInsertRowid;
 }
 
+function createTurno(db, { settimana, data = settimana, t1 = null, t2 = null, saltata = 0 } = {}) {
+  return db.prepare('INSERT INTO turni (settimana, data, turnista1_id, turnista2_id, saltata) VALUES (?, ?, ?, ?, ?)')
+    .run(settimana, data, t1, t2, saltata).lastInsertRowid;
+}
+
+function clearTurni(db) {
+  db.prepare('DELETE FROM turni').run();
+  db.prepare('DELETE FROM turni_pause').run();
+}
+
 /**
  * Log in as a user via the API. Returns the supertest agent (with session cookie).
  */
@@ -99,6 +109,8 @@ function clearConsegne(db) {
  * a test demoted/changed it.
  */
 function clearNonAdminUsers(db) {
+  db.prepare('DELETE FROM turni').run();
+  db.prepare('DELETE FROM turni_pause').run();
   // Must delete FK-dependent activity_logs rows before deleting users
   db.prepare("DELETE FROM activity_logs WHERE target_user_id IN (SELECT id FROM users WHERE username != 'admin')").run();
   db.prepare("DELETE FROM activity_logs WHERE actor_user_id IN (SELECT id FROM users WHERE username != 'admin')").run();
@@ -112,4 +124,4 @@ function clearNonAdminUsers(db) {
   db.prepare("UPDATE users SET is_admin = 1 WHERE username = 'admin'").run();
 }
 
-module.exports = { createUser, createConsegna, createMovimento, createRettifica, loginAs, clearConsegne, clearNonAdminUsers };
+module.exports = { createUser, createConsegna, createMovimento, createRettifica, createTurno, clearTurni, loginAs, clearConsegne, clearNonAdminUsers };
