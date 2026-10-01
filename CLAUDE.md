@@ -12,7 +12,7 @@
 - **App Factory**: `server/app.js` - Express setup, middleware, route mounting
 - **Database**: `server/config/database.js` - exports `createDatabase(dbPath)` factory + production singleton
 - **Routes**: `server/routes/`
-  - `pages.js` - HTML routing with mobile/desktop detection; `/login`, `/inbreve` (user guide, `public/inbreve.html`), `/comefunziona` (first-access video, `public/video/`; re-record with `~/.cache/gass-video/rec/record-full2.js`) and `/api/version` are public
+  - `pages.js` - HTML routing with mobile/desktop detection; `/login`, `/inbreve` (user guide, `public/inbreve.html`), `/comefunziona` (first-access and turni videos, `public/video/`; recorded in `~/.cache/gass-video/rec/`: `record-turni.js`, and `record-full3.js` for everything after login, spliced after the 2026-09-30 login part at 47.0s; see the video memory) and `/api/version` are public
   - `auth.js` - Authentication endpoints (login, logout, password change)
   - `consegna.js` - Delivery API (GET/:date, POST, DELETE/:id)
   - `participants.js` - Participant API (CRUD, saldo management, `GET /:id/transactions` — any authenticated user)
