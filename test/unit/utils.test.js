@@ -16,7 +16,7 @@ vm.createContext(sandbox);
 vm.runInContext(code, sandbox);
 
 const { escapeHtml, formatDateItalian, parseAmount, roundToCents, formatNumber, toLocalDateString,
-        debitoPagato, debitoNuovo, formatEuro, formatSigned } = sandbox;
+        debitoPagato, debitoNuovo, formatEuro, formatSigned, weekdayShort, monthName } = sandbox;
 
 describe('toLocalDateString', () => {
   it('uses the local calendar date, not the UTC one', () => {
@@ -169,5 +169,12 @@ describe('debitoPagato / debitoNuovo', () => {
     const m = { debito_saldato: 0, debito_lasciato: 12 };
     expect(debitoPagato(m)).toBe(0);
     expect(debitoNuovo(m)).toBe(12);
+  });
+});
+
+describe('weekdayShort / monthName', () => {
+  it('give the Italian short weekday and month name', () => {
+    expect(weekdayShort('2026-12-09')).toBe('mer');
+    expect(monthName('2026-12-09')).toBe('dicembre');
   });
 });

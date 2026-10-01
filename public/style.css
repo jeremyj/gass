@@ -200,7 +200,7 @@ input:disabled, select:disabled { opacity: .55; cursor: not-allowed; }
   bottom: 0;
   z-index: 100;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   background: var(--carta);
   border-top: 1px solid var(--riga);
   padding-bottom: env(safe-area-inset-bottom);
@@ -580,3 +580,23 @@ tr.off td { opacity: .6; }
 .stato-opt { display: flex !important; gap: 10px; align-items: flex-start; padding: 8px 12px; border: 1.5px solid var(--riga); border-radius: 8px; cursor: pointer; margin: 0 !important; }
 .stato-opt:has(input:checked) { border-color: var(--s-deep); background: var(--s-tint); }
 .stato-opt small { display: block; color: var(--salvia); font-size: 16px; }
+
+/* ===== TURNI ===== */
+.stag-sub { position: relative; font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--s-prod, var(--s-acc)); margin-top: 6px; }
+.turni-mese { font-size: 22px; color: var(--s-deep); padding: 18px 4px 6px; }
+.turni-mese::first-letter { text-transform: uppercase; }
+.turni-ag { list-style: none; background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; }
+.turni-ag > li { display: grid; grid-template-columns: 52px 1fr auto; gap: 0 12px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--riga); }
+.turni-ag > li:last-child { border-bottom: 0; }
+.turni-ag > li.cur { background: var(--s-tint); box-shadow: inset 4px 0 0 var(--s-acc); }
+.turno-dd { text-align: center; line-height: 1; }
+.turno-dd b { display: block; font-family: var(--serif); font-size: 28px; }
+.turno-dd small { font-size: 16px; font-weight: 700; color: var(--salvia); text-transform: uppercase; }
+.turno-dd.moved small { color: var(--s-alt); }
+.turno-who { font-size: 18px; font-weight: 700; line-height: 1.3; }
+.turno-why { font-size: 16px; font-weight: 400; color: var(--s-alt); }
+.turno-off { font-weight: 400; font-style: italic; color: var(--salvia); }
+.da-coprire { color: var(--debito); }
+.turno-tags { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+.tag-tu { font-size: 16px; font-weight: 800; letter-spacing: .03em; color: var(--s-deep); background: var(--s-tint); border: 1.5px solid var(--s-acc); border-radius: 6px; padding: 1px 9px; }
+.tag-riunione { font-size: 16px; font-weight: 700; color: #fff; background: var(--s-alt); border-radius: 6px; padding: 1px 9px; white-space: nowrap; }

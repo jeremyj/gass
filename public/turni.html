@@ -3,32 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GASS Torpignattara - Storico</title>
+    <title>GASS Torpignattara - Turni</title>
     <link rel="stylesheet" href="style.css?v=39">
 </head>
 <body>
     <header class="stag">
         <div class="stag-art" aria-hidden="true"><svg class="stag-ill"><use href="#ill-zucca"/></svg></div>
         <div class="stag-top">
-            <span class="stag-when">Tutte le consegne</span>
+            <span class="stag-when">Prossime 12 settimane</span>
             <div class="header-actions">
                 <span id="user-display" class="user-name"></span>
                 <button type="button" onclick="handleLogout()" class="icon-btn" title="Esci" aria-label="Esci"><svg aria-hidden="true"><use href="#i-esci"/></svg></button>
             </div>
         </div>
-        <h1>Storico</h1>
+        <h1>Turni</h1>
+        <div id="mio-turno" class="stag-sub"></div>
     </header>
 
     <main class="container">
         <div id="status" class="status" role="status"></div>
-        <ul id="storico-list" class="storico-list"></ul>
+        <div id="turni-list"></div>
     </main>
 
     <nav class="bottom-nav">
         <a href="/consegna" class="bottom-nav-item"><svg aria-hidden="true"><use href="#i-consegna"/></svg>Consegna</a>
         <a href="/debiti" class="bottom-nav-item"><svg aria-hidden="true"><use href="#i-saldi"/></svg>Saldi</a>
-        <a href="/storico" class="bottom-nav-item active"><svg aria-hidden="true"><use href="#i-storico"/></svg>Storico</a>
-        <a href="/turni" class="bottom-nav-item"><svg aria-hidden="true"><use href="#i-turni"/></svg>Turni</a>
+        <a href="/storico" class="bottom-nav-item"><svg aria-hidden="true"><use href="#i-storico"/></svg>Storico</a>
+        <a href="/turni" class="bottom-nav-item active"><svg aria-hidden="true"><use href="#i-turni"/></svg>Turni</a>
     </nav>
 
     <footer class="app-footer">
@@ -40,6 +41,6 @@
     <script src="js/shared/api-client.js"></script>
     <script src="js/shared/auth.js?v=32"></script>
     <script src="js/shared/version.js"></script>
-    <script src="js/storico.js?v=33"></script>
+    <script src="js/turni.js?v=1"></script>
 </body>
 </html>

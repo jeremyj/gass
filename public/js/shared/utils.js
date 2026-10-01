@@ -174,3 +174,13 @@ function storicoActionsHtml(consegna) {
     ? `<button type="button" class="link-btn" onclick="riapriConsegna(${consegna.id}, '${consegna.data}')">Riapri consegna</button>`
     : '';
 }
+
+// 'mar', 'mer', … for a yyyy-mm-dd date (local)
+function weekdayShort(dateStr) {
+  return new Date(dateStr + 'T00:00:00').toLocaleDateString('it-IT', { weekday: 'short' }).replace('.', '');
+}
+
+// 'ottobre', … for a yyyy-mm-dd date (local)
+function monthName(dateStr) {
+  return new Date(dateStr + 'T00:00:00').toLocaleDateString('it-IT', { month: 'long' });
+}
