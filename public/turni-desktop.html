@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GASS Torpignattara - Turni</title>
+    <link rel="stylesheet" href="style.css?v=42">
+</head>
+<body>
+    <nav class="nav-menu">
+        <span class="brand">GASS Torpignattara</span>
+        <ul>
+            <li><a href="/consegna">Consegna</a></li>
+            <li><a href="/debiti">Saldi</a></li>
+            <li><a href="/storico">Storico</a></li>
+            <li><a href="/turni" class="active">Turni</a></li>
+            <li id="nav-logs" class="initially-hidden"><a href="/logs">Attività</a></li>
+        </ul>
+        <div class="nav-user">
+            <span id="user-display"></span>
+            <button type="button" class="link-btn" onclick="handleLogout()">Esci</button>
+        </div>
+    </nav>
+    <header class="stag">
+        <div class="stag-art" aria-hidden="true"><svg class="stag-ill"><use href="#ill-zucca"/></svg></div>
+        <div class="stag-when">Prossime 12 settimane</div>
+        <h1>Turni</h1>
+        <div id="mio-turno" class="stag-sub"></div>
+    </header>
+
+    <main class="container">
+        <div id="status" class="status" role="status"></div>
+        <div id="pick-banner" class="pick-banner initially-hidden"></div>
+        <table class="t turni-t">
+            <thead><tr><th class="left">Consegna</th><th class="left">Turnista</th><th class="left">Turnista</th><th class="left">Note</th><th class="admin-col"></th></tr></thead>
+            <tbody id="turni-body"></tbody>
+        </table>
+        <p id="turni-hint" class="hint initially-hidden">Clic su un nome: sostituiscilo, oppure clicca un altro nome per scambiarli. “Giorno”: sposta o salta la consegna, segna la riunione. Ogni modifica finisce in Attività.</p>
+
+        <section id="pause-section" class="pause-box initially-hidden">
+            <h2>Pause</h2>
+            <ul id="pause-list" class="pause-list"></ul>
+            <form class="pause-form" onsubmit="event.preventDefault(); addPause();">
+                <label>Dal <input type="date" id="pausa-dal" required></label>
+                <label>Al <input type="date" id="pausa-al" required></label>
+                <label>Nota <input type="text" id="pausa-nota" placeholder="es. Natale"></label>
+                <button type="submit" class="btn btn-line">Aggiungi pausa</button>
+            </form>
+        </section>
+    </main>
+
+    <div id="giorno-modal" class="modal initially-hidden">
+        <div class="modal-content">
+            <h3 id="giorno-title">Consegna</h3>
+            <form onsubmit="event.preventDefault(); saveGiorno();">
+                <div class="form-group">
+                    <label for="giorno-data">Giorno della consegna</label>
+                    <input type="date" id="giorno-data">
+                    <small class="hint">stessa coppia, solo nella stessa settimana</small>
+                </div>
+                <div class="form-group"><label><input type="checkbox" id="giorno-saltata"> Niente consegna <small class="hint">i due turnisti torneranno i primi in fila</small></label></div>
+                <div class="form-group"><label><input type="checkbox" id="giorno-riunione"> Riunione GASS</label></div>
+                <div class="form-group"><label for="giorno-nota">Nota</label><input type="text" id="giorno-nota" placeholder="es. festa (Immacolata)"></div>
+                <div id="giorno-error" class="error-message initially-hidden"></div>
+                <div class="modal-buttons">
+                    <button type="button" onclick="closeGiorno()">Annulla</button>
+                    <button type="submit" class="btn-save">Salva</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="app-footer">
+        <span id="app-version"></span>
+    </footer>
+
+    <script src="js/shared/utils.js?v=35"></script>
+    <script src="js/shared/season.js?v=33"></script>
+    <script src="js/shared/api-client.js"></script>
+    <script src="js/shared/auth.js?v=32"></script>
+    <script src="js/shared/version.js"></script>
+    <script src="js/turni-desktop.js?v=1"></script>
+</body>
+</html>
