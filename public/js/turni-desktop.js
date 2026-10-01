@@ -41,8 +41,9 @@ function renderTurni() {
 
 function renderBanner() {
   const banner = document.getElementById('pick-banner');
+  const t = picked && turni.find(x => x.id === picked.id);
+  if (!t || t.saltata) picked = null;
   if (!picked) { banner.classList.add('initially-hidden'); return; }
-  const t = turni.find(x => x.id === picked.id);
   const p = t.turnisti[picked.slot - 1];
   const options = attivi.map(u => `<option value="${u.id}">${escapeHtml(u.nome)}</option>`).join('');
   banner.innerHTML = `
@@ -152,6 +153,7 @@ async function addPause() {
   if (!ok) return;
   try {
     await API.post('/api/turni/pause', { dal, al, nota: document.getElementById('pausa-nota').value });
+    picked = null;
     document.getElementById('pausa-nota').value = '';
     showStatus('Pausa aggiunta', 'success');
     await loadTurni();
@@ -169,6 +171,7 @@ async function deletePause(id) {
   if (!ok) return;
   try {
     await API.delete(`/api/turni/pause/${id}`);
+    picked = null;
     await loadTurni();
   } catch (error) {
     showStatus('Errore: ' + error.message, 'error');
