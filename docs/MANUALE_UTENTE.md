@@ -267,7 +267,7 @@ La data selezionata viene mantenuta quando si cambia sezione:
 Solo amministratori, da desktop: Saldi → **Modifica utente**.
 
 - **Elimina utente**: solo per chi non ha mai avuto movimenti né rettifiche di saldo
-- **Stato** (tre schede): **Attivo** accede, ordina e fa i turni; **Sospeso** accede e vede il saldo, compare in "Aggiungi partecipante" ma non fa turni (per chi non ordina per un periodo); in Saldi, su mobile e desktop, è in grigio con l'etichetta **sospeso**; **Disattivato** è per chi lascia il gruppo: non accede, non compare più in Saldi né in "Aggiungi partecipante". I movimenti passati restano nello Storico e nelle consegne. Se ha ancora un credito o un debito, la conferma lo mostra; i totali di Saldi continuano a contarlo
+- **Stato** (tre schede): **Attivo** accede, ordina e fa i turni; **Sospeso** accede e vede il saldo, compare in "Aggiungi partecipante" ma non fa turni (per chi non ordina il fresco); in Saldi, su mobile e desktop, è in grigio con l'etichetta **sospeso**; **Disattivato** è per chi lascia il gruppo: non accede, non compare più in Saldi né in "Aggiungi partecipante". I movimenti passati restano nello Storico e nelle consegne. Se ha ancora un credito o un debito, la conferma lo mostra; i totali di Saldi continuano a contarlo
 - Sospendendo o disattivando, i turni futuri dell'utente restano **da coprire**
 - Tornando ad **Attivo** l'attesa per il turno riparte da quel giorno
 - Per rivedere i disattivati spuntare **Mostra disattivati** in Saldi (compaiono in grigio)
