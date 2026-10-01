@@ -299,6 +299,11 @@ body:has(.bottom-nav) { padding-bottom: 72px; }
 .conto-val i { font-style: normal; font-weight: 500; font-size: 19px; color: var(--salvia); margin-right: 3px; }
 .conto .tot { margin: -14px -16px -14px 0; padding: 14px 16px 14px 12px; background: var(--s-tint); border-left: 3px solid var(--s-acc); }
 .conto .tot output { font-size: 28px; }
+/* Quote teatro of the day: last cell of the cassa row, in its own colour (not part of the cassa) */
+.conto:has(.teatro-cell:not(.initially-hidden)) { grid-template-columns: 1fr 1fr 1fr 1.2fr 1fr; }
+.conto:has(.teatro-cell:not(.initially-hidden)) .tot { margin-right: 0; }
+.conto .teatro-cell { margin: -14px -16px -14px 0; padding: 14px 16px 14px 10px; background: var(--teatro-t); border-left: 3px solid var(--teatro); color: var(--teatro); }
+.conto .teatro-cell.initially-hidden { display: none; }
 
 .input-cassa-negativa { color: var(--debito) !important; }
 .cassa-warning { margin: 10px 0 0; padding: 8px 12px; border-radius: 8px; background: var(--debito-t); color: var(--debito); font-weight: 700; font-size: 17px; }
@@ -323,6 +328,10 @@ body:has(.bottom-nav) { padding-bottom: 72px; }
 .stato-label.aperta::before { background: var(--s-acc); }
 .stato-label.chiusa { color: var(--debito); }
 .stato-label.chiusa::before { background: var(--debito); }
+.container > .stato { margin-top: 14px; padding: 12px; gap: 10px; background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; }
+.container > .stato .stato-label { flex-basis: 100%; }
+.container > .stato .link-btn { flex: 1; text-align: center; text-decoration: none; font-weight: 800; padding: 10px; border: 1.5px solid var(--inchiostro); border-radius: 9px; }
+.container > .stato .link-btn.danger { flex: 0 1 auto; border-color: var(--debito); }
 .stag .stato { padding: 0; color: #fff; }
 .stag .stato .link-btn { color: #fff; }
 .stag .stato-label.chiusa { color: #fff; background: var(--debito); border-radius: 6px; padding: 1px 8px; }
@@ -467,7 +476,9 @@ b.th { color: var(--teatro); }
 .tot2:empty { display: none; }
 .tot2 > div { padding: 12px 20px; }
 .tot2 > div + div { border-left: 1px solid var(--riga); }
-.tot2 > div:nth-child(3) { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--riga); display: flex; justify-content: space-between; align-items: baseline; }
+.tot2:has(> div:nth-child(3)) { grid-template-columns: 1fr 1fr 1fr; }
+.tot2:has(> div:nth-child(3)) > div { padding: 12px 12px; }
+.tot2:has(> div:nth-child(3)) b { font-size: 22px; }
 .tot2 small { display: block; font-size: 16px; color: var(--salvia); }
 .tot2 b { font-family: var(--serif); font-size: 26px; }
 

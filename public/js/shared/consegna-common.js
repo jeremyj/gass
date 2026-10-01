@@ -698,6 +698,20 @@ async function saveParticipant(id) {
     return;
   }
 
+  // The quota teatro box is open but nothing was registered: ask before saving without it
+  const teatroIn = document.getElementById(`teatroImporto_${id}`);
+  if (teatroIn) {
+    const importo = parseAmount(teatroIn.value) || 0;
+    const ok = await confirmDialog({
+      title: 'Quota teatro non registrata',
+      message: importo > 0
+        ? `Hai scritto ${formatEuro(importo)} di quota teatro ma non hai premuto "Registra quota". Il movimento si salva senza la quota.`
+        : 'Hai aperto la quota teatro ma non hai registrato niente. Il movimento si salva senza la quota.',
+      confirmText: 'Salva senza quota'
+    });
+    if (!ok) return;
+  }
+
   await saveWithParticipant(id);
 }
 

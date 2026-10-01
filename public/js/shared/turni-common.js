@@ -21,7 +21,10 @@ function candidatiScambio(turni, t) {
 }
 
 function scambioSelectHtml(turni, t, selectId) {
-  const options = candidatiScambio(turni, t).map(u => `<option value="${u.id}">${escapeHtml(u.nome)}</option>`).join('');
+  const options = candidatiScambio(turni, t).map(u => {
+    const suo = primoTurnoDi(turni, u.id, t.id);
+    return `<option value="${u.id}">${escapeHtml(u.nome)}${suo ? ` · ${dataBreve(suo.data)}` : ''}</option>`;
+  }).join('');
   return `<select id="${selectId}"><option value="">scambia con…</option>${options}</select>`;
 }
 

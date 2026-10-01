@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Consegna</title>
-    <link rel="stylesheet" href="style.css?v=59">
+    <link rel="stylesheet" href="style.css?v=60">
 </head>
 <body>
     <header class="stag">
@@ -46,9 +46,12 @@
                 <label for="lasciatoInCassa">In cassa</label>
                 <span class="conto-val"><i>=</i><output id="lasciatoInCassa">0</output></span>
             </div>
+            <div id="quote-teatro-oggi" class="teatro-cell initially-hidden" title="Quote teatro di oggi, a parte dalla cassa">
+                <label>Teatro</label>
+                <output>0</output>
+            </div>
         </section>
         <div id="cassa-warning" class="cassa-warning initially-hidden" role="alert"></div>
-        <p id="quote-teatro-oggi" class="teatro-oggi initially-hidden">Quote teatro oggi, a parte: <output>0</output></p>
 
         <div id="consegna-status-section" class="stato initially-hidden">
             <span id="closed-badge" class="stato-label chiusa initially-hidden">Consegna chiusa</span>
@@ -66,15 +69,15 @@
         <button id="btn-nuova-consegna" class="btn btn-go btn-block initially-hidden" onclick="startNuovaConsegna()">Nuova consegna</button>
 
         <section id="section-movimenti" class="movimenti initially-hidden">
+            <select id="participant-select" class="add-select" onchange="showParticipantForm()" aria-label="Aggiungi partecipante">
+                <option value="">+ Aggiungi partecipante</option>
+            </select>
+            <div id="selected-participants"></div>
             <div class="sect">
                 <h2>Chi ha ritirato</h2>
                 <span id="movimenti-count" class="sect-meta"></span>
             </div>
             <ul id="movimenti-giorno" class="mov-list"></ul>
-            <select id="participant-select" class="add-select" onchange="showParticipantForm()" aria-label="Aggiungi partecipante">
-                <option value="">+ Aggiungi partecipante</option>
-            </select>
-            <div id="selected-participants"></div>
         </section>
     </main>
 
@@ -93,7 +96,7 @@
     <script src="js/shared/season.js?v=33"></script>
     <script src="js/shared/calendar.js?v=33"></script>
     <script src="js/shared/api-client.js"></script>
-    <script src="js/shared/consegna-common.js?v=34"></script>
+    <script src="js/shared/consegna-common.js?v=35"></script>
     <script src="js/shared/auth.js?v=33"></script>
     <script src="js/shared/version.js"></script>
     <script src="js/consegna.js?v=32"></script>
