@@ -44,8 +44,8 @@ function createConsegnaSection(consegna) {
   content.appendChild(createCassaSummary(consegna));
 
   const movimenti = document.createElement('div');
-  if (consegna.movimenti && consegna.movimenti.length > 0) {
-    movimenti.appendChild(createMovimentiTable(consegna.movimenti));
+  if (consegna.movimenti?.length || consegna.teatro_extra?.length) {
+    movimenti.appendChild(createMovimentiTable(consegna.movimenti || [], consegna.teatro_extra || []));
   }
   content.appendChild(movimenti);
 
@@ -73,8 +73,10 @@ function numCell(value, cls = '') {
   return value ? `<td class="${cls}">${formatNumber(value)}</td>` : '<td class="mute">–</td>';
 }
 
-function createMovimentiTable(movimenti) {
+// teatroExtra: quote teatro paid by people with no movimento in this consegna
+function createMovimentiTable(movimenti, teatroExtra) {
   const sum = fn => roundToCents(movimenti.reduce((acc, m) => acc + (fn(m) || 0), 0));
+  const teatroTot = roundToCents(sum(m => m.teatro) + teatroExtra.reduce((acc, t) => acc + t.importo, 0));
 
   const rows = movimenti.map(m => `
     <tr>
@@ -85,7 +87,15 @@ function createMovimentiTable(movimenti) {
       ${debitoNuovo(m) ? `<td class="db">−${formatNumber(debitoNuovo(m))}</td>` : '<td class="mute">–</td>'}
       ${numCell(m.usa_credito)}
       ${numCell(debitoPagato(m))}
+      ${numCell(m.teatro)}
       <td class="nt">${escapeHtml(m.note)}</td>
+    </tr>
+  `).join('') + teatroExtra.map(t => `
+    <tr>
+      <td class="nm">${escapeHtml(t.nome)}</td>
+      ${'<td class="mute">–</td>'.repeat(6)}
+      ${numCell(t.importo)}
+      <td class="nt"></td>
     </tr>
   `).join('');
 
@@ -101,6 +111,7 @@ function createMovimentiTable(movimenti) {
         <th>Lascia debito</th>
         <th>Usa credito</th>
         <th>Salda debito</th>
+        <th>Quota teatro</th>
         <th class="nt">Note</th>
       </tr>
     </thead>
@@ -114,6 +125,7 @@ function createMovimentiTable(movimenti) {
         ${numCell(sum(debitoNuovo))}
         ${numCell(sum(m => m.usa_credito))}
         ${numCell(sum(debitoPagato))}
+        ${numCell(teatroTot)}
         <td></td>
       </tr>
     </tfoot>

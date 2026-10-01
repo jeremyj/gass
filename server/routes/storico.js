@@ -59,10 +59,23 @@ router.get('/dettaglio', (req, res) => {
       movimentiByConsegna[m.consegna_id].push(m);
     });
 
-    const storico = processConsegneWithDynamicValues(consegne).map(consegna => ({
-      ...consegna,
-      movimenti: movimentiByConsegna[consegna.id] || []
-    }));
+    // Quote teatro paid in each consegna, per person: on their movimento, or in teatro_extra when they bought nothing
+    const teatro = db.prepare(`
+      SELECT t.consegna_id, t.user_id, u.display_name AS nome, ROUND(SUM(t.importo), 2) AS importo
+      FROM teatro_pagamenti t
+      JOIN users u ON u.id = t.user_id
+      WHERE t.consegna_id IS NOT NULL
+      GROUP BY t.consegna_id, t.user_id
+    `).all();
+
+    const storico = processConsegneWithDynamicValues(consegne).map(consegna => {
+      const movimenti = movimentiByConsegna[consegna.id] || [];
+      const quote = teatro.filter(t => t.consegna_id === consegna.id);
+      movimenti.forEach(m => { m.teatro = quote.find(t => t.user_id === m.partecipante_id)?.importo || 0; });
+      const teatroExtra = quote.filter(t => !movimenti.some(m => m.partecipante_id === t.user_id))
+        .map(({ nome, importo }) => ({ nome, importo }));
+      return { ...consegna, movimenti, teatro_extra: teatroExtra };
+    });
 
     console.log(`[STORICO] ${timestamp} - Successfully processed detailed storico (${allMovimenti.length} total movimenti)`);
 

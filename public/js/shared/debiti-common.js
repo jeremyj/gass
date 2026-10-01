@@ -45,9 +45,9 @@ function renderSaldiTotals() {
 
 // Quota teatro still owed (teatro_residuo > 0) or paid ahead (< 0): its own colour, apart from the saldo
 function teatroLabel(residuo) {
-  if (residuo > 0) return { cls: 'th-db', text: `da pagare ${formatEuro(residuo)}` };
+  if (residuo > 0) return { cls: 'th-db', text: `deve ${formatEuro(residuo)}` };
   if (residuo < 0) return { cls: 'th-ok', text: `anticipo ${formatEuro(-residuo)}` };
-  return { cls: 'th-ok', text: 'in regola' };
+  return { cls: 'th-ok', text: 'in pari' };
 }
 
 function teatroMancanti() {

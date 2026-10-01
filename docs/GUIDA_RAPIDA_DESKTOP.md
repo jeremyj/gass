@@ -58,7 +58,7 @@ Dopo aver inserito tutti i movimenti clicca **Chiudi consegna** e conferma il ri
 
 # Saldi
 
-Panoramica dei saldi di tutti i partecipanti. **Blu** con "+" e "credito" = credito, **rosso vino** con "−" e "debito" = debito, **grigio** "0 € in pari".
+Panoramica dei saldi di tutti i partecipanti. **Blu** con "+" = credito, **rosso vino** con "−" = debito, **grigio** "in pari".
 
 Usa **Cambia data** per vedere i saldi in una data passata. Clicca **Transazioni** per vedere lo storico movimenti di un partecipante.
 
@@ -68,7 +68,7 @@ Usa **Cambia data** per vedere i saldi in una data passata. Clicca **Transazioni
 
 # Storico
 
-Elenco di tutte le consegne in ordine cronologico inverso: per ogni giornata la data, lo stato (Aperta/Chiusa), la cassa a sinistra e la tabella dei movimenti con il Totale a destra. Se una giornata è ancora aperta, **Completa consegna** la apre nella pagina Consegna.
+Elenco di tutte le consegne in ordine cronologico inverso: per ogni giornata la data, lo stato (Aperta/Chiusa), la cassa a sinistra e la tabella dei movimenti (con la quota teatro pagata quel giorno) e il Totale a destra. Se una giornata è ancora aperta, **Completa consegna** la apre nella pagina Consegna.
 
 ![Pagina Storico](screenshots/05-storico.png){ width=100% }
 
@@ -86,7 +86,7 @@ Gli amministratori scelgono i nomi dai menu della tabella e mettono in pausa la 
 
 # Quota teatro
 
-Ogni semestre (gennaio–giugno, luglio–dicembre) si paga una quota per l'affitto del teatro, in una cassa separata da quella della consegna. Nella scheda del partecipante, **Quota teatro** mostra i semestri dovuti: scrivi l'importo versato (copre i semestri dal più vecchio; quello che avanza è un anticipo) e **Registra quota**. In **Saldi** la colonna **Quota teatro** dice chi è in regola.
+Ogni semestre (gennaio–giugno, luglio–dicembre) si paga una quota per l'affitto del teatro, in una cassa separata da quella della consegna. Nella scheda del partecipante, **Quota teatro** mostra i semestri dovuti: scrivi l'importo versato (copre i semestri dal più vecchio; quello che avanza è un anticipo) e **Registra quota**. In **Saldi** la colonna **Quota teatro** dice chi è in pari e chi deve ancora.
 
 ---
 

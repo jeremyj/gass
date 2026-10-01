@@ -51,8 +51,8 @@ function createConsegnaCard(consegna) {
     const content = document.createElement('div');
     content.className = 'storico-consegna-content';
     content.appendChild(createCassaSection(consegna));
-    if (consegna.movimenti && consegna.movimenti.length > 0) {
-      content.appendChild(createMovimentiSection(consegna.movimenti));
+    if (consegna.movimenti?.length || consegna.teatro_extra?.length) {
+      content.appendChild(createMovimentiSection(consegna.movimenti || [], consegna.teatro_extra || []));
     }
     const acts = document.createElement('div');
     acts.className = 'storico-acts';
@@ -79,10 +79,16 @@ function createCassaSection(consegna) {
   return section;
 }
 
-function createMovimentiSection(movimenti) {
+// teatroExtra: quote teatro paid by people with no movimento in this consegna
+function createMovimentiSection(movimenti, teatroExtra) {
   const list = document.createElement('ul');
   list.className = 'mov-list';
-  list.innerHTML = movimenti.map(createParticipantMovimentoItem).join('');
+  list.innerHTML = movimenti.map(createParticipantMovimentoItem).join('') + teatroExtra.map(t => `
+    <li>
+      <span class="nm">${escapeHtml(t.nome)}</span>
+      <span class="sub">quota teatro <b>${formatNumber(t.importo)}</b></span>
+    </li>
+  `).join('');
   return list;
 }
 
@@ -94,6 +100,7 @@ function createParticipantMovimentoItem(m) {
   const details = [`conto <b>${formatNumber(m.conto_produttore || 0)}</b>`, `pagato <b>${formatNumber(m.importo_saldato || 0)}</b>`];
   if (debitoPagato(m)) details.push(`salda debito <b>${formatNumber(debitoPagato(m))}</b>`);
   if (m.usa_credito) details.push(`usa credito <b>${formatNumber(m.usa_credito)}</b>`);
+  if (m.teatro) details.push(`quota teatro <b>${formatNumber(m.teatro)}</b>`);
 
   return `
     <li>

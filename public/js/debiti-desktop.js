@@ -50,7 +50,7 @@ function createParticipantRow(p) {
     <td class="nm">${escapeHtml(p.nome)}${statoBadge}</td>
     ${isAdmin() ? `<td class="left">${escapeHtml(p.username) || '–'}${adminBadge}</td>` : ''}
     <td>
-      <span id="saldo-view-${p.id}" class="pill ${saldo.cls}">${saldo.amount} ${saldo.word}</span>
+      <span id="saldo-view-${p.id}" class="pill ${saldo.cls}">${saldo.cls ? saldo.amount : saldo.word}</span>
       <input type="text" inputmode="decimal" id="saldo-edit-${p.id}" value="${formatNumber(p.saldo)}"
              class="saldo-input initially-hidden" aria-label="Nuovo saldo (negativo = debito)"
              oninput="normalizeInputField(this)"

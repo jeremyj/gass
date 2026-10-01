@@ -21,6 +21,24 @@ beforeEach(() => {
   clearNonAdminUsers(db);
 });
 
+describe('GET /api/storico/dettaglio quote teatro', () => {
+  it('puts each quota on the payer movimento, or in teatro_extra without one', async () => {
+    const a = createUser(db, { username: 'ta', displayName: 'Anna' });
+    const b = createUser(db, { username: 'tb', displayName: 'Bruno' });
+    const c = createConsegna(db, { data: '2026-03-03' });
+    createMovimento(db, { consegnaId: c, partecipanteId: a });
+    const pay = db.prepare('INSERT INTO teatro_pagamenti (user_id, data, importo, consegna_id) VALUES (?, ?, ?, ?)');
+    pay.run(a, '2026-03-03', 10, c);
+    pay.run(a, '2026-03-03', 5, c);
+    pay.run(b, '2026-03-03', 15, c);
+
+    const res = await adminAgent.get('/api/storico/dettaglio');
+    const consegna = res.body.storico[0];
+    expect(consegna.movimenti[0].teatro).toBe(15);
+    expect(consegna.teatro_extra).toEqual([{ nome: 'Bruno', importo: 15 }]);
+  });
+});
+
 describe('GET /api/storico', () => {
   it('returns 401 when not authenticated', async () => {
     const res = await request(app).get('/api/storico');

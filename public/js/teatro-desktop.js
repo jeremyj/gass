@@ -5,21 +5,20 @@ let editing = null; // { userId, semestre } of the cell whose dovuto is being ch
 
 const cellOf = (p, semestre) => p.righe.find(r => r.semestre === semestre);
 
-// Paid on that semester / owed: green when covered, red when something is missing, grey when not owed
+// ✓ when the semester is covered, red – when something is missing, grey when not owed; amounts in the tooltip
 function cellHtml(p, s) {
   const r = cellOf(p, s.semestre);
   const click = `onclick="openDovuto(${p.id}, '${s.semestre}')"`;
   if (!r) return `<td class="c"><button type="button" class="g x" ${click} title="Non era nel GASS">–</button></td>`;
   if (r.dovuto === 0) return `<td class="c"><button type="button" class="g x" ${click} title="Non dovuto">0</button></td>`;
-  const cls = r.pagato >= r.dovuto ? 'p' : 'n';
-  const text = r.pagato >= r.dovuto ? formatNumber(r.pagato) : `${formatNumber(r.pagato)}/${formatNumber(r.dovuto)}`;
-  return `<td class="c"><button type="button" class="g ${cls}" ${click}>${text}</button></td>`;
+  const paid = r.pagato >= r.dovuto;
+  return `<td class="c"><button type="button" class="g ${paid ? 'p' : 'n'}" ${click} title="${formatNumber(r.pagato)}/${formatEuro(r.dovuto)}">${paid ? '✓' : '–'}</button></td>`;
 }
 
 function residuoHtml(p) {
-  if (p.residuo > 0) return `<span class="pill th-db">da pagare ${formatEuro(p.residuo)}</span>`;
+  if (p.residuo > 0) return `<span class="pill th-db">deve ${formatEuro(p.residuo)}</span>`;
   if (p.anticipo > 0) return `<span class="pill th-ok">anticipo ${formatEuro(p.anticipo)}</span>`;
-  return '<span class="pill th-ok">in regola</span>';
+  return '<span class="pill th-ok">in pari</span>';
 }
 
 function renderGrid() {
@@ -34,7 +33,6 @@ function renderGrid() {
       <td><input type="text" class="nota-in" value="${escapeHtml(p.nota || '')}" placeholder="nota" onchange="saveNota(${p.id}, this.value)"></td>
     </tr>`).join('');
   const tot = s => persone.reduce((acc, p) => acc + (cellOf(p, s.semestre)?.pagato || 0), 0);
-  document.getElementById('teatro-foot').innerHTML = `<tr><td><b>Totale versato</b></td>${semestri.map(s => `<td class="c"><b>${formatNumber(roundToCents(tot(s)))}</b></td>`).join('')}<td></td><td></td></tr>`;
 
   const current = semestri[semestri.length - 1];
   document.getElementById('kpi-saldo').textContent = formatEuro(dati.saldo);
