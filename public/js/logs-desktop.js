@@ -51,6 +51,9 @@ function getEventIcon(eventType) {
     case 'turno_scambio': return '🔁';
     case 'pausa_aggiunta': return '⏸️';
     case 'pausa_eliminata': return '▶️';
+    case 'teatro_pagamento': return '🎭';
+    case 'teatro_modifica': return '🎭';
+    case 'teatro_cassa': return '🎭';
     default: return '•';
   }
 }
@@ -89,6 +92,12 @@ function getEventDescription(event) {
       return 'Pausa aggiunta';
     case 'pausa_eliminata':
       return 'Pausa eliminata';
+    case 'teatro_pagamento':
+      return 'Quota teatro pagata';
+    case 'teatro_modifica':
+      return 'Quota teatro modificata';
+    case 'teatro_cassa':
+      return 'Cassa teatro';
     case 'movimento_changed':
       return `Movimento modificato per <strong>${escapeHtml(event.partecipante_nome || 'N/A')}</strong>`;
     default:

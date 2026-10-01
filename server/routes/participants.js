@@ -6,6 +6,7 @@ const { roundToCents, toLocalDateString } = require('../services/calculations');
 const { saldoAt, currentSaldo, recalculateSaldo, getTransactions } = require('../services/saldi');
 const { logActivity } = require('../services/activity');
 const { deleteUser } = require('../services/users');
+const teatro = require('../services/teatro');
 
 const router = express.Router();
 
@@ -31,6 +32,11 @@ router.get('/', (req, res) => {
         return { ...u, saldo, ultima_modifica: ultimaModifica };
       });
     }
+
+    // Quota teatro still owed (negative = paid in advance)
+    teatro.ensureSemestre(db, toLocalDateString());
+    const residui = teatro.residui(db);
+    participants = participants.map(u => ({ ...u, teatro_residuo: residui[u.id] }));
 
     console.log(`[PARTICIPANTS] ${timestamp} - Retrieved ${participants.length} participants with ${date ? `saldi as of ${date}` : 'current saldi'}`);
     res.json({ success: true, participants });
