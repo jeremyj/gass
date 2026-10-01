@@ -546,7 +546,6 @@ tr.off td { opacity: .6; }
   .saldo-input { width: 8ch; padding: 4px 8px; text-align: right; }
 
   #selected-participants:not(:empty) { margin-top: 18px; }
-  .participant-card-flow { max-width: 760px; }
   .entry-fields { grid-template-columns: 1fr 1fr; }
   .entry-actions { max-width: 420px; margin-left: auto; width: 100%; }
 
