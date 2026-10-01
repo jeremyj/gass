@@ -37,8 +37,8 @@ function renderSaldiTotals() {
   const sum = list => list.reduce((acc, p) => acc + p.saldo, 0);
   const persone = n => n === 1 ? '1 persona' : `${n} persone`;
   el.innerHTML = `
-    <div><small>Crediti, ${persone(crediti.length)}</small><b class="cr">${formatSigned(sum(crediti))}</b></div>
-    <div><small>Debiti, ${persone(debiti.length)}</small><b class="db">${formatSigned(sum(debiti))}</b></div>
+    <div><small>Crediti<span class="who"><span class="sep">, </span>${persone(crediti.length)}</span></small><b class="cr">${formatSigned(sum(crediti))}</b></div>
+    <div><small>Debiti<span class="who"><span class="sep">, </span>${persone(debiti.length)}</span></small><b class="db">${formatSigned(sum(debiti))}</b></div>
     ${teatroMancanti()}
   `;
 }
@@ -54,7 +54,7 @@ function teatroMancanti() {
   const owing = participants.filter(p => p.teatro_residuo > 0);
   if (!owing.length) return '';
   const tot = owing.reduce((acc, p) => acc + p.teatro_residuo, 0);
-  return `<div><small>Quote teatro mancanti, ${owing.length === 1 ? '1 persona' : `${owing.length} persone`}</small><b class="th">${formatEuro(tot)}</b></div>`;
+  return `<div><small>Quote teatro<span class="who"><span class="sep">, </span>${owing.length} da pagare</span></small><b class="th">${formatEuro(tot)}</b></div>`;
 }
 
 // Why "Modifica saldo" is missing on a past date (admins only)

@@ -31,7 +31,7 @@ function renderTurni() {
     const mine = t.turnisti.some(p => p && p.id === myId);
     const canSwap = mine && !t.saltata && t.data >= toLocalDateString();
     const tags = (mine ? '<span class="tag-tu">TU</span>' : '') + (t.riunione ? '<span class="tag-riunione">riunione</span>' : '');
-    const action = canSwap && aperto !== t.id ? `<button type="button" class="link-btn" onclick="apriScambio(${t.id})">cambia</button>` : '';
+    const action = canSwap && aperto !== t.id ? `<button type="button" class="tag-cambia" onclick="apriScambio(${t.id})">cambia</button>` : '';
     const swapRow = canSwap && aperto === t.id
       ? `<div class="turno-swap">${azioniTurnoHtml(turni, t, mySlot(t))}<button type="button" class="btn btn-line" onclick="apriScambio(null)">Annulla</button></div>`
       : '';

@@ -339,6 +339,7 @@ function showPartecipantiSection() {
   if (section) section.style.display = 'block';
   const btn = document.getElementById('btn-nuova-consegna');
   if (btn) btn.style.display = 'none';
+  renderQuoteOggi();
 }
 
 function hidePartecipantiSection() {
@@ -346,6 +347,7 @@ function hidePartecipantiSection() {
   if (section) section.style.display = 'none';
   const btn = document.getElementById('btn-nuova-consegna');
   if (btn) btn.style.display = 'block';
+  renderQuoteOggi();
 }
 
 function showNoteGiornata() {
@@ -364,10 +366,12 @@ function startNuovaConsegna() {
   // Show the status line with only the annulla button (no consegna yet, so hide close/badges)
   const statusSection = document.getElementById('consegna-status-section');
   if (statusSection) statusSection.style.display = 'flex';
-  ['close-consegna-btn', 'closed-badge', 'open-badge'].forEach(elId => {
+  ['close-consegna-btn', 'closed-badge'].forEach(elId => {
     const el = document.getElementById(elId);
     if (el) el.style.display = 'none';
   });
+  const openBadge = document.getElementById('open-badge');
+  if (openBadge) openBadge.style.display = 'inline';
   const annullaBtn = document.getElementById('btn-annulla-consegna');
   if (annullaBtn) annullaBtn.style.display = 'inline';
 }
@@ -376,7 +380,7 @@ async function annullaConsegna() {
   if (currentConsegnaId) {
     const ok = await confirmDialog({
       title: 'Annullare la consegna?',
-      message: 'La consegna e tutti i suoi movimenti verranno eliminati, e i saldi dei partecipanti ricalcolati.',
+      message: 'La consegna e tutti i suoi movimenti verranno eliminati, e i saldi dei partecipanti ricalcolati. Le quote teatro registrate restano: si correggono dalla pagina Teatro.',
       details: consegnaSummaryDetails(),
       confirmText: 'Elimina consegna',
       danger: true
@@ -623,17 +627,25 @@ async function registraTeatro(id) {
   }
 }
 
-// Quotas collected on the selected day, shown next to the cassa but outside its totals
+// Quotas collected on the selected day, shown with the cassa but outside its totals,
+// and only while a consegna is in progress on that day
+let quoteOggi = 0;
+
 async function loadQuoteOggi() {
+  try {
+    quoteOggi = (await API.get(`/api/teatro/oggi?data=${getSelectedDate() || toLocalDateString()}`)).totale;
+  } catch (error) {
+    quoteOggi = 0;
+  }
+  renderQuoteOggi();
+}
+
+function renderQuoteOggi() {
   const el = document.getElementById('quote-teatro-oggi');
   if (!el) return;
-  try {
-    const { totale } = await API.get(`/api/teatro/oggi?data=${getSelectedDate() || toLocalDateString()}`);
-    el.querySelector('output').textContent = formatEuro(totale);
-    el.classList.toggle('initially-hidden', !totale);
-  } catch (error) {
-    el.classList.add('initially-hidden');
-  }
+  const inProgress = getPartecipantiSection()?.style.display === 'block';
+  el.querySelector('output').textContent = formatEuro(quoteOggi);
+  el.classList.toggle('initially-hidden', !(quoteOggi && inProgress));
 }
 
 function addHiddenFields(card, id, haCredito, haDebito) {
