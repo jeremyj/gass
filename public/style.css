@@ -667,7 +667,7 @@ b.th { color: var(--teatro); }
 .turno-why { font-size: 16px; font-weight: 400; color: var(--s-alt); }
 .turno-off { font-weight: 400; font-style: italic; color: var(--salvia); }
 .da-coprire { color: var(--debito); }
-.turno-act { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+.turno-act { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 6px 12px; }
 .turno-swap { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .turno-swap select { flex: 1 1 100%; min-width: 0; }
 .turno-swap .btn { flex: 1; }
