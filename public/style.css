@@ -574,3 +574,9 @@ tr.off td { opacity: .6; }
   .pagination .btn { padding: 8px 14px; font-size: 18px; }
   .page-info { color: var(--salvia); font-size: 18px; }
 }
+
+/* ===== STATO UTENTE ===== */
+.stato-opts { display: flex; flex-direction: column; gap: 8px; }
+.stato-opt { display: flex !important; gap: 10px; align-items: flex-start; padding: 8px 12px; border: 1.5px solid var(--riga); border-radius: 8px; cursor: pointer; margin: 0 !important; }
+.stato-opt:has(input:checked) { border-color: var(--s-deep); background: var(--s-tint); }
+.stato-opt small { display: block; color: var(--salvia); font-size: 16px; }

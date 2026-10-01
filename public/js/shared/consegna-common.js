@@ -105,8 +105,8 @@ function renderParticipantSelect() {
 
   select.innerHTML = '<option value="">+ Aggiungi partecipante</option>';
 
-  // Disabled users can't be added; their saved movimenti still open from the day's list
-  participants.filter(p => p.attivo).forEach(p => {
+  // Disattivati can't be added (sospesi can); their saved movimenti still open from the day's list
+  participants.filter(p => p.stato !== 'disattivato').forEach(p => {
     const option = document.createElement('option');
     option.value = p.id;
     option.textContent = p.nome;

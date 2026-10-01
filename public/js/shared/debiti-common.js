@@ -62,11 +62,11 @@ function saldoLabel(saldo) {
 
 // ===== HELPERS =====
 
-// Disabled users are hidden unless an admin ticks "Mostra disattivati" (desktop);
-// the totals still count them, so no money drops out of the sums
+// Disattivati are hidden unless an admin ticks "Mostra disattivati" (desktop);
+// the totals still count them, so no money drops out of the sums. Sospesi are always shown
 function visibleParticipants() {
   const showOff = document.getElementById('show-inactive')?.checked;
-  return participants.filter(p => p.attivo || showOff);
+  return participants.filter(p => p.stato !== 'disattivato' || showOff);
 }
 
 function isViewingToday() {
