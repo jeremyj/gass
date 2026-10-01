@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GASS Torpignattara - Teatro</title>
+    <link rel="stylesheet" href="style.css?v=58">
+</head>
+<body>
+    <nav class="nav-menu">
+        <span class="brand">GASS Torpignattara</span>
+        <ul>
+            <li><a href="/consegna">Consegna</a></li>
+            <li><a href="/debiti">Saldi</a></li>
+            <li><a href="/storico">Storico</a></li>
+            <li><a href="/turni">Turni</a></li>
+            <li id="nav-teatro"><a href="/teatro" class="active">Teatro</a></li>
+            <li id="nav-logs"><a href="/logs">Attività</a></li>
+        </ul>
+        <div class="nav-user">
+            <span id="user-display"></span>
+            <button type="button" class="link-btn" onclick="handleLogout()">Esci</button>
+        </div>
+    </nav>
+    <header class="stag">
+        <div class="stag-art" aria-hidden="true"><svg class="stag-ill"><use href="#ill-zucca"/></svg></div>
+        <div class="stag-when">Affitto del teatro</div>
+        <h1>Quota teatro</h1>
+    </header>
+
+    <main class="container">
+        <div id="status" class="status" role="status"></div>
+
+        <div class="teatro-kpi">
+            <div class="kpi th"><small>Nel bussolotto (cassa teatro)</small><b id="kpi-saldo">–</b></div>
+            <div class="kpi"><small id="kpi-sem-label">Quote del semestre</small><b id="kpi-sem">–</b></div>
+            <div class="kpi"><small>Quote mancanti</small><b id="kpi-mancanti" class="db">–</b></div>
+        </div>
+
+        <div class="teatro-grid-wrap">
+            <table class="t teatro-grid">
+                <thead id="teatro-head"></thead>
+                <tbody id="teatro-body"></tbody>
+                <tfoot id="teatro-foot"></tfoot>
+            </table>
+        </div>
+        <p class="hint">In ogni casella: quanto ha versato su quel semestre / quanto deve. Clic su una casella per cambiare quanto deve (quota ridotta, 0 = non dovuto); clic sull'intestazione di un semestre per cambiarne la quota. Un pagamento copre i semestri dal più vecchio; quello che avanza va sui semestri successivi.</p>
+
+        <section class="teatro-section">
+            <h2>Registro cassa teatro</h2>
+            <form class="cassa-form" onsubmit="event.preventDefault(); addCassa();">
+                <label>Data <input type="text" id="cassa-data" placeholder="gg/mm/aaaa"></label>
+                <label>Tipo <select id="cassa-tipo"><option value="-1">Uscita (es. affitto versato)</option><option value="1">Entrata</option></select></label>
+                <label>Importo <input type="text" inputmode="decimal" id="cassa-importo" placeholder="0" oninput="normalizeInputField(this)"></label>
+                <label class="wide">Descrizione <input type="text" id="cassa-descr" placeholder="es. affitto gennaio–giugno 2026, portati da Simone"></label>
+                <button type="submit" class="btn btn-go">Aggiungi voce</button>
+            </form>
+            <ul id="cassa-list" class="cassa-list"></ul>
+        </section>
+    </main>
+
+    <div id="dovuto-modal" class="modal initially-hidden">
+        <div class="modal-content">
+            <h3 id="dovuto-title">Quota</h3>
+            <form onsubmit="event.preventDefault(); submitModal();">
+                <div class="form-group">
+                    <label for="dovuto-importo">Quanto deve (€)</label>
+                    <input type="text" inputmode="decimal" id="dovuto-importo" oninput="normalizeInputField(this)">
+                    <small class="hint" id="dovuto-hint"></small>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="push-left person-only" onclick="saveDovuto(null)">Non era nel GASS</button>
+                    <button type="button" class="person-only" onclick="saveDovuto(0)">Non dovuto</button>
+                    <button type="button" onclick="closeDovuto()">Annulla</button>
+                    <button type="submit" class="btn-save">Salva</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="app-footer">
+        <span id="app-version"></span>
+    </footer>
+
+    <script src="js/shared/utils.js?v=35"></script>
+    <script src="js/shared/season.js?v=33"></script>
+    <script src="js/shared/calendar.js?v=33"></script>
+    <script src="js/shared/api-client.js"></script>
+    <script src="js/shared/auth.js?v=33"></script>
+    <script src="js/shared/version.js"></script>
+    <script src="js/teatro-desktop.js?v=1"></script>
+</body>
+</html>

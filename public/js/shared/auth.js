@@ -139,11 +139,8 @@ async function checkSession() {
         }
       }
 
-      // Show logs nav item only for admins
-      const navLogs = document.getElementById('nav-logs');
-      if (navLogs) {
-        navLogs.classList.toggle('initially-hidden', !data.user.isAdmin);
-      }
+      // Admin-only nav items (Teatro, Attività)
+      document.querySelectorAll('#nav-teatro, #nav-logs').forEach(li => li.classList.toggle('initially-hidden', !data.user.isAdmin));
 
       return data.user;
     } else {

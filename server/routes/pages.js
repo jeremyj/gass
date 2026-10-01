@@ -58,6 +58,10 @@ router.get('/logs', (req, res) => {
   res.sendFile(path.join(PUBLIC, 'logs-desktop.html'));
 });
 
+router.get('/teatro', (req, res) => {
+  res.sendFile(path.join(PUBLIC, 'teatro-desktop.html'));
+});
+
 router.get('/cambia-password', (req, res) => {
   if (!req.session.requirePasswordChange) return res.redirect('/consegna');
   res.sendFile(path.join(PUBLIC, 'change-password-oidc.html'));

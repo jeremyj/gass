@@ -402,6 +402,33 @@ tr.off td { opacity: .6; }
 .th-inline.th-ok { color: var(--salvia); }
 b.th { color: var(--teatro); }
 
+/* Teatro page (admin) */
+.teatro-kpi { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+.teatro-kpi .kpi { background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; padding: 12px 16px; }
+.teatro-kpi .kpi.th { border-left: 4px solid var(--teatro); }
+.teatro-kpi small { display: block; color: var(--salvia); }
+.teatro-kpi b { font-family: var(--serif); font-size: 28px; }
+.teatro-kpi b.db { color: var(--debito); }
+.teatro-grid-wrap { overflow-x: auto; }
+.teatro-grid th, .teatro-grid td { white-space: nowrap; }
+.teatro-grid th .link-btn { font-weight: 700; line-height: 1.2; }
+.teatro-grid .g { display: inline-flex; min-width: 44px; justify-content: center; border: 0; border-radius: 6px; padding: 3px 8px; font: inherit; font-weight: 800; cursor: pointer; }
+.teatro-grid .g.p { background: #e3f2df; color: #2d6a2d; }
+.teatro-grid .g.n { background: var(--debito-t); color: var(--debito); }
+.teatro-grid .g.x { background: transparent; color: #a8afa9; }
+.teatro-grid .nota-in { width: 100%; min-width: 220px; padding: 4px 8px; font-size: 16px; border: 1px solid var(--riga); border-radius: 6px; }
+.teatro-grid tfoot td { border-top: 2px solid var(--riga); }
+.teatro-section { margin-top: 28px; }
+.cassa-form { display: grid; grid-template-columns: 170px 220px 120px 1fr auto; gap: 12px; align-items: end; margin-bottom: 12px; }
+.cassa-form label { display: flex; flex-direction: column; gap: 4px; font-size: 16px; color: var(--salvia); }
+.cassa-form input, .cassa-form select { height: 50px; }
+.cassa-form .btn { height: 50px; }
+.cassa-list { list-style: none; background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; }
+.cassa-list li { display: flex; justify-content: space-between; gap: 16px; padding: 10px 14px; border-bottom: 1px solid var(--riga); }
+.cassa-list li:last-child { border-bottom: 0; }
+.cassa-list b.cr { color: var(--credito); } .cassa-list b.db { color: var(--debito); }
+.quota-mode .person-only { display: none; }
+
 .participant-card-flow { margin-top: 16px; background: var(--carta); border: 1.5px solid var(--s-deep); border-radius: 12px; overflow: hidden; }
 .entry-head { display: flex; gap: 12px; align-items: flex-start; padding: 14px 18px; background: var(--s-tint); border-bottom: 1px solid var(--riga); }
 .entry-back { display: none; }
