@@ -34,15 +34,7 @@ function renderParticipants() {
     tbody.appendChild(row);
   });
 
-  // Why "Modifica saldo" is missing on a past date
-  const hint = document.getElementById('saldi-hint');
-  if (hint) {
-    const showHint = isAdmin() && !isViewingToday();
-    hint.style.display = showHint ? 'block' : 'none';
-    if (showHint) {
-      hint.textContent = `"Modifica saldo" compare solo alla data di oggi. Stai guardando il ${formatDateLong(document.getElementById('data').value)}.`;
-    }
-  }
+  renderSaldiHint();
 }
 
 function createParticipantRow(p) {

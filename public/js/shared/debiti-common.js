@@ -42,6 +42,17 @@ function renderSaldiTotals() {
   `;
 }
 
+// Why "Modifica saldo" is missing on a past date (admins only)
+function renderSaldiHint() {
+  const hint = document.getElementById('saldi-hint');
+  if (!hint) return;
+  const showHint = isAdmin() && !isViewingToday();
+  hint.style.display = showHint ? 'block' : 'none';
+  if (showHint) {
+    hint.textContent = `"Modifica saldo" compare solo alla data di oggi. Stai guardando il ${formatDateLong(document.getElementById('data').value)}.`;
+  }
+}
+
 // Saldo with sign and word, never colour alone: { cls, amount, word }
 function saldoLabel(saldo) {
   if (saldo > 0) return { cls: 'cr', amount: formatSigned(saldo), word: 'credito' };

@@ -16,6 +16,8 @@ function renderParticipants() {
   const container = document.getElementById('saldi-list');
   container.innerHTML = '';
 
+  renderSaldiHint();
+
   const list = visibleParticipants();
   if (list.length === 0) {
     container.innerHTML = '<p class="empty-state">Nessun partecipante</p>';

@@ -363,7 +363,10 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.16.0
+Sistema GASS Pagamenti - Versione 2.16.1
+- Saldi, data passata: l'avviso "Modifica saldo compare solo alla data di oggi" è in cima alla pagina, anche su mobile (per gli amministratori)
+
+Versione 2.16.0
 - Gli amministratori possono disattivare un utente (Saldi → Modifica utente → Disattiva) invece di eliminarlo
 
 Versione 2.15.1
