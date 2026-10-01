@@ -33,17 +33,18 @@ function waitingPeople(db) {
   `).all();
 }
 
+// Inserts a row for every Tuesday from the next one to the horizon that has none
+// and is not in a pause (so weeks freed by a deleted pause get filled). Existing
+// rows are never touched and past weeks are never backfilled.
 function ensureTurni(db, today, rnd = Math.random) {
   const horizon = addDays(today, HORIZON_DAYS);
   db.transaction(() => {
     const pauses = db.prepare('SELECT dal, al FROM turni_pause').all();
-    const last = db.prepare('SELECT MAX(settimana) AS s FROM turni').get().s;
-    let week = last ? addDays(last, 7) : nextTuesday(today);
-    if (week < today) week = nextTuesday(today); // after a long gap, don't backfill the past
+    const exists = db.prepare('SELECT 1 FROM turni WHERE settimana = ?');
     const counts = pairCounts(db);
     const insert = db.prepare('INSERT INTO turni (settimana, data, turnista1_id, turnista2_id, created_at) VALUES (?, ?, ?, ?, ?)');
-    for (; week < horizon; week = addDays(week, 7)) {
-      if (inPause(week, pauses)) continue;
+    for (let week = nextTuesday(today); week < horizon; week = addDays(week, 7)) {
+      if (exists.get(week) || inPause(week, pauses)) continue;
       const [a, b] = pickPair(waitingPeople(db), (x, y) => counts.get(pairKey(x, y)) || 0, rnd);
       insert.run(week, week, a, b, new Date().toISOString());
       if (a && b) counts.set(pairKey(a, b), (counts.get(pairKey(a, b)) || 0) + 1);

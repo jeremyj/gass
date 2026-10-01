@@ -69,6 +69,21 @@ describe('ensureTurni', () => {
     expect(weeks).toContain('2026-10-27');
   });
 
+  it('fills the weeks of a deleted pause without touching existing rows', () => {
+    people(6);
+    const pid = db.prepare("INSERT INTO turni_pause (dal, al) VALUES ('2026-12-29', '2027-01-05')").run().lastInsertRowid;
+    T.ensureTurni(db, '2026-11-10', rnd);
+    const weeks = () => db.prepare('SELECT settimana FROM turni').all().map(r => r.settimana);
+    expect(weeks()).not.toContain('2026-12-29');
+    expect(weeks()).not.toContain('2027-01-05');
+    const before = db.prepare('SELECT * FROM turni ORDER BY settimana').all();
+    expect(T.deletePause(db, pid)).toBe(true);
+    T.ensureTurni(db, '2026-11-10', rnd);
+    expect(weeks()).toEqual(expect.arrayContaining(['2026-12-29', '2027-01-05']));
+    const after = db.prepare('SELECT * FROM turni ORDER BY settimana').all();
+    for (const row of before) expect(after).toContainEqual(row);
+  });
+
   it('fills weeks with empty slots when nobody is in turn', () => {
     T.ensureTurni(db, TODAY, rnd);
     const rows = db.prepare('SELECT turnista1_id, turnista2_id FROM turni').all();
