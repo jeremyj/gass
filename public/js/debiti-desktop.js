@@ -40,14 +40,14 @@ function renderParticipants() {
 function createParticipantRow(p) {
   const row = document.createElement('tr');
   const saldo = saldoLabel(p.saldo);
-  const adminBadge = (p.is_admin ? '<span class="admin-badge">admin</span>' : '')
-    + (p.stato === 'attivo' ? '' : `<span class="admin-badge">${p.stato}</span>`);
+  const adminBadge = p.is_admin ? '<span class="admin-badge">admin</span>' : '';
+  const statoBadge = p.stato === 'attivo' ? '' : `<span class="admin-badge">${p.stato}</span>`;
 
   const canEdit = isAdmin() && isViewingToday();
-  if (p.stato === 'disattivato') row.classList.add('off');
+  if (p.stato !== 'attivo') row.classList.add('off');
 
   row.innerHTML = `
-    <td class="nm">${escapeHtml(p.nome)}</td>
+    <td class="nm">${escapeHtml(p.nome)}${statoBadge}</td>
     ${isAdmin() ? `<td class="left">${escapeHtml(p.username) || '–'}${adminBadge}</td>` : ''}
     <td>
       <span id="saldo-view-${p.id}" class="pill ${saldo.cls}">${saldo.amount} ${saldo.word}</span>

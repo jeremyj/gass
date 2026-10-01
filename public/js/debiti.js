@@ -33,9 +33,11 @@ function renderParticipants() {
 function createParticipantCard(p) {
   const isExpanded = expandedParticipantId === p.id;
   const saldo = saldoLabel(p.saldo);
-  const adminBadge = p.is_admin ? '<span class="admin-badge">admin</span>' : '';
+  const adminBadge = (p.is_admin ? '<span class="admin-badge">admin</span>' : '')
+    + (p.stato === 'attivo' ? '' : `<span class="admin-badge">${p.stato}</span>`);
 
   const card = document.createElement('li');
+  if (p.stato !== 'attivo') card.classList.add('off');
   const summary = `
     <span class="nm">${escapeHtml(p.nome)}${adminBadge}</span>
     <span class="sub">ultimo movimento ${formatDateItalian(p.ultima_modifica)}</span>
@@ -48,7 +50,7 @@ function createParticipantCard(p) {
     return card;
   }
 
-  card.className = 'open';
+  card.classList.add('open');
   const canEdit = isAdmin() && isViewingToday();
 
   let editSectionHtml = '';
