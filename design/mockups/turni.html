@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GASS turni</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,500;0,700;1,500&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* base, identica in ogni stagione */
+  --calce: #F4F6F2;
+  --carta: #FFFFFF;
+  --inchiostro: #1E2420;
+  --salvia: #5C6760;
+  --riga: #DCE1DA;
+  --credito: #1F57B0;
+  --credito-t: #E6EEFA;
+  --debito: #A3175F;
+  --debito-t: #F8E4EE;
+  /* stagione: autunno (novembre) */
+  --s-deep: #26392F;   /* cavolo nero */
+  --s-acc: #E8890F;    /* zucca */
+  --s-alt: #6E4128;    /* castagna */
+  --s-tint: #FBEEDB;
+  --s-on: #F3E6CF;
+}
+.inverno  { --s-deep: #3D3052; --s-acc: #F2A01F; --s-alt: #7E8E57; --s-tint: #EEE9F3; --s-on: #E4DCEE; }
+.primavera{ --s-deep: #2D5A2A; --s-acc: #9DC65A; --s-alt: #E0445A; --s-tint: #EAF3DC; --s-on: #DDEDC9; --s-prod: #C5E39A; }
+.estate   { --s-deep: #3A2340; --s-acc: #E0412B; --s-alt: #3F8F3E; --s-tint: #FCE7E1; --s-on: #EEDCEF; --s-prod: #F7A48F; }
+
+* { box-sizing: border-box; }
+body { margin: 0; background: #E3E7E2; color: var(--inchiostro); font-family: "Alegreya Sans", system-ui, sans-serif;
+  font-size: 16px; line-height: 1.45; font-variant-numeric: lining-nums tabular-nums; }
+.serif { font-family: "Alegreya", Georgia, serif; }
+a { color: inherit; }
+
+.board { max-width: 1500px; margin: 0 auto; padding: 36px 16px 80px; }
+.board > h1 { font-family: "Alegreya", serif; font-weight: 700; font-size: 46px; line-height: 1.05; margin: 0 0 8px; }
+.board > p { margin: 0 0 30px; color: var(--salvia); max-width: 72ch; font-size: 17px; }
+.row { display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; margin-bottom: 56px; }
+.cap { font-size: 15px; color: var(--salvia); margin: 12px 4px 0; max-width: 390px; }
+.cap b { color: var(--inchiostro); }
+.phone { width: 390px; height: 800px; border-radius: 38px; background: var(--calce); border: 10px solid #22262a;
+  overflow: hidden; position: relative; display: flex; flex-direction: column; }
+.desk { width: 1180px; max-width: 100%; border-radius: 10px; background: var(--calce); border: 1px solid #bcc3bd; overflow: hidden; }
+
+/* ---------- the one bold thing: la testata di stagione ---------- */
+.stag { background: var(--s-deep); color: #fff; position: relative; overflow: hidden; }
+.stag .ill { position: absolute; right: -18px; bottom: -22px; width: 150px; height: 150px; }
+.stag .when { font-size: 15px; color: var(--s-on); }
+.stag h2 { font-family: "Alegreya", serif; font-weight: 700; margin: 0; line-height: 1; }
+.stag .prod { font-family: "Alegreya", serif; font-style: italic; font-weight: 500; color: var(--s-prod, var(--s-acc)); }
+.m-stag { padding: 18px 20px 20px; min-height: 146px; }
+.m-stag h2 { font-size: 38px; max-width: 230px; }
+.m-stag .prod { font-size: 18px; margin-top: 8px; max-width: 220px; line-height: 1.2; }
+.m-stag .cambia { position: absolute; top: 16px; right: 16px; }
+.ghost { font: inherit; font-weight: 700; font-size: 14px; background: rgba(255,255,255,.12); color: #fff; border: 1px solid rgba(255,255,255,.35);
+  border-radius: 8px; padding: 6px 12px; }
+
+/* cassa: un'unica riga di conto */
+.conto { display: grid; grid-template-columns: repeat(4, auto); justify-content: space-between; align-items: end;
+  background: var(--carta); border-bottom: 1px solid var(--riga); padding: 14px 20px 14px; }
+.conto div { display: flex; flex-direction: column; }
+.conto small { font-size: 13px; color: var(--salvia); line-height: 1.2; }
+.conto span { font-family: "Alegreya", serif; font-weight: 700; font-size: 28px; line-height: 1.1; }
+.conto span i { font-style: normal; color: var(--salvia); font-weight: 500; font-size: 20px; margin-right: 3px; }
+.conto .tot { background: var(--s-tint); margin: -14px -20px -14px 0; padding: 14px 20px 14px 16px; border-left: 3px solid var(--s-acc); }
+.conto .tot span { font-size: 34px; }
+
+.scroll { flex: 1; overflow: hidden; }
+.sect { display: flex; justify-content: space-between; align-items: baseline; padding: 18px 20px 6px; }
+.sect h3 { margin: 0; font-family: "Alegreya", serif; font-weight: 700; font-size: 22px; }
+.sect .st { font-size: 14px; color: var(--salvia); }
+.sect .st a { color: var(--s-deep); font-weight: 700; text-underline-offset: 3px; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--s-acc); margin-right: 6px; vertical-align: 1px; }
+
+.list { list-style: none; margin: 0; padding: 0 20px; }
+.list li { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 13px 0; border-bottom: 1px solid var(--riga); align-items: center; }
+.list .nm { font-weight: 700; font-size: 18px; line-height: 1.2; }
+.list .sub { font-size: 14px; color: var(--salvia); grid-column: 1; }
+.list .sub b { color: var(--inchiostro); font-weight: 700; }
+.list .esito { grid-row: 1 / span 2; grid-column: 2; }
+
+/* esito: colori costanti, sempre con segno e parola */
+.es { display: inline-flex; flex-direction: column; align-items: flex-end; line-height: 1.05; }
+.es b { font-family: "Alegreya", serif; font-weight: 700; font-size: 24px; }
+.es small { font-size: 12.5px; font-weight: 700; }
+.es.cr { color: var(--credito); }
+.es.db { color: var(--debito); }
+.pill { display: inline-block; font-weight: 700; font-size: 14px; border-radius: 6px; padding: 1px 8px; }
+.pill.cr { color: var(--credito); background: var(--credito-t); }
+.pill.db { color: var(--debito); background: var(--debito-t); }
+
+.add { margin: 16px 20px 0; width: calc(100% - 40px); font: inherit; font-weight: 700; font-size: 17px; background: transparent; color: var(--s-deep);
+  border: 1.5px dashed var(--s-deep); border-radius: 10px; padding: 13px; }
+
+.bnav { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--carta); border-top: 1px solid var(--riga); padding: 8px 0 16px; }
+.bnav a { text-align: center; font-weight: 700; font-size: 13.5px; color: var(--salvia); display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; padding-top: 4px; }
+.bnav a svg { width: 22px; height: 22px; }
+.bnav a.on { color: var(--s-deep); box-shadow: inset 0 3px 0 var(--s-acc); }
+
+/* entry */
+.e-top { background: var(--s-deep); color: #fff; padding: 14px 18px 18px; display: flex; gap: 12px; align-items: flex-start; }
+.back { width: 38px; height: 38px; flex: none; border-radius: 50%; border: 1px solid rgba(255,255,255,.4); background: rgba(255,255,255,.1); color: #fff; display: grid; place-items: center; }
+.e-top .when { font-size: 14px; color: var(--s-on); }
+.e-top h2 { font-family: "Alegreya", serif; font-weight: 700; font-size: 30px; line-height: 1.05; margin: 2px 0 8px; }
+.e-top .pill.db { background: #fff; }
+.e-body { flex: 1; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+.fld { background: var(--carta); border-radius: 10px; padding: 8px 16px 6px; border: 1.5px solid var(--riga); }
+.fld.focus { border-color: var(--s-deep); box-shadow: inset 0 -4px 0 var(--s-acc); }
+.fld label { font-size: 14px; font-weight: 700; color: var(--salvia); }
+.fld div { font-family: "Alegreya", serif; font-weight: 700; font-size: 44px; line-height: 1.05; }
+.fld div small { font-size: 24px; color: var(--salvia); font-weight: 500; margin-left: 4px; }
+.fld.note div { font-family: "Alegreya Sans", sans-serif; font-weight: 400; font-size: 16px; color: var(--salvia); padding: 2px 0 6px; }
+.passi { margin: 0; padding: 0 0 0 16px; border-left: 3px solid var(--s-acc); font-size: 16px; color: var(--salvia); }
+.passi p { margin: 0; display: flex; justify-content: space-between; }
+.passi p b { color: var(--inchiostro); }
+.risult { display: flex; justify-content: space-between; align-items: center; background: var(--debito-t); border-radius: 10px; padding: 10px 16px; }
+.risult span { font-weight: 700; color: var(--debito); }
+.risult b { font-family: "Alegreya", serif; font-size: 36px; color: var(--debito); line-height: 1.1; }
+.btn { font: inherit; font-weight: 700; font-size: 17px; border-radius: 10px; padding: 14px 18px; border: 0; }
+.btn.go { background: var(--s-deep); color: #fff; }
+.btn.line { background: var(--carta); color: var(--s-deep); border: 1.5px solid var(--s-deep); }
+.btn.sm { font-size: 14px; padding: 7px 14px; border-radius: 8px; }
+.btn:focus-visible, .ghost:focus-visible, a:focus-visible, .add:focus-visible { outline: 3px solid var(--s-acc); outline-offset: 2px; }
+
+/* saldi mobile */
+.tot2 { display: grid; grid-template-columns: 1fr 1fr; background: var(--carta); border-bottom: 1px solid var(--riga); }
+.tot2 div { padding: 12px 20px; }
+.tot2 div + div { border-left: 1px solid var(--riga); }
+.tot2 small { display: block; font-size: 13px; color: var(--salvia); }
+.tot2 b { font-family: "Alegreya", serif; font-size: 26px; }
+.adm { font-size: 12px; font-weight: 700; color: var(--salvia); border: 1px solid var(--riga); border-radius: 4px; padding: 0 5px; margin-left: 6px; vertical-align: 2px; background: var(--carta); }
+
+/* ---------- desktop ---------- */
+.d-top { background: var(--s-deep); color: #fff; display: flex; align-items: center; gap: 30px; height: 56px; padding: 0 28px; border-bottom: 1px solid rgba(255,255,255,.12); }
+.d-top .brand { font-family: "Alegreya", serif; font-weight: 700; font-size: 22px; }
+.d-top nav { display: flex; height: 100%; }
+.d-top nav a { display: flex; align-items: center; padding: 0 15px; font-weight: 700; color: var(--s-on); text-decoration: none; }
+.d-top nav a.on { color: #fff; box-shadow: inset 0 -4px 0 var(--s-acc); }
+.d-top .u { margin-left: auto; font-size: 15px; display: flex; gap: 18px; color: var(--s-on); }
+.d-top .u a { color: #fff; text-underline-offset: 3px; }
+.d-stag { padding: 26px 28px 28px; min-height: 170px; }
+.d-stag h2 { font-size: 52px; }
+.d-stag .prod { font-size: 22px; margin-top: 10px; }
+.d-stag .ill { width: 220px; height: 220px; right: 40px; bottom: -48px; }
+.d-stag .acts { display: flex; gap: 12px; align-items: center; margin-top: 16px; }
+.d-stag .acts span { color: var(--s-on); font-size: 15px; }
+.d-stag .acts a { color: #fff; font-weight: 700; text-underline-offset: 3px; }
+.d-body { padding: 22px 28px 30px; }
+.d-grid { display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: start; }
+.cassa-v { background: var(--carta); border-radius: 10px; border: 1px solid var(--riga); overflow: hidden; }
+.cassa-v p { margin: 0; display: flex; justify-content: space-between; align-items: baseline; padding: 9px 16px; border-bottom: 1px solid var(--riga); font-size: 15px; color: var(--salvia); }
+.cassa-v p b { font-family: "Alegreya", serif; font-size: 22px; color: var(--inchiostro); }
+.cassa-v p.tot { background: var(--s-tint); border-left: 3px solid var(--s-acc); color: var(--inchiostro); font-weight: 700; border-bottom: 0; }
+.cassa-v p.tot b { font-size: 30px; }
+.cassa-v .nt { padding: 10px 16px 14px; font-size: 14px; color: var(--salvia); border-top: 1px solid var(--riga); }
+.cassa-v .nt i { color: var(--inchiostro); }
+.d-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+.d-bar h3 { margin: 0 auto 0 0; font-family: "Alegreya", serif; font-weight: 700; font-size: 26px; }
+.sel { background: var(--carta); border: 1.5px solid var(--riga); border-radius: 8px; padding: 7px 14px; font-weight: 700; color: var(--s-deep); min-width: 250px; display: flex; justify-content: space-between; }
+table.t { width: 100%; border-collapse: collapse; background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; overflow: hidden; }
+.t th { font-size: 14px; font-weight: 700; color: var(--salvia); text-align: right; padding: 11px 10px; border-bottom: 1px solid var(--riga); line-height: 1.2; vertical-align: bottom; }
+.t th:first-child, .t td:first-child { text-align: left; padding-left: 16px; }
+.t th.nt, .t td.nt { text-align: left; }
+.t td { text-align: right; padding: 11px 10px; border-bottom: 1px solid var(--riga); font-size: 16px; }
+.t td.nm { font-weight: 700; white-space: nowrap; }
+.t td.mute { color: #B7BFB9; }
+.t td.cr { color: var(--credito); font-weight: 700; }
+.t td.db { color: var(--debito); font-weight: 700; }
+.t tr.edit td { background: var(--s-tint); }
+.t tr.edit td.ic span { display: inline-block; min-width: 64px; background: #fff; border: 1.5px solid var(--s-deep); border-radius: 6px; padding: 1px 8px; font-weight: 700; }
+.t tfoot td { font-weight: 700; border-bottom: 0; background: #F7F8F6; }
+.hint { font-size: 14px; color: var(--salvia); margin: 12px 0 0; }
+
+.d-head2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.d-head2 .tots { display: flex; gap: 22px; font-size: 15px; color: var(--salvia); }
+.d-head2 .tots b { font-family: "Alegreya", serif; font-size: 22px; margin-left: 4px; }
+.t .lk a { color: var(--s-deep); font-weight: 700; margin-left: 14px; text-underline-offset: 3px; }
+
+/* ---------- strip stagioni ---------- */
+.seasons { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; max-width: 1180px; }
+.sea { background: var(--carta); border-radius: 10px; overflow: hidden; border: 1px solid var(--riga); }
+.sea .stag { padding: 14px 16px 16px; min-height: 118px; }
+.sea .stag .ill { width: 104px; height: 104px; right: -12px; bottom: -16px; }
+.sea .stag h2 { font-size: 26px; }
+.sea .stag .prod { font-size: 15.5px; margin-top: 6px; max-width: 150px; line-height: 1.2; }
+.sea .sw { display: grid; grid-template-columns: repeat(3, 1fr); }
+.sea .sw div { padding: 8px 10px; font-size: 13px; line-height: 1.25; }
+.sea .sw i { display: block; height: 26px; border-radius: 4px; margin-bottom: 5px; }
+.sea .rule { font-size: 13px; color: var(--salvia); padding: 0 12px 10px; }
+.sea .mini { display: flex; gap: 8px; align-items: center; padding: 0 12px 12px; }
+.sea .mini .b { background: var(--s-deep); color: #fff; border-radius: 6px; padding: 3px 10px; font-size: 13px; font-weight: 700; }
+.base { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 18px; }
+.base div { width: 150px; background: var(--carta); border-radius: 8px; overflow: hidden; font-size: 13px; border: 1px solid var(--riga); }
+.base i { display: block; height: 40px; }
+.base p { margin: 0; padding: 6px 10px; }
+.base b { display: block; }
+h2.sec { font-family: "Alegreya", serif; font-size: 28px; margin: 0 0 12px; }
+
+@media (max-width: 900px) { .seasons { grid-template-columns: 1fr 1fr; } }
+
+/* ---------- turni ---------- */
+.bnav.n4 { grid-template-columns: repeat(4, 1fr); }
+.tu { display: inline-block; font-size: 12.5px; font-weight: 800; letter-spacing: .02em; color: var(--s-deep); background: var(--s-tint); border: 1px solid var(--s-acc); border-radius: 5px; padding: 0 6px; vertical-align: 2px; }
+.sw-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 700; color: var(--s-alt); }
+.note-t { font-size: 14px; color: var(--salvia); font-style: italic; }
+.riun { display: inline-block; font-size: 13px; font-weight: 700; color: #fff; background: var(--s-alt); border-radius: 5px; padding: 0 7px; }
+
+/* M1 month grid */
+.cal { background: var(--carta); border-bottom: 1px solid var(--riga); padding: 10px 14px 12px; }
+.cal .mh { display: flex; justify-content: space-between; align-items: center; padding: 0 4px 8px; }
+.cal .mh b { font-family: "Alegreya", serif; font-size: 22px; }
+.cal .mh span { font-size: 22px; color: var(--s-deep); font-weight: 700; padding: 0 8px; }
+.cal .g { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; gap: 2px; }
+.cal .g i { font-style: normal; font-size: 13px; color: var(--salvia); font-weight: 700; padding-bottom: 4px; }
+.cal .g div { height: 40px; display: grid; place-items: center; font-size: 16px; border-radius: 8px; position: relative; }
+.cal .g div.o { color: #C3CAC4; }
+.cal .g div.tue { font-weight: 800; color: var(--s-deep); background: var(--s-tint); }
+.cal .g div.tue::after { content: ""; position: absolute; bottom: 4px; width: 6px; height: 6px; border-radius: 50%; background: var(--s-acc); }
+.cal .g div.me { background: var(--s-acc); color: #fff; }
+.cal .g div.me::after { background: #fff; }
+.cal .g div.chosen { outline: 2.5px solid var(--s-deep); outline-offset: -2px; }
+.cal .g div.today { text-decoration: underline; text-underline-offset: 4px; }
+.det { margin: 14px 20px 0; background: var(--carta); border: 1px solid var(--riga); border-radius: 12px; padding: 14px 16px; border-left: 4px solid var(--s-acc); }
+.det .d { font-size: 14px; color: var(--salvia); }
+.det h4 { margin: 2px 0 10px; font-family: "Alegreya", serif; font-size: 24px; }
+.det p { margin: 4px 0; display: flex; justify-content: space-between; font-size: 17px; }
+.det p small { color: var(--salvia); font-size: 15px; }
+.mine { margin: 12px 20px 0; font-size: 16px; color: var(--salvia); }
+.mine b { color: var(--inchiostro); }
+
+/* M2 agenda */
+.mon { padding: 14px 20px 4px; font-family: "Alegreya", serif; font-weight: 700; font-size: 20px; color: var(--s-deep); }
+.ag { list-style: none; margin: 0; padding: 0 20px; }
+.ag li { display: grid; grid-template-columns: 52px 1fr; gap: 0 12px; padding: 10px 0; border-bottom: 1px solid var(--riga); align-items: center; }
+.ag .dd { text-align: center; line-height: 1; }
+.ag .dd b { display: block; font-family: "Alegreya", serif; font-size: 28px; }
+.ag .dd small { font-size: 12px; color: var(--salvia); font-weight: 700; text-transform: uppercase; }
+.ag .who { font-size: 17px; font-weight: 700; line-height: 1.25; }
+.ag .who .sub { display: block; font-weight: 400; font-size: 15px; color: var(--salvia); }
+.ag li.cur { background: var(--s-tint); margin: 0 -20px; padding: 10px 20px; border-left: 4px solid var(--s-acc); }
+.ag li.me .who { color: var(--s-deep); }
+.ag li.past { opacity: .45; }
+
+/* D-A registro */
+.reg td { text-align: left !important; }
+.reg th { text-align: left !important; }
+.reg td.d { white-space: nowrap; width: 150px; }
+.reg td.d b { font-family: "Alegreya", serif; font-size: 19px; }
+.reg tr.cur td { background: var(--s-tint); }
+.reg tr.cur td:first-child { box-shadow: inset 4px 0 0 var(--s-acc); }
+.reg tr.gen td { color: var(--salvia); }
+.reg tr.gen td.d { font-style: italic; }
+.reg td.act { text-align: right !important; white-space: nowrap; }
+.reg td.act a { color: var(--s-deep); font-weight: 700; margin-left: 12px; text-underline-offset: 3px; font-size: 15px; }
+.reg tr.pick td { background: #FFF6E5; }
+.reg tr.pick td.nmc span { outline: 2px dashed var(--s-acc); outline-offset: 3px; border-radius: 4px; }
+.sepr td { background: #F7F8F6 !important; font-size: 13px !important; color: var(--salvia); font-weight: 700; padding: 6px 16px !important; }
+.banner { display: flex; align-items: center; gap: 14px; background: #FFF6E5; border: 1.5px solid var(--s-acc); border-radius: 10px; padding: 10px 16px; margin-bottom: 12px; font-size: 16px; }
+.banner b { color: var(--s-deep); }
+.banner .btn { margin-left: auto; }
+
+/* D-B calendario */
+.mgrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.mbox { background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; padding: 14px 16px; }
+.mbox h4 { margin: 0 0 10px; font-family: "Alegreya", serif; font-size: 22px; }
+.wk { display: grid; grid-template-columns: 70px 1fr 1fr; gap: 10px; align-items: stretch; padding: 6px 0; border-top: 1px solid var(--riga); }
+.wk .dd { font-family: "Alegreya", serif; font-weight: 700; font-size: 20px; align-self: center; }
+.wk .dd small { display: block; font-family: "Alegreya Sans"; font-size: 12px; color: var(--salvia); font-weight: 700; }
+.chip { border: 1.5px solid var(--riga); border-radius: 8px; padding: 6px 10px; font-weight: 700; font-size: 16px; background: #fff; cursor: grab; display: flex; justify-content: space-between; align-items: center; }
+.chip small { font-weight: 400; color: var(--salvia); font-size: 12.5px; }
+.chip.drag { border-color: var(--s-deep); box-shadow: 0 6px 14px rgba(0,0,0,.18); transform: rotate(-1.5deg); }
+.chip.drop { border: 2px dashed var(--s-acc); background: var(--s-tint); }
+.chip.me { border-color: var(--s-acc); }
+.wk.cur { background: var(--s-tint); margin: 0 -16px; padding: 6px 16px; }
+
+/* D-C rotazione */
+.rot { display: grid; grid-template-columns: 330px 1fr; gap: 24px; align-items: start; }
+.rbox { background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; overflow: hidden; }
+.rbox h4 { margin: 0; padding: 12px 16px; font-family: "Alegreya", serif; font-size: 21px; border-bottom: 1px solid var(--riga); display: flex; justify-content: space-between; align-items: baseline; }
+.rbox h4 small { font-family: "Alegreya Sans"; font-size: 13px; color: var(--salvia); font-weight: 400; }
+.rbox ol { margin: 0; padding: 0; list-style: none; counter-reset: r; }
+.rbox ol li { counter-increment: r; display: grid; grid-template-columns: 26px 1fr 1fr 16px; gap: 8px; padding: 7px 14px; border-bottom: 1px solid var(--riga); font-size: 15.5px; align-items: center; }
+.rbox ol li::before { content: counter(r); color: var(--salvia); font-size: 13px; font-weight: 700; }
+.rbox ol li .h { color: #B7BFB9; font-size: 14px; letter-spacing: -2px; }
+.rbox ol li.nx { background: var(--s-tint); }
+.rbox .ft { padding: 10px 14px; font-size: 14px; color: var(--salvia); }
+.rbox .ft a { color: var(--s-deep); font-weight: 700; }
+.ex { list-style: none; margin: 0; padding: 0; }
+.ex li { padding: 9px 16px; border-bottom: 1px solid var(--riga); font-size: 15px; display: flex; justify-content: space-between; gap: 10px; }
+.ex li span { color: var(--salvia); }
+.ex li a { color: var(--debito); font-weight: 700; font-size: 14px; }
+.strike { text-decoration: line-through; color: #B7BFB9; font-weight: 400; margin-right: 6px; }
+
+.qs { background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; padding: 18px 22px; max-width: 1180px; }
+.qs ol { margin: 0; padding-left: 22px; }
+.qs li { margin: 6px 0; font-size: 17px; }
+.qs li span { color: var(--salvia); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="zucca" viewBox="0 0 100 100">
+      <path d="M49 26 C47 18 50 12 56 8 L60 12 C55 15 54 20 55 26 Z" fill="var(--s-alt)"/>
+      <path d="M56 20 C64 10 78 12 82 20 C72 20 64 22 58 26 Z" fill="#6E8F4E"/>
+      <ellipse cx="30" cy="60" rx="22" ry="30" fill="var(--s-acc)"/>
+      <ellipse cx="70" cy="60" rx="22" ry="30" fill="var(--s-acc)"/>
+      <ellipse cx="50" cy="60" rx="20" ry="33" fill="#F4A13A"/>
+      <path d="M50 28 V93" stroke="rgba(0,0,0,.14)" stroke-width="1.5"/>
+    </symbol>
+    <symbol id="carciofo" viewBox="0 0 100 100">
+      <path d="M48 78 C46 88 44 94 40 99 L46 99 C50 94 52 88 52 78 Z" fill="var(--s-alt)"/>
+      <path d="M50 80 C24 78 16 58 22 40 C30 54 40 62 50 64 Z" fill="var(--s-alt)"/>
+      <path d="M50 80 C76 78 84 58 78 40 C70 54 60 62 50 64 Z" fill="var(--s-alt)"/>
+      <path d="M50 70 C32 66 28 46 34 28 C40 42 46 50 50 52 Z" fill="#8E7AA8"/>
+      <path d="M50 70 C68 66 72 46 66 28 C60 42 54 50 50 52 Z" fill="#8E7AA8"/>
+      <path d="M50 58 C40 50 40 28 50 12 C60 28 60 50 50 58 Z" fill="#B7A5CC"/>
+    </symbol>
+    <symbol id="fave" viewBox="0 0 100 100">
+      <path d="M12 72 C10 48 40 22 80 18 C92 18 94 26 88 34 C74 52 46 78 20 82 C14 82 12 78 12 72 Z" fill="var(--s-acc)"/>
+      <ellipse cx="34" cy="62" rx="9" ry="7" transform="rotate(-35 34 62)" fill="#DDEFB8"/>
+      <ellipse cx="52" cy="48" rx="9" ry="7" transform="rotate(-35 52 48)" fill="#DDEFB8"/>
+      <ellipse cx="70" cy="34" rx="8" ry="6" transform="rotate(-35 70 34)" fill="#DDEFB8"/>
+      <path d="M86 22 C90 14 94 10 98 8" stroke="var(--s-acc)" stroke-width="4" fill="none" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="pomodoro" viewBox="0 0 100 100">
+      <ellipse cx="50" cy="60" rx="38" ry="34" fill="var(--s-acc)"/>
+      <ellipse cx="36" cy="50" rx="8" ry="12" fill="rgba(255,255,255,.22)" transform="rotate(25 36 50)"/>
+      <path d="M50 30 L40 18 L47 29 L30 26 L45 33 L34 42 L50 35 L66 42 L55 33 L70 26 L53 29 L60 18 Z" fill="var(--s-alt)"/>
+      <path d="M50 30 C50 22 52 14 56 10" stroke="var(--s-alt)" stroke-width="4" fill="none" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-consegna" viewBox="0 0 24 24"><path d="M4 10h16l-1.5 10h-13z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 10c0-3 1.8-5 4-5s4 2 4 5" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-saldi" viewBox="0 0 24 24"><path d="M12 4v16M5 8h14M5 8l-3 7h6zM19 8l-3 7h6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-storico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-turni" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3.5 10h17M8 3v4M16 3v4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="15" r="2" fill="currentColor"/></symbol>
+    <symbol id="i-swap" viewBox="0 0 24 24"><path d="M7 4L3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
+
+<div class="board">
+  <h1>GASS: turni</h1>
+  <p>Nuova scheda <b>Turni</b>. Le consegne sono il martedì: ogni martedì ha un <b>turno</b>, un <b>affiancamento</b> e una nota (es. “riunione GASS”, assenze). L’elenco è <b>a scorrimento</b>: i martedì passati spariscono e in fondo se ne aggiungono di nuovi continuando la rotazione (le due colonne del foglio ruotano ciascuna su 11 nomi). Su mobile si guarda e basta; modifiche e scambi solo da desktop. Dati del foglio Google, oggi è giovedì 1 ottobre 2026, utente “jeremy”.</p>
+
+  <h2 class="sec">Mobile: solo calendario</h2>
+  <div class="row">
+    <!-- M1 griglia -->
+    <div>
+      <div class="phone">
+        <header class="stag m-stag">
+          <svg class="ill" aria-hidden="true"><use href="#zucca"/></svg>
+          <div class="when">Prossimo turno</div>
+          <h2>martedì 6 ottobre</h2>
+          <div class="prod">tocca a te, con Sara B</div>
+        </header>
+        <div class="cal">
+          <div class="mh"><span>‹</span><b>Ottobre 2026</b><span>›</span></div>
+          <div class="g">
+            <i>L</i><i>M</i><i>M</i><i>G</i><i>V</i><i>S</i><i>D</i>
+            <div class="o">28</div><div class="o">29</div><div class="o">30</div><div class="today">1</div><div>2</div><div>3</div><div>4</div>
+            <div>5</div><div class="tue me">6</div><div>7</div><div>8</div><div>9</div><div>10</div><div>11</div>
+            <div>12</div><div class="tue chosen">13</div><div>14</div><div>15</div><div>16</div><div>17</div><div>18</div>
+            <div>19</div><div class="tue">20</div><div>21</div><div>22</div><div>23</div><div>24</div><div>25</div>
+            <div>26</div><div class="tue">27</div><div>28</div><div>29</div><div>30</div><div>31</div><div class="o">1</div>
+          </div>
+        </div>
+        <div class="scroll">
+          <div class="det">
+            <div class="d">martedì 13 ottobre</div>
+            <h4>matias</h4>
+            <p><small>Affiancamento</small><span>s&amp;p</span></p>
+          </div>
+          <p class="mine">I tuoi turni: <b>6 ottobre</b>, <b>22 dicembre</b></p>
+        </div>
+        <nav class="bnav n4">
+          <a href="#"><svg><use href="#i-consegna"/></svg>Consegna</a>
+          <a href="#"><svg><use href="#i-saldi"/></svg>Saldi</a>
+          <a href="#"><svg><use href="#i-storico"/></svg>Storico</a>
+          <a class="on" href="#"><svg><use href="#i-turni"/></svg>Turni</a>
+        </nav>
+      </div>
+      <p class="cap"><b>M1 · Griglia del mese.</b> Un calendario vero: i martedì con turno hanno il pallino, i tuoi sono pieni arancio. Toccando un martedì si vede sotto chi c’è. La testata dice subito il prossimo turno e se tocca a te. Si sfoglia mese per mese.</p>
+    </div>
+
+    <!-- M2 agenda -->
+    <div>
+      <div class="phone">
+        <header class="stag m-stag">
+          <svg class="ill" aria-hidden="true"><use href="#zucca"/></svg>
+          <div class="when">Turni delle consegne</div>
+          <h2>prossime 12 settimane</h2>
+          <div class="prod">il tuo: 6 ottobre</div>
+        </header>
+        <div class="scroll">
+          <div class="mon">Ottobre</div>
+          <ul class="ag">
+            <li class="cur me"><div class="dd"><b>6</b><small>mar</small></div><div class="who">jeremy <span class="tu">TU</span><span class="sub">con Sara B</span></div></li>
+            <li><div class="dd"><b>13</b><small>mar</small></div><div class="who">matias<span class="sub">con s&amp;p</span></div></li>
+            <li><div class="dd"><b>20</b><small>mar</small></div><div class="who">francesca b<span class="sub">con Cristina</span></div></li>
+            <li><div class="dd"><b>27</b><small>mar</small></div><div class="who">fernanda<span class="sub">con Simone e laura</span></div></li>
+          </ul>
+          <div class="mon">Novembre</div>
+          <ul class="ag">
+            <li><div class="dd"><b>3</b><small>mar</small></div><div class="who">franceska v<span class="sub">con marco b · <span class="riun" style="display:inline">riunione</span></span></div></li>
+            <li><div class="dd"><b>10</b><small>mar</small></div><div class="who">Riccardo e camille<span class="sub">con sara e Simone</span></div></li>
+            <li><div class="dd"><b>17</b><small>mar</small></div><div class="who">Irene p<span class="sub">con paoletta m</span></div></li>
+          </ul>
+        </div>
+        <nav class="bnav n4">
+          <a href="#"><svg><use href="#i-consegna"/></svg>Consegna</a>
+          <a href="#"><svg><use href="#i-saldi"/></svg>Saldi</a>
+          <a href="#"><svg><use href="#i-storico"/></svg>Storico</a>
+          <a class="on" href="#"><svg><use href="#i-turni"/></svg>Turni</a>
+        </nav>
+      </div>
+      <p class="cap"><b>M2 · Agenda.</b> Un martedì per riga, raggruppati per mese, come il foglio ma più leggibile. Il prossimo turno è evidenziato, il tuo ha l’etichetta TU. Si legge tutto scorrendo, senza toccare niente. Meno “calendario”, più comodo per vedere chi viene dopo.</p>
+    </div>
+  </div>
+
+  <h2 class="sec">Desktop: modifiche e scambi</h2>
+
+  <!-- D-A registro -->
+  <div class="row">
+    <div>
+      <div class="desk">
+        <div class="d-top"><span class="brand">GASS Torpignattara</span><nav><a href="#">Consegna</a><a href="#">Saldi</a><a href="#">Storico</a><a class="on" href="#">Turni</a><a href="#">Attività</a></nav><div class="u"><span>jeremy</span><a href="#">Cambia password</a><a href="#">Esci</a></div></div>
+        <div class="d-body">
+          <div class="banner"><svg width="20" height="20" style="color:var(--s-acc)"><use href="#i-swap"/></svg><span>Scambio: <b>francesca b</b> (20 ottobre, turno). Ora clicca un altro nome da scambiare.</span><button class="btn line sm">Annulla scambio</button></div>
+          <div class="d-bar"><h3>Turni</h3><span class="hint" style="margin:0">da martedì 6 ottobre · le righe in corsivo sono generate dalla rotazione</span></div>
+          <table class="t reg">
+            <thead><tr><th>Martedì</th><th>Turno</th><th>Affiancamento</th><th>Note</th><th></th></tr></thead>
+            <tbody>
+              <tr class="cur"><td class="d"><b>6 ottobre</b></td><td class="nm nmc">jeremy <span class="tu">TU</span></td><td>Sara B</td><td></td><td class="act"><a href="#">Modifica</a><a href="#">Scambia</a></td></tr>
+              <tr><td class="d"><b>13 ottobre</b></td><td class="nm nmc"><span>matias</span></td><td class="nmc"><span>s&amp;p</span></td><td></td><td class="act"><a href="#">Modifica</a><a href="#">Scambia</a></td></tr>
+              <tr class="pick"><td class="d"><b>20 ottobre</b></td><td class="nm nmc"><span>francesca b</span></td><td>Cristina</td><td></td><td class="act"><a href="#">Modifica</a></td></tr>
+              <tr><td class="d"><b>27 ottobre</b></td><td class="nm nmc"><span>fernanda</span></td><td class="nmc"><span>Simone e laura</span></td><td></td><td class="act"><a href="#">Modifica</a><a href="#">Scambia</a></td></tr>
+              <tr><td class="d"><b>3 novembre</b></td><td class="nm">franceska v</td><td>marco b</td><td><span class="riun">riunione GASS</span></td><td class="act"><a href="#">Modifica</a><a href="#">Scambia</a></td></tr>
+              <tr><td class="d"><b>10 novembre</b></td><td class="nm">Riccardo e camille</td><td>sara e Simone</td><td></td><td class="act"><a href="#">Modifica</a><a href="#">Scambia</a></td></tr>
+              <tr><td class="d"><b>17 novembre</b></td><td class="nm">Irene p <span class="sw-tag"><svg width="14" height="14"><use href="#i-swap"/></svg>scambio con sara b</span></td><td>paoletta m</td><td></td><td class="act"><a href="#">Modifica</a><a href="#">Scambia</a></td></tr>
+              <tr><td class="d"><b>24 novembre</b></td><td class="nm">sara b <span class="sw-tag"><svg width="14" height="14"><use href="#i-swap"/></svg>scambio con Irene p</span></td><td>salvatore</td><td></td><td class="act"><a href="#">Modifica</a><a href="#">Scambia</a></td></tr>
+              <tr><td class="d"><b>1 dicembre</b></td><td class="nm">maurizio</td><td>polly</td><td></td><td class="act"><a href="#">Modifica</a><a href="#">Scambia</a></td></tr>
+              <tr class="sepr"><td colspan="5">Generati dalla rotazione, si confermano da soli quando diventano le prossime 8 settimane</td></tr>
+              <tr class="gen"><td class="d">8 dicembre</td><td>Ilaria</td><td>Rachele</td><td></td><td class="act"><a href="#">Modifica</a></td></tr>
+              <tr class="gen"><td class="d">15 dicembre</td><td>silke</td><td>marco z</td><td></td><td class="act"><a href="#">Modifica</a></td></tr>
+              <tr class="gen"><td class="d">22 dicembre</td><td>jeremy</td><td>Sara B</td><td><span class="note-t">Natale?</span></td><td class="act"><a href="#">Modifica</a></td></tr>
+            </tbody>
+          </table>
+          <p class="hint">“Scambia” su un nome, poi clic sul nome con cui scambiare: i due si invertono e la riga mostra lo scambio. “Modifica” apre la riga in linea (turno, affiancamento, nota, o “nessuna consegna”).</p>
+        </div>
+      </div>
+      <p class="cap" style="max-width:1180px"><b>A · Registro.</b> Il foglio Google, ma dentro GASS: una tabella, una riga per martedì, dal prossimo in giù. Scambio in due clic (qui a metà: francesca b scelta, si aspetta il secondo nome). Gli scambi restano visibili sulla riga. È la più vicina a come lavorate oggi.</p>
+    </div>
+  </div>
+
+  <!-- D-B calendario drag -->
+  <div class="row">
+    <div>
+      <div class="desk">
+        <div class="d-top"><span class="brand">GASS Torpignattara</span><nav><a href="#">Consegna</a><a href="#">Saldi</a><a href="#">Storico</a><a class="on" href="#">Turni</a><a href="#">Attività</a></nav><div class="u"><span>jeremy</span><a href="#">Cambia password</a><a href="#">Esci</a></div></div>
+        <div class="d-body">
+          <div class="d-bar"><h3>Turni</h3><span class="hint" style="margin:0">trascina un nome sopra un altro per scambiarli · doppio clic per modificare</span></div>
+          <div class="mgrid">
+            <div class="mbox">
+              <h4>Ottobre</h4>
+              <div class="wk" style="border-top:0;font-size:13px;color:var(--salvia);font-weight:700;padding-top:0"><span></span><span>Turno</span><span>Affiancamento</span></div>
+              <div class="wk cur"><div class="dd">6<small>prossimo</small></div><div class="chip me">jeremy <span class="tu">TU</span></div><div class="chip">Sara B</div></div>
+              <div class="wk"><div class="dd">13</div><div class="chip drop">matias <small>lascia qui</small></div><div class="chip">s&amp;p</div></div>
+              <div class="wk"><div class="dd">20</div><div class="chip drag">francesca b</div><div class="chip">Cristina</div></div>
+              <div class="wk"><div class="dd">27</div><div class="chip">fernanda</div><div class="chip">Simone e laura</div></div>
+            </div>
+            <div class="mbox">
+              <h4>Novembre</h4>
+              <div class="wk" style="border-top:0;font-size:13px;color:var(--salvia);font-weight:700;padding-top:0"><span></span><span>Turno</span><span>Affiancamento</span></div>
+              <div class="wk"><div class="dd">3<small>riunione</small></div><div class="chip">franceska v</div><div class="chip">marco b</div></div>
+              <div class="wk"><div class="dd">10</div><div class="chip">Riccardo e camille</div><div class="chip">sara e Simone</div></div>
+              <div class="wk"><div class="dd">17</div><div class="chip">Irene p <small>scambio</small></div><div class="chip">paoletta m</div></div>
+              <div class="wk"><div class="dd">24</div><div class="chip">sara b <small>scambio</small></div><div class="chip">salvatore</div></div>
+            </div>
+          </div>
+          <p class="hint">Dicembre e oltre sotto, generati dalla rotazione. Ogni scambio chiede conferma (“Scambiare francesca b (20/10) con matias (13/10)?”) e finisce nel registro Attività.</p>
+        </div>
+      </div>
+      <p class="cap" style="max-width:1180px"><b>B · Calendario a blocchi.</b> Un riquadro per mese, i nomi sono “gettoni” da trascinare: si lascia francesca b su matias e i due si scambiano. Molto immediato, ma il trascinamento è meno preciso con il touchpad e serve comunque una conferma.</p>
+    </div>
+  </div>
+
+  <!-- D-C rotazione -->
+  <div class="row">
+    <div>
+      <div class="desk">
+        <div class="d-top"><span class="brand">GASS Torpignattara</span><nav><a href="#">Consegna</a><a href="#">Saldi</a><a href="#">Storico</a><a class="on" href="#">Turni</a><a href="#">Attività</a></nav><div class="u"><span>jeremy</span><a href="#">Cambia password</a><a href="#">Esci</a></div></div>
+        <div class="d-body">
+          <div class="rot">
+            <div style="display:flex;flex-direction:column;gap:18px">
+              <div class="rbox">
+                <h4>Rotazione <small>trascina per riordinare</small></h4>
+                <ol>
+                  <li class="nx"><span>jeremy</span><span>Sara B</span><span class="h">⋮⋮</span></li>
+                  <li><span>matias</span><span>s&amp;p</span><span class="h">⋮⋮</span></li>
+                  <li><span>francesca b</span><span>Cristina</span><span class="h">⋮⋮</span></li>
+                  <li><span>fernanda</span><span>Simone e laura</span><span class="h">⋮⋮</span></li>
+                  <li><span>franceska v</span><span>marco b</span><span class="h">⋮⋮</span></li>
+                  <li><span>Riccardo e camille</span><span>sara e Simone</span><span class="h">⋮⋮</span></li>
+                  <li><span>Irene p</span><span>paoletta m</span><span class="h">⋮⋮</span></li>
+                  <li><span>sara b</span><span>salvatore</span><span class="h">⋮⋮</span></li>
+                  <li><span>maurizio</span><span>polly</span><span class="h">⋮⋮</span></li>
+                  <li><span>Ilaria</span><span>Rachele</span><span class="h">⋮⋮</span></li>
+                  <li><span>silke</span><span>marco z</span><span class="h">⋮⋮</span></li>
+                </ol>
+                <div class="ft"><a href="#">+ Aggiungi alla rotazione</a> · 11 coppie, giro di 11 settimane</div>
+              </div>
+              <div class="rbox">
+                <h4>Eccezioni</h4>
+                <ul class="ex">
+                  <li><span><b style="color:var(--inchiostro)">Scambio</b> 17/11 ↔ 24/11 · Irene p, sara b</span><a href="#">annulla</a></li>
+                  <li><span><b style="color:var(--inchiostro)">Nota</b> 3/11 · riunione GASS</span><a href="#">annulla</a></li>
+                  <li><span><b style="color:var(--inchiostro)">Niente consegna</b> 29/12</span><a href="#">annulla</a></li>
+                </ul>
+              </div>
+            </div>
+            <div>
+              <div class="d-bar"><h3>Prossimi martedì</h3><button class="btn line sm">Aggiungi eccezione</button></div>
+              <table class="t reg">
+                <thead><tr><th>Martedì</th><th>Turno</th><th>Affiancamento</th><th>Note</th><th></th></tr></thead>
+                <tbody>
+                  <tr class="cur"><td class="d"><b>6 ottobre</b></td><td class="nm">jeremy <span class="tu">TU</span></td><td>Sara B</td><td></td><td class="act"><a href="#">Scambia</a></td></tr>
+                  <tr><td class="d"><b>13 ottobre</b></td><td class="nm">matias</td><td>s&amp;p</td><td></td><td class="act"><a href="#">Scambia</a></td></tr>
+                  <tr><td class="d"><b>20 ottobre</b></td><td class="nm">francesca b</td><td>Cristina</td><td></td><td class="act"><a href="#">Scambia</a></td></tr>
+                  <tr><td class="d"><b>27 ottobre</b></td><td class="nm">fernanda</td><td>Simone e laura</td><td></td><td class="act"><a href="#">Scambia</a></td></tr>
+                  <tr><td class="d"><b>3 novembre</b></td><td class="nm">franceska v</td><td>marco b</td><td><span class="riun">riunione GASS</span></td><td class="act"><a href="#">Scambia</a></td></tr>
+                  <tr><td class="d"><b>10 novembre</b></td><td class="nm">Riccardo e camille</td><td>sara e Simone</td><td></td><td class="act"><a href="#">Scambia</a></td></tr>
+                  <tr><td class="d"><b>17 novembre</b></td><td class="nm"><span class="strike">Irene p</span>sara b <span class="sw-tag"><svg width="14" height="14"><use href="#i-swap"/></svg></span></td><td>paoletta m</td><td></td><td class="act"><a href="#">Scambia</a></td></tr>
+                  <tr><td class="d"><b>24 novembre</b></td><td class="nm"><span class="strike">sara b</span>Irene p <span class="sw-tag"><svg width="14" height="14"><use href="#i-swap"/></svg></span></td><td>salvatore</td><td></td><td class="act"><a href="#">Scambia</a></td></tr>
+                  <tr><td class="d"><b>1 dicembre</b></td><td class="nm">maurizio</td><td>polly</td><td></td><td class="act"><a href="#">Scambia</a></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="cap" style="max-width:1180px"><b>C · Rotazione + eccezioni.</b> Si gestisce l’ordine, non le date: a sinistra la lista che gira, a destra i martedì che ne escono. Scambi, note e “niente consegna” sono eccezioni sopra la rotazione, annullabili una per una; si vede chi era previsto (barrato). Chi entra o esce dal GASS si aggiunge o toglie dalla rotazione una volta sola. Più potente, un po’ più astratta.</p>
+    </div>
+  </div>
+
+  <h2 class="sec">Da decidere prima di costruire</h2>
+  <div class="qs">
+    <ol>
+      <li>I nomi sono <b>utenti GASS</b> (scelti da un elenco, così “TU” e i tuoi turni funzionano) o <b>testo libero</b> come nel foglio? <span>Coppie come “s&amp;p” o “Riccardo e camille” sono più facili come testo libero, oppure come due utenti nella stessa casella.</span></li>
+      <li>Chi può modificare e scambiare da desktop: <b>tutti</b> o solo gli <b>admin</b>?</li>
+      <li>La rotazione ripete davvero sempre lo stesso ordine (turno e affiancamento insieme), o le due colonne girano separate?</li>
+      <li>Quanto avanti mostrare: 8, 12 settimane, o fino a fine rotazione?</li>
+      <li>La nota “no turno elisa, alessandro…” significa assenti da saltare nel giro, o solo un appunto?</li>
+    </ol>
+  </div>
+</div>
+</body>
+</html>
