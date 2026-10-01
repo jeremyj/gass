@@ -151,4 +151,16 @@ describe('PUT /api/users/:id', () => {
     const res = await adminAgent.get('/api/users');
     expect(res.body.users.find(u => u.username === 'mario').stato).toBe('sospeso');
   });
+
+  it('setStato only restarts turni_dal when returning to attivo from another stato', () => {
+    const { setStato } = require('../../server/services/users');
+    const id = createUser(db, { username: 'mario', displayName: 'Mario' });
+    expect(setStato(db, id, 'attivo', '2026-10-01')).toBeNull();
+    expect(db.prepare('SELECT turni_dal FROM users WHERE id = ?').get(id).turni_dal).toBeNull();
+    setStato(db, id, 'sospeso', '2026-10-02');
+    setStato(db, id, 'attivo', '2026-10-03');
+    expect(db.prepare('SELECT turni_dal FROM users WHERE id = ?').get(id).turni_dal).toBe('2026-10-03');
+    setStato(db, id, 'attivo', '2026-10-09');
+    expect(db.prepare('SELECT turni_dal FROM users WHERE id = ?').get(id).turni_dal).toBe('2026-10-03');
+  });
 });

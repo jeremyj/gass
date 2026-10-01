@@ -46,7 +46,7 @@ const STATI = ['attivo', 'sospeso', 'disattivato'];
  */
 function setStato(db, id, stato, today = toLocalDateString()) {
   if (!STATI.includes(stato)) return `Stato non valido: ${stato}`;
-  db.prepare('UPDATE users SET stato = ?, turni_dal = CASE WHEN ? = \'attivo\' THEN ? ELSE turni_dal END WHERE id = ?')
+  db.prepare('UPDATE users SET stato = ?, turni_dal = CASE WHEN ? = \'attivo\' AND stato != \'attivo\' THEN ? ELSE turni_dal END WHERE id = ?')
     .run(stato, stato, today, id);
   return null;
 }
