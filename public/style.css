@@ -13,6 +13,8 @@
 @font-face { font-family: 'Alegreya Sans'; font-style: normal; font-weight: 800; font-display: swap; src: url(fonts/alegreya-sans-800.woff2) format('woff2'); }
 
 :root {
+  --teatro: #5B3A8C;
+  --teatro-t: #EFE8F8;
   /* base, the same in every season */
   --calce: #F4F6F2;
   --carta: #FFFFFF;
@@ -379,6 +381,21 @@ tr.off td { opacity: .6; }
 .add-select:focus-visible { border-style: solid; box-shadow: none; }
 
 /* ===== MOVIMENTO ENTRY (shared card, consegna-common.js) ===== */
+
+/* Quota teatro: its own colour, never mixed with the consegna cassa */
+.teatro-box { margin: 14px 0; }
+.teatro-btn { width: 100%; display: flex; justify-content: space-between; gap: 10px; font: inherit; font-weight: 800; color: var(--teatro); background: transparent; border: 1.5px dashed var(--teatro); border-radius: 9px; padding: 10px 12px; cursor: pointer; }
+.teatro-box:has(h4) { background: var(--teatro-t); border-left: 4px solid var(--teatro); border-radius: 8px; padding: 12px 14px; }
+.teatro-box h4 { display: flex; justify-content: space-between; margin: 0 0 8px; color: var(--teatro); font-size: 17px; }
+.teatro-riga { display: flex; justify-content: space-between; gap: 10px; margin: 4px 0; }
+.teatro-riga small { color: var(--salvia); }
+.teatro-riga .ok { color: #2d6a2d; }
+.teatro-riga .part { color: var(--debito); }
+.teatro-importo { margin: 10px 0 6px; }
+.teatro-resto { font-weight: 800; margin: 4px 0 10px; min-height: 1em; }
+.teatro-done { color: var(--teatro); font-weight: 700; margin: 14px 0; }
+.teatro-oggi { margin: 8px 0 0; padding: 8px 12px; border-left: 4px solid var(--teatro); background: var(--teatro-t); border-radius: 6px; color: var(--teatro); font-weight: 700; display: flex; justify-content: space-between; }
+.teatro-oggi.initially-hidden { display: none; }
 
 .participant-card-flow { margin-top: 16px; background: var(--carta); border: 1.5px solid var(--s-deep); border-radius: 12px; overflow: hidden; }
 .entry-head { display: flex; gap: 12px; align-items: flex-start; padding: 14px 18px; background: var(--s-tint); border-bottom: 1px solid var(--riga); }
