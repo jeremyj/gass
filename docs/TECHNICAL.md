@@ -444,6 +444,8 @@ GASS supports OIDC single sign-on via a self-hosted Authentik instance, active o
 
 **Admin sync:** admin status is re-derived from the `OIDC_ADMIN_GROUP` claim on every OIDC login and written to `users.is_admin` — it is not editable from GASS's UI/API when OIDC is enabled (see Admin Role System below).
 
+**Passwords and recovery:** account emails in Authentik are placeholders (`<username>@gass.local`), so password recovery by email cannot work; a forgotten password is reset by an admin in Authentik. The 29 `gass-users` accounts that had never logged in were given one shared temporary password on 2026-09-30, with `settings.requirePasswordChange` still on, so each member sets their own at first login (verified via `ak shell` on host `personal` 2026-09-30).
+
 ## Deployment
 
 ### Local Development
