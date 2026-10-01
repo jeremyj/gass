@@ -58,7 +58,7 @@ Dopo aver inserito tutti i movimenti clicca **Chiudi consegna** e conferma il ri
 
 # Saldi
 
-Panoramica dei saldi di tutti i partecipanti. **Blu** con "+" = credito, **rosso vino** con "−" = debito, **grigio** "in pari".
+Panoramica dei saldi di tutti i partecipanti. **Blu** con "+" = credito, **rosso vino** con "−" = debito, "–" = in pari.
 
 Usa **Cambia data** per vedere i saldi in una data passata. Clicca **Transazioni** per vedere lo storico movimenti di un partecipante.
 

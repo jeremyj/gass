@@ -50,14 +50,14 @@ function createParticipantRow(p) {
     <td class="nm">${escapeHtml(p.nome)}${statoBadge}</td>
     ${isAdmin() ? `<td class="left">${escapeHtml(p.username) || '–'}${adminBadge}</td>` : ''}
     <td>
-      <span id="saldo-view-${p.id}" class="pill ${saldo.cls}">${saldo.cls ? saldo.amount : saldo.word}</span>
+      <span id="saldo-view-${p.id}" class="${saldo.cls ? `pill ${saldo.cls}` : 'mute'}">${saldo.cls ? saldo.amount : '–'}</span>
       <input type="text" inputmode="decimal" id="saldo-edit-${p.id}" value="${formatNumber(p.saldo)}"
              class="saldo-input initially-hidden" aria-label="Nuovo saldo (negativo = debito)"
              oninput="normalizeInputField(this)"
              onfocus="handleInputFocus(this)"
              onkeydown="if(event.key==='Enter'){event.preventDefault();saveSaldo(${p.id})}">
     </td>
-    <td><span class="pill ${teatroLabel(p.teatro_residuo).cls}">${teatroLabel(p.teatro_residuo).text}</span></td>
+    ${p.teatro_residuo ? `<td><span class="pill ${teatroLabel(p.teatro_residuo).cls}">${teatroLabel(p.teatro_residuo).text}</span></td>` : '<td class="mute">–</td>'}
     <td>${formatDateItalian(p.ultima_modifica)}</td>
     <td class="lk">
       <button type="button" class="link-btn" onclick="showTransactionsModal(${p.id})">Transazioni</button>

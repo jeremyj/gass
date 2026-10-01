@@ -21,8 +21,12 @@ function residuoHtml(p) {
   return '<span class="pill th-ok">in pari</span>';
 }
 
+// Same order as Saldi: attivi, then sospesi, then disattivati, each alphabetical
+const STATO_ORDER = { attivo: 0, sospeso: 1, disattivato: 2 };
+
 function renderGrid() {
-  const { semestri, persone } = dati;
+  const { semestri } = dati;
+  const persone = [...dati.persone].sort((a, b) => STATO_ORDER[a.stato] - STATO_ORDER[b.stato] || a.nome.localeCompare(b.nome, 'it'));
   document.getElementById('teatro-head').innerHTML = `<tr><th class="left">Gassista</th>${semestri.map(s =>
     `<th class="c"><button type="button" class="link-btn" onclick="editQuota('${s.semestre}')" title="Cambia la quota">${escapeHtml(s.label)}<br><small>${formatEuro(s.quota)}</small></button></th>`).join('')}<th class="left">Situazione</th><th class="left">Note</th></tr>`;
   document.getElementById('teatro-body').innerHTML = persone.map(p => `

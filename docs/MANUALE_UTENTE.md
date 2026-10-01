@@ -44,7 +44,7 @@ L'applicazione si adatta automaticamente al dispositivo utilizzato:
 #### Intestazione stagionale e importi
 - Ogni pagina ha un'intestazione scura i cui colori seguono la stagione della data selezionata (autunno set–nov, inverno dic–feb, primavera mar–mag, estate giu–ago), con il disegno di un frutto o di una verdura di stagione che cambia ogni settimana. La riga sopra la data dice "Consegna di oggi" / "Saldi di oggi" per oggi, "Consegna di" / "Saldi al" per un'altra data; l'anno compare solo se non è quello corrente.
 - Gli importi sono nel formato italiano ("11,50 €", senza decimali se interi: "8 €"). Nei campi si può scrivere la virgola o il punto; il campo mostra la virgola.
-- Colori dei saldi (non cambiano con la stagione): **blu** con "+" e la parola "credito", **rosso vino** con "−" e la parola "debito", **grigio** "0 € in pari". Nella tabella Saldi del desktop solo l'importo con il segno, o "in pari".
+- Colori dei saldi (non cambiano con la stagione): **blu** con "+" e la parola "credito", **rosso vino** con "−" e la parola "debito", **grigio** "0 € in pari". Nella tabella Saldi del desktop solo l'importo con il segno, o "–".
 
 ## Funzionalità
 
@@ -174,7 +174,7 @@ La pagina Saldi mostra una panoramica dei saldi di tutti i partecipanti.
 #### Visualizzazione Saldi Attuali
 
 - **Mobile**: in cima due totali ("Crediti, N persone +X €" e "Debiti, N persone −X €"), poi la lista **Partecipanti**
-- **Desktop**: tabella con Partecipante, Username (solo amministratori), Saldo (importo con segno, o "in pari"), Quota teatro (deve X €, in pari, anticipo), Ultimo movimento e le azioni come link di testo
+- **Desktop**: tabella con Partecipante, Username (solo amministratori), Saldo (importo con segno, o "–"), Quota teatro (deve X €, anticipo, o "–"), Ultimo movimento e le azioni come link di testo
 - Colori: **blu** = credito (+), **rosso vino** = debito (−), **grigio** = "0 € in pari"
 
 #### Storico Transazioni
@@ -312,7 +312,7 @@ In **Saldi** ogni partecipante ha la sua situazione: **in pari**, **deve** (con 
 #### Pagina Teatro (amministratori, desktop)
 
 - In alto: quanto c'è **nel bussolotto** (cassa teatro), le quote del semestre in corso, le quote mancanti
-- La **griglia** gassisti × semestri: in ogni casella **✓** verde = pagato, **–** rosso = manca qualcosa (versato/dovuto al passaggio del mouse), grigio **0** = non dovuto, grigio **–** = non era nel GASS. Clic su una casella per cambiare quanto deve: una quota ridotta (ad esempio chi entra a metà semestre), **Non dovuto** o **Non era nel GASS**
+- La **griglia** gassisti × semestri: righe in ordine: attivi, poi sospesi, poi disattivati; in ogni casella **✓** verde = pagato, **–** rosso = manca qualcosa (versato/dovuto al passaggio del mouse), grigio **0** = non dovuto, grigio **–** = non era nel GASS. Clic su una casella per cambiare quanto deve: una quota ridotta (ad esempio chi entra a metà semestre), **Non dovuto** o **Non era nel GASS**
 - Clic sull'intestazione di un semestre per cambiarne la **quota**: vale per chi ha la quota piena, le ridotte restano. Un semestre nuovo parte dalla quota dell'ultimo e la devono tutti gli attivi; i sospesi no
 - **Note** per persona, come nel vecchio foglio
 - **Registro cassa teatro**: le quote pagate (con la × per eliminare un pagamento sbagliato) e le voci aggiunte a mano, ad esempio l'affitto versato (uscita) con chi l'ha portato

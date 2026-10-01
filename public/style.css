@@ -422,9 +422,9 @@ b.th { color: var(--teatro); }
 .teatro-grid-wrap { overflow-x: auto; }
 .teatro-grid th, .teatro-grid td { white-space: nowrap; }
 .teatro-grid th .link-btn { font-weight: 700; line-height: 1.2; }
-.teatro-grid .g { display: inline-flex; min-width: 44px; justify-content: center; border: 0; border-radius: 6px; padding: 3px 8px; font: inherit; font-weight: 800; cursor: pointer; }
-.teatro-grid .g.p { background: #e3f2df; color: #2d6a2d; }
-.teatro-grid .g.n { background: var(--debito-t); color: var(--debito); }
+.teatro-grid .g { display: inline-flex; min-width: 44px; justify-content: center; border: 0; border-radius: 6px; padding: 3px 8px; font: inherit; font-weight: 800; cursor: pointer; background: transparent; }
+.teatro-grid .g.p { color: #2d6a2d; }
+.teatro-grid .g.n { color: var(--debito); }
 .teatro-grid .g.x { background: transparent; color: #a8afa9; }
 .teatro-grid .nota-in { width: 100%; min-width: 220px; padding: 4px 8px; font-size: 16px; border: 1px solid var(--riga); border-radius: 6px; }
 .teatro-grid tfoot td { border-top: 2px solid var(--riga); }
@@ -604,7 +604,7 @@ b.th { color: var(--teatro); }
   .t .left, .t .nt { text-align: left; }
   .t td.nt { color: var(--salvia); font-size: 18px; max-width: 220px; }
   .t td.nm { font-weight: 700; }
-  .t td.mute { color: #B7BFB9; }
+  .t td.mute, .t span.mute { color: #B7BFB9; }
   .t td.cr, .t td.db { font-weight: 700; }
   .t tbody tr.clickable:hover td { background: var(--s-tint); }
   .t tfoot td { font-weight: 700; border-bottom: 0; background: #F7F8F6; }
