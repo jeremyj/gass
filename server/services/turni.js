@@ -81,6 +81,8 @@ function listPause(db, today) {
 const isAttivo = (db, id) => !!db.prepare("SELECT 1 FROM users WHERE id = ? AND stato = 'attivo'").get(id);
 const ddmm = dateStr => `${dateStr.slice(8, 10)}/${dateStr.slice(5, 7)}`;
 
+const nomeDi = (db, id) => (id && db.prepare('SELECT display_name FROM users WHERE id = ?').get(id)?.display_name) || 'da coprire';
+
 function updateTurno(db, id, fields, audit) {
   const row = db.prepare('SELECT * FROM turni WHERE id = ?').get(id);
   if (!row) return { error: 'Turno non trovato' };
@@ -99,7 +101,7 @@ function updateTurno(db, id, fields, audit) {
     const value = fields[field] === null ? null : Number(fields[field]);
     if (value !== null && !isAttivo(db, value)) return { error: 'Si possono assegnare solo utenti attivi' };
     next[col] = value;
-    if (value !== row[col]) changes.push(`${col === 'turnista1_id' ? 'turnista 1' : 'turnista 2'} cambiato`);
+    if (value !== row[col]) changes.push(`${col === 'turnista1_id' ? 'turnista 1' : 'turnista 2'}: ${nomeDi(db, row[col])} → ${nomeDi(db, value)}`);
   }
   if (fields.riunione !== undefined) {
     next.riunione = fields.riunione ? 1 : 0;
@@ -154,8 +156,7 @@ function swapTurnisti(db, a, b, today, audit) {
     db.prepare(`UPDATE turni SET ${colB} = ?, updated_by = ?, updated_at = ? WHERE id = ?`)
       .run(newB[colB], audit.userId, audit.timestamp, rowB.id);
   })();
-  const nome = id => (id && db.prepare('SELECT display_name FROM users WHERE id = ?').get(id)?.display_name) || 'da coprire';
-  return { changes: [`${nome(rowA[colA])} (${ddmm(rowA.data)}) ↔ ${nome(rowB[colB])} (${ddmm(rowB.data)})`] };
+  return { changes: [`${nomeDi(db, rowA[colA])} (${ddmm(rowA.data)}) ↔ ${nomeDi(db, rowB[colB])} (${ddmm(rowB.data)})`] };
 }
 
 // The person picked in `a` takes userId's first turno from today; userId takes `a`'s place

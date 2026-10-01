@@ -122,6 +122,13 @@ describe('editing', () => {
     expect(T.updateTurno(db, id, { data: '2026-02-30' }, audit).error).toBeTruthy();
   });
 
+  it('updateTurno names who left and who came in', () => {
+    const [a, b, c] = people(3);
+    const id = createTurno(db, { settimana: '2026-12-08', t1: a, t2: b });
+    expect(T.updateTurno(db, id, { turnista1Id: c }, audit).changes).toEqual(['turnista 1: p1 → p3']);
+    expect(T.updateTurno(db, id, { turnista2Id: null }, audit).changes).toEqual(['turnista 2: p2 → da coprire']);
+  });
+
   it('updateTurno with saltata empties the slots', () => {
     const [a, b] = people(2);
     const id = createTurno(db, { settimana: '2026-12-08', t1: a, t2: b });
