@@ -363,7 +363,10 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.16.1
+Sistema GASS Pagamenti - Versione 2.16.2
+- Saldi su mobile: toccando un nome si vedono le transazioni; il modulo per cambiare il saldo si apre solo con il pulsante **Modifica saldo** (amministratori)
+
+Versione 2.16.1
 - Saldi, data passata: l'avviso "Modifica saldo compare solo alla data di oggi" è in cima alla pagina, anche su mobile (per gli amministratori)
 
 Versione 2.16.0

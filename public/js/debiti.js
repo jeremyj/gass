@@ -54,7 +54,8 @@ function createParticipantCard(p) {
   let editSectionHtml = '';
   if (canEdit) {
     editSectionHtml = `
-      <div class="saldo-edit-section">
+      <button type="button" class="btn btn-line btn-block" id="saldo-edit-btn-${p.id}" onclick="showSaldoEdit(${p.id})">Modifica saldo</button>
+      <div class="saldo-edit-section initially-hidden" id="saldo-edit-${p.id}">
         <h3>Modifica saldo</h3>
         <div class="input-row">
           <div class="form-group">
@@ -84,6 +85,7 @@ function createParticipantCard(p) {
         </div>
         <p class="hint">La modifica manuale registra una rettifica con la data di oggi.</p>
         <button class="btn btn-go btn-block" onclick="saveSaldo(${p.id})">Salva saldo</button>
+        <button type="button" class="btn btn-line btn-block" onclick="hideSaldoEdit(${p.id})">Annulla</button>
       </div>
     `;
   }
@@ -105,23 +107,25 @@ function createParticipantCard(p) {
       header.addEventListener('click', () => toggleParticipantCard(p.id));
     }
 
-    if (canEdit) {
-      const creditoInput = document.getElementById(`credito-input-${p.id}`);
-      const debitoInput = document.getElementById(`debito-input-${p.id}`);
-
-      if (p.saldo >= 0 && creditoInput) {
-        creditoInput.focus();
-        creditoInput.select();
-      } else if (p.saldo < 0 && debitoInput) {
-        debitoInput.focus();
-        debitoInput.select();
-      }
-    }
-
     loadTransactions(p.id);
   }, 100);
 
   return card;
+}
+
+// The edit form stays behind the "Modifica saldo" button so opening a card doesn't pop up the keyboard
+function showSaldoEdit(id) {
+  const p = participants.find(p => p.id === id);
+  document.getElementById(`saldo-edit-btn-${id}`).classList.add('initially-hidden');
+  document.getElementById(`saldo-edit-${id}`).classList.remove('initially-hidden');
+  const input = document.getElementById(p.saldo < 0 ? `debito-input-${id}` : `credito-input-${id}`);
+  input.focus();
+  input.select();
+}
+
+// Hide the form and put back the current saldo (by re-rendering the open card)
+function hideSaldoEdit(id) {
+  renderParticipants();
 }
 
 // ===== TRANSACTIONS =====

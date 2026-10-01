@@ -172,6 +172,7 @@ On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_
 - The day's movimenti are listed ("Chi ha ritirato"); tapping a row opens it
 - The participant card becomes a full-screen entry at ≤ 768px (pure CSS on `.participant-card-flow`); `#status` is a fixed toast above it
 - Calendar opens to current month
+- Saldi card (mobile) opens on Transazioni; the admin saldo form is behind a "Modifica saldo" button (`showSaldoEdit`/`hideSaldoEdit` in `debiti.js`). The user disliked the form opening (and the keyboard popping up) on every tap of a name
 
 ### Desktop
 - Form card below the table, buttons Annulla / Salva movimento
