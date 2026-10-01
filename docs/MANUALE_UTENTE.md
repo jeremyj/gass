@@ -296,6 +296,25 @@ Ogni azione chiede conferma e resta nel registro Attività.
 - **Note**: il riquadro sopra la tabella, per appunti liberi (affiancamenti, chi non può…). Lo scrivono gli amministratori da desktop, lo leggono tutti su desktop e mobile
 - **Giorno**: sposta la consegna in un altro giorno della settimana, segna **niente consegna**, **riunione GASS** o aggiunge una nota. Con niente consegna la coppia torna libera ed è la prima in coda
 - **Pause**: un periodo senza consegne (ad esempio le feste). Le settimane già scritte nel periodo diventano niente consegna; eliminando la pausa le settimane mancanti si rigenerano, quelle già segnate niente consegna restano tali e si ripristinano da **Giorno**
+- **Mostra turni passati**: la casella sopra la tabella mostra anche le settimane già fatte, in grigio e in sola lettura
+
+### 7. Quota teatro
+
+Ogni gassista paga una quota a semestre (gennaio–giugno, luglio–dicembre) per l'affitto del teatro. I soldi vanno in una **cassa teatro** separata: non entrano nella cassa della consegna.
+
+#### Pagare alla consegna (tutti)
+
+Nella scheda del partecipante, se ha quote da pagare, c'è il tasto **Quota teatro** con il totale dovuto. Toccandolo si vedono i semestri dovuti, dal più vecchio. Scrivi l'**importo versato**: copre i semestri in ordine; se non basta l'ultimo resta parziale, se avanza va in anticipo sui semestri successivi. **Registra quota** chiede conferma. Il pagamento è indipendente dal movimento: si può pagare la quota senza fare la spesa. Accanto alla cassa compare **Quote teatro oggi, a parte**.
+
+In **Saldi** ogni partecipante ha la sua situazione: **in regola**, **da pagare** (con l'importo) o **anticipo**; in alto il totale delle quote mancanti.
+
+#### Pagina Teatro (amministratori, desktop)
+
+- In alto: quanto c'è **nel bussolotto** (cassa teatro), le quote del semestre in corso, le quote mancanti
+- La **griglia** gassisti × semestri: in ogni casella quanto ha versato su quel semestre rispetto a quanto deve (verde = pagato, rosso = manca qualcosa, grigio **0** = non dovuto, **–** = non era nel GASS). Clic su una casella per cambiare quanto deve: una quota ridotta (ad esempio chi entra a metà semestre), **Non dovuto** o **Non era nel GASS**
+- Clic sull'intestazione di un semestre per cambiarne la **quota**: vale per chi ha la quota piena, le ridotte restano. Un semestre nuovo parte dalla quota dell'ultimo e la devono tutti gli attivi; i sospesi no
+- **Note** per persona, come nel vecchio foglio
+- **Registro cassa teatro**: le quote pagate (con la × per eliminare un pagamento sbagliato) e le voci aggiunte a mano, ad esempio l'affitto versato (uscita) con chi l'ha portato
 
 ## Comprendere i Calcoli dei Saldi
 
@@ -392,7 +411,11 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.18.0
+Sistema GASS Pagamenti - Versione 2.19.0
+- **Quota teatro**: pagamento alla consegna, situazione in Saldi, pagina **Teatro** per gli amministratori con griglia dei semestri e registro della cassa teatro
+- Turni: gli amministratori possono mostrare i turni passati
+
+Versione 2.18.0
 - **Turni** mostra le prossime 24 settimane
 - Sul proprio turno: **scambia con…**, **sposta al…** (una data con un posto libero), **Non posso** (il posto resta da coprire)
 - Gli amministratori scelgono i nomi dai menu della tabella e possono mettere in pausa la generazione automatica dei turni

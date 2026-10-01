@@ -19,10 +19,12 @@
   - `users.js` - User management API (admin-only, edit profile/password/admin status)
   - `storico.js` - History API
   - `logs.js` - Activity log API (admin-only)
+  - `teatro.js` - Quota teatro API (`GET /utente/:id`, `/oggi`, `POST /pagamenti` any user; grid, dovuti, quotas, notes, payment deletion, cassa admin-only)
   - `turni.js` - Turni API (`GET` any user; `POST /scambio`, `/lascia`, `/sposta` any user for their own slot, admin for any; edits, pauses, `PUT /auto`, `PUT /note` admin-only; both are declared before `/:id`)
 - **Services**: `server/services/calculations.js` - Pure business logic; `server/services/saldi.js` - saldo ledger (DB-backed); `server/services/validation.js` - `POST /api/consegna` payload validation; `server/services/activity.js` - `logActivity()`, the only writer of `activity_logs` rows
 - **Turni services**: `server/services/turni-schedule.js` (pure date/queue helpers, `pickPair`) and `server/services/turni.js` (`ensureTurni`, `listTurni`, `updateTurno`, `swapWithNext` (→ `swapTurnisti`), `leaveTurno`, `moveTurno`, `isAuto`/`setAuto`, pauses, `freeFutureTurni`, `importTurni`)
-- **CLI**: `manage-users.js`, `manage-turni.js` (`import <csv>` / `list`)
+- **Teatro services**: `server/services/teatro-calc.js` (pure: semesters, FIFO `allocate`) and `server/services/teatro.js` (`ensureSemestre`, `statoTeatro`, `residui`, `registraPagamento`, `setDovuto`, `setQuota`, `addCassa`, `riepilogo`, `importFoglio`)
+- **CLI**: `manage-users.js`, `manage-turni.js` (`import <csv>` / `list`), `manage-teatro.js` (`import <csv>` / `list`)
 - **Middleware**: `server/middleware/` - auth.js, userAgent.js
 
 ### Client-Side
@@ -39,7 +41,7 @@
   - `utils.js` also holds the Storico → Consegna links: `openConsegnaOn(date)` (sets `gass_selected_date`, goes to `/consegna`), `riapriConsegna(id, date)` (admin), `storicoActionsHtml(consegna)` ("Completa consegna" on open ones, admin "Riapri consegna" on closed ones)
 - **Page-Specific**: `public/js/`
   - Mobile: `consegna.js`, `debiti.js`, `storico.js`, `turni.js` (`turni.html`, agenda + self swap)
-  - Desktop: `consegna-desktop.js`, `debiti-desktop.js`, `storico-desktop.js`, `logs-desktop.js`, `turni-desktop.js` (`turni-desktop.html`, self swap + admin editing)
+  - Desktop: `consegna-desktop.js`, `debiti-desktop.js`, `storico-desktop.js`, `logs-desktop.js`, `teatro-desktop.js` (`teatro-desktop.html`, admin; nav item `#nav-teatro` toggled with `#nav-logs` in `auth.js`), `turni-desktop.js` (`turni-desktop.html`, self swap + admin editing)
 
 ### HTML Script Loading Order
 ```html
@@ -215,6 +217,9 @@ On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_
 ### Turni
 Queue rule in `turni-schedule.js` `pickPair`: first = waiting longest since their last turno (or `turni_dal`); partner = among the next `PARTNER_WINDOW = 3` in line, the one with fewest shared turni, ties random. Consegne are Tuesdays; `turni.settimana` is the week's Tuesday, `data` the real day. `ensureTurni` (every `GET /api/turni`) only fills missing non-pause Tuesdays in `[nextTuesday(today), today + HORIZON_DAYS)`, `HORIZON_DAYS = 168` (24 weeks); existing weeks never change by themselves. Automatic generation can be paused (`settings` table, key `turni_auto`, admin checkbox on the desktop page): new weeks are then written empty and an admin picks the names from per-slot menus (decided 2026-10-01: Paola, who ran the turni by hand, keeps composing them). Users can swap, move to a free slot (`moveTurno`) or leave (`leaveTurno`) their own turno; filling an empty slot from the admin menu needs no confirmation, replacing or clearing does. `settings.turni_note` holds free-text notes (admin writes on desktop, everyone reads, mobile too). While paused the desktop hides the "primi in fila" hints (`autoOn`), since the queue no longer matters. `saltata` frees the pair (first in line again). 10-year simulation (2026-10-01): 22 people gaps 10-12 weeks, 21 people 9-12, no pair more than 4 times; k = 3 chosen over 4/5 for regularity. Details in `docs/TECHNICAL.md#turni`.
 
+### Quota teatro
+Semesters `yyyy-1` (Jan–Jun) / `yyyy-2` (Jul–Dec). `teatro_dovuti` holds what each person owes per semester (0 = non dovuto, no row = not in the GASS); payments are a running total spread oldest first by `allocate` (derived, never stored), the excess is an advance. User decisions (2026-10-01): anyone records a payment at the consegna (box in the card, independent of "Salva movimento"); admins correct dovuti, quotas and delete payments on `/teatro`; the quota can change per semester and an admin sets reduced quotas (e.g. 7 € for a mid-semester joiner); the old sheet's 0 = non dovuto; the cassa teatro is separate from the consegna cassa and counts only payments made in GASS (`fonte IS NULL`) plus manual `teatro_cassa` entries. `teatro_*` user FKs CASCADE, and `deleteUser` refuses users with payments. Design: `design/mockups/quota-teatro.html`, plan `design/plans/2026-10-01-quota-teatro.md`.
+
 ### Dates are local
 Calendar dates (`data`, `ultima_modifica`, "today") are always the **local** date: use `toLocalDateString()` (`utils.js` client-side, `calculations.js` server-side). Never `toISOString().split('T')[0]` or SQLite `DATE()` — both give the UTC date, which is yesterday between 00:00 and 01:00/02:00 in Italy. The image sets `TZ=Europe/Rome` (+ `tzdata`, Alpine has none). Audit timestamps (`created_at`, `updated_at`) stay ISO UTC with `Z`. Exception on purpose: `turni-schedule.js` does date arithmetic on UTC midnights of the `yyyy-mm-dd` strings (`addDays`, `tuesdayOf`), which is DST-safe because no local time is involved; "today" is still passed in as the local date.
 
@@ -255,7 +260,7 @@ Auto-calculated fields (credito_lasciato, debito_lasciato, usa_credito, debito_s
 **Stack**: Vitest + supertest, `pool: forks` (each test file = isolated Node process)
 
 ```bash
-npm test                    # all 268 tests
+npm test                    # all 285 tests
 npm run test:unit           # pure function tests (no DB/HTTP)
 npm run test:integration    # API tests with in-memory SQLite
 npm run test:coverage       # with coverage report

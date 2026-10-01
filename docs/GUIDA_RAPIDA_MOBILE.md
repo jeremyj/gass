@@ -76,6 +76,12 @@ Sul tuo turno tocca **cambia**: **scambia con…** (prima mettiti d'accordo con 
 
 ---
 
+# Quota teatro
+
+Ogni semestre (gennaio–giugno, luglio–dicembre) si paga una quota per l'affitto del teatro, in una cassa separata da quella della consegna. Nella scheda del partecipante, **Quota teatro** mostra i semestri dovuti: scrivi l'importo versato (copre i semestri dal più vecchio; quello che avanza è un anticipo) e **Registra quota**. In **Saldi**, sotto ogni nome, la situazione della quota.
+
+---
+
 # Solo per Amministratori
 
 | Funzione | Come accedervi |

@@ -34,7 +34,7 @@ GET    /api/storico                   - Retrieve all deliveries (summary)
 GET    /api/storico/dettaglio         - Retrieve all deliveries with detailed movements
 PUT    /api/participants/:id          - Set participant balance (stored as a rettifica, admin)
 POST   /api/participants              - Create new participant
-DELETE /api/participants/:id          - Delete participant (admin; 400 if the user has movimenti or rettifiche)
+DELETE /api/participants/:id          - Delete participant (admin; 400 if the user has movimenti, rettifiche or quota teatro payments)
 GET    /api/turni                     - Next 24 weeks (writes missing ones), pause list, `auto` (any authenticated user)
 PUT    /api/turni/:id                 - Edit a week: turnisti, day, saltata, riunione, nota (admin)
 POST   /api/turni/scambio             - {a: {id, slot}, userId}: userId takes slot a, a's person takes userId's first turno from today (any user for their own slot, admin for any)
@@ -42,6 +42,14 @@ POST   /api/turni/lascia              - {a: {id, slot}}: the slot becomes da cop
 POST   /api/turni/sposta              - {a: {id, slot}, to}: the person moves to a free slot of consegna `to` (own slot, admin any)
 PUT    /api/turni/auto                - {auto}: pause/resume automatic generation (admin)
 PUT    /api/turni/note                - {note}: free-text notes shown above the turni, max 5000 chars (admin; GET returns `note`)
+GET    /api/turni?passati=1           - Same, with every past week too (admins only; ignored for others)
+GET    /api/teatro/utente/:id         - A person's quota teatro: per-semester {dovuto, pagato}, residuo, anticipo (any user)
+GET    /api/teatro/oggi?data=         - Quotas paid that day, shown next to the consegna cassa (any user)
+POST   /api/teatro/pagamenti          - {userId, importo, consegnaId?}: record a payment (any user)
+GET    /api/teatro                    - Grid, semesters, payments, cassa log, balance (admin)
+PUT    /api/teatro/dovuti             - {userId, semestre, dovuto}: owed amount, 0 = non dovuto, null = not in the GASS (admin)
+PUT    /api/teatro/semestri/:s        - {quota}: semester quota; people on the old quota follow it (admin)
+PUT    /api/teatro/nota               - {userId, nota} (admin); DELETE /api/teatro/pagamenti/:id (admin); POST /api/teatro/cassa {data, importo ±, descrizione} (admin)
 POST   /api/turni/pause                - Add a pause (admin); DELETE /api/turni/pause/:id removes it
 GET    /api/version                   - Get application version from package.json (public, no auth)
 ```
@@ -161,6 +169,15 @@ created_by, created_at, updated_by, updated_at  -- audit
 id INTEGER PRIMARY KEY, dal DATE, al DATE, nota TEXT, created_by, created_at
 ```
 
+#### Tables: quota teatro (v2.19)
+```sql
+teatro_semestri  (semestre TEXT PK, quota REAL)                 -- '2026-2' = July-December 2026
+teatro_dovuti    (user_id FK CASCADE, semestre, dovuto REAL)     -- PK (user_id, semestre); 0 = non dovuto
+teatro_pagamenti (id, user_id FK CASCADE, data, importo, consegna_id, fonte, created_by, created_at)  -- fonte 'foglio' = imported
+teatro_cassa     (id, data, importo ±, descrizione, created_by, created_at)                         -- manual cassa entries
+users.teatro_nota TEXT
+```
+
 #### Indexes
 - `idx_consegne_data` on consegne(data)
 - `idx_movimenti_consegna` on movimenti(consegna_id)
@@ -255,6 +272,20 @@ Pure date/queue logic in `server/services/turni-schedule.js` (`addDays`, `tuesda
 **Import:** `manage-turni.js import <file.csv>`, lines `yyyy-mm-dd;username1;username2;nota` (blank lines, `#` comments and a `data` header are skipped; a nota containing "riunione" sets `riunione`). It replaces every week from the first imported date. `manage-turni.js list` prints the next 24 weeks.
 
 Activity events: `turno_modificato`, `turno_scambio`, `pausa_aggiunta`, `pausa_eliminata`. `leaveTurno`/`moveTurno` log as `turno_modificato`. Pages: `turni.html` (mobile agenda; own turno: swap, move, leave) and `turni-desktop.html` (same for users; admins pick every name from a menu). Shared client logic: `public/js/shared/turni-common.js`.
+
+## Quota teatro
+
+Pure helpers in `server/services/teatro-calc.js` (`semestreOf`, `semestreLabel`, `allocate`); DB-backed in `server/services/teatro.js`.
+
+**Allocation is derived, never stored.** A person's payments are summed and `allocate` spreads the total over their `teatro_dovuti` rows ordered by semester; what exceeds them is an advance (`anticipo`) that the next semester's row absorbs once it exists. Deleting a payment or changing a dovuto just changes the inputs.
+
+**Semesters open lazily.** `ensureSemestre(today)` (on `GET /api/teatro*`, `POST /pagamenti`, `GET /api/participants`) creates the current semester once, with the previous semester's quota (15 € if none), and a dovuto row for every `attivo` user. Sospesi and later joiners get none; an admin adds them.
+
+**Cassa teatro** balance = payments without `fonte` + `teatro_cassa` entries. Payments imported from the old sheet (`manage-teatro.js import`, `fonte = 'foglio'`, dated at the semester's end) are history only. A user with quota payments cannot be deleted (`deleteUser`).
+
+**Import:** `manage-teatro.js import <file.csv>`, header `username;2024-1;2024-2;…;nota`; a number n = owed n and paid n (0 = non dovuto), `-` or empty = no row. Re-importing a person replaces their imported rows. `manage-teatro.js list` prints the grid.
+
+Activity events: `teatro_pagamento`, `teatro_modifica`, `teatro_cassa`. Pages: the box in the consegna card (`consegna-common.js`), Saldi column/line (`teatroLabel` in `debiti-common.js`), `teatro-desktop.html` (admin).
 
 ## Features
 

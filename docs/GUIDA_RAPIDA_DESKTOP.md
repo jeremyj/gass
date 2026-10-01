@@ -84,12 +84,20 @@ Gli amministratori scelgono i nomi dai menu della tabella e mettono in pausa la 
 
 ---
 
+# Quota teatro
+
+Ogni semestre (gennaio–giugno, luglio–dicembre) si paga una quota per l'affitto del teatro, in una cassa separata da quella della consegna. Nella scheda del partecipante, **Quota teatro** mostra i semestri dovuti: scrivi l'importo versato (copre i semestri dal più vecchio; quello che avanza è un anticipo) e **Registra quota**. In **Saldi** la colonna **Quota teatro** dice chi è in regola.
+
+---
+
 # Solo per Amministratori
 
 | Funzione | Come accedervi |
 |---|---|
 | Riaprire consegna chiusa | Storico → **Riapri consegna** (accanto alla data), oppure Consegna → **Cambia data** → **Riapri consegna** |
 | Eliminare una consegna salvata | Consegna → **Annulla consegna** |
+| Quote teatro: griglia, quote ridotte, cassa teatro | **Teatro** (menu in alto) |
+| Vedere i turni passati | Turni → **Mostra turni passati** |
 | Modificare un saldo | Saldi → **Modifica saldo** (solo data odierna) |
 | Aggiungere partecipanti | Saldi → **+ Aggiungi partecipante** |
 | Modificare utenti | Saldi → **Modifica utente** |
