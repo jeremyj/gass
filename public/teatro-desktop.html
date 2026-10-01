@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Teatro</title>
-    <link rel="stylesheet" href="style.css?v=68">
+    <link rel="stylesheet" href="style.css?v=69">
 </head>
 <body>
     <nav class="nav-menu">
@@ -37,6 +37,7 @@
             <div class="kpi"><small>Quote mancanti</small><b id="kpi-mancanti" class="db">–</b></div>
         </div>
 
+        <label id="show-old-wrap" class="show-old initially-hidden"><input type="checkbox" id="show-old" onchange="renderGrid()"> Mostra semestri precedenti</label>
         <div class="teatro-grid-wrap">
             <table class="t teatro-grid">
                 <thead id="teatro-head"></thead>
@@ -87,6 +88,6 @@
     <script src="js/shared/api-client.js"></script>
     <script src="js/shared/auth.js?v=33"></script>
     <script src="js/shared/version.js"></script>
-    <script src="js/teatro-desktop.js?v=3"></script>
+    <script src="js/teatro-desktop.js?v=4"></script>
 </body>
 </html>

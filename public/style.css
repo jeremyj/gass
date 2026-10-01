@@ -420,6 +420,8 @@ b.th { color: var(--teatro); }
 .teatro-kpi b { font-family: var(--serif); font-size: 28px; }
 .teatro-kpi b.db { color: var(--debito); }
 .teatro-grid-wrap { overflow-x: auto; }
+.show-old { display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin-bottom: 8px; color: var(--salvia); }
+.show-old.initially-hidden { display: none; }
 .teatro-grid th, .teatro-grid td { white-space: nowrap; }
 .teatro-grid th .link-btn { font-weight: 700; line-height: 1.2; }
 .teatro-grid .g { display: inline-flex; min-width: 44px; justify-content: center; border: 0; border-radius: 6px; padding: 3px 8px; font: inherit; font-weight: 800; cursor: pointer; background: transparent; }

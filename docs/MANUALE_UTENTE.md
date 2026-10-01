@@ -312,7 +312,7 @@ In **Saldi** ogni partecipante ha la sua situazione: **in pari**, **deve** (con 
 #### Pagina Teatro (amministratori, desktop)
 
 - In alto: quanto c'è **nel bussolotto** (cassa teatro), le quote del semestre in corso, le quote mancanti
-- La **griglia** gassisti × semestri: righe in ordine: attivi, poi sospesi, poi disattivati; in ogni casella **✓** verde = pagato, **–** rosso = manca qualcosa (versato/dovuto al passaggio del mouse), grigio **0** = non dovuto, grigio **–** = non era nel GASS. Clic su una casella per cambiare quanto deve: una quota ridotta (ad esempio chi entra a metà semestre), **Non dovuto** o **Non era nel GASS**
+- La **griglia** gassisti × semestri (gli ultimi due; **Mostra semestri precedenti** per vedere quelli più vecchi): righe in ordine: attivi, poi sospesi, poi disattivati; in ogni casella **✓** verde = pagato, **–** rosso = manca qualcosa (versato/dovuto al passaggio del mouse), grigio **0** = non dovuto, grigio **–** = non era nel GASS. Clic su una casella per cambiare quanto deve: una quota ridotta (ad esempio chi entra a metà semestre), **Non dovuto** o **Non era nel GASS**
 - Clic sull'intestazione di un semestre per cambiarne la **quota**: vale per chi ha la quota piena, le ridotte restano. Un semestre nuovo parte dalla quota dell'ultimo e la devono tutti gli attivi; i sospesi no
 - **Note** per persona, come nel vecchio foglio
 - **Registro cassa teatro**: le quote pagate (con la × per eliminare un pagamento sbagliato) e le voci aggiunte a mano, ad esempio l'affitto versato (uscita) con chi l'ha portato

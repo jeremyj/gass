@@ -15,25 +15,23 @@ function cellHtml(p, s) {
   return `<td class="c"><button type="button" class="g ${paid ? 'p' : 'n'}" ${click} title="${formatNumber(r.pagato)}/${formatEuro(r.dovuto)}">${paid ? '✓' : '–'}</button></td>`;
 }
 
-function residuoHtml(p) {
-  if (p.residuo > 0) return `<span class="pill th-db">deve ${formatEuro(p.residuo)}</span>`;
-  if (p.anticipo > 0) return `<span class="pill th-ok">anticipo ${formatEuro(p.anticipo)}</span>`;
-  return '<span class="pill th-ok">in pari</span>';
-}
-
 // Same order as Saldi: attivi, then sospesi, then disattivati, each alphabetical
 const STATO_ORDER = { attivo: 0, sospeso: 1, disattivato: 2 };
 
+// Only the last 2 semesters unless "Mostra semestri precedenti" is ticked
+const RECENT_SEMESTRI = 2;
+
 function renderGrid() {
-  const { semestri } = dati;
+  const showOld = document.getElementById('show-old').checked;
+  document.getElementById('show-old-wrap').classList.toggle('initially-hidden', dati.semestri.length <= RECENT_SEMESTRI);
+  const semestri = showOld ? dati.semestri : dati.semestri.slice(-RECENT_SEMESTRI);
   const persone = [...dati.persone].sort((a, b) => STATO_ORDER[a.stato] - STATO_ORDER[b.stato] || a.nome.localeCompare(b.nome, 'it'));
   document.getElementById('teatro-head').innerHTML = `<tr><th class="left">Gassista</th>${semestri.map(s =>
-    `<th class="c"><button type="button" class="link-btn" onclick="editQuota('${s.semestre}')" title="Cambia la quota">${escapeHtml(s.label)}<br><small>${formatEuro(s.quota)}</small></button></th>`).join('')}<th class="left">Situazione</th><th class="left">Note</th></tr>`;
+    `<th class="c"><button type="button" class="link-btn" onclick="editQuota('${s.semestre}')" title="Cambia la quota">${escapeHtml(s.label)}<br><small>${formatEuro(s.quota)}</small></button></th>`).join('')}<th class="left">Note</th></tr>`;
   document.getElementById('teatro-body').innerHTML = persone.map(p => `
     <tr class="${p.stato === 'attivo' ? '' : 'off'}">
       <td class="nm">${escapeHtml(p.nome)}${p.stato === 'attivo' ? '' : `<span class="admin-badge">${p.stato}</span>`}</td>
       ${semestri.map(s => cellHtml(p, s)).join('')}
-      <td>${residuoHtml(p)}</td>
       <td><input type="text" class="nota-in" value="${escapeHtml(p.nota || '')}" placeholder="nota" onchange="saveNota(${p.id}, this.value)"></td>
     </tr>`).join('');
   const tot = s => persone.reduce((acc, p) => acc + (cellOf(p, s.semestre)?.pagato || 0), 0);
