@@ -144,8 +144,8 @@ describe('editing', () => {
     const x = createTurno(db, { settimana: '2026-11-24', t1: a, t2: b });
     const y = createTurno(db, { settimana: '2026-12-01', t1: c, t2: d });
     expect(T.swapTurnisti(db, { id: x, slot: 1 }, { id: y, slot: 1 }, '2026-10-01', audit).error).toBeUndefined();
-    expect(db.prepare('SELECT turnista1_id, scambio FROM turni WHERE id = ?').get(x)).toEqual({ turnista1_id: c, scambio: 'scambio con 01/12' });
-    expect(db.prepare('SELECT turnista1_id, scambio FROM turni WHERE id = ?').get(y)).toEqual({ turnista1_id: a, scambio: 'scambio con 24/11' });
+    expect(db.prepare('SELECT turnista1_id, scambio FROM turni WHERE id = ?').get(x)).toEqual({ turnista1_id: c, scambio: 'p1 ↔ p3 (01/12)' });
+    expect(db.prepare('SELECT turnista1_id, scambio FROM turni WHERE id = ?').get(y)).toEqual({ turnista1_id: a, scambio: 'p3 ↔ p1 (24/11)' });
   });
 
   it('swapTurnisti refuses a swap that puts someone twice on one consegna', () => {

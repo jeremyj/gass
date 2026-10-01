@@ -149,11 +149,15 @@ function swapTurnisti(db, a, b, today, audit) {
       return { error: 'Con questo scambio una persona farebbe entrambi i turni della stessa consegna' };
     }
   }
+  // Each swap is appended ("out ↔ in (dd/mm)"), so a consegna swapped twice keeps both
+  const nome = id => (id && db.prepare('SELECT display_name FROM users WHERE id = ?').get(id)?.display_name) || 'da coprire';
+  const addScambio = (row, out, inn, other) =>
+    [row.scambio, `${nome(out)} ↔ ${nome(inn)} (${ddmm(other.data)})`].filter(Boolean).join('; ');
   db.transaction(() => {
     db.prepare(`UPDATE turni SET ${colA} = ?, scambio = ?, updated_by = ?, updated_at = ? WHERE id = ?`)
-      .run(newA[colA], `scambio con ${ddmm(rowB.data)}`, audit.userId, audit.timestamp, rowA.id);
+      .run(newA[colA], addScambio(rowA, rowA[colA], rowB[colB], rowB), audit.userId, audit.timestamp, rowA.id);
     db.prepare(`UPDATE turni SET ${colB} = ?, scambio = ?, updated_by = ?, updated_at = ? WHERE id = ?`)
-      .run(newB[colB], `scambio con ${ddmm(rowA.data)}`, audit.userId, audit.timestamp, rowB.id);
+      .run(newB[colB], addScambio(rowB, rowB[colB], rowA[colA], rowA), audit.userId, audit.timestamp, rowB.id);
   })();
   return { changes: [`${rowA.data} ↔ ${rowB.data}`] };
 }

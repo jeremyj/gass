@@ -609,7 +609,7 @@ tr.off td { opacity: .6; }
 .name-btn { font: inherit; font-weight: 700; background: none; border: 0; padding: 2px 4px; margin: -2px -4px; border-radius: 4px; cursor: pointer; color: inherit; text-align: left; }
 .name-btn:hover { background: var(--s-tint); }
 .name-btn.picked { outline: 2px dashed var(--s-acc); outline-offset: 2px; }
-.scambio { font-size: 16px; font-weight: 700; color: var(--s-alt); }
+.scambio { display: block; font-size: 16px; font-weight: 700; color: var(--s-alt); }
 .pick-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; background: #FFF6E5; border: 1.5px solid var(--s-acc); border-radius: 10px; padding: 10px 16px; margin: 0 0 12px; }
 .pause-box { max-width: 640px; margin-top: 24px; }
 .pause-list { list-style: none; background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; margin: 8px 0 12px; }

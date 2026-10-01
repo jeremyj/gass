@@ -149,7 +149,7 @@ turnista1_id  INTEGER, turnista2_id INTEGER  -- FK users, NULL = da coprire
 saltata       INTEGER DEFAULT 0     -- niente consegna
 riunione      INTEGER DEFAULT 0
 nota          TEXT
-scambio       TEXT                  -- swap marker
+scambio       TEXT                  -- swap history, appended: "out ↔ in (dd/mm); …"
 created_by, created_at, updated_by, updated_at  -- audit
 ```
 
