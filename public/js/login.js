@@ -27,6 +27,7 @@ const urlError = new URLSearchParams(window.location.search).get('error');
 if (urlError) {
   const messages = {
     user_not_found: 'Il tuo utente Authentik non è registrato in GASS. Contatta un amministratore.',
+    user_disabled: 'Il tuo utente è disattivato. Contatta un amministratore.',
     oidc_error: 'Errore durante l\'autenticazione con Authentik. Riprova.',
     oidc_unavailable: 'Servizio di autenticazione non disponibile. Riprova più tardi.'
   };

@@ -262,7 +262,11 @@ La data selezionata viene mantenuta quando si cambia sezione:
 
 ### 5. Gestione Partecipanti
 
-(Funzionalità amministrative - contattare l'amministratore del sistema)
+Solo amministratori, da desktop: Saldi → **Modifica utente**.
+
+- **Elimina utente**: solo per chi non ha mai avuto movimenti né rettifiche di saldo
+- **Disattiva** (sotto Stato): per chi lascia il gruppo. L'utente non compare più in Saldi né in "Aggiungi partecipante" e non può più accedere; i suoi movimenti passati restano nello Storico e nelle consegne. Se ha ancora un credito o un debito, la conferma lo mostra; i totali di Saldi continuano a contarlo
+- Per rivedere i disattivati spuntare **Mostra disattivati** in Saldi (compaiono in grigio); **Riattiva** li rimette in elenco
 
 ## Comprendere i Calcoli dei Saldi
 
@@ -359,7 +363,10 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.15.1
+Sistema GASS Pagamenti - Versione 2.16.0
+- Gli amministratori possono disattivare un utente (Saldi → Modifica utente → Disattiva) invece di eliminarlo
+
+Versione 2.15.1
 - Storico: **Completa consegna** sulle consegne ancora aperte e, per gli amministratori, **Riapri consegna** su quelle chiuse
 - Storico su mobile: la cassa è una voce per riga
 - Testi più piccoli ingranditi ancora

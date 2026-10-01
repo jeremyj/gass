@@ -13,12 +13,12 @@ const db = require('../config/database');
  */
 function requireAuth(req, res, next) {
   if (req.session && req.session.userId) {
-    // Verify user still exists in database (prevents FK constraint failures)
-    const user = db.prepare('SELECT id FROM users WHERE id = ?').get(req.session.userId);
+    // Verify user still exists and is enabled (prevents FK constraint failures, ends disabled users' sessions)
+    const user = db.prepare('SELECT id FROM users WHERE id = ? AND attivo = 1').get(req.session.userId);
     if (user) {
       return next();
     }
-    // User no longer exists - destroy stale session
+    // User deleted or disabled - destroy stale session
     req.session.destroy();
   }
 

@@ -16,12 +16,13 @@ function renderParticipants() {
   const container = document.getElementById('saldi-list');
   container.innerHTML = '';
 
-  if (participants.length === 0) {
+  const list = visibleParticipants();
+  if (list.length === 0) {
     container.innerHTML = '<p class="empty-state">Nessun partecipante</p>';
     return;
   }
 
-  participants.forEach(p => {
+  list.forEach(p => {
     const card = createParticipantCard(p);
     container.appendChild(card);
   });

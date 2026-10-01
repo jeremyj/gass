@@ -201,7 +201,8 @@ On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_
 - Edit saldi (debiti page, only for today's date - historical saldi are read-only)
 - Reopen closed consegne
 - Add participants (desktop) - creates a full user account with username/password
-- Delete users (desktop, Modifica Utente) - refused (400) if the user has movimenti or rettifiche (they would CASCADE away); otherwise every non-cascading FK to `users` (activity logs, audit `*_by` columns) is set to NULL first, found dynamically via `pragma_foreign_key_list`. `manage-users.js delete` bypasses this rule (plain DELETE)
+- Delete users (desktop, Modifica Utente) - `deleteUser(db, id)` in `server/services/users.js`, shared with `manage-users.js delete`: refused if last user or the user has movimenti or rettifiche (they would CASCADE away); otherwise every non-cascading FK to `users` (activity logs, audit `*_by` columns) is set to NULL first, found dynamically via `pragma_foreign_key_list`. The route also refuses deleting yourself (the `user_deleted` log's actor FK would fail)
+- Disable users (`users.attivo`, 2.16.0) - for leavers with history. `PUT /api/users/:id {attivo}` or `manage-users.js active`. Blocked at local login, OIDC callback and `requireAuth`. `GET /api/participants` still returns them (past consegne/saldi need them); filtering is client-side: `visibleParticipants()` (`debiti-common.js`, "Mostra disattivati" on desktop) and `renderParticipantSelect` (active only; `openMovimento` adds the option on the fly for a disabled user's saved movimento). Saldi totals count everyone
 - Activity logs page (desktop only)
 
 ### Dates are local
@@ -244,7 +245,7 @@ Auto-calculated fields (credito_lasciato, debito_lasciato, usa_credito, debito_s
 **Stack**: Vitest + supertest, `pool: forks` (each test file = isolated Node process)
 
 ```bash
-npm test                    # all 201 tests
+npm test                    # all 210 tests
 npm run test:unit           # pure function tests (no DB/HTTP)
 npm run test:integration    # API tests with in-memory SQLite
 npm run test:coverage       # with coverage report

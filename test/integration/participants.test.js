@@ -40,6 +40,15 @@ describe('GET /api/participants', () => {
     expect(mario.saldo).toBe(50);
   });
 
+  it('includes disabled participants with attivo = 0', async () => {
+    const id = createUser(db, { username: 'gone', displayName: 'Gone' });
+    db.prepare('UPDATE users SET attivo = 0 WHERE id = ?').run(id);
+
+    const res = await adminAgent.get('/api/participants');
+    expect(res.body.participants.find(p => p.id === id).attivo).toBe(0);
+    expect(res.body.participants.find(p => p.nome === 'admin' || p.username === 'admin').attivo).toBe(1);
+  });
+
   it('calculates historical saldi as of a given date when ?date= provided', async () => {
     // users.saldo must reflect current state after all movimenti (as POST /api/consegna would set it)
     // +30 (c1) + +20 (c2) = 50 total
@@ -306,12 +315,37 @@ describe('DELETE /api/participants/:id', () => {
     expect(db.prepare('SELECT chiusa_by FROM consegne WHERE id = ?').get(c).chiusa_by).toBeNull();
   });
 
-  it('returns 400 when trying to delete the last user', async () => {
-    // admin is the only user after beforeEach cleanup
+  it('refuses an admin deleting their own account', async () => {
+    createUser(db, { username: 'other', displayName: 'Other' });
     const adminId = db.prepare('SELECT id FROM users WHERE username = ?').get('admin').id;
 
     const res = await adminAgent.delete(`/api/participants/${adminId}`);
     expect(res.status).toBe(400);
-    expect(res.body.error).toContain('ultimo');
+    expect(db.prepare('SELECT id FROM users WHERE id = ?').get(adminId)).toBeDefined();
+  });
+});
+
+describe('deleteUser service (also used by manage-users.js)', () => {
+  const { deleteUser } = require('../../server/services/users');
+
+  it('refuses a user with movimenti, leaving them in place', () => {
+    const userId = createUser(db, { username: 'climov', displayName: 'Cli Mov' });
+    const c = createConsegna(db, { data: '2026-01-12' });
+    createMovimento(db, { consegnaId: c, partecipanteId: userId, importoSaldato: 5, creditoLasciato: 5 });
+
+    expect(deleteUser(db, userId)).toMatch(/movimenti/);
+    expect(db.prepare('SELECT id FROM users WHERE id = ?').get(userId)).toBeDefined();
+  });
+
+  it('refuses to delete the last user', () => {
+    // admin is the only user after beforeEach cleanup
+    const adminId = db.prepare('SELECT id FROM users WHERE username = ?').get('admin').id;
+    expect(deleteUser(db, adminId)).toContain('ultimo');
+  });
+
+  it('deletes a user without history', () => {
+    const userId = createUser(db, { username: 'cliok', displayName: 'Cli Ok' });
+    expect(deleteUser(db, userId)).toBeNull();
+    expect(db.prepare('SELECT id FROM users WHERE id = ?').get(userId)).toBeUndefined();
   });
 });

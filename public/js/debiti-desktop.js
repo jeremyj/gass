@@ -23,12 +23,13 @@ function renderParticipants() {
   const tbody = document.getElementById('participants-body');
   tbody.innerHTML = '';
 
-  if (participants.length === 0) {
+  const list = visibleParticipants();
+  if (list.length === 0) {
     tbody.innerHTML = `<tr><td colspan="5" class="text-center">Nessun partecipante</td></tr>`;
     return;
   }
 
-  participants.forEach(p => {
+  list.forEach(p => {
     const row = createParticipantRow(p);
     tbody.appendChild(row);
   });
@@ -47,9 +48,11 @@ function renderParticipants() {
 function createParticipantRow(p) {
   const row = document.createElement('tr');
   const saldo = saldoLabel(p.saldo);
-  const adminBadge = p.is_admin ? '<span class="admin-badge">admin</span>' : '';
+  const adminBadge = (p.is_admin ? '<span class="admin-badge">admin</span>' : '')
+    + (p.attivo ? '' : '<span class="admin-badge">disattivato</span>');
 
   const canEdit = isAdmin() && isViewingToday();
+  if (!p.attivo) row.classList.add('off');
 
   row.innerHTML = `
     <td class="nm">${escapeHtml(p.nome)}</td>
@@ -260,6 +263,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (addBtn) addBtn.style.display = 'none';
     const thUsername = document.getElementById('th-username');
     if (thUsername) thUsername.style.display = 'none';
+  } else {
+    document.getElementById('show-inactive-wrap').classList.remove('initially-hidden');
   }
 
   loadParticipants();
@@ -269,6 +274,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ===== EDIT USER MODAL =====
 
 let editingUserId = null;
+let editingUserActive = true;
 
 async function showEditUserModal(id) {
   editingUserId = id;
@@ -285,6 +291,9 @@ async function showEditUserModal(id) {
     document.getElementById('edit-user-displayname').value = user.displayName;
     document.getElementById('edit-user-password').value = '';
     document.getElementById('edit-user-error').style.display = 'none';
+    editingUserActive = user.attivo;
+    document.getElementById('edit-user-state').textContent = user.attivo ? 'attivo' : 'disattivato';
+    document.getElementById('edit-user-toggle').textContent = user.attivo ? 'Disattiva' : 'Riattiva';
 
     document.getElementById('edit-user-modal').style.display = 'flex';
   } catch (error) {
@@ -295,6 +304,36 @@ async function showEditUserModal(id) {
 function closeEditUserModal() {
   document.getElementById('edit-user-modal').style.display = 'none';
   editingUserId = null;
+}
+
+// Disable (hidden, can't log in) or re-enable the user being edited
+async function toggleUserActiveFromModal() {
+  const username = document.getElementById('edit-user-username').textContent;
+
+  if (editingUserActive) {
+    const saldo = saldoLabel(participants.find(p => p.id === editingUserId)?.saldo || 0);
+    const ok = await confirmDialog({
+      title: "Disattivare l'utente?",
+      message: saldo.cls
+        ? `Attenzione: ha ancora ${saldo.amount} di ${saldo.word}. Non comparirà più negli elenchi e non potrà accedere.`
+        : 'Non comparirà più negli elenchi e non potrà accedere. Si può riattivare in qualsiasi momento.',
+      details: [['Utente', username], ['Saldo', `${saldo.amount} ${saldo.word}`]],
+      confirmText: 'Disattiva utente',
+      danger: true
+    });
+    if (!ok) return;
+  }
+
+  try {
+    await API.put(`/api/users/${editingUserId}`, { attivo: !editingUserActive });
+    closeEditUserModal();
+    showStatus(editingUserActive ? 'Utente disattivato' : 'Utente riattivato', 'success');
+    loadParticipants();
+  } catch (error) {
+    const errorDiv = document.getElementById('edit-user-error');
+    errorDiv.textContent = error.message;
+    errorDiv.style.display = 'block';
+  }
 }
 
 async function deleteUserFromModal() {

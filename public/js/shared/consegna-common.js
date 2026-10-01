@@ -105,7 +105,8 @@ function renderParticipantSelect() {
 
   select.innerHTML = '<option value="">+ Aggiungi partecipante</option>';
 
-  participants.forEach(p => {
+  // Disabled users can't be added; their saved movimenti still open from the day's list
+  participants.filter(p => p.attivo).forEach(p => {
     const option = document.createElement('option');
     option.value = p.id;
     option.textContent = p.nome;
@@ -117,6 +118,10 @@ function renderParticipantSelect() {
 function openMovimento(id) {
   const select = document.getElementById('participant-select');
   if (isConsegnaClosed || !select) return;
+  if (!select.querySelector(`option[value="${id}"]`)) {
+    const p = participants.find(p => p.id === id);
+    select.add(new Option(p ? p.nome : id, id));
+  }
   select.value = id;
   showParticipantForm();
   document.getElementById('selected-participants')?.scrollIntoView({ behavior: 'smooth', block: 'start' });

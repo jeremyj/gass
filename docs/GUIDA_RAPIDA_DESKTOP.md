@@ -84,4 +84,5 @@ Elenco di tutte le consegne in ordine cronologico inverso: per ogni giornata la 
 | Aggiungere partecipanti | Saldi → **+ Aggiungi partecipante** |
 | Modificare utenti | Saldi → **Modifica utente** |
 | Eliminare un utente | Saldi → **Modifica utente** → **Elimina utente** (solo se non ha movimenti né rettifiche di saldo) |
+| Disattivare / riattivare un utente | Saldi → **Modifica utente** → Stato → **Disattiva** / **Riattiva**; per vedere i disattivati spuntare **Mostra disattivati** |
 | Log attività | Menu → **Attività** |

@@ -5,6 +5,7 @@ const { requireAuth, requireAdmin, getAuditFields } = require('../middleware/aut
 const { roundToCents, toLocalDateString } = require('../services/calculations');
 const { saldoAt, currentSaldo, recalculateSaldo, getTransactions } = require('../services/saldi');
 const { logActivity } = require('../services/activity');
+const { deleteUser } = require('../services/users');
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ router.get('/', (req, res) => {
 
   try {
     let participants = db.prepare(
-      'SELECT id, username, display_name AS nome, saldo, ultima_modifica, is_admin FROM users ORDER BY display_name'
+      'SELECT id, username, display_name AS nome, saldo, ultima_modifica, is_admin, attivo FROM users ORDER BY display_name'
     ).all();
 
     // With a date, replay each participant's ledger up to and including it
@@ -162,48 +163,24 @@ router.delete('/:id', requireAdmin, (req, res) => {
   console.log(`[PARTICIPANTS] ${timestamp} - DELETE request for participant ID: ${id}`);
 
   try {
-    // Prevent deleting the last user
-    const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
-    if (userCount === 1) {
-      return res.status(400).json({
-        success: false,
-        error: 'Impossibile eliminare l\'ultimo utente del sistema'
-      });
-    }
-
-    // A participant with financial history stays: deleting would cascade away their movimenti/rettifiche
-    const hasHistory = db.prepare(`
-      SELECT 1 FROM movimenti WHERE partecipante_id = ?
-      UNION ALL SELECT 1 FROM rettifiche_saldo WHERE partecipante_id = ?
-    `).get(id, id);
-    if (hasHistory) {
-      return res.status(400).json({
-        success: false,
-        error: 'Impossibile eliminare: il partecipante ha movimenti o rettifiche di saldo'
-      });
+    // Deleting yourself would leave the user_deleted log pointing at no actor
+    if (Number(id) === req.session.userId) {
+      return res.status(400).json({ success: false, error: 'Non puoi eliminare il tuo account' });
     }
 
     const participant = db.prepare('SELECT display_name, username FROM users WHERE id = ?').get(id);
 
-    db.transaction(() => {
-      // Keep log and audit rows, just unlink them from the deleted user
-      const refs = db.prepare(`
-        SELECT m.name AS tbl, f."from" AS col
-        FROM sqlite_master m, pragma_foreign_key_list(m.name) f
-        WHERE m.type = 'table' AND f."table" = 'users' AND f.on_delete != 'CASCADE'
-      `).all();
-      for (const { tbl, col } of refs) {
-        db.prepare(`UPDATE "${tbl}" SET "${col}" = NULL WHERE "${col}" = ?`).run(id);
-      }
-      db.prepare('DELETE FROM users WHERE id = ?').run(id);
+    const refused = deleteUser(db, id);
+    if (refused) {
+      return res.status(400).json({ success: false, error: refused });
+    }
 
-      logActivity({
-        eventType: 'user_deleted',
-        actorUserId: req.session.userId,
-        details: `username: ${participant?.username}, display_name: ${participant?.display_name}`,
-        createdAt: timestamp
-      });
-    })();
+    logActivity({
+      eventType: 'user_deleted',
+      actorUserId: req.session.userId,
+      details: `username: ${participant?.username}, display_name: ${participant?.display_name}`,
+      createdAt: timestamp
+    });
 
     console.log(`[PARTICIPANTS] ${timestamp} - Successfully deleted participant: ${participant?.display_name || id} (ID: ${id})`);
     res.json({ success: true });

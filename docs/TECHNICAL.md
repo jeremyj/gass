@@ -38,7 +38,9 @@ DELETE /api/participants/:id          - Delete participant (admin; 400 if the us
 GET    /api/version                   - Get application version from package.json (public, no auth)
 ```
 
-**User deletion:** `movimenti` and `rettifiche_saldo` reference `users` with `ON DELETE CASCADE`, so deleting a user with either would erase their history from past consegne; the route refuses it with 400. For any other user, every non-cascading reference to `users` (`activity_logs.target_user_id`/`actor_user_id`, the `*_by` audit columns) is set to NULL in the same transaction as the delete, so log rows stay. `manage-users.js delete` does a plain `DELETE` and does not apply this rule.
+**User deletion:** `movimenti` and `rettifiche_saldo` reference `users` with `ON DELETE CASCADE`, so deleting a user with either would erase their history from past consegne; the route refuses it with 400. For any other user, every non-cascading reference to `users` (`activity_logs.target_user_id`/`actor_user_id`, the `*_by` audit columns) is set to NULL in the same transaction as the delete, so log rows stay. The rule lives in `server/services/users.js` (`deleteUser(db, id)`), shared by the route and `manage-users.js delete`. An admin can't delete their own account (400): the `user_deleted` log row would reference a deleted actor.
+
+**Disabled users** (`users.attivo = 0`): the way to remove someone who has history. Set by `PUT /api/users/:id` with `{ attivo: false|true }` (logged as `user_edited` "disattivato"/"riattivato"; an admin can't disable themselves) or `manage-users.js active <username> on|off`. Local login returns 403 and OIDC redirects to `/login?error=user_disabled`; `requireAuth` also checks `attivo`, so an open session ends on its next API call. `GET /api/participants` still returns them (with `attivo`), so past consegne and saldi resolve; the pages hide them: the consegna "Aggiungi partecipante" select lists only active users (a disabled user's saved movimento still opens from the day's list), the Saldi list hides them unless an admin ticks **Mostra disattivati** (desktop). The Saldi totals include disabled users' saldi.
 
 `GET /inbreve` serves `public/inbreve.html`, a one-page guide for new users (public, no auth, printable on one A4 page). `GET /comefunziona` serves `public/comefunziona.html`, the first-access video (`public/video/gass-primo-accesso.mp4`, public, no auth).
 
@@ -72,6 +74,7 @@ username          TEXT UNIQUE NOT NULL
 password_hash     TEXT NOT NULL
 display_name      TEXT NOT NULL          -- shown as "nome" in API
 is_admin          INTEGER DEFAULT 0
+attivo            INTEGER NOT NULL DEFAULT 1  -- 0 = disabled: hidden from lists, can't log in
 saldo             REAL DEFAULT 0      -- cache, derived from the ledger
 ultima_modifica   DATE                -- date of the last ledger event
 created_by        TEXT, created_at DATETIME

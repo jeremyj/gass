@@ -10,6 +10,7 @@
  *   delete <username>              - Delete user
  *   password <username> <newPassword>  - Change user password
  *   admin <username> <on|off>      - Set/remove admin privileges
+ *   active <username> <on|off>     - Enable/disable user (disabled: hidden, can't log in)
  *
  * Examples:
  *   node manage-users.js list
@@ -19,6 +20,7 @@
  *   node manage-users.js password admin NewPassword123
  *   node manage-users.js admin mario on
  *   node manage-users.js admin mario off
+ *   node manage-users.js active mario off
  *
  * Docker usage:
  *   docker exec gass node manage-users.js list
@@ -42,7 +44,9 @@ if (!fs.existsSync(dbPath)) {
 }
 
 const Database = require('better-sqlite3');
+const { deleteUser: deleteUserRow } = require('./server/services/users');
 const db = new Database(dbPath);
+db.pragma('foreign_keys = ON');
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -73,6 +77,9 @@ try {
       break;
     case 'admin':
       setAdmin(args[1], args[2]);
+      break;
+    case 'active':
+      setActive(args[1], args[2]);
       break;
     case 'help':
     case '--help':
@@ -105,6 +112,7 @@ function showUsage() {
   console.log('  delete <username>                               Delete user');
   console.log('  password <username> <newPassword>               Change user password');
   console.log('  admin <username> <on|off>                       Set/remove admin privileges');
+  console.log('  active <username> <on|off>                      Enable/disable user');
   console.log('  help                                            Show this help message');
   console.log('');
   console.log('Examples:');
@@ -123,7 +131,7 @@ function showUsage() {
 
 function listUsers() {
   const users = db.prepare(`
-    SELECT id, username, display_name, is_admin, saldo, created_at, updated_at
+    SELECT id, username, display_name, is_admin, attivo, saldo, created_at, updated_at
     FROM users
     ORDER BY id ASC
   `).all();
@@ -142,7 +150,7 @@ function listUsers() {
     const id = String(user.id).padEnd(4);
     const username = String(user.username).padEnd(18);
     const displayName = String(user.display_name).padEnd(21);
-    const isAdmin = user.is_admin ? '✓' : '';
+    const isAdmin = (user.is_admin ? '✓' : '') + (user.attivo ? '' : ' off');
     const saldo = (user.saldo || 0).toFixed(2).padStart(10) + '€';
     console.log(`${id}${username}${displayName}${isAdmin.padEnd(8)}${saldo}  ${created}`);
   });
@@ -216,20 +224,11 @@ function deleteUser(username) {
     process.exit(1);
   }
 
-  // Prevent deleting the last admin user
-  const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
-  if (userCount === 1) {
-    console.error('Error: Cannot delete the last user in the system');
-    process.exit(1);
-  }
-
   console.log(`Deleting user: ${username} (${user.display_name})`);
 
-  // Delete the user
-  const result = db.prepare('DELETE FROM users WHERE username = ?').run(username);
-
-  if (result.changes === 0) {
-    console.error('Error: User deletion failed');
+  const refused = deleteUserRow(db, user.id);
+  if (refused) {
+    console.error(`Error: ${refused}`);
     process.exit(1);
   }
 
@@ -338,4 +337,22 @@ function setAdmin(username, status) {
   } else {
     console.log(`✓ Admin privileges removed from user '${username}'`);
   }
+}
+
+function setActive(username, status) {
+  const statusLower = (status || '').toLowerCase();
+  if (!username || (statusLower !== 'on' && statusLower !== 'off')) {
+    console.error('Usage: node manage-users.js active <username> <on|off>');
+    process.exit(1);
+  }
+
+  const result = db.prepare('UPDATE users SET attivo = ?, updated_at = ? WHERE username = ?')
+    .run(statusLower === 'on' ? 1 : 0, new Date().toISOString(), username);
+
+  if (result.changes === 0) {
+    console.error(`Error: User '${username}' not found`);
+    process.exit(1);
+  }
+
+  console.log(`✓ User '${username}' ${statusLower === 'on' ? 'enabled' : 'disabled'}`);
 }

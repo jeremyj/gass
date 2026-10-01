@@ -19,13 +19,13 @@ router.use(requireAdmin);
 /**
  * PUT /api/users/:id
  * Update user profile (admin only)
- * Can update: displayName, password, isAdmin
+ * Can update: displayName, password, attivo
  * Cannot update: username (immutable)
  */
 router.put('/:id', async (req, res) => {
   const timestamp = new Date().toISOString();
   const { id } = req.params;
-  const { displayName, newPassword } = req.body;
+  const { displayName, newPassword, attivo } = req.body;
 
   console.log(`[USERS] ${timestamp} - Admin ${req.session.username} updating user ID: ${id}`);
 
@@ -50,6 +50,13 @@ router.put('/:id', async (req, res) => {
       });
     }
 
+    if (attivo === false && Number(id) === req.session.userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Non puoi disattivare il tuo account'
+      });
+    }
+
     // Build the update and the activity log details together
     const updates = [];
     const params = [];
@@ -65,6 +72,12 @@ router.put('/:id', async (req, res) => {
       updates.push('password_hash = ?');
       params.push(await bcrypt.hash(newPassword, 12));
       changes.push('password reset');
+    }
+
+    if (typeof attivo === 'boolean' && attivo !== (user.attivo === 1)) {
+      updates.push('attivo = ?');
+      params.push(attivo ? 1 : 0);
+      changes.push(attivo ? 'riattivato' : 'disattivato');
     }
 
     if (updates.length === 0) {
@@ -112,7 +125,7 @@ router.get('/', (req, res) => {
 
   try {
     const users = db.prepare(`
-      SELECT id, username, display_name, is_admin, saldo, ultima_modifica, created_at
+      SELECT id, username, display_name, is_admin, attivo, saldo, ultima_modifica, created_at
       FROM users
       ORDER BY display_name
     `).all();
@@ -124,6 +137,7 @@ router.get('/', (req, res) => {
         username: u.username,
         displayName: u.display_name,
         isAdmin: u.is_admin === 1,
+        attivo: u.attivo === 1,
         saldo: u.saldo,
         ultimaModifica: u.ultima_modifica,
         createdAt: u.created_at

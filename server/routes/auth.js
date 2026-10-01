@@ -62,6 +62,14 @@ router.post('/login', loginLimiter, async (req, res) => {
       });
     }
 
+    if (!user.attivo) {
+      console.log(`[AUTH] ${timestamp} - Login rejected: user disabled - ${username}`);
+      return res.status(403).json({
+        error: 'User disabled',
+        message: 'Utente disattivato: contatta un amministratore'
+      });
+    }
+
     const isAdmin = user.is_admin === 1;
 
     // When OIDC is enabled, only admin users may use local login

@@ -108,6 +108,7 @@ function createDatabase(dbPath) {
   log('\n--- Admin role migration (v1.7) ---');
 
   tryAddColumn('users', 'is_admin', 'INTEGER DEFAULT 0');
+  tryAddColumn('users', 'attivo', 'INTEGER NOT NULL DEFAULT 1');
 
   log('\n--- Chiudi consegna feature (v1.7) ---');
 

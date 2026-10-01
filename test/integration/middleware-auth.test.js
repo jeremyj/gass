@@ -53,6 +53,26 @@ describe('requireAuth middleware', () => {
   });
 });
 
+describe('disabled users', () => {
+  it('refuses login for a disabled user', async () => {
+    const userId = createUser(db, { username: 'off', password: 'password1', displayName: 'Off' });
+    db.prepare('UPDATE users SET attivo = 0 WHERE id = ?').run(userId);
+
+    const res = await request(app).post('/api/auth/login').send({ username: 'off', password: 'password1' });
+    expect(res.status).toBe(403);
+  });
+
+  it('ends the session of a user disabled mid-session', async () => {
+    const userId = createUser(db, { username: 'off2', password: 'password1', displayName: 'Off2' });
+    const a = request.agent(app);
+    await a.post('/api/auth/login').send({ username: 'off2', password: 'password1' });
+    expect((await a.get('/api/participants')).status).toBe(200);
+
+    db.prepare('UPDATE users SET attivo = 0 WHERE id = ?').run(userId);
+    expect((await a.get('/api/participants')).status).toBe(401);
+  });
+});
+
 describe('requireAdmin middleware', () => {
   it('returns 403 for non-admin on admin-only routes', async () => {
     createUser(db, { username: 'user1', password: 'password1', displayName: 'User1', isAdmin: false });

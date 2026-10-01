@@ -115,4 +115,32 @@ describe('PUT /api/users/:id', () => {
     const res = await adminAgent.put('/api/users/99999').send({ displayName: 'Ghost' });
     expect(res.status).toBe(404);
   });
+
+  it('disables and re-enables a user, logging both', async () => {
+    const userId = createUser(db, { username: 'mario', displayName: 'Mario' });
+
+    let res = await adminAgent.put(`/api/users/${userId}`).send({ attivo: false });
+    expect(res.status).toBe(200);
+    expect(db.prepare('SELECT attivo FROM users WHERE id = ?').get(userId).attivo).toBe(0);
+
+    res = await adminAgent.put(`/api/users/${userId}`).send({ attivo: true });
+    expect(res.status).toBe(200);
+    expect(db.prepare('SELECT attivo FROM users WHERE id = ?').get(userId).attivo).toBe(1);
+
+    const details = db.prepare("SELECT details FROM activity_logs WHERE event_type = 'user_edited' ORDER BY id").all();
+    expect(details.map(d => d.details)).toEqual(['disattivato', 'riattivato']);
+  });
+
+  it('refuses an admin disabling themselves', async () => {
+    const adminId = db.prepare('SELECT id FROM users WHERE username = ?').get('admin').id;
+    const res = await adminAgent.put(`/api/users/${adminId}`).send({ attivo: false });
+    expect(res.status).toBe(400);
+    expect(db.prepare('SELECT attivo FROM users WHERE id = ?').get(adminId).attivo).toBe(1);
+  });
+
+  it('lists attivo for each user', async () => {
+    createUser(db, { username: 'mario', displayName: 'Mario' });
+    const res = await adminAgent.get('/api/users');
+    expect(res.body.users.every(u => u.attivo === true)).toBe(true);
+  });
 });

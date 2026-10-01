@@ -51,6 +51,13 @@ function saldoLabel(saldo) {
 
 // ===== HELPERS =====
 
+// Disabled users are hidden unless an admin ticks "Mostra disattivati" (desktop);
+// the totals still count them, so no money drops out of the sums
+function visibleParticipants() {
+  const showOff = document.getElementById('show-inactive')?.checked;
+  return participants.filter(p => p.attivo || showOff);
+}
+
 function isViewingToday() {
   const dateInput = document.getElementById('data');
   const today = toLocalDateString();
