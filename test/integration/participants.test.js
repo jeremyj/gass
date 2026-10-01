@@ -40,13 +40,13 @@ describe('GET /api/participants', () => {
     expect(mario.saldo).toBe(50);
   });
 
-  it('includes disabled participants with attivo = 0', async () => {
-    const id = createUser(db, { username: 'gone', displayName: 'Gone' });
-    db.prepare('UPDATE users SET attivo = 0 WHERE id = ?').run(id);
-
+  it('includes sospesi and disattivati with their stato', async () => {
+    const s = createUser(db, { username: 'sosp', stato: 'sospeso' });
+    const d = createUser(db, { username: 'dis', stato: 'disattivato' });
     const res = await adminAgent.get('/api/participants');
-    expect(res.body.participants.find(p => p.id === id).attivo).toBe(0);
-    expect(res.body.participants.find(p => p.nome === 'admin' || p.username === 'admin').attivo).toBe(1);
+    expect(res.body.participants.find(p => p.id === s).stato).toBe('sospeso');
+    expect(res.body.participants.find(p => p.id === d).stato).toBe('disattivato');
+    expect(res.body.participants.find(p => p.username === 'admin').stato).toBe('attivo');
   });
 
   it('calculates historical saldi as of a given date when ?date= provided', async () => {

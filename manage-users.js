@@ -10,7 +10,7 @@
  *   delete <username>              - Delete user
  *   password <username> <newPassword>  - Change user password
  *   admin <username> <on|off>      - Set/remove admin privileges
- *   active <username> <on|off>     - Enable/disable user (disabled: hidden, can't log in)
+ *   stato <username> <attivo|sospeso|disattivato>  - Set user state (sospeso: no turni; disattivato: hidden, can't log in)
  *
  * Examples:
  *   node manage-users.js list
@@ -20,7 +20,7 @@
  *   node manage-users.js password admin NewPassword123
  *   node manage-users.js admin mario on
  *   node manage-users.js admin mario off
- *   node manage-users.js active mario off
+ *   node manage-users.js stato mario sospeso
  *
  * Docker usage:
  *   docker exec gass node manage-users.js list
@@ -44,7 +44,7 @@ if (!fs.existsSync(dbPath)) {
 }
 
 const Database = require('better-sqlite3');
-const { deleteUser: deleteUserRow } = require('./server/services/users');
+const { deleteUser: deleteUserRow, setStato } = require('./server/services/users');
 const db = new Database(dbPath);
 db.pragma('foreign_keys = ON');
 
@@ -78,8 +78,8 @@ try {
     case 'admin':
       setAdmin(args[1], args[2]);
       break;
-    case 'active':
-      setActive(args[1], args[2]);
+    case 'stato':
+      setUserStato(args[1], args[2]);
       break;
     case 'help':
     case '--help':
@@ -112,7 +112,7 @@ function showUsage() {
   console.log('  delete <username>                               Delete user');
   console.log('  password <username> <newPassword>               Change user password');
   console.log('  admin <username> <on|off>                       Set/remove admin privileges');
-  console.log('  active <username> <on|off>                      Enable/disable user');
+  console.log('  stato <username> <attivo|sospeso|disattivato>   Set user state');
   console.log('  help                                            Show this help message');
   console.log('');
   console.log('Examples:');
@@ -131,7 +131,7 @@ function showUsage() {
 
 function listUsers() {
   const users = db.prepare(`
-    SELECT id, username, display_name, is_admin, attivo, saldo, created_at, updated_at
+    SELECT id, username, display_name, is_admin, stato, saldo, created_at, updated_at
     FROM users
     ORDER BY id ASC
   `).all();
@@ -142,7 +142,7 @@ function listUsers() {
   }
 
   console.log(`\nFound ${users.length} user(s):\n`);
-  console.log('ID  Username          Display Name         Admin   Saldo       Created');
+  console.log('ID  Username          Display Name         Admin/Stato     Saldo       Created');
   console.log('─'.repeat(85));
 
   users.forEach(user => {
@@ -150,9 +150,9 @@ function listUsers() {
     const id = String(user.id).padEnd(4);
     const username = String(user.username).padEnd(18);
     const displayName = String(user.display_name).padEnd(21);
-    const isAdmin = (user.is_admin ? '✓' : '') + (user.attivo ? '' : ' off');
+    const isAdmin = (user.is_admin ? '✓' : '') + (user.stato === 'attivo' ? '' : ` ${user.stato}`);
     const saldo = (user.saldo || 0).toFixed(2).padStart(10) + '€';
-    console.log(`${id}${username}${displayName}${isAdmin.padEnd(8)}${saldo}  ${created}`);
+    console.log(`${id}${username}${displayName}${isAdmin.padEnd(16)}${saldo}  ${created}`);
   });
   console.log('');
 }
@@ -339,20 +339,17 @@ function setAdmin(username, status) {
   }
 }
 
-function setActive(username, status) {
-  const statusLower = (status || '').toLowerCase();
-  if (!username || (statusLower !== 'on' && statusLower !== 'off')) {
-    console.error('Usage: node manage-users.js active <username> <on|off>');
-    process.exit(1);
-  }
-
-  const result = db.prepare('UPDATE users SET attivo = ?, updated_at = ? WHERE username = ?')
-    .run(statusLower === 'on' ? 1 : 0, new Date().toISOString(), username);
-
-  if (result.changes === 0) {
+function setUserStato(username, stato) {
+  const user = db.prepare('SELECT id FROM users WHERE username = ?').get(username);
+  if (!user) {
     console.error(`Error: User '${username}' not found`);
     process.exit(1);
   }
-
-  console.log(`✓ User '${username}' ${statusLower === 'on' ? 'enabled' : 'disabled'}`);
+  const error = setStato(db, user.id, stato);
+  if (error) {
+    console.error(`Error: ${error}. Usage: node manage-users.js stato <username> <attivo|sospeso|disattivato>`);
+    process.exit(1);
+  }
+  db.prepare('UPDATE users SET updated_at = ? WHERE id = ?').run(new Date().toISOString(), user.id);
+  console.log(`✓ User '${username}' is now ${stato}`);
 }

@@ -36,4 +36,19 @@ function deleteUser(db, id) {
   return null;
 }
 
-module.exports = { deleteUser };
+const { toLocalDateString } = require('./calculations');
+
+const STATI = ['attivo', 'sospeso', 'disattivato'];
+
+/**
+ * Change a user's stato. Returning to attivo restarts their turni wait from today.
+ * Returns null on success, or the reason it was refused.
+ */
+function setStato(db, id, stato, today = toLocalDateString()) {
+  if (!STATI.includes(stato)) return `Stato non valido: ${stato}`;
+  db.prepare('UPDATE users SET stato = ?, turni_dal = CASE WHEN ? = \'attivo\' THEN ? ELSE turni_dal END WHERE id = ?')
+    .run(stato, stato, today, id);
+  return null;
+}
+
+module.exports = { deleteUser, setStato, STATI };

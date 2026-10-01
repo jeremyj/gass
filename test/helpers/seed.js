@@ -9,12 +9,12 @@ const BCRYPT_ROUNDS = 4; // Fast rounds for test users
  * Create a user directly in the test DB.
  * Returns the inserted row id.
  */
-function createUser(db, { username, password = 'password123', displayName, isAdmin = 0, saldo = 0 } = {}) {
+function createUser(db, { username, password = 'password123', displayName, isAdmin = 0, saldo = 0, stato = 'attivo' } = {}) {
   const passwordHash = bcrypt.hashSync(password, BCRYPT_ROUNDS);
   const result = db.prepare(`
-    INSERT INTO users (username, password_hash, display_name, saldo, is_admin)
-    VALUES (?, ?, ?, ?, ?)
-  `).run(username, passwordHash, displayName || username, saldo, isAdmin ? 1 : 0);
+    INSERT INTO users (username, password_hash, display_name, saldo, is_admin, stato)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).run(username, passwordHash, displayName || username, saldo, isAdmin ? 1 : 0, stato);
   return result.lastInsertRowid;
 }
 

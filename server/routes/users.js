@@ -9,6 +9,7 @@ const bcrypt = require('bcrypt');
 const db = require('../config/database');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { logActivity } = require('../services/activity');
+const { setStato, STATI } = require('../services/users');
 
 const router = express.Router();
 
@@ -19,13 +20,13 @@ router.use(requireAdmin);
 /**
  * PUT /api/users/:id
  * Update user profile (admin only)
- * Can update: displayName, password, attivo
+ * Can update: displayName, password, stato
  * Cannot update: username (immutable)
  */
 router.put('/:id', async (req, res) => {
   const timestamp = new Date().toISOString();
   const { id } = req.params;
-  const { displayName, newPassword, attivo } = req.body;
+  const { displayName, newPassword, stato } = req.body;
 
   console.log(`[USERS] ${timestamp} - Admin ${req.session.username} updating user ID: ${id}`);
 
@@ -50,10 +51,14 @@ router.put('/:id', async (req, res) => {
       });
     }
 
-    if (attivo === false && Number(id) === req.session.userId) {
+    if (stato !== undefined && !STATI.includes(stato)) {
+      return res.status(400).json({ success: false, error: 'Stato non valido' });
+    }
+
+    if (stato && stato !== 'attivo' && Number(id) === req.session.userId) {
       return res.status(400).json({
         success: false,
-        error: 'Non puoi disattivare il tuo account'
+        error: 'Non puoi sospendere o disattivare il tuo account'
       });
     }
 
@@ -74,21 +79,28 @@ router.put('/:id', async (req, res) => {
       changes.push('password reset');
     }
 
-    if (typeof attivo === 'boolean' && attivo !== (user.attivo === 1)) {
-      updates.push('attivo = ?');
-      params.push(attivo ? 1 : 0);
-      changes.push(attivo ? 'riattivato' : 'disattivato');
+    const statoChanged = stato && stato !== user.stato;
+    if (statoChanged) {
+      changes.push(`stato: ${user.stato} → ${stato}`);
     }
 
-    if (updates.length === 0) {
+    if (updates.length === 0 && !statoChanged) {
       return res.status(400).json({
         success: false,
         error: 'Nessun campo da aggiornare'
       });
     }
 
-    db.prepare(`UPDATE users SET ${updates.join(', ')}, updated_by = ?, updated_at = ? WHERE id = ?`)
-      .run(...params, req.session.userId, timestamp, id);
+    db.transaction(() => {
+      if (updates.length > 0) {
+        db.prepare(`UPDATE users SET ${updates.join(', ')}, updated_by = ?, updated_at = ? WHERE id = ?`)
+          .run(...params, req.session.userId, timestamp, id);
+      }
+      if (statoChanged) {
+        setStato(db, Number(id), stato);
+        db.prepare('UPDATE users SET updated_by = ?, updated_at = ? WHERE id = ?').run(req.session.userId, timestamp, id);
+      }
+    })();
 
     logActivity({
       eventType: 'user_edited',
@@ -125,7 +137,7 @@ router.get('/', (req, res) => {
 
   try {
     const users = db.prepare(`
-      SELECT id, username, display_name, is_admin, attivo, saldo, ultima_modifica, created_at
+      SELECT id, username, display_name, is_admin, stato, saldo, ultima_modifica, created_at
       FROM users
       ORDER BY display_name
     `).all();
@@ -137,7 +149,7 @@ router.get('/', (req, res) => {
         username: u.username,
         displayName: u.display_name,
         isAdmin: u.is_admin === 1,
-        attivo: u.attivo === 1,
+        stato: u.stato,
         saldo: u.saldo,
         ultimaModifica: u.ultima_modifica,
         createdAt: u.created_at

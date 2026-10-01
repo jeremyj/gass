@@ -62,7 +62,7 @@ router.post('/login', loginLimiter, async (req, res) => {
       });
     }
 
-    if (!user.attivo) {
+    if (user.stato === 'disattivato') {
       console.log(`[AUTH] ${timestamp} - Login rejected: user disabled - ${username}`);
       return res.status(403).json({
         error: 'User disabled',

@@ -101,7 +101,7 @@ router.get('/callback', async (req, res) => {
       return res.redirect('/login?error=user_not_found');
     }
 
-    if (!user.attivo) {
+    if (user.stato === 'disattivato') {
       console.log(`[OIDC] ${timestamp} - Login rejected: user '${username}' is disabled`);
       return res.redirect('/login?error=user_disabled');
     }

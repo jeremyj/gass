@@ -75,6 +75,20 @@ function createDatabase(dbPath) {
     }
   }
 
+  // Helper to safely drop a column (ignores if column doesn't exist)
+  function safeDropColumn(table, column) {
+    try {
+      db.exec(`ALTER TABLE ${table} DROP COLUMN ${column}`);
+      log(`[CLEANUP] Dropped ${column} from ${table}`);
+      return true;
+    } catch (err) {
+      if (err.message.includes('no such column')) {
+        return false; // Already removed
+      }
+      throw err;
+    }
+  }
+
   tryAddColumn('consegne', 'note', 'TEXT');
   tryAddColumn('movimenti', 'conto_produttore', 'REAL DEFAULT 0');
   tryAddColumn('consegne', 'updated_by', 'INTEGER REFERENCES users(id)');
@@ -108,7 +122,18 @@ function createDatabase(dbPath) {
   log('\n--- Admin role migration (v1.7) ---');
 
   tryAddColumn('users', 'is_admin', 'INTEGER DEFAULT 0');
-  tryAddColumn('users', 'attivo', 'INTEGER NOT NULL DEFAULT 1');
+
+  log('\n--- User state (v2.17) ---');
+
+  // attivo (0/1) becomes stato: attivo | sospeso (in GASS, no turni) | disattivato (no login, hidden)
+  tryAddColumn('users', 'stato', "TEXT NOT NULL DEFAULT 'attivo' CHECK (stato IN ('attivo', 'sospeso', 'disattivato'))");
+  // Day a user (re)joined the turni queue; NULL = since created_at
+  tryAddColumn('users', 'turni_dal', 'DATE');
+  const hasAttivo = db.prepare("SELECT 1 FROM pragma_table_info('users') WHERE name = 'attivo'").get();
+  if (hasAttivo) {
+    db.prepare("UPDATE users SET stato = 'disattivato' WHERE attivo = 0").run();
+    safeDropColumn('users', 'attivo');
+  }
 
   log('\n--- Chiudi consegna feature (v1.7) ---');
 
@@ -158,20 +183,6 @@ function createDatabase(dbPath) {
   }
 
   log('\n--- Cleanup migration (v1.8) - removing unused columns ---');
-
-  // Helper to safely drop a column (ignores if column doesn't exist)
-  function safeDropColumn(table, column) {
-    try {
-      db.exec(`ALTER TABLE ${table} DROP COLUMN ${column}`);
-      log(`[CLEANUP] Dropped ${column} from ${table}`);
-      return true;
-    } catch (err) {
-      if (err.message.includes('no such column')) {
-        return false; // Already removed
-      }
-      throw err;
-    }
-  }
 
   safeDropColumn('consegne', 'user_id');
   safeDropColumn('movimenti', 'user_id');

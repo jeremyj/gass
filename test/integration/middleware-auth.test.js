@@ -56,7 +56,7 @@ describe('requireAuth middleware', () => {
 describe('disabled users', () => {
   it('refuses login for a disabled user', async () => {
     const userId = createUser(db, { username: 'off', password: 'password1', displayName: 'Off' });
-    db.prepare('UPDATE users SET attivo = 0 WHERE id = ?').run(userId);
+    db.prepare('UPDATE users SET stato = \'disattivato\' WHERE id = ?').run(userId);
 
     const res = await request(app).post('/api/auth/login').send({ username: 'off', password: 'password1' });
     expect(res.status).toBe(403);
@@ -68,8 +68,26 @@ describe('disabled users', () => {
     await a.post('/api/auth/login').send({ username: 'off2', password: 'password1' });
     expect((await a.get('/api/participants')).status).toBe(200);
 
-    db.prepare('UPDATE users SET attivo = 0 WHERE id = ?').run(userId);
+    db.prepare('UPDATE users SET stato = \'disattivato\' WHERE id = ?').run(userId);
     expect((await a.get('/api/participants')).status).toBe(401);
+  });
+});
+
+describe('sospeso users', () => {
+  it('lets a sospeso user log in and refuses a disattivato one', async () => {
+    createUser(db, { username: 'sosp0', password: 'password1', stato: 'sospeso' });
+    createUser(db, { username: 'dis', password: 'password1', stato: 'disattivato' });
+    expect((await request(app).post('/api/auth/login').send({ username: 'sosp0', password: 'password1' })).status).toBe(200);
+    expect((await request(app).post('/api/auth/login').send({ username: 'dis', password: 'password1' })).status).toBe(403);
+  });
+
+  it('lets a sospeso user keep using the API', async () => {
+    const userId = createUser(db, { username: 'sosp', password: 'password1' });
+    const a = request.agent(app);
+    await a.post('/api/auth/login').send({ username: 'sosp', password: 'password1' });
+    db.prepare("UPDATE users SET stato = 'sospeso' WHERE id = ?").run(userId);
+    const res = await a.get('/api/participants');
+    expect(res.status).toBe(200);
   });
 });
 

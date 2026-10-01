@@ -21,7 +21,7 @@ router.get('/', (req, res) => {
 
   try {
     let participants = db.prepare(
-      'SELECT id, username, display_name AS nome, saldo, ultima_modifica, is_admin, attivo FROM users ORDER BY display_name'
+      'SELECT id, username, display_name AS nome, saldo, ultima_modifica, is_admin, stato FROM users ORDER BY display_name'
     ).all();
 
     // With a date, replay each participant's ledger up to and including it
