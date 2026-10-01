@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Turni</title>
-    <link rel="stylesheet" href="style.css?v=43">
+    <link rel="stylesheet" href="style.css?v=44">
 </head>
 <body>
     <nav class="nav-menu">
@@ -41,8 +41,8 @@
             <h2>Pause</h2>
             <ul id="pause-list" class="pause-list"></ul>
             <form class="pause-form" onsubmit="event.preventDefault(); addPause();">
-                <label>Dal <input type="date" id="pausa-dal" required></label>
-                <label>Al <input type="date" id="pausa-al" required></label>
+                <label>Dal <input type="date" id="pausa-dal" required onclick="this.showPicker()"></label>
+                <label>Al <input type="date" id="pausa-al" required onclick="this.showPicker()"></label>
                 <label>Nota <input type="text" id="pausa-nota" placeholder="es. Natale"></label>
                 <button type="submit" class="btn btn-line">Aggiungi pausa</button>
             </form>
@@ -55,7 +55,7 @@
             <form onsubmit="event.preventDefault(); saveGiorno();">
                 <div class="form-group">
                     <label for="giorno-data">Giorno della consegna</label>
-                    <input type="date" id="giorno-data">
+                    <input type="date" id="giorno-data" onclick="this.showPicker()">
                     <small class="hint">stessa coppia, solo nella stessa settimana</small>
                 </div>
                 <div class="form-group"><label><input type="checkbox" id="giorno-saltata"> Niente consegna <small class="hint">i due turnisti torneranno i primi in fila</small></label></div>
