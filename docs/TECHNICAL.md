@@ -37,7 +37,7 @@ POST   /api/participants              - Create new participant
 DELETE /api/participants/:id          - Delete participant (admin; 400 if the user has movimenti or rettifiche)
 GET    /api/turni                     - Next 12 weeks (generates missing ones), pause list (any authenticated user)
 PUT    /api/turni/:id                 - Edit a week: turnisti, day, saltata, riunione, nota (admin)
-POST   /api/turni/scambio             - {a: {id, slot}, userId}: userId takes slot a, a's person takes userId's first turno from today (admin)
+POST   /api/turni/scambio             - {a: {id, slot}, userId}: userId takes slot a, a's person takes userId's first turno from today (any user for their own slot, admin for any)
 POST   /api/turni/pause                - Add a pause (admin); DELETE /api/turni/pause/:id removes it
 GET    /api/version                   - Get application version from package.json (public, no auth)
 ```
@@ -250,7 +250,7 @@ Pure date/queue logic in `server/services/turni-schedule.js` (`addDays`, `tuesda
 
 **Import:** `manage-turni.js import <file.csv>`, lines `yyyy-mm-dd;username1;username2;nota` (blank lines, `#` comments and a `data` header are skipped; a nota containing "riunione" sets `riunione`). It replaces every week from the first imported date. `manage-turni.js list` prints the next 12 weeks.
 
-Activity events: `turno_modificato`, `turno_scambio`, `pausa_aggiunta`, `pausa_eliminata`. Pages: `turni.html` (mobile, read-only) and `turni-desktop.html` (admin editing).
+Activity events: `turno_modificato`, `turno_scambio`, `pausa_aggiunta`, `pausa_eliminata`. Pages: `turni.html` (mobile agenda, self swap) and `turni-desktop.html` (self swap; admin editing). Shared client swap logic: `public/js/shared/turni-common.js`.
 
 ## Features
 

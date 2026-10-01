@@ -19,7 +19,7 @@
   - `users.js` - User management API (admin-only, edit profile/password/admin status)
   - `storico.js` - History API
   - `logs.js` - Activity log API (admin-only)
-  - `turni.js` - Turni API (`GET` any user; edits, swaps, pauses admin-only)
+  - `turni.js` - Turni API (`GET` any user; `POST /scambio` any user for their own slot, admin for any; edits, pauses admin-only)
 - **Services**: `server/services/calculations.js` - Pure business logic; `server/services/saldi.js` - saldo ledger (DB-backed); `server/services/validation.js` - `POST /api/consegna` payload validation; `server/services/activity.js` - `logActivity()`, the only writer of `activity_logs` rows
 - **Turni services**: `server/services/turni-schedule.js` (pure date/queue helpers, `pickPair`) and `server/services/turni.js` (`ensureTurni`, `listTurni`, `updateTurno`, `swapWithNext` (→ `swapTurnisti`), pauses, `freeFutureTurni`, `importTurni`)
 - **CLI**: `manage-users.js`, `manage-turni.js` (`import <csv>` / `list`)
@@ -33,12 +33,13 @@
   - `calendar.js` - Date picker (mobile + desktop), `loadConsegneDates()`; the "Oggi" footer button calls `selectPickerDate(toLocalDateString())`, same path as clicking a day; `pickerHtml()` draws the month grid for both the page picker and the date fields (`initDateField(id)` / `setDateField` / `dateFieldValue`: a readonly text input showing dd/mm/yyyy, popup on `<body>` so modals don't clip it). Use date fields instead of `<input type="date">`, whose calendar follows the browser language
   - `consegna-common.js` - Shared consegna business logic (mobile + desktop): participant card (`renderParticipant(id, buttonsHtml)`, `populateExistingMovimento`), save path (`saveParticipant`, `postConsegna`), `openMovimento(id)` (click a row of the day's list), `esitoMovimento(m)`; page scripts keep only their button row, `closeParticipant` and post-save handling
   - `debiti-common.js` - Shared debiti loading and helpers (mobile + desktop)
+  - `turni-common.js` - Swap ("scambia con…") candidates, confirm modal and API call, used by `turni.js` and `turni-desktop.js`
   - `auth.js` - Session/logout handling; `await sessionReady` before rendering anything that depends on `isAdmin()` (else admin-only controls stay hidden when the session response arrives after the page data — this hid "Riapri consegna" on mobile until 2.12.0)
   - `version.js` - Dynamic version footer
   - `utils.js` also holds the Storico → Consegna links: `openConsegnaOn(date)` (sets `gass_selected_date`, goes to `/consegna`), `riapriConsegna(id, date)` (admin), `storicoActionsHtml(consegna)` ("Completa consegna" on open ones, admin "Riapri consegna" on closed ones)
 - **Page-Specific**: `public/js/`
-  - Mobile: `consegna.js`, `debiti.js`, `storico.js`, `turni.js` (`turni.html`, read-only agenda)
-  - Desktop: `consegna-desktop.js`, `debiti-desktop.js`, `storico-desktop.js`, `logs-desktop.js`, `turni-desktop.js` (`turni-desktop.html`, admin editing)
+  - Mobile: `consegna.js`, `debiti.js`, `storico.js`, `turni.js` (`turni.html`, agenda + self swap)
+  - Desktop: `consegna-desktop.js`, `debiti-desktop.js`, `storico-desktop.js`, `logs-desktop.js`, `turni-desktop.js` (`turni-desktop.html`, self swap + admin editing)
 
 ### HTML Script Loading Order
 ```html
@@ -208,7 +209,7 @@ On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_
 - Add participants (desktop) - creates a full user account with username/password
 - Delete users (desktop, Modifica Utente) - `deleteUser(db, id)` in `server/services/users.js`, shared with `manage-users.js delete`: refused if last user or the user has movimenti or rettifiche (they would CASCADE away); otherwise every non-cascading FK to `users` (activity logs, audit `*_by` columns) is set to NULL first, found dynamically via `pragma_foreign_key_list`. The route also refuses deleting yourself (the `user_deleted` log's actor FK would fail)
 - User `stato` (2.17.0, replaced `attivo` from 2.16.0): `PUT /api/users/:id {stato}` or `manage-users.js stato <u> <attivo|sospeso|disattivato>`. `disattivato` is for leavers with history: blocked at local login, OIDC callback and `requireAuth`. `sospeso` logs in, keeps its saldo and stays in the consegna select, but gets no turni. Leaving `attivo` calls `freeFutureTurni` (future slots become da coprire); returning sets `turni_dal` (a no-op for an already-attivo user). `GET /api/participants` returns everyone; filtering is client-side: `visibleParticipants()` (`debiti-common.js`, "Mostra disattivati" on desktop) and `renderParticipantSelect` (hides only disattivati; `openMovimento` adds the option on the fly for a disattivato user's saved movimento). Saldi totals count everyone
-- Turni editing (desktop `turni-desktop.js`): swap ("scambia con…": the chosen person takes the slot, the picked one takes their first turno from today; recorded only in the activity log), replace/assign, "Giorno" modal, pauses; routes `PUT /api/turni/:id`, `POST /api/turni/scambio`, `POST/DELETE /api/turni/pause`
+- Turni editing (desktop `turni-desktop.js`): swap any name ("scambia con…": the chosen person takes the slot, the picked one takes their first turno from today; recorded only in the activity log, confirmed in a modal like replacements; non-admins can swap only their own slot, desktop and mobile), replace/assign, "Giorno" modal, pauses; routes `PUT /api/turni/:id`, `POST /api/turni/scambio`, `POST/DELETE /api/turni/pause`
 - Activity logs page (desktop only)
 
 ### Turni
@@ -254,7 +255,7 @@ Auto-calculated fields (credito_lasciato, debito_lasciato, usa_credito, debito_s
 **Stack**: Vitest + supertest, `pool: forks` (each test file = isolated Node process)
 
 ```bash
-npm test                    # all 259 tests
+npm test                    # all 260 tests
 npm run test:unit           # pure function tests (no DB/HTTP)
 npm run test:integration    # API tests with in-memory SQLite
 npm run test:coverage       # with coverage report

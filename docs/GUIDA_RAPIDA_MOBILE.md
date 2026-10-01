@@ -70,7 +70,9 @@ Elenco di tutte le consegne in ordine cronologico inverso, con data, stato (aper
 
 # Turni
 
-Le prossime 12 settimane con i due turnisti di ogni consegna (martedì). La tua riga è segnata **TU**; **da coprire** = manca un turnista; **riunione** = riunione GASS. Solo gli amministratori modificano i turni, da desktop.
+Le prossime 12 settimane con i due turnisti di ogni consegna (martedì). La tua riga è segnata **TU**; **da coprire** = manca un turnista; **riunione** = riunione GASS.
+
+Per scambiare un tuo turno tocca **scambia** sulla tua riga e scegli la persona: prende il tuo turno e tu il suo primo turno da oggi. Conferma nella finestra che riepiloga lo scambio. Le altre modifiche le fanno gli amministratori, da desktop.
 
 ---
 

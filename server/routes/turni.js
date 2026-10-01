@@ -1,5 +1,5 @@
 /**
- * Turni API: everyone reads the next 12 weeks, admins edit.
+ * Turni API: everyone reads the next 12 weeks and swaps their own turni, admins edit.
  */
 
 const express = require('express');
@@ -39,10 +39,15 @@ router.put('/:id', requireAdmin, (req, res) => {
   res.json({ success: true });
 });
 
-router.post('/scambio', requireAdmin, (req, res) => {
+router.post('/scambio', (req, res) => {
   const audit = auditOf(req);
   const { a, userId } = req.body || {};
   if (!a || !userId) return res.status(400).json({ success: false, error: 'Scambio non valido' });
+  if (!req.session.isAdmin) {
+    const row = db.prepare('SELECT turnista1_id, turnista2_id FROM turni WHERE id = ?').get(a.id);
+    const own = row && row[Number(a.slot) === 1 ? 'turnista1_id' : 'turnista2_id'] === req.session.userId;
+    if (!own) return res.status(403).json({ success: false, error: 'Puoi scambiare solo i tuoi turni' });
+  }
   const result = T.swapWithNext(db, a, Number(userId), toLocalDateString(), audit);
   if (result.error) return res.status(400).json({ success: false, error: result.error });
   log(req, audit, 'turno_scambio', `scambio ${result.changes.join(', ')}`);

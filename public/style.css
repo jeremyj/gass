@@ -598,6 +598,8 @@ tr.off td { opacity: .6; }
 .turno-off { font-weight: 400; font-style: italic; color: var(--salvia); }
 .da-coprire { color: var(--debito); }
 .turno-tags { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+.turno-swap { grid-column: 1 / -1; display: flex; gap: 8px; margin-top: 10px; }
+.turno-swap select { flex: 1; min-width: 0; }
 .tag-tu { font-size: 16px; font-weight: 800; letter-spacing: .03em; color: var(--s-deep); background: var(--s-tint); border: 1.5px solid var(--s-acc); border-radius: 6px; padding: 1px 9px; }
 .tag-riunione { font-size: 16px; font-weight: 700; color: #fff; background: var(--s-alt); border-radius: 6px; padding: 1px 9px; white-space: nowrap; }
 .turni-t td.d b { font-family: var(--serif); font-size: 19px; text-transform: capitalize; }

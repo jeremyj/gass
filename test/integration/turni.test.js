@@ -82,6 +82,17 @@ describe('admin edits', () => {
     expect((await adminAgent.post('/api/turni/scambio').send({ a: { id: x, slot: 1 } })).status).toBe(400);
   });
 
+  it('lets a user swap only their own turno', async () => {
+    const me = db.prepare("SELECT id FROM users WHERE username = 'user1'").get().id;
+    const [b, c, d] = ['ub', 'uc', 'ud'].map(u => createUser(db, { username: u }));
+    const x = createTurno(db, { settimana: '2099-03-03', t1: me, t2: b });
+    const y = createTurno(db, { settimana: '2099-03-10', t1: c, t2: d });
+    expect((await userAgent.post('/api/turni/scambio').send({ a: { id: x, slot: 2 }, userId: c })).status).toBe(403);
+    expect((await userAgent.post('/api/turni/scambio').send({ a: { id: x, slot: 1 }, userId: c })).status).toBe(200);
+    expect(db.prepare('SELECT turnista1_id t FROM turni WHERE id = ?').get(x).t).toBe(c);
+    expect(db.prepare('SELECT turnista1_id t FROM turni WHERE id = ?').get(y).t).toBe(me);
+  });
+
   it('adds and deletes a pause', async () => {
     let res = await adminAgent.post('/api/turni/pause').send({ dal: '2099-08-01', al: '2099-08-31', nota: 'Estate' });
     expect(res.status).toBe(200);

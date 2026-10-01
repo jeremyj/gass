@@ -1,4 +1,4 @@
-// Turni, desktop: next 12 weeks; admins swap, replace, move/skip days, manage pauses
+// Turni, desktop: next 12 weeks; everyone swaps their own turni, admins swap any, replace, move/skip days, manage pauses
 
 let turni = [];
 let attivi = [];
@@ -9,7 +9,8 @@ let myId = null;
 function nameCell(t, slot) {
   const p = t.turnisti[slot - 1];
   const label = t.saltata ? '' : p ? escapeHtml(p.nome) + (p.id === myId ? ' <span class="tag-tu">TU</span>' : '') : '<span class="da-coprire">da coprire</span>';
-  if (!isAdmin() || t.saltata) return `<td class="nm">${label}</td>`;
+  const canPick = !t.saltata && (isAdmin() || (p && p.id === myId && t.data >= toLocalDateString()));
+  if (!canPick) return `<td class="nm">${label}</td>`;
   const on = picked && picked.id === t.id && picked.slot === slot ? ' picked' : '';
   return `<td class="nm"><button type="button" class="name-btn${on}" onclick="pickName(${t.id}, ${slot})">${label}</button></td>`;
 }
@@ -47,11 +48,11 @@ function renderBanner() {
   const options = attivi.filter(u => !p || u.id !== p.id).map(u => `<option value="${u.id}">${escapeHtml(u.nome)}</option>`).join('');
   banner.innerHTML = `
     <span><b>${p ? escapeHtml(p.nome) : 'Turno da coprire'}</b>, ${formatDateLong(t.data)}</span>
-    ${p ? `<select id="swap-select" title="La persona scelta prende questo turno, ${escapeHtml(p.nome)} il suo primo turno da oggi"><option value="">scambia con…</option>${options}</select>` : ''}
-    <select id="replace-select"><option value="">${p ? 'sostituisci con…' : 'assegna a…'}</option>${options}${p ? '<option value="none">— lascia da coprire</option>' : ''}</select>
+    ${p ? scambioSelectHtml(turni, t, 'swap-select') : ''}
+    ${isAdmin() ? `<select id="replace-select"><option value="">${p ? 'sostituisci con…' : 'assegna a…'}</option>${options}${p ? '<option value="none">— lascia da coprire</option>' : ''}</select>` : ''}
     <button type="button" class="btn btn-line" onclick="cancelPick()">Annulla</button>`;
   if (p) document.getElementById('swap-select').onchange = e => e.target.value && swapWith(Number(e.target.value));
-  document.getElementById('replace-select').onchange = e => replaceName(e.target.value);
+  if (isAdmin()) document.getElementById('replace-select').onchange = e => replaceName(e.target.value);
   banner.classList.remove('initially-hidden');
 }
 
@@ -67,31 +68,12 @@ function cancelPick() {
 }
 
 const nomeUtente = id => attivi.find(u => u.id === id)?.nome || '';
-const dataBreve = d => `${weekdayShort(d)} ${formatDateItalian(d).slice(0, 5)}`;
 
 async function swapWith(userId) {
   const t = turni.find(x => x.id === picked.id);
-  const p = t.turnisti[picked.slot - 1];
-  const altro = nomeUtente(userId);
-  // Same rule as the server: their first non-skipped turno from today, other than this one
-  const suo = turni.find(x => x.id !== t.id && !x.saltata && x.data >= toLocalDateString() && x.turnisti.some(q => q && q.id === userId));
-  const ok = await confirmDialog({
-    title: 'Scambiare i turni?',
-    details: [
-      [dataBreve(t.data), `${altro} al posto di ${p.nome}`],
-      [suo ? dataBreve(suo.data) : 'primo turno di ' + altro, `${p.nome} al posto di ${altro}`]
-    ],
-    confirmText: 'Scambia'
-  });
-  if (!ok) return renderBanner();
-  try {
-    await API.post('/api/turni/scambio', { a: picked, userId });
-    picked = null;
-    showStatus('Turni scambiati', 'success');
-    await loadTurni();
-  } catch (error) {
-    showStatus('Errore: ' + error.message, 'error');
-  }
+  if (!await scambiaTurno(turni, t, picked.slot, userId)) return renderBanner();
+  picked = null;
+  await loadTurni();
 }
 
 async function replaceName(value) {
@@ -214,9 +196,11 @@ async function loadTurni() {
     myId = user?.id;
     const result = await API.get('/api/turni');
     turni = result.turni;
+    const hint = document.getElementById('turni-hint');
+    hint.classList.remove('initially-hidden');
+    if (!isAdmin()) hint.textContent = 'Clic sul tuo nome per scambiare il turno: la persona scelta prende il tuo turno e ti lascia il suo primo turno da oggi.';
     if (isAdmin()) {
       attivi = (await API.get('/api/participants')).participants.filter(p => p.stato === 'attivo');
-      document.getElementById('turni-hint').classList.remove('initially-hidden');
       document.getElementById('pause-section').classList.remove('initially-hidden');
       renderPause(result.pause);
     }

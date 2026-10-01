@@ -273,16 +273,20 @@ Solo amministratori, da desktop: Saldi → **Modifica utente**.
 
 ### 6. Turni
 
-Le consegne sono di martedì. **Turni** elenca le prossime 12 settimane con i due turnisti di ciascuna; la tua riga è segnata **TU**. Etichette: **riunione** (riunione GASS), un giorno diverso dal martedì se la consegna è stata spostata, **niente consegna**, **da coprire** (turnista mancante). La pagina è in sola lettura; solo gli amministratori modificano i turni, da desktop.
+Le consegne sono di martedì. **Turni** elenca le prossime 12 settimane con i due turnisti di ciascuna; la tua riga è segnata **TU**. Etichette: **riunione** (riunione GASS), un giorno diverso dal martedì se la consegna è stata spostata, **niente consegna**, **da coprire** (turnista mancante). Puoi scambiare i tuoi turni (sotto); le altre modifiche le fanno gli amministratori, da desktop.
 
 #### Come si scelgono le coppie
 
 Tocca a chi aspetta da più tempo dall'ultimo turno. Il compagno è, tra i 3 successivi in attesa, quello con cui ha fatto meno turni (a sorte in caso di parità). Le settimane già visibili non cambiano da sole: le nuove si aggiungono in fondo. Se una consegna salta, la coppia è la prima in coda per la volta successiva.
 
+#### Scambiare un turno (tutti)
+
+Su desktop clicca il tuo nome, su mobile tocca **scambia** sulla tua riga, poi scegli la persona in **scambia con…**: prende il tuo turno e tu prendi il suo primo turno da oggi. Una finestra riepiloga lo scambio prima di confermare. L'elenco mostra solo chi ha un turno da oggi in poi e non è già in quella consegna. Lo scambio resta nel registro Attività (chi, con chi, quali date), non nella tabella dei turni.
+
 #### Modifiche (amministratori, desktop)
 
-- **Scambio**: clicca un nome e scegli **scambia con…**: la persona scelta prende questo turno, e chi lo aveva prende il primo turno da oggi della persona scelta. Lo scambio resta nel registro Attività (chi, con chi, quali date), non nella tabella dei turni
-- **Sostituzione**: clicca un nome e scegli **sostituisci con…** (o **assegna a…** se da coprire, oppure **— lascia da coprire**)
+- **Scambio**: come sopra, ma su qualsiasi nome
+- **Sostituzione**: clicca un nome e scegli **sostituisci con…** (o **assegna a…** se da coprire, oppure **— lascia da coprire**). Scambi e sostituzioni chiedono conferma
 - **Giorno**: sposta la consegna in un altro giorno della settimana, segna **niente consegna**, **riunione GASS** o aggiunge una nota. Con niente consegna la coppia torna libera ed è la prima in coda
 - **Pause**: un periodo senza consegne (ad esempio le feste). Le settimane già scritte nel periodo diventano niente consegna; eliminando la pausa le settimane mancanti si rigenerano, quelle già segnate niente consegna restano tali e si ripristinano da **Giorno**
 
