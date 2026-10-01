@@ -203,101 +203,72 @@ h2.sec { font-family: "Alegreya", serif; font-size: 28px; margin: 0 0 12px; }
 
 /* ---------- turni ---------- */
 .bnav.n4 { grid-template-columns: repeat(4, 1fr); }
-.tu { display: inline-block; font-size: 12.5px; font-weight: 800; letter-spacing: .02em; color: var(--s-deep); background: var(--s-tint); border: 1px solid var(--s-acc); border-radius: 5px; padding: 0 6px; vertical-align: 2px; }
-.sw-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 700; color: var(--s-alt); }
-.note-t { font-size: 14px; color: var(--salvia); font-style: italic; }
-.riun { display: inline-block; font-size: 13px; font-weight: 700; color: #fff; background: var(--s-alt); border-radius: 5px; padding: 0 7px; }
-
-/* M1 month grid */
-.cal { background: var(--carta); border-bottom: 1px solid var(--riga); padding: 10px 14px 12px; }
-.cal .mh { display: flex; justify-content: space-between; align-items: center; padding: 0 4px 8px; }
-.cal .mh b { font-family: "Alegreya", serif; font-size: 22px; }
-.cal .mh span { font-size: 22px; color: var(--s-deep); font-weight: 700; padding: 0 8px; }
-.cal .g { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; gap: 2px; }
-.cal .g i { font-style: normal; font-size: 13px; color: var(--salvia); font-weight: 700; padding-bottom: 4px; }
-.cal .g div { height: 40px; display: grid; place-items: center; font-size: 16px; border-radius: 8px; position: relative; }
-.cal .g div.o { color: #C3CAC4; }
-.cal .g div.tue { font-weight: 800; color: var(--s-deep); background: var(--s-tint); }
-.cal .g div.tue::after { content: ""; position: absolute; bottom: 4px; width: 6px; height: 6px; border-radius: 50%; background: var(--s-acc); }
-.cal .g div.me { background: var(--s-acc); color: #fff; }
-.cal .g div.me::after { background: #fff; }
-.cal .g div.chosen { outline: 2.5px solid var(--s-deep); outline-offset: -2px; }
-.cal .g div.today { text-decoration: underline; text-underline-offset: 4px; }
-.det { margin: 14px 20px 0; background: var(--carta); border: 1px solid var(--riga); border-radius: 12px; padding: 14px 16px; border-left: 4px solid var(--s-acc); }
-.det .d { font-size: 14px; color: var(--salvia); }
-.det h4 { margin: 2px 0 10px; font-family: "Alegreya", serif; font-size: 24px; }
-.det p { margin: 4px 0; display: flex; justify-content: space-between; font-size: 17px; }
-.det p small { color: var(--salvia); font-size: 15px; }
-.mine { margin: 12px 20px 0; font-size: 16px; color: var(--salvia); }
-.mine b { color: var(--inchiostro); }
+.tu { display: inline-block; font-size: 15px; font-weight: 800; letter-spacing: .03em; color: var(--s-deep); background: var(--s-tint); border: 1.5px solid var(--s-acc); border-radius: 6px; padding: 2px 9px; }
+.riun { display: inline-block; white-space: nowrap; font-size: 15px; font-weight: 700; color: #fff; background: var(--s-alt); border-radius: 6px; padding: 2px 9px; }
+.sw-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 700; color: var(--s-alt); margin-left: 6px; }
 
 /* M2 agenda */
 .mon { padding: 14px 20px 4px; font-family: "Alegreya", serif; font-weight: 700; font-size: 20px; color: var(--s-deep); }
 .ag { list-style: none; margin: 0; padding: 0 20px; }
-.ag li { display: grid; grid-template-columns: 52px 1fr; gap: 0 12px; padding: 10px 0; border-bottom: 1px solid var(--riga); align-items: center; }
+.ag li { display: grid; grid-template-columns: 52px 1fr auto; gap: 0 12px; padding: 10px 0; border-bottom: 1px solid var(--riga); align-items: center; }
 .ag .dd { text-align: center; line-height: 1; }
 .ag .dd b { display: block; font-family: "Alegreya", serif; font-size: 28px; }
 .ag .dd small { font-size: 12px; color: var(--salvia); font-weight: 700; text-transform: uppercase; }
-.ag .who { font-size: 17px; font-weight: 700; line-height: 1.25; }
-.ag .who .sub { display: block; font-weight: 400; font-size: 15px; color: var(--salvia); }
+.ag .dd.moved small { color: var(--s-alt); }
+.ag .who { font-size: 17px; font-weight: 700; line-height: 1.3; }
+.ag .who div { display: block; }
+.ag .who .why { font-weight: 400; font-size: 14px; color: var(--s-alt); }
+.ag .tags { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
 .ag li.cur { background: var(--s-tint); margin: 0 -20px; padding: 10px 20px; border-left: 4px solid var(--s-acc); }
-.ag li.me .who { color: var(--s-deep); }
-.ag li.past { opacity: .45; }
+.ag li.off .who { color: var(--salvia); font-weight: 400; font-style: italic; }
 
-/* D-A registro */
-.reg td { text-align: left !important; }
+/* desktop */
+table.reg { overflow: visible; }
+.reg td { text-align: left !important; vertical-align: middle; }
 .reg th { text-align: left !important; }
-.reg td.d { white-space: nowrap; width: 150px; }
+.reg td.d { white-space: nowrap; width: 170px; }
 .reg td.d b { font-family: "Alegreya", serif; font-size: 19px; }
+.reg td.d .mv { display: block; font-size: 13px; color: var(--s-alt); font-weight: 700; }
+.reg td.nm { font-weight: 700; }
 .reg tr.cur td { background: var(--s-tint); }
 .reg tr.cur td:first-child { box-shadow: inset 4px 0 0 var(--s-acc); }
-.reg tr.gen td { color: var(--salvia); }
-.reg tr.gen td.d { font-style: italic; }
 .reg td.act { text-align: right !important; white-space: nowrap; }
 .reg td.act a { color: var(--s-deep); font-weight: 700; margin-left: 12px; text-underline-offset: 3px; font-size: 15px; }
-.reg tr.pick td { background: #FFF6E5; }
-.reg tr.pick td.nmc span { outline: 2px dashed var(--s-acc); outline-offset: 3px; border-radius: 4px; }
-.sepr td { background: #F7F8F6 !important; font-size: 13px !important; color: var(--salvia); font-weight: 700; padding: 6px 16px !important; }
-.banner { display: flex; align-items: center; gap: 14px; background: #FFF6E5; border: 1.5px solid var(--s-acc); border-radius: 10px; padding: 10px 16px; margin-bottom: 12px; font-size: 16px; }
-.banner b { color: var(--s-deep); }
-.banner .btn { margin-left: auto; }
+.reg tr.giro td { background: #F7F8F6 !important; font-size: 14px !important; color: var(--salvia); padding: 7px 16px !important; }
+.reg tr.giro td b { color: var(--inchiostro); }
+.reg tr.giro td a { color: var(--s-deep); font-weight: 700; margin-left: 10px; }
+.reg tr.draft td.nm { color: var(--s-deep); }
+.reg tr.open td { background: #FFF6E5; }
+.warn { display: inline-block; font-size: 13px; font-weight: 700; color: var(--debito); background: var(--debito-t); border-radius: 5px; padding: 1px 7px; margin-left: 6px; }
+.gone { text-decoration: line-through; color: #B7BFB9; font-weight: 400; }
+.pop { position: absolute; left: 12px; top: 58px; width: 360px; background: #fff; border: 1.5px solid var(--s-deep); border-radius: 10px; box-shadow: 0 10px 28px rgba(0,0,0,.18); padding: 14px 16px; z-index: 2; font-size: 15px; text-align: left; white-space: normal; }
+.pop h5 { margin: 0 0 8px; font-family: "Alegreya", serif; font-size: 19px; }
+.pop label { display: flex; gap: 8px; align-items: flex-start; padding: 5px 0; }
+.pop label span small { display: block; color: var(--salvia); font-size: 13.5px; }
+.pop .in { display: inline-block; border: 1.5px solid var(--riga); border-radius: 6px; padding: 0 8px; font-weight: 700; margin-left: 4px; }
+.pop .bt { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
 
-/* D-B calendario */
-.mgrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-.mbox { background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; padding: 14px 16px; }
-.mbox h4 { margin: 0 0 10px; font-family: "Alegreya", serif; font-size: 22px; }
-.wk { display: grid; grid-template-columns: 70px 1fr 1fr; gap: 10px; align-items: stretch; padding: 6px 0; border-top: 1px solid var(--riga); }
-.wk .dd { font-family: "Alegreya", serif; font-weight: 700; font-size: 20px; align-self: center; }
-.wk .dd small { display: block; font-family: "Alegreya Sans"; font-size: 12px; color: var(--salvia); font-weight: 700; }
-.chip { border: 1.5px solid var(--riga); border-radius: 8px; padding: 6px 10px; font-weight: 700; font-size: 16px; background: #fff; cursor: grab; display: flex; justify-content: space-between; align-items: center; }
-.chip small { font-weight: 400; color: var(--salvia); font-size: 12.5px; }
-.chip.drag { border-color: var(--s-deep); box-shadow: 0 6px 14px rgba(0,0,0,.18); transform: rotate(-1.5deg); }
-.chip.drop { border: 2px dashed var(--s-acc); background: var(--s-tint); }
-.chip.me { border-color: var(--s-acc); }
-.wk.cur { background: var(--s-tint); margin: 0 -16px; padding: 6px 16px; }
-
-/* D-C rotazione */
-.rot { display: grid; grid-template-columns: 330px 1fr; gap: 24px; align-items: start; }
+.lay { display: grid; grid-template-columns: 1fr 310px; gap: 22px; align-items: start; }
 .rbox { background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; overflow: hidden; }
-.rbox h4 { margin: 0; padding: 12px 16px; font-family: "Alegreya", serif; font-size: 21px; border-bottom: 1px solid var(--riga); display: flex; justify-content: space-between; align-items: baseline; }
-.rbox h4 small { font-family: "Alegreya Sans"; font-size: 13px; color: var(--salvia); font-weight: 400; }
-.rbox ol { margin: 0; padding: 0; list-style: none; counter-reset: r; }
-.rbox ol li { counter-increment: r; display: grid; grid-template-columns: 26px 1fr 1fr 16px; gap: 8px; padding: 7px 14px; border-bottom: 1px solid var(--riga); font-size: 15.5px; align-items: center; }
-.rbox ol li::before { content: counter(r); color: var(--salvia); font-size: 13px; font-weight: 700; }
-.rbox ol li .h { color: #B7BFB9; font-size: 14px; letter-spacing: -2px; }
-.rbox ol li.nx { background: var(--s-tint); }
-.rbox .ft { padding: 10px 14px; font-size: 14px; color: var(--salvia); }
-.rbox .ft a { color: var(--s-deep); font-weight: 700; }
+.rbox + .rbox { margin-top: 18px; }
+.rbox h4 { margin: 0; padding: 12px 16px; font-family: "Alegreya", serif; font-size: 20px; border-bottom: 1px solid var(--riga); }
+.rbox h4 small { display: block; font-family: "Alegreya Sans"; font-size: 13.5px; color: var(--salvia); font-weight: 400; }
+.rbox .grp { padding: 10px 16px; border-bottom: 1px solid var(--riga); font-size: 15px; }
+.rbox .grp > b { display: block; font-size: 13px; color: var(--salvia); margin-bottom: 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.chips span { border: 1px solid var(--riga); border-radius: 6px; padding: 1px 7px; font-size: 14px; background: #fff; }
+.chips span.new { border-color: var(--s-acc); background: var(--s-tint); font-weight: 700; }
+.chips span.out { color: var(--salvia); background: #F2F3F1; }
+.rbox .ft { padding: 10px 16px 14px; font-size: 14px; color: var(--salvia); display: flex; flex-direction: column; gap: 8px; }
 .ex { list-style: none; margin: 0; padding: 0; }
 .ex li { padding: 9px 16px; border-bottom: 1px solid var(--riga); font-size: 15px; display: flex; justify-content: space-between; gap: 10px; }
-.ex li span { color: var(--salvia); }
-.ex li a { color: var(--debito); font-weight: 700; font-size: 14px; }
-.strike { text-decoration: line-through; color: #B7BFB9; font-weight: 400; margin-right: 6px; }
+.ex li a { color: var(--s-deep); font-weight: 700; font-size: 14px; }
 
+.rules { background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; padding: 18px 22px; max-width: 1180px; margin-bottom: 40px; }
+.rules ol, .qs ol { margin: 0; padding-left: 22px; }
+.rules li, .qs li { margin: 6px 0; font-size: 17px; }
+.rules li span, .qs li span { color: var(--salvia); }
 .qs { background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; padding: 18px 22px; max-width: 1180px; }
-.qs ol { margin: 0; padding-left: 22px; }
-.qs li { margin: 6px 0; font-size: 17px; }
-.qs li span { color: var(--salvia); }
 </style>
 </head>
 <body>
@@ -341,71 +312,47 @@ h2.sec { font-family: "Alegreya", serif; font-size: 28px; margin: 0 0 12px; }
 </svg>
 
 <div class="board">
-  <h1>GASS: turni</h1>
-  <p>Nuova scheda <b>Turni</b>. Le consegne sono il martedì: ogni martedì ha un <b>turno</b>, un <b>affiancamento</b> e una nota (es. “riunione GASS”, assenze). L’elenco è <b>a scorrimento</b>: i martedì passati spariscono e in fondo se ne aggiungono di nuovi continuando la rotazione (le due colonne del foglio ruotano ciascuna su 11 nomi). Su mobile si guarda e basta; modifiche e scambi solo da desktop. Dati del foglio Google, oggi è giovedì 1 ottobre 2026, utente “jeremy”.</p>
+  <h1>GASS: turni (2)</h1>
+  <p>Scelta l’agenda su mobile. I due turnisti sono alla pari, niente affiancamento. Sempre le prossime 12 settimane; solo gli admin modificano, da desktop. Le coppie si sorteggiano a ogni <b>giro</b>, come nel foglio. Oggi è giovedì 1 ottobre 2026, utente “jeremy”. L’8 dicembre (Immacolata) è l’esempio di consegna spostata.</p>
 
-  <h2 class="sec">Mobile: solo calendario</h2>
+  <h2 class="sec">Come funziona il giro (dallo storico)</h2>
+  <div class="rules">
+    <ol>
+      <li><b>Giro</b>: ognuno di quelli “in turno” fa un turno, poi si ricomincia. <span>Nel foglio è un blocco separato da una riga vuota, ~22 persone in ~11 settimane.</span></li>
+      <li><b>Coppie sorteggiate</b> a ogni giro, evitando le coppie del giro precedente. <span>Dal 2022 le coppie cambiano a ogni blocco.</span></li>
+      <li><b>Numero dispari</b>: una persona fa due turni, sorteggiata tra chi non li ha fatti di recente, e salta il giro dopo. <span>“polly ha fatto due turni nel periodo precedente”, “paoletta m” due volte tra marzo e maggio 2026.</span></li>
+      <li><b>Fuori turno</b>: chi al momento non ordina non entra nel giro (interruttore per persona). <span>“no turno elisa, alessandro, alice, albertina”.</span></li>
+      <li><b>Chi entra</b> nel gruppo entra dal giro successivo; <b>chi esce</b> lascia un turno “da coprire” se ne aveva uno nelle 12 settimane.</li>
+      <li><b>Consegna saltata</b>: la coppia di quel giorno va in fondo al giro, che dura una settimana in più. <span>“no turno, Cristina e Marco Zen slittati al 25 nov”, “turno saltato” → “recupero turno”.</span></li>
+      <li><b>Consegna spostata</b> (es. mercoledì): stessa coppia, cambia solo il giorno. <span>“26 (mercoledì) aprile”.</span></li>
+      <li><b>Pause</b> (Natale, agosto): un intervallo senza consegne; il giro riprende dopo, senza perdere nessuno.</li>
+    </ol>
+  </div>
+
+  <h2 class="sec">Mobile: agenda</h2>
   <div class="row">
-    <!-- M1 griglia -->
-    <div>
-      <div class="phone">
-        <header class="stag m-stag">
-          <svg class="ill" aria-hidden="true"><use href="#zucca"/></svg>
-          <div class="when">Prossimo turno</div>
-          <h2>martedì 6 ottobre</h2>
-          <div class="prod">tocca a te, con Sara B</div>
-        </header>
-        <div class="cal">
-          <div class="mh"><span>‹</span><b>Ottobre 2026</b><span>›</span></div>
-          <div class="g">
-            <i>L</i><i>M</i><i>M</i><i>G</i><i>V</i><i>S</i><i>D</i>
-            <div class="o">28</div><div class="o">29</div><div class="o">30</div><div class="today">1</div><div>2</div><div>3</div><div>4</div>
-            <div>5</div><div class="tue me">6</div><div>7</div><div>8</div><div>9</div><div>10</div><div>11</div>
-            <div>12</div><div class="tue chosen">13</div><div>14</div><div>15</div><div>16</div><div>17</div><div>18</div>
-            <div>19</div><div class="tue">20</div><div>21</div><div>22</div><div>23</div><div>24</div><div>25</div>
-            <div>26</div><div class="tue">27</div><div>28</div><div>29</div><div>30</div><div>31</div><div class="o">1</div>
-          </div>
-        </div>
-        <div class="scroll">
-          <div class="det">
-            <div class="d">martedì 13 ottobre</div>
-            <h4>matias</h4>
-            <p><small>Affiancamento</small><span>s&amp;p</span></p>
-          </div>
-          <p class="mine">I tuoi turni: <b>6 ottobre</b>, <b>22 dicembre</b></p>
-        </div>
-        <nav class="bnav n4">
-          <a href="#"><svg><use href="#i-consegna"/></svg>Consegna</a>
-          <a href="#"><svg><use href="#i-saldi"/></svg>Saldi</a>
-          <a href="#"><svg><use href="#i-storico"/></svg>Storico</a>
-          <a class="on" href="#"><svg><use href="#i-turni"/></svg>Turni</a>
-        </nav>
-      </div>
-      <p class="cap"><b>M1 · Griglia del mese.</b> Un calendario vero: i martedì con turno hanno il pallino, i tuoi sono pieni arancio. Toccando un martedì si vede sotto chi c’è. La testata dice subito il prossimo turno e se tocca a te. Si sfoglia mese per mese.</p>
-    </div>
-
-    <!-- M2 agenda -->
     <div>
       <div class="phone">
         <header class="stag m-stag">
           <svg class="ill" aria-hidden="true"><use href="#zucca"/></svg>
           <div class="when">Turni delle consegne</div>
           <h2>prossime 12 settimane</h2>
-          <div class="prod">il tuo: 6 ottobre</div>
+          <div class="prod">il tuo: martedì 6 ottobre</div>
         </header>
         <div class="scroll">
           <div class="mon">Ottobre</div>
           <ul class="ag">
-            <li class="cur me"><div class="dd"><b>6</b><small>mar</small></div><div class="who">jeremy <span class="tu">TU</span><span class="sub">con Sara B</span></div></li>
-            <li><div class="dd"><b>13</b><small>mar</small></div><div class="who">matias<span class="sub">con s&amp;p</span></div></li>
-            <li><div class="dd"><b>20</b><small>mar</small></div><div class="who">francesca b<span class="sub">con Cristina</span></div></li>
-            <li><div class="dd"><b>27</b><small>mar</small></div><div class="who">fernanda<span class="sub">con Simone e laura</span></div></li>
+            <li class="cur"><div class="dd"><b>6</b><small>mar</small></div><div class="who"><div>jeremy</div><div>Sara B</div></div><div class="tags"><span class="tu">TU</span></div></li>
+            <li><div class="dd"><b>13</b><small>mar</small></div><div class="who"><div>matias</div><div>s&amp;p</div></div><div class="tags"></div></li>
+            <li><div class="dd"><b>20</b><small>mar</small></div><div class="who"><div>francesca b</div><div>Cristina</div></div><div class="tags"></div></li>
           </ul>
           <div class="mon">Novembre</div>
           <ul class="ag">
-            <li><div class="dd"><b>3</b><small>mar</small></div><div class="who">franceska v<span class="sub">con marco b · <span class="riun" style="display:inline">riunione</span></span></div></li>
-            <li><div class="dd"><b>10</b><small>mar</small></div><div class="who">Riccardo e camille<span class="sub">con sara e Simone</span></div></li>
-            <li><div class="dd"><b>17</b><small>mar</small></div><div class="who">Irene p<span class="sub">con paoletta m</span></div></li>
+            <li><div class="dd"><b>3</b><small>mar</small></div><div class="who"><div>franceska v</div><div>marco b</div></div><div class="tags"><span class="riun">riunione</span></div></li>
+          </ul>
+          <div class="mon">Dicembre</div>
+          <ul class="ag">
+            <li><div class="dd moved"><b>9</b><small>mer</small></div><div class="who"><div>silke</div><div>Riccardo e camille</div><div class="why">spostata da martedì 8, festa</div></div><div class="tags"></div></li>
           </ul>
         </div>
         <nav class="bnav n4">
@@ -415,143 +362,79 @@ h2.sec { font-family: "Alegreya", serif; font-size: 28px; margin: 0 0 12px; }
           <a class="on" href="#"><svg><use href="#i-turni"/></svg>Turni</a>
         </nav>
       </div>
-      <p class="cap"><b>M2 · Agenda.</b> Un martedì per riga, raggruppati per mese, come il foglio ma più leggibile. Il prossimo turno è evidenziato, il tuo ha l’etichetta TU. Si legge tutto scorrendo, senza toccare niente. Meno “calendario”, più comodo per vedere chi viene dopo.</p>
+      <p class="cap"><b>Agenda, mobile.</b> I due nomi uno sotto l’altro, stessa misura e peso. TU e riunione a destra, centrati sulla riga. Una consegna spostata mostra il giorno nuovo (MER) con il motivo; una saltata è una riga in corsivo “niente consegna”. Solo lettura.</p>
     </div>
   </div>
 
-  <h2 class="sec">Desktop: modifiche e scambi</h2>
-
-  <!-- D-A registro -->
+  <h2 class="sec">Desktop: giri, scambi e calendario (solo admin)</h2>
   <div class="row">
     <div>
       <div class="desk">
         <div class="d-top"><span class="brand">GASS Torpignattara</span><nav><a href="#">Consegna</a><a href="#">Saldi</a><a href="#">Storico</a><a class="on" href="#">Turni</a><a href="#">Attività</a></nav><div class="u"><span>jeremy</span><a href="#">Cambia password</a><a href="#">Esci</a></div></div>
         <div class="d-body">
-          <div class="banner"><svg width="20" height="20" style="color:var(--s-acc)"><use href="#i-swap"/></svg><span>Scambio: <b>francesca b</b> (20 ottobre, turno). Ora clicca un altro nome da scambiare.</span><button class="btn line sm">Annulla scambio</button></div>
-          <div class="d-bar"><h3>Turni</h3><span class="hint" style="margin:0">da martedì 6 ottobre · le righe in corsivo sono generate dalla rotazione</span></div>
-          <table class="t reg">
-            <thead><tr><th>Martedì</th><th>Turno</th><th>Affiancamento</th><th>Note</th><th></th></tr></thead>
-            <tbody>
-              <tr class="cur"><td class="d"><b>6 ottobre</b></td><td class="nm nmc">jeremy <span class="tu">TU</span></td><td>Sara B</td><td></td><td class="act"><a href="#">Modifica</a><a href="#">Scambia</a></td></tr>
-              <tr><td class="d"><b>13 ottobre</b></td><td class="nm nmc"><span>matias</span></td><td class="nmc"><span>s&amp;p</span></td><td></td><td class="act"><a href="#">Modifica</a><a href="#">Scambia</a></td></tr>
-              <tr class="pick"><td class="d"><b>20 ottobre</b></td><td class="nm nmc"><span>francesca b</span></td><td>Cristina</td><td></td><td class="act"><a href="#">Modifica</a></td></tr>
-              <tr><td class="d"><b>27 ottobre</b></td><td class="nm nmc"><span>fernanda</span></td><td class="nmc"><span>Simone e laura</span></td><td></td><td class="act"><a href="#">Modifica</a><a href="#">Scambia</a></td></tr>
-              <tr><td class="d"><b>3 novembre</b></td><td class="nm">franceska v</td><td>marco b</td><td><span class="riun">riunione GASS</span></td><td class="act"><a href="#">Modifica</a><a href="#">Scambia</a></td></tr>
-              <tr><td class="d"><b>10 novembre</b></td><td class="nm">Riccardo e camille</td><td>sara e Simone</td><td></td><td class="act"><a href="#">Modifica</a><a href="#">Scambia</a></td></tr>
-              <tr><td class="d"><b>17 novembre</b></td><td class="nm">Irene p <span class="sw-tag"><svg width="14" height="14"><use href="#i-swap"/></svg>scambio con sara b</span></td><td>paoletta m</td><td></td><td class="act"><a href="#">Modifica</a><a href="#">Scambia</a></td></tr>
-              <tr><td class="d"><b>24 novembre</b></td><td class="nm">sara b <span class="sw-tag"><svg width="14" height="14"><use href="#i-swap"/></svg>scambio con Irene p</span></td><td>salvatore</td><td></td><td class="act"><a href="#">Modifica</a><a href="#">Scambia</a></td></tr>
-              <tr><td class="d"><b>1 dicembre</b></td><td class="nm">maurizio</td><td>polly</td><td></td><td class="act"><a href="#">Modifica</a><a href="#">Scambia</a></td></tr>
-              <tr class="sepr"><td colspan="5">Generati dalla rotazione, si confermano da soli quando diventano le prossime 8 settimane</td></tr>
-              <tr class="gen"><td class="d">8 dicembre</td><td>Ilaria</td><td>Rachele</td><td></td><td class="act"><a href="#">Modifica</a></td></tr>
-              <tr class="gen"><td class="d">15 dicembre</td><td>silke</td><td>marco z</td><td></td><td class="act"><a href="#">Modifica</a></td></tr>
-              <tr class="gen"><td class="d">22 dicembre</td><td>jeremy</td><td>Sara B</td><td><span class="note-t">Natale?</span></td><td class="act"><a href="#">Modifica</a></td></tr>
-            </tbody>
-          </table>
-          <p class="hint">“Scambia” su un nome, poi clic sul nome con cui scambiare: i due si invertono e la riga mostra lo scambio. “Modifica” apre la riga in linea (turno, affiancamento, nota, o “nessuna consegna”).</p>
-        </div>
-      </div>
-      <p class="cap" style="max-width:1180px"><b>A · Registro.</b> Il foglio Google, ma dentro GASS: una tabella, una riga per martedì, dal prossimo in giù. Scambio in due clic (qui a metà: francesca b scelta, si aspetta il secondo nome). Gli scambi restano visibili sulla riga. È la più vicina a come lavorate oggi.</p>
-    </div>
-  </div>
-
-  <!-- D-B calendario drag -->
-  <div class="row">
-    <div>
-      <div class="desk">
-        <div class="d-top"><span class="brand">GASS Torpignattara</span><nav><a href="#">Consegna</a><a href="#">Saldi</a><a href="#">Storico</a><a class="on" href="#">Turni</a><a href="#">Attività</a></nav><div class="u"><span>jeremy</span><a href="#">Cambia password</a><a href="#">Esci</a></div></div>
-        <div class="d-body">
-          <div class="d-bar"><h3>Turni</h3><span class="hint" style="margin:0">trascina un nome sopra un altro per scambiarli · doppio clic per modificare</span></div>
-          <div class="mgrid">
-            <div class="mbox">
-              <h4>Ottobre</h4>
-              <div class="wk" style="border-top:0;font-size:13px;color:var(--salvia);font-weight:700;padding-top:0"><span></span><span>Turno</span><span>Affiancamento</span></div>
-              <div class="wk cur"><div class="dd">6<small>prossimo</small></div><div class="chip me">jeremy <span class="tu">TU</span></div><div class="chip">Sara B</div></div>
-              <div class="wk"><div class="dd">13</div><div class="chip drop">matias <small>lascia qui</small></div><div class="chip">s&amp;p</div></div>
-              <div class="wk"><div class="dd">20</div><div class="chip drag">francesca b</div><div class="chip">Cristina</div></div>
-              <div class="wk"><div class="dd">27</div><div class="chip">fernanda</div><div class="chip">Simone e laura</div></div>
+          <div class="lay">
+            <div>
+              <div class="d-bar"><h3>Prossime 12 settimane</h3><button class="btn line sm">Aggiungi pausa</button></div>
+              <table class="t reg">
+                <thead><tr><th>Consegna</th><th>Turnista</th><th>Turnista</th><th>Note</th><th></th></tr></thead>
+                <tbody>
+                  <tr class="giro"><td colspan="5"><b>Giro 22 settembre – 1 dicembre</b> · 11 settimane, 22 persone · 2 di 11 fatte</td></tr>
+                  <tr class="cur"><td class="d"><b>mar 6 ottobre</b></td><td class="nm">jeremy</td><td class="nm">Sara B</td><td></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
+                  <tr><td class="d"><b>mar 13 ottobre</b></td><td class="nm">matias</td><td class="nm">s&amp;p</td><td></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
+                  <tr><td class="d"><b>mar 20 ottobre</b></td><td class="nm">francesca b</td><td class="nm">Cristina</td><td></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
+                  <tr><td class="d"><b>mar 27 ottobre</b></td><td class="nm">fernanda</td><td class="nm">Simone e laura</td><td></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
+                  <tr><td class="d"><b>mar 3 novembre</b></td><td class="nm">franceska v</td><td class="nm">marco b</td><td><span class="riun">riunione GASS</span></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
+                  <tr><td class="d"><b>mar 10 novembre</b></td><td class="nm">Riccardo e camille</td><td class="nm">sara e Simone</td><td></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
+                  <tr class="open"><td class="d"><b>mar 17 novembre</b></td><td class="nm"><span class="gone">Irene p</span><span class="warn">da coprire, uscita dal gruppo</span></td><td class="nm">paoletta m</td><td></td><td class="act"><a href="#">Assegna</a><a href="#">Giorno</a></td></tr>
+                  <tr><td class="d"><b>mar 24 novembre</b></td><td class="nm">sara b<span class="sw-tag"><svg width="14" height="14"><use href="#i-swap"/></svg>da 1/12</span></td><td class="nm">salvatore</td><td></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
+                  <tr><td class="d"><b>mar 1 dicembre</b></td><td class="nm">maurizio<span class="sw-tag"><svg width="14" height="14"><use href="#i-swap"/></svg>da 24/11</span></td><td class="nm">polly</td><td></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
+                  <tr class="giro"><td colspan="5"><b>Giro dall’8 dicembre</b> · sorteggiato, si può rimescolare fino all’inizio<a href="#">Rimescola coppie</a></td></tr>
+                  <tr class="draft"><td class="d" style="position:relative"><b>mer 9 dicembre</b><span class="mv">da mar 8, Immacolata</span>
+                    <div class="pop">
+                      <h5>Consegna di martedì 8 dicembre</h5>
+                      <label><input type="radio" name="g"><span>Normale, martedì 8</span></label>
+                      <label><input type="radio" name="g" checked><span>Sposta a <span class="in">mer 9 dic</span><small>stessa coppia, cambia solo il giorno</small></span></label>
+                      <label><input type="radio" name="g"><span>Niente consegna<small>silke e Riccardo e camille vanno in fondo al giro</small></span></label>
+                      <label style="display:block">Motivo <span class="in" style="font-weight:400">festa (Immacolata)</span></label>
+                      <div class="bt"><button class="btn line sm">Annulla</button><button class="btn go sm">Salva</button></div>
+                    </div>
+                  </td><td class="nm">silke</td><td class="nm">Riccardo e camille</td><td></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
+                  <tr class="draft"><td class="d"><b>mar 15 dicembre</b></td><td class="nm">fernanda</td><td class="nm">marco b</td><td></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
+                  <tr class="draft"><td class="d"><b>mar 22 dicembre</b></td><td class="nm">Sara B</td><td class="nm">matias</td><td></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
+                </tbody>
+              </table>
+              <p class="hint">“Scambia”: clic su un nome, poi sul nome con cui scambiarlo; la riga ricorda lo scambio. “Giorno”: sposta, salta o aggiungi una nota (riunione). Ogni modifica finisce in Attività.</p>
             </div>
-            <div class="mbox">
-              <h4>Novembre</h4>
-              <div class="wk" style="border-top:0;font-size:13px;color:var(--salvia);font-weight:700;padding-top:0"><span></span><span>Turno</span><span>Affiancamento</span></div>
-              <div class="wk"><div class="dd">3<small>riunione</small></div><div class="chip">franceska v</div><div class="chip">marco b</div></div>
-              <div class="wk"><div class="dd">10</div><div class="chip">Riccardo e camille</div><div class="chip">sara e Simone</div></div>
-              <div class="wk"><div class="dd">17</div><div class="chip">Irene p <small>scambio</small></div><div class="chip">paoletta m</div></div>
-              <div class="wk"><div class="dd">24</div><div class="chip">sara b <small>scambio</small></div><div class="chip">salvatore</div></div>
-            </div>
-          </div>
-          <p class="hint">Dicembre e oltre sotto, generati dalla rotazione. Ogni scambio chiede conferma (“Scambiare francesca b (20/10) con matias (13/10)?”) e finisce nel registro Attività.</p>
-        </div>
-      </div>
-      <p class="cap" style="max-width:1180px"><b>B · Calendario a blocchi.</b> Un riquadro per mese, i nomi sono “gettoni” da trascinare: si lascia francesca b su matias e i due si scambiano. Molto immediato, ma il trascinamento è meno preciso con il touchpad e serve comunque una conferma.</p>
-    </div>
-  </div>
-
-  <!-- D-C rotazione -->
-  <div class="row">
-    <div>
-      <div class="desk">
-        <div class="d-top"><span class="brand">GASS Torpignattara</span><nav><a href="#">Consegna</a><a href="#">Saldi</a><a href="#">Storico</a><a class="on" href="#">Turni</a><a href="#">Attività</a></nav><div class="u"><span>jeremy</span><a href="#">Cambia password</a><a href="#">Esci</a></div></div>
-        <div class="d-body">
-          <div class="rot">
-            <div style="display:flex;flex-direction:column;gap:18px">
+            <div>
               <div class="rbox">
-                <h4>Rotazione <small>trascina per riordinare</small></h4>
-                <ol>
-                  <li class="nx"><span>jeremy</span><span>Sara B</span><span class="h">⋮⋮</span></li>
-                  <li><span>matias</span><span>s&amp;p</span><span class="h">⋮⋮</span></li>
-                  <li><span>francesca b</span><span>Cristina</span><span class="h">⋮⋮</span></li>
-                  <li><span>fernanda</span><span>Simone e laura</span><span class="h">⋮⋮</span></li>
-                  <li><span>franceska v</span><span>marco b</span><span class="h">⋮⋮</span></li>
-                  <li><span>Riccardo e camille</span><span>sara e Simone</span><span class="h">⋮⋮</span></li>
-                  <li><span>Irene p</span><span>paoletta m</span><span class="h">⋮⋮</span></li>
-                  <li><span>sara b</span><span>salvatore</span><span class="h">⋮⋮</span></li>
-                  <li><span>maurizio</span><span>polly</span><span class="h">⋮⋮</span></li>
-                  <li><span>Ilaria</span><span>Rachele</span><span class="h">⋮⋮</span></li>
-                  <li><span>silke</span><span>marco z</span><span class="h">⋮⋮</span></li>
-                </ol>
-                <div class="ft"><a href="#">+ Aggiungi alla rotazione</a> · 11 coppie, giro di 11 settimane</div>
+                <h4>Prossimo giro<small>dall’8 dicembre · 21 persone · 11 settimane</small></h4>
+                <div class="grp"><b>In turno</b><div class="chips"><span>Ilaria</span><span>Rachele</span><span>silke</span><span>marco z</span><span>jeremy</span><span>Sara B</span><span>matias</span><span>s&amp;p</span><span>francesca b</span><span>Cristina</span><span>fernanda</span><span>Simone e laura</span><span>franceska v</span><span>marco b</span><span>Riccardo e camille</span><span>sara e Simone</span><span>sara b</span><span>salvatore</span><span>maurizio</span><span>polly</span><span class="new">stefania · nuova</span></div></div>
+                <div class="grp"><b>Fuori turno (non ordinano)</b><div class="chips"><span class="out">elisa</span><span class="out">alessandro</span><span class="out">alice</span><span class="out">albertina</span></div></div>
+                <div class="grp"><b>Salta questo giro</b><div class="chips"><span class="out">paoletta m · 2 turni nel giro prima</span></div></div>
+                <div class="ft"><span>Dispari: sorteggiato chi fa due turni (<b style="color:var(--inchiostro)">polly</b>), salterà il giro dopo.</span><span>Clic su un nome per spostarlo tra i gruppi.</span></div>
               </div>
               <div class="rbox">
-                <h4>Eccezioni</h4>
+                <h4>Pause</h4>
                 <ul class="ex">
-                  <li><span><b style="color:var(--inchiostro)">Scambio</b> 17/11 ↔ 24/11 · Irene p, sara b</span><a href="#">annulla</a></li>
-                  <li><span><b style="color:var(--inchiostro)">Nota</b> 3/11 · riunione GASS</span><a href="#">annulla</a></li>
-                  <li><span><b style="color:var(--inchiostro)">Niente consegna</b> 29/12</span><a href="#">annulla</a></li>
+                  <li><span><b>Natale</b> 29 dic – 5 gen</span><a href="#">modifica</a></li>
+                  <li><span><b>Estate</b> 28 lug – 1 set, tranne 11 ago</span><a href="#">modifica</a></li>
                 </ul>
               </div>
             </div>
-            <div>
-              <div class="d-bar"><h3>Prossimi martedì</h3><button class="btn line sm">Aggiungi eccezione</button></div>
-              <table class="t reg">
-                <thead><tr><th>Martedì</th><th>Turno</th><th>Affiancamento</th><th>Note</th><th></th></tr></thead>
-                <tbody>
-                  <tr class="cur"><td class="d"><b>6 ottobre</b></td><td class="nm">jeremy <span class="tu">TU</span></td><td>Sara B</td><td></td><td class="act"><a href="#">Scambia</a></td></tr>
-                  <tr><td class="d"><b>13 ottobre</b></td><td class="nm">matias</td><td>s&amp;p</td><td></td><td class="act"><a href="#">Scambia</a></td></tr>
-                  <tr><td class="d"><b>20 ottobre</b></td><td class="nm">francesca b</td><td>Cristina</td><td></td><td class="act"><a href="#">Scambia</a></td></tr>
-                  <tr><td class="d"><b>27 ottobre</b></td><td class="nm">fernanda</td><td>Simone e laura</td><td></td><td class="act"><a href="#">Scambia</a></td></tr>
-                  <tr><td class="d"><b>3 novembre</b></td><td class="nm">franceska v</td><td>marco b</td><td><span class="riun">riunione GASS</span></td><td class="act"><a href="#">Scambia</a></td></tr>
-                  <tr><td class="d"><b>10 novembre</b></td><td class="nm">Riccardo e camille</td><td>sara e Simone</td><td></td><td class="act"><a href="#">Scambia</a></td></tr>
-                  <tr><td class="d"><b>17 novembre</b></td><td class="nm"><span class="strike">Irene p</span>sara b <span class="sw-tag"><svg width="14" height="14"><use href="#i-swap"/></svg></span></td><td>paoletta m</td><td></td><td class="act"><a href="#">Scambia</a></td></tr>
-                  <tr><td class="d"><b>24 novembre</b></td><td class="nm"><span class="strike">sara b</span>Irene p <span class="sw-tag"><svg width="14" height="14"><use href="#i-swap"/></svg></span></td><td>salvatore</td><td></td><td class="act"><a href="#">Scambia</a></td></tr>
-                  <tr><td class="d"><b>1 dicembre</b></td><td class="nm">maurizio</td><td>polly</td><td></td><td class="act"><a href="#">Scambia</a></td></tr>
-                </tbody>
-              </table>
-            </div>
           </div>
         </div>
       </div>
-      <p class="cap" style="max-width:1180px"><b>C · Rotazione + eccezioni.</b> Si gestisce l’ordine, non le date: a sinistra la lista che gira, a destra i martedì che ne escono. Scambi, note e “niente consegna” sono eccezioni sopra la rotazione, annullabili una per una; si vede chi era previsto (barrato). Chi entra o esce dal GASS si aggiunge o toglie dalla rotazione una volta sola. Più potente, un po’ più astratta.</p>
+      <p class="cap" style="max-width:1180px"><b>Desktop.</b> A sinistra le 12 settimane divise per giro: il giro in corso è fisso, il prossimo è sorteggiato e si può rimescolare finché non inizia. Chi esce lascia un turno “da coprire”, evidenziato. “Giorno” apre il pannello per spostare o saltare una consegna. A destra chi entra nel prossimo giro, chi è fuori turno e chi lo salta; sotto le pause (Natale, agosto con una sola consegna).</p>
     </div>
   </div>
 
-  <h2 class="sec">Da decidere prima di costruire</h2>
+  <h2 class="sec">Ancora da decidere</h2>
   <div class="qs">
     <ol>
-      <li>I nomi sono <b>utenti GASS</b> (scelti da un elenco, così “TU” e i tuoi turni funzionano) o <b>testo libero</b> come nel foglio? <span>Coppie come “s&amp;p” o “Riccardo e camille” sono più facili come testo libero, oppure come due utenti nella stessa casella.</span></li>
-      <li>Chi può modificare e scambiare da desktop: <b>tutti</b> o solo gli <b>admin</b>?</li>
-      <li>La rotazione ripete davvero sempre lo stesso ordine (turno e affiancamento insieme), o le due colonne girano separate?</li>
-      <li>Quanto avanti mostrare: 8, 12 settimane, o fino a fine rotazione?</li>
-      <li>La nota “no turno elisa, alessandro…” significa assenti da saltare nel giro, o solo un appunto?</li>
+      <li><b>Coppie e famiglie</b> (“silvia e paolo”, “s&amp;p”, “Riccardo e camille”) sono un solo utente GASS o due? <span>Se sono due, servono “insieme sempre” per farli contare come un turno.</span></li>
+      <li><b>Dispari</b>: va bene che il sistema sorteggi chi fa due turni e lo faccia saltare al giro dopo, come nello storico?</li>
+      <li><b>Turni passati</b>: importare lo storico del foglio (serve per evitare di ripetere coppie e per sapere chi ha fatto due turni) o partire dal giro attuale (22 settembre)?</li>
+      <li><b>Fuori turno</b>: attendo la tua verifica su elisa, alessandro, alice, albertina.</li>
     </ol>
   </div>
 </div>
