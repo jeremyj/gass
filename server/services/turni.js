@@ -130,7 +130,7 @@ function updateTurno(db, id, fields, audit) {
   return { changes };
 }
 
-function swapTurnisti(db, a, b, audit) {
+function swapTurnisti(db, a, b, today, audit) {
   const col = slot => (Number(slot) === 1 ? 'turnista1_id' : Number(slot) === 2 ? 'turnista2_id' : null);
   const colA = col(a.slot), colB = col(b.slot);
   if (!colA || !colB) return { error: 'Turno non valido' };
@@ -138,6 +138,9 @@ function swapTurnisti(db, a, b, audit) {
   const rowA = db.prepare('SELECT * FROM turni WHERE id = ?').get(a.id);
   const rowB = db.prepare('SELECT * FROM turni WHERE id = ?').get(b.id);
   if (!rowA || !rowB) return { error: 'Turno non trovato' };
+  if (rowA.saltata || rowB.saltata || rowA.data < today || rowB.data < today) {
+    return { error: 'Si possono scambiare solo consegne future' };
+  }
 
   const newA = { ...rowA, [colA]: rowB[colB] };
   const newB = { ...rowB, [colB]: rowA[colA] };
@@ -183,16 +186,18 @@ function freeFutureTurni(db, userId, today) {
 }
 
 // rows: [{ data, username1, username2, nota }]; replaces every week from the first imported one
-function importTurni(db, rows) {
-  const byUsername = db.prepare('SELECT id FROM users WHERE username = ?');
+function importTurni(db, rows, today) {
+  const byUsername = db.prepare('SELECT id, stato FROM users WHERE username = ?');
   const prepared = [];
   for (const r of rows) {
     if (!isDateString(r.data)) return { error: `Data non valida: ${r.data}` };
+    if (r.username1 && r.username1 === r.username2) return { error: `Stessa persona due volte il ${r.data}` };
     const ids = [];
     for (const u of [r.username1, r.username2]) {
       if (!u) { ids.push(null); continue; }
       const user = byUsername.get(u);
       if (!user) return { error: `Utente non trovato: ${u}` };
+      if (r.data >= today && user.stato !== 'attivo') return { error: `Utente non attivo nelle settimane future: ${u} (${r.data})` };
       ids.push(user.id);
     }
     const nota = (r.nota || '').trim();

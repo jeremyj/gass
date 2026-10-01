@@ -71,3 +71,7 @@ Thumbs.db
 *.mp4
 summary-*
 .claude/
+
+# Agent workspace and design material
+.superpowers/
+design/

@@ -143,7 +143,7 @@ describe('editing', () => {
     const [a, b, c, d] = people(4);
     const x = createTurno(db, { settimana: '2026-11-24', t1: a, t2: b });
     const y = createTurno(db, { settimana: '2026-12-01', t1: c, t2: d });
-    expect(T.swapTurnisti(db, { id: x, slot: 1 }, { id: y, slot: 1 }, audit).error).toBeUndefined();
+    expect(T.swapTurnisti(db, { id: x, slot: 1 }, { id: y, slot: 1 }, '2026-10-01', audit).error).toBeUndefined();
     expect(db.prepare('SELECT turnista1_id, scambio FROM turni WHERE id = ?').get(x)).toEqual({ turnista1_id: c, scambio: 'scambio con 01/12' });
     expect(db.prepare('SELECT turnista1_id, scambio FROM turni WHERE id = ?').get(y)).toEqual({ turnista1_id: a, scambio: 'scambio con 24/11' });
   });
@@ -152,8 +152,19 @@ describe('editing', () => {
     const [a, b, c] = people(3);
     const x = createTurno(db, { settimana: '2026-11-24', t1: a, t2: b });
     const y = createTurno(db, { settimana: '2026-12-01', t1: c, t2: a });
-    expect(T.swapTurnisti(db, { id: x, slot: 2 }, { id: y, slot: 2 }, audit).error).toBeTruthy();
-    expect(T.swapTurnisti(db, { id: x, slot: 1 }, { id: x, slot: 2 }, audit).error).toBeTruthy();
+    expect(T.swapTurnisti(db, { id: x, slot: 2 }, { id: y, slot: 2 }, '2026-10-01', audit).error).toBeTruthy();
+    expect(T.swapTurnisti(db, { id: x, slot: 1 }, { id: x, slot: 2 }, '2026-10-01', audit).error).toBeTruthy();
+  });
+
+  it('swapTurnisti refuses a skipped or past consegna', () => {
+    const [a, b, c, d] = people(4);
+    const past = createTurno(db, { settimana: '2026-09-22', t1: a, t2: b });
+    const future = createTurno(db, { settimana: '2026-10-13', t1: c, t2: d });
+    const skipped = createTurno(db, { settimana: '2026-10-20', t1: a });
+    db.prepare('UPDATE turni SET saltata = 1 WHERE id = ?').run(skipped);
+    const msg = 'Si possono scambiare solo consegne future';
+    expect(T.swapTurnisti(db, { id: past, slot: 1 }, { id: future, slot: 1 }, TODAY, audit).error).toBe(msg);
+    expect(T.swapTurnisti(db, { id: future, slot: 1 }, { id: skipped, slot: 1 }, TODAY, audit).error).toBe(msg);
   });
 });
 
@@ -207,10 +218,28 @@ describe('listTurni and importTurni', () => {
     const res = T.importTurni(db, [
       { data: '2026-09-22', username1: 'p1', username2: 'p2', nota: '' },
       { data: '2026-09-29', username1: 'p3', username2: 'p4', nota: 'riunione gass' },
-    ]);
+    ], TODAY);
     expect(res).toEqual({ imported: 2 });
     expect(db.prepare('SELECT settimana FROM turni ORDER BY settimana').all().map(r => r.settimana)).toEqual(['2026-09-22', '2026-09-29']);
     expect(db.prepare("SELECT riunione FROM turni WHERE settimana = '2026-09-29'").get().riunione).toBe(1);
-    expect(T.importTurni(db, [{ data: '2026-10-06', username1: 'nessuno', username2: 'p1' }]).error).toMatch(/nessuno/);
+    expect(T.importTurni(db, [{ data: '2026-10-06', username1: 'nessuno', username2: 'p1' }], TODAY).error).toMatch(/nessuno/);
+  });
+
+  it('rejects the same person twice in a row, before deleting anything', () => {
+    people(2);
+    createTurno(db, { settimana: '2026-10-06' });
+    const res = T.importTurni(db, [{ data: '2026-10-13', username1: 'p1', username2: 'p1' }], TODAY);
+    expect(res.error).toBe('Stessa persona due volte il 2026-10-13');
+    expect(db.prepare('SELECT COUNT(*) AS n FROM turni').get().n).toBe(1);
+  });
+
+  it('rejects a non-attivo user in a future row but accepts one in a past row', () => {
+    people(2);
+    db.prepare("UPDATE users SET stato = 'sospeso' WHERE username = 'p2'").run();
+    createTurno(db, { settimana: '2026-10-06' });
+    const res = T.importTurni(db, [{ data: '2026-10-13', username1: 'p1', username2: 'p2' }], TODAY);
+    expect(res.error).toBe('Utente non attivo nelle settimane future: p2 (2026-10-13)');
+    expect(db.prepare('SELECT COUNT(*) AS n FROM turni').get().n).toBe(1);
+    expect(T.importTurni(db, [{ data: '2026-09-22', username1: 'p1', username2: 'p2' }], TODAY)).toEqual({ imported: 1 });
   });
 });

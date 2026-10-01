@@ -508,6 +508,8 @@ docker run -p 3000:3000 -v $(pwd)/data:/app/data gass-pagamenti
 
 Database persisted in `/app/data/gass.db` volume.
 
+Back up `gass.db` before upgrading to 2.17.0: its migration drops `users.attivo`, so rolling back to 2.16.x without restoring the copy would re-enable every disattivato user.
+
 The image sets `TZ=Europe/Rome` (with `tzdata`); all calendar dates are local. Override with `-e TZ=...` if needed.
 
 ## Error Handling
