@@ -47,8 +47,9 @@ function renderTurni() {
     </tr>`).join('');
 
   const next = turni.find(t => t.data >= today && !t.saltata && t.turnisti.some(p => p && p.id === myId));
-  document.getElementById('mio-turno').textContent = next
-    ? `il tuo: ${formatDateLong(next.data)}`
+  // "il tuo prossimo turno" with the date in a badge
+  document.getElementById('mio-turno').innerHTML = next
+    ? `il tuo prossimo turno <span class="mio-data">${formatDateLong(next.data)}</span>`
     : 'nessun turno per te nelle prossime 24 settimane';
   renderBanner();
 }

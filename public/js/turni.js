@@ -31,15 +31,15 @@ function renderTurni() {
     const mine = t.turnisti.some(p => p && p.id === myId);
     const canSwap = mine && !t.saltata && t.data >= toLocalDateString();
     const tags = (mine ? '<span class="tag-tu">TU</span>' : '') + (t.riunione ? '<span class="tag-riunione">riunione</span>' : '');
-    const action = canSwap && aperto !== t.id ? `<button type="button" class="tag-cambia" onclick="apriScambio(${t.id})">cambia</button>` : '';
+    const action = canSwap && aperto !== t.id ? `<button type="button" class="link-btn" onclick="apriScambio(${t.id})">cambia</button>` : '';
     const swapRow = canSwap && aperto === t.id
       ? `<div class="turno-swap">${azioniTurnoHtml(turni, t, mySlot(t))}<button type="button" class="btn btn-line" onclick="apriScambio(null)">Annulla</button></div>`
       : '';
     html += `
       <li class="${i === 0 ? 'cur' : ''}${t.saltata ? ' off' : ''}">
         <div class="turno-dd${t.data !== t.settimana ? ' moved' : ''}"><b>${Number(t.data.slice(8))}</b><small>${weekdayShort(t.data)}</small></div>
-        <div class="turno-mid"><div class="turno-who">${turnoWhoHtml(t)}</div>${tags ? `<div class="turno-tags">${tags}</div>` : ''}</div>
-        <div class="turno-act">${action}</div>${swapRow}
+        <div class="turno-who">${turnoWhoHtml(t)}</div>
+        <div class="turno-act">${tags}${action}</div>${swapRow}
       </li>`;
   });
   list.innerHTML = html + '</ul>';
@@ -49,8 +49,9 @@ function renderTurni() {
   }
 
   const next = turni.find(t => !t.saltata && t.turnisti.some(p => p && p.id === myId));
-  document.getElementById('mio-turno').textContent = next
-    ? `il tuo: ${formatDateLong(next.data)}`
+  // "il tuo prossimo turno" with the date in a badge
+  document.getElementById('mio-turno').innerHTML = next
+    ? `il tuo prossimo turno <span class="mio-data">${formatDateLong(next.data)}</span>`
     : 'nessun turno per te nelle prossime 24 settimane';
 }
 

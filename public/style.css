@@ -325,7 +325,7 @@ body:has(.bottom-nav) { padding-bottom: 72px; }
 .stato { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; padding: 12px 4px 0; font-size: 18px; }
 .stato-label { font-weight: 700; }
 .stato-label::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
-.stato-label.aperta::before { background: var(--s-acc); }
+.stato-label.aperta::before { background: #2f8a3e; }
 .stato-label.chiusa { color: var(--debito); }
 .stato-label.chiusa::before { background: var(--debito); }
 .container > .stato { margin-top: 14px; padding: 12px; gap: 10px; background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; }
@@ -361,6 +361,7 @@ body:has(.bottom-nav) { padding-bottom: 72px; }
 .sub { grid-column: 1; font-size: 17px; color: var(--salvia); }
 .sub b { color: var(--inchiostro); }
 .esito { grid-row: 1 / span 2; grid-column: 2; display: flex; flex-direction: column; align-items: flex-end; line-height: 1.05; }
+.mov-list > li:has(.sub ~ .sub) .esito { grid-row: 1 / span 3; }
 .esito b { font-family: var(--serif); font-size: 23px; }
 .esito small { font-size: 16px; font-weight: 700; }
 .esito:not(.cr):not(.db) { color: var(--salvia); }
@@ -513,7 +514,9 @@ b.th { color: var(--teatro); }
 .storico-consegna-date { font-family: var(--serif); font-weight: 700; font-size: 20px; }
 .storico-consegna-meta { font-size: 17px; color: var(--salvia); }
 .storico-consegna-content { padding: 14px; }
-.storico-consegna-content .mov-list > li { cursor: default; }
+.storico-consegna-content .mov-list > li { cursor: default; padding: 10px 12px; }
+.storico-consegna-content .sub { font-size: 16px; }
+.storico-consegna-content .esito b { font-size: 18px; }
 .storico-consegna-content .cassa-v { margin-bottom: 12px; }
 .storico-acts { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 14px; }
 .storico-acts:empty { display: none; }
@@ -648,6 +651,8 @@ b.th { color: var(--teatro); }
 
 /* ===== TURNI ===== */
 .stag-sub { position: relative; font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--s-prod, var(--s-acc)); margin-top: 6px; }
+.mio-data { display: inline-block; position: relative; margin-left: 6px; font-style: normal; font-weight: 700; font-size: 21px; color: #fff; background: var(--s-deep); border: 1.5px solid var(--s-prod, var(--s-acc)); border-radius: 7px; padding: 1px 10px; }
+@media (max-width: 768px) { .mio-data { display: table; margin: 6px 0 0; } }
 .turni-mese { font-size: 22px; color: var(--s-deep); padding: 18px 4px 6px; }
 .turni-mese::first-letter { text-transform: uppercase; }
 .turni-ag { list-style: none; background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; }
@@ -662,9 +667,7 @@ b.th { color: var(--teatro); }
 .turno-why { font-size: 16px; font-weight: 400; color: var(--s-alt); }
 .turno-off { font-weight: 400; font-style: italic; color: var(--salvia); }
 .da-coprire { color: var(--debito); }
-.turno-mid { display: flex; align-items: center; gap: 12px; min-width: 0; }
-.turno-tags { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
-.tag-cambia { font: inherit; font-size: 16px; font-weight: 800; color: var(--s-deep); background: transparent; border: 1.5px solid var(--s-deep); border-radius: 6px; padding: 1px 9px; cursor: pointer; }
+.turno-act { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
 .turno-swap { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .turno-swap select { flex: 1 1 100%; min-width: 0; }
 .turno-swap .btn { flex: 1; }
@@ -708,3 +711,8 @@ b.th { color: var(--teatro); }
 .turni-note .btn.initially-hidden { display: none; }
 .name-sel { width: 100%; padding: 5px 8px; font-size: 17px; font-weight: 700; }
 .name-sel.empty { color: var(--debito); border-color: var(--debito); border-style: dashed; }
+
+@media (max-width: 768px) {
+  .storico-consegna-content { padding: 10px 8px; }
+  .storico-consegna-content .mov-list > li { gap: 2px 8px; }
+}
