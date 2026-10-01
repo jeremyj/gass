@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GASS: video per gli admin</title>
+<style>
+  :root { --bg: #FAF9F7; --ink: #333333; --muted: #6B6B6B; --accent: #2F6B5A; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", Helvetica, Arial, sans-serif;
+         font-size: 18px; line-height: 1.6; }
+  main { max-width: 1000px; margin: 0 auto; padding: 32px 16px 48px; }
+  h1 { font-size: 30px; line-height: 1.2; margin: 0 0 8px; }
+  p { margin: 0 0 16px; }
+  .sub { color: var(--muted); }
+  /* Desktop video (1280×800) */
+  video { display: block; aspect-ratio: 1280 / 800; width: 100%; height: auto; margin: 24px auto; border-radius: 12px; background: #000;
+          box-shadow: 0 6px 24px rgba(0,0,0,.15); }
+  a { color: var(--accent); font-weight: 600; }
+</style>
+</head>
+<body>
+<main>
+  <h1>GASS: funzioni per gli amministratori</h1>
+  <p class="sub">In due minuti, da computer: stato degli utenti, correzione di un saldo, riaprire una consegna, modificare i turni, le pause e il registro Attività.</p>
+
+  <video controls playsinline preload="metadata" poster="/video/gass-admin.jpg">
+    <source src="/video/gass-admin.mp4" type="video/mp4">
+  </video>
+
+  <p>Per entrare: <a href="/">gass.x86.it</a>.</p>
+</main>
+</body>
+</html>

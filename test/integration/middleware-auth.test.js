@@ -136,6 +136,12 @@ describe('public endpoints', () => {
     expect(res.text).toContain('gass-turni.mp4');
   });
 
+  it('serves the admin video page without a session', async () => {
+    const res = await request(app).get('/admin-video');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('gass-admin.mp4');
+  });
+
   it('serves /api/version without a session', async () => {
     const res = await request(app).get('/api/version');
     expect(res.status).toBe(200);

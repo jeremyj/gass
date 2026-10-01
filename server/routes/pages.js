@@ -25,6 +25,11 @@ router.get('/v2.17', (req, res) => {
   res.sendFile(path.join(PUBLIC, 'v2.17.html'));
 });
 
+// Admin features video (public, shared only with admins)
+router.get('/admin-video', (req, res) => {
+  res.sendFile(path.join(PUBLIC, 'admin-video.html'));
+});
+
 // API endpoint to get app version (public, no auth required)
 router.get('/api/version', (req, res) => {
   res.json({ version: packageJson.version });

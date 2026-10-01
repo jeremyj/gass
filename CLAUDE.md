@@ -12,7 +12,7 @@
 - **App Factory**: `server/app.js` - Express setup, middleware, route mounting
 - **Database**: `server/config/database.js` - exports `createDatabase(dbPath)` factory + production singleton
 - **Routes**: `server/routes/`
-  - `pages.js` - HTML routing with mobile/desktop detection; `/login`, `/comefunziona` (first-access video) and `/v2.17` (turni video, "what's new" page named after the version) — videos in `public/video/`, recorded in `~/.cache/gass-video/rec/`: `record-turni.js`, and `record-full3.js` for everything after login, spliced after the 2026-09-30 login part at 47.0s; see the video memory) and `/api/version` are public
+  - `pages.js` - HTML routing with mobile/desktop detection; `/login`, `/comefunziona` (first-access video) `/v2.17` (turni video, "what's new" page named after the version) and `/admin-video` (desktop admin video, unlinked, shared with admins) — videos in `public/video/`, recorded in `~/.cache/gass-video/rec/`: `record-turni.js`, `record-admin.js` (desktop, demo `admin`), and `record-full3.js` for everything after login, spliced after the 2026-09-30 login part at 47.0s; see the video memory) and `/api/version` are public
   - `auth.js` - Authentication endpoints (login, logout, password change)
   - `consegna.js` - Delivery API (GET/:date, POST, DELETE/:id)
   - `participants.js` - Participant API (CRUD, saldo management, `GET /:id/transactions` — any authenticated user)
@@ -255,7 +255,7 @@ Auto-calculated fields (credito_lasciato, debito_lasciato, usa_credito, debito_s
 **Stack**: Vitest + supertest, `pool: forks` (each test file = isolated Node process)
 
 ```bash
-npm test                    # all 261 tests
+npm test                    # all 262 tests
 npm run test:unit           # pure function tests (no DB/HTTP)
 npm run test:integration    # API tests with in-memory SQLite
 npm run test:coverage       # with coverage report
