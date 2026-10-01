@@ -136,7 +136,7 @@ Saldo = replay from 0 of the participant's movimenti (via `applySaldoChanges`) +
 - Deleting a consegna recalculates only participants that had a movimento in it
 - Don't reintroduce flat SQL sums of movimenti for saldi: they ignore the `debito_saldato` clamp and rettifiche
 - `POST /api/consegna` rejects (400) non-numeric/negative amounts, `usaCredito` above credit and `debitoSaldato` above debt, measured with `saldoBeforeConsegna` — so a stale `users.saldo` cache (e.g. the local dev DB) makes client-computed payoffs fail validation; the ledger is what counts
-- Movimento amounts are stored rounded to cents. Rounding is `Math.round(x*100)/100` (`roundToCents`, same name server and client); `formatNumber` rounds before deciding whether to hide `,00`. Consegne saved before a34ea39 still hold float drift in the cassa columns
+- Movimento amounts are stored rounded to cents. Rounding is `Math.round(x*100)/100` (`roundToCents`, same name server and client); `formatNumber` rounds before deciding whether to hide `,00`. Consegne saved before a34ea39 still hold float drift in the cassa columns; no cleanup planned (decided 2026-10-01: the planned data reset removes those rows)
 - `salda_tutto` was removed in v2.7 (no UI since 2025-10, 0 rows set in production); the legacy FK-fix migration in `database.js` still names it because it runs before the column drop
 
 ### Credit/Debt Auto-Compensation
