@@ -76,6 +76,13 @@ function createTurno(db, { settimana, data = settimana, t1 = null, t2 = null, sa
     .run(settimana, data, t1, t2, saltata).lastInsertRowid;
 }
 
+function clearTeatro(db) {
+  db.prepare('DELETE FROM teatro_pagamenti').run();
+  db.prepare('DELETE FROM teatro_dovuti').run();
+  db.prepare('DELETE FROM teatro_semestri').run();
+  db.prepare('DELETE FROM teatro_cassa').run();
+}
+
 function clearTurni(db) {
   db.prepare('DELETE FROM turni').run();
   db.prepare('DELETE FROM turni_pause').run();
@@ -126,4 +133,4 @@ function clearNonAdminUsers(db) {
   db.prepare("UPDATE users SET is_admin = 1 WHERE username = 'admin'").run();
 }
 
-module.exports = { createUser, createConsegna, createMovimento, createRettifica, createTurno, clearTurni, loginAs, clearConsegne, clearNonAdminUsers };
+module.exports = { createUser, createConsegna, createMovimento, createRettifica, createTurno, clearTurni, clearTeatro, loginAs, clearConsegne, clearNonAdminUsers };

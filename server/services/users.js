@@ -17,9 +17,10 @@ function deleteUser(db, id) {
   const hasHistory = db.prepare(`
     SELECT 1 FROM movimenti WHERE partecipante_id = ?
     UNION ALL SELECT 1 FROM rettifiche_saldo WHERE partecipante_id = ?
-  `).get(id, id);
+    UNION ALL SELECT 1 FROM teatro_pagamenti WHERE user_id = ?
+  `).get(id, id, id);
   if (hasHistory) {
-    return 'Impossibile eliminare: il partecipante ha movimenti o rettifiche di saldo. Disattivalo invece';
+    return 'Impossibile eliminare: il partecipante ha movimenti, rettifiche di saldo o quote teatro. Disattivalo invece';
   }
 
   db.transaction(() => {

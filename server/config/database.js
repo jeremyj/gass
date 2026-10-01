@@ -311,6 +311,43 @@ function createDatabase(dbPath) {
     );
   `);
 
+  log('\n--- Quota teatro (v2.19) ---');
+
+  // Rent of the theatre: a quota per semester ('2026-2'), what each person owes
+  // (0 = non dovuto), payments (spread oldest first) and a separate cassa
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS teatro_semestri (
+      semestre TEXT PRIMARY KEY,
+      quota REAL NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS teatro_dovuti (
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      semestre TEXT NOT NULL,
+      dovuto REAL NOT NULL,
+      PRIMARY KEY (user_id, semestre)
+    );
+    CREATE TABLE IF NOT EXISTS teatro_pagamenti (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      data DATE NOT NULL,
+      importo REAL NOT NULL,
+      consegna_id INTEGER,
+      fonte TEXT,
+      created_by INTEGER REFERENCES users(id),
+      created_at DATETIME
+    );
+    CREATE INDEX IF NOT EXISTS idx_teatro_pagamenti_user ON teatro_pagamenti(user_id);
+    CREATE TABLE IF NOT EXISTS teatro_cassa (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      data DATE NOT NULL,
+      importo REAL NOT NULL,
+      descrizione TEXT NOT NULL,
+      created_by INTEGER REFERENCES users(id),
+      created_at DATETIME
+    );
+  `);
+  tryAddColumn('users', 'teatro_nota', 'TEXT');
+
   log('\n--- Data initialization ---');
 
   const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
