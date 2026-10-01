@@ -63,10 +63,14 @@ function saldoLabel(saldo) {
 // ===== HELPERS =====
 
 // Disattivati are hidden unless an admin ticks "Mostra disattivati" (desktop);
-// the totals still count them, so no money drops out of the sums. Sospesi are always shown
+// the totals still count them, so no money drops out of the sums. Sospesi are always shown.
+// Order: attivi, then sospesi, then disattivati, each alphabetical
+const STATO_ORDER = { attivo: 0, sospeso: 1, disattivato: 2 };
 function visibleParticipants() {
   const showOff = document.getElementById('show-inactive')?.checked;
-  return participants.filter(p => p.stato !== 'disattivato' || showOff);
+  return participants
+    .filter(p => p.stato !== 'disattivato' || showOff)
+    .sort((a, b) => STATO_ORDER[a.stato] - STATO_ORDER[b.stato] || a.nome.localeCompare(b.nome, 'it'));
 }
 
 function isViewingToday() {

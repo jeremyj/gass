@@ -330,6 +330,7 @@ body:has(.bottom-nav) { padding-bottom: 72px; }
 .note-giornata label { display: block; margin-bottom: 4px; }
 .note-giornata .btn { margin-top: 8px; }
 #btn-nuova-consegna { margin-top: 18px; }
+.d-grid #btn-nuova-consegna { margin-top: 0; }
 
 /* ===== LISTS (movimenti, saldi) ===== */
 
