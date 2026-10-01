@@ -22,22 +22,34 @@ function people(n) {
 }
 
 describe('ensureTurni', () => {
-  it('fills the next 12 Tuesdays from the first one after today', () => {
+  it('fills the next 24 Tuesdays from the first one after today', () => {
     people(6);
     T.ensureTurni(db, TODAY, rnd);
     const weeks = db.prepare('SELECT settimana FROM turni ORDER BY settimana').all().map(r => r.settimana);
     expect(weeks[0]).toBe('2026-10-06');
-    expect(weeks).toHaveLength(12); // 2026-10-06 .. 2026-12-22 (today + 84 = 2026-12-24, excluded)
-    expect(weeks[11]).toBe('2026-12-22');
+    expect(weeks).toHaveLength(24); // 2026-10-06 .. 2027-03-16 (today + 168 = 2027-03-18, excluded)
+    expect(weeks[23]).toBe('2027-03-16');
   });
 
-  it('counts today when today is a Tuesday, still 12 weeks', () => {
+  it('counts today when today is a Tuesday, still 24 weeks', () => {
     people(2);
     T.ensureTurni(db, '2026-10-06', rnd);
     const weeks = db.prepare('SELECT settimana FROM turni ORDER BY settimana').all().map(r => r.settimana);
-    expect(weeks).toHaveLength(12);
+    expect(weeks).toHaveLength(24);
     expect(weeks[0]).toBe('2026-10-06');
-    expect(weeks[11]).toBe('2026-12-22');
+    expect(weeks[23]).toBe('2027-03-16');
+  });
+
+  it('writes empty weeks while automatic generation is paused', () => {
+    people(6);
+    expect(T.isAuto(db)).toBe(true);
+    T.setAuto(db, false);
+    T.ensureTurni(db, TODAY, rnd);
+    const rows = db.prepare('SELECT turnista1_id a, turnista2_id b FROM turni').all();
+    expect(rows).toHaveLength(24);
+    expect(rows.every(r => r.a === null && r.b === null)).toBe(true);
+    T.setAuto(db, true);
+    expect(T.isAuto(db)).toBe(true);
   });
 
   it('is idempotent', () => {
@@ -87,7 +99,7 @@ describe('ensureTurni', () => {
   it('fills weeks with empty slots when nobody is in turn', () => {
     T.ensureTurni(db, TODAY, rnd);
     const rows = db.prepare('SELECT turnista1_id, turnista2_id FROM turni').all();
-    expect(rows).toHaveLength(12);
+    expect(rows).toHaveLength(24);
     expect(rows.every(r => r.turnista1_id === null && r.turnista2_id === null)).toBe(true);
   });
 
@@ -190,6 +202,31 @@ describe('editing', () => {
     expect(T.swapWithNext(db, { id: x, slot: 2 }, c, TODAY, audit).error).toBeUndefined();
     expect(db.prepare('SELECT turnista2_id t FROM turni WHERE id = ?').get(y).t).toBe(b);
     expect(T.swapWithNext(db, { id: x, slot: 1 }, e, TODAY, audit).error).toBe('Nessun turno da oggi in poi per questa persona');
+  });
+
+  it('leaveTurno frees the slot of a future consegna', () => {
+    const [a, b] = people(2);
+    const x = createTurno(db, { settimana: '2026-10-13', t1: a, t2: b });
+    expect(T.leaveTurno(db, { id: x, slot: 2 }, TODAY, audit).changes).toEqual(['p2 lascia il 13/10']);
+    expect(db.prepare('SELECT turnista2_id t FROM turni WHERE id = ?').get(x).t).toBeNull();
+    expect(T.leaveTurno(db, { id: x, slot: 2 }, TODAY, audit).error).toBeTruthy(); // already free
+    const past = createTurno(db, { settimana: '2026-09-22', t1: a });
+    expect(T.leaveTurno(db, { id: past, slot: 1 }, TODAY, audit).error).toBeTruthy();
+  });
+
+  it('moveTurno moves a person to a free slot on another consegna', () => {
+    const [a, b, c] = people(3);
+    const x = createTurno(db, { settimana: '2026-10-13', t1: a, t2: b });
+    const y = createTurno(db, { settimana: '2026-10-20', t1: c });
+    const full = createTurno(db, { settimana: '2026-10-27', t1: b, t2: c });
+    expect(T.moveTurno(db, { id: x, slot: 1 }, full, TODAY, audit).error).toBe('Quella consegna non ha posti liberi');
+    expect(T.moveTurno(db, { id: x, slot: 1 }, y, TODAY, audit).changes).toEqual(['p1: 13/10 → 20/10']);
+    const row = id => db.prepare('SELECT turnista1_id t1, turnista2_id t2 FROM turni WHERE id = ?').get(id);
+    expect(row(x)).toEqual({ t1: null, t2: b });
+    expect(row(y)).toEqual({ t1: c, t2: a });
+    // c is already on 20/10
+    const z = createTurno(db, { settimana: '2026-11-03', t1: c });
+    expect(T.moveTurno(db, { id: z, slot: 1 }, y, TODAY, audit).error).toBeTruthy();
   });
 
   it('swapTurnisti refuses a skipped or past consegna', () => {

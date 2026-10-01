@@ -35,9 +35,12 @@ GET    /api/storico/dettaglio         - Retrieve all deliveries with detailed mo
 PUT    /api/participants/:id          - Set participant balance (stored as a rettifica, admin)
 POST   /api/participants              - Create new participant
 DELETE /api/participants/:id          - Delete participant (admin; 400 if the user has movimenti or rettifiche)
-GET    /api/turni                     - Next 12 weeks (generates missing ones), pause list (any authenticated user)
+GET    /api/turni                     - Next 24 weeks (writes missing ones), pause list, `auto` (any authenticated user)
 PUT    /api/turni/:id                 - Edit a week: turnisti, day, saltata, riunione, nota (admin)
 POST   /api/turni/scambio             - {a: {id, slot}, userId}: userId takes slot a, a's person takes userId's first turno from today (any user for their own slot, admin for any)
+POST   /api/turni/lascia              - {a: {id, slot}}: the slot becomes da coprire (own slot, admin any)
+POST   /api/turni/sposta              - {a: {id, slot}, to}: the person moves to a free slot of consegna `to` (own slot, admin any)
+PUT    /api/turni/auto                - {auto}: pause/resume automatic generation (admin)
 POST   /api/turni/pause                - Add a pause (admin); DELETE /api/turni/pause/:id removes it
 GET    /api/version                   - Get application version from package.json (public, no auth)
 ```
@@ -242,15 +245,15 @@ function parseDecimal(value) {
 
 Pure date/queue logic in `server/services/turni-schedule.js` (`addDays`, `tuesdayOf`, `nextTuesday`, `inPause`, `isDateString`, `pickPair`); DB-backed in `server/services/turni.js`.
 
-**Generation is lazy.** Each `GET /api/turni` runs `ensureTurni`, which fills every missing non-pause Tuesday in `[nextTuesday(today), today + HORIZON_DAYS)` (`HORIZON_DAYS = 84`). Weeks already written are never recomputed. Adding a pause turns the weeks already written inside it into `saltata` and frees their people; deleting it lets the missing weeks regenerate on the next GET, while weeks already `saltata` stay so (restored from "Giorno").
+**Generation is lazy.** Each `GET /api/turni` runs `ensureTurni`, which fills every missing non-pause Tuesday in `[nextTuesday(today), today + HORIZON_DAYS)` (`HORIZON_DAYS = 168`, 24 weeks). Weeks already written are never recomputed. While automatic generation is paused (`settings.turni_auto = '0'`, `isAuto`/`setAuto`, `PUT /api/turni/auto`), new weeks are written with both slots empty for an admin to fill; resuming affects only weeks not yet written. Adding a pause turns the weeks already written inside it into `saltata` and frees their people; deleting it lets the missing weeks regenerate on the next GET, while weeks already `saltata` stay so (restored from "Giorno").
 
 **Pair rule** (`pickPair`): only `attivo` users; the first is the one waiting longest since their last turno (or `turni_dal`); the partner is, among the next `PARTNER_WINDOW = 3` in the queue, the one they have done fewest turni with, ties at random. A `saltata` week frees its pair, who are first in line again.
 
 **Simulation** (10 years, 2026-10-01, k = 3): gaps between turni of 10-12 weeks with 22 people, 9-12 with 21; nearly all partners met; no pair more than 4 times. k = 3 was chosen over 4 and 5 for the more regular gaps.
 
-**Import:** `manage-turni.js import <file.csv>`, lines `yyyy-mm-dd;username1;username2;nota` (blank lines, `#` comments and a `data` header are skipped; a nota containing "riunione" sets `riunione`). It replaces every week from the first imported date. `manage-turni.js list` prints the next 12 weeks.
+**Import:** `manage-turni.js import <file.csv>`, lines `yyyy-mm-dd;username1;username2;nota` (blank lines, `#` comments and a `data` header are skipped; a nota containing "riunione" sets `riunione`). It replaces every week from the first imported date. `manage-turni.js list` prints the next 24 weeks.
 
-Activity events: `turno_modificato`, `turno_scambio`, `pausa_aggiunta`, `pausa_eliminata`. Pages: `turni.html` (mobile agenda, self swap) and `turni-desktop.html` (self swap; admin editing). Shared client swap logic: `public/js/shared/turni-common.js`.
+Activity events: `turno_modificato`, `turno_scambio`, `pausa_aggiunta`, `pausa_eliminata`. `leaveTurno`/`moveTurno` log as `turno_modificato`. Pages: `turni.html` (mobile agenda; own turno: swap, move, leave) and `turni-desktop.html` (same for users; admins pick every name from a menu). Shared client logic: `public/js/shared/turni-common.js`.
 
 ## Features
 

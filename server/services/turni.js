@@ -1,12 +1,13 @@
 /**
- * Turni (consegna shifts): one row per week, filled by the rolling queue.
+ * Turni (consegna shifts): one row per week, filled by the rolling queue
+ * (or left empty for an admin to fill while automatic generation is paused).
  * Takes the db handle so the CLI can pass its own connection.
- * Weeks already written never change unless an admin edits them.
+ * Weeks already written never change unless someone edits them.
  */
 
 const { addDays, tuesdayOf, nextTuesday, inPause, isDateString, pickPair } = require('./turni-schedule');
 
-const HORIZON_DAYS = 84; // always 12 weeks ahead
+const HORIZON_DAYS = 168; // always 24 weeks ahead
 
 const pairKey = (a, b) => (a < b ? `${a}-${b}` : `${b}-${a}`);
 
@@ -33,11 +34,23 @@ function waitingPeople(db) {
   `).all();
 }
 
+// Automatic generation is on unless an admin paused it (settings.turni_auto = '0')
+function isAuto(db) {
+  return db.prepare("SELECT value FROM settings WHERE key = 'turni_auto'").get()?.value !== '0';
+}
+
+function setAuto(db, auto) {
+  db.prepare("INSERT INTO settings (key, value) VALUES ('turni_auto', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
+    .run(auto ? '1' : '0');
+}
+
 // Inserts a row for every Tuesday from the next one to the horizon that has none
 // and is not in a pause (so weeks freed by a deleted pause get filled). Existing
-// rows are never touched and past weeks are never backfilled.
+// rows are never touched and past weeks are never backfilled. While paused, new
+// weeks are written with both slots empty (da coprire).
 function ensureTurni(db, today, rnd = Math.random) {
   const horizon = addDays(today, HORIZON_DAYS);
+  const auto = isAuto(db);
   db.transaction(() => {
     const pauses = db.prepare('SELECT dal, al FROM turni_pause').all();
     const exists = db.prepare('SELECT 1 FROM turni WHERE settimana = ?');
@@ -45,7 +58,7 @@ function ensureTurni(db, today, rnd = Math.random) {
     const insert = db.prepare('INSERT INTO turni (settimana, data, turnista1_id, turnista2_id, created_at) VALUES (?, ?, ?, ?, ?)');
     for (let week = nextTuesday(today); week < horizon; week = addDays(week, 7)) {
       if (exists.get(week) || inPause(week, pauses)) continue;
-      const [a, b] = pickPair(waitingPeople(db), (x, y) => counts.get(pairKey(x, y)) || 0, rnd);
+      const [a, b] = auto ? pickPair(waitingPeople(db), (x, y) => counts.get(pairKey(x, y)) || 0, rnd) : [null, null];
       insert.run(week, week, a, b, new Date().toISOString());
       if (a && b) counts.set(pairKey(a, b), (counts.get(pairKey(a, b)) || 0) + 1);
     }
@@ -170,6 +183,36 @@ function swapWithNext(db, a, userId, today, audit) {
   return swapTurnisti(db, a, { id: next.id, slot: next.turnista1_id === Number(userId) ? 1 : 2 }, today, audit);
 }
 
+const slotCol = slot => (Number(slot) === 1 ? 'turnista1_id' : Number(slot) === 2 ? 'turnista2_id' : null);
+
+// A person gives up their turno: the slot becomes da coprire
+function leaveTurno(db, a, today, audit) {
+  const col = slotCol(a.slot);
+  const row = db.prepare('SELECT * FROM turni WHERE id = ?').get(a.id);
+  if (!col || !row || !row[col]) return { error: 'Turno non valido' };
+  if (row.saltata || row.data < today) return { error: 'Si possono lasciare solo consegne future' };
+  db.prepare(`UPDATE turni SET ${col} = NULL, updated_by = ?, updated_at = ? WHERE id = ?`).run(audit.userId, audit.timestamp, row.id);
+  return { changes: [`${nomeDi(db, row[col])} lascia il ${ddmm(row.data)}`] };
+}
+
+// A person moves from their slot to a free slot of another future consegna
+function moveTurno(db, a, toId, today, audit) {
+  const col = slotCol(a.slot);
+  const from = db.prepare('SELECT * FROM turni WHERE id = ?').get(a.id);
+  const to = db.prepare('SELECT * FROM turni WHERE id = ?').get(toId);
+  if (!col || !from || !from[col] || !to || from.id === to.id) return { error: 'Turno non valido' };
+  if (from.saltata || to.saltata || from.data < today || to.data < today) return { error: 'Si possono spostare solo consegne future' };
+  const person = from[col];
+  if (to.turnista1_id === person || to.turnista2_id === person) return { error: 'Sei già in quella consegna' };
+  const free = !to.turnista1_id ? 'turnista1_id' : !to.turnista2_id ? 'turnista2_id' : null;
+  if (!free) return { error: 'Quella consegna non ha posti liberi' };
+  db.transaction(() => {
+    db.prepare(`UPDATE turni SET ${col} = NULL, updated_by = ?, updated_at = ? WHERE id = ?`).run(audit.userId, audit.timestamp, from.id);
+    db.prepare(`UPDATE turni SET ${free} = ?, updated_by = ?, updated_at = ? WHERE id = ?`).run(person, audit.userId, audit.timestamp, to.id);
+  })();
+  return { changes: [`${nomeDi(db, person)}: ${ddmm(from.data)} → ${ddmm(to.data)}`] };
+}
+
 function addPause(db, { dal, al, nota }, today, audit) {
   if (!isDateString(dal) || !isDateString(al) || dal > al) return { error: 'Date della pausa non valide' };
   const text = (nota || '').trim() || 'pausa';
@@ -226,6 +269,6 @@ function importTurni(db, rows, today) {
 }
 
 module.exports = {
-  HORIZON_DAYS, ensureTurni, listTurni, listPause, updateTurno, swapTurnisti, swapWithNext,
+  HORIZON_DAYS, isAuto, setAuto, ensureTurni, listTurni, listPause, updateTurno, swapTurnisti, swapWithNext, leaveTurno, moveTurno,
   addPause, deletePause, freeFutureTurni, importTurni
 };

@@ -48,3 +48,66 @@ async function scambiaTurno(turni, t, slot, userId) {
     return false;
   }
 }
+
+// ===== TURNI: MOVE TO A FREE SLOT, LEAVE (mobile + desktop) =====
+
+// Future consegne with a free slot that the person is not already on
+function candidatiSposta(turni, t, personId) {
+  return turni.filter(x => x.id !== t.id && !x.saltata && x.data >= toLocalDateString()
+    && x.turnisti.some(p => !p) && !x.turnisti.some(p => p && p.id === personId));
+}
+
+// The three own-turno actions: swap, move, leave
+function azioniTurnoHtml(turni, t, slot) {
+  const p = t.turnisti[slot - 1];
+  const dates = candidatiSposta(turni, t, p.id).map(x => `<option value="${x.id}">${dataBreve(x.data)}</option>`).join('');
+  return `${scambioSelectHtml(turni, t, 'swap-select')}
+    <select id="move-select"${dates ? '' : ' disabled'}><option value="">${dates ? 'sposta al…' : 'nessuna data libera'}</option>${dates}</select>
+    <button type="button" class="btn btn-line" id="leave-btn">Non posso</button>`;
+}
+
+// Wires the controls from azioniTurnoHtml; done() runs after a saved change, cancel() after a declined one
+function collegaAzioniTurno(turni, t, slot, done, cancel) {
+  const run = async action => (await action) ? done() : cancel();
+  document.getElementById('swap-select').onchange = e => e.target.value && run(scambiaTurno(turni, t, slot, Number(e.target.value)));
+  document.getElementById('move-select').onchange = e => e.target.value && run(spostaTurno(turni, t, slot, Number(e.target.value)));
+  document.getElementById('leave-btn').onclick = () => run(lasciaTurno(t, slot));
+}
+
+async function spostaTurno(turni, t, slot, toId) {
+  const p = t.turnisti[slot - 1];
+  const to = turni.find(x => x.id === toId);
+  const ok = await confirmDialog({
+    title: 'Spostare il turno?',
+    details: [[dataBreve(t.data), `${p.nome} esce: posto da coprire`], [dataBreve(to.data), `${p.nome} prende il posto libero`]],
+    confirmText: 'Sposta'
+  });
+  if (!ok) return false;
+  try {
+    await API.post('/api/turni/sposta', { a: { id: t.id, slot }, to: toId });
+    showStatus('Turno spostato', 'success');
+    return true;
+  } catch (error) {
+    showStatus('Errore: ' + error.message, 'error');
+    return false;
+  }
+}
+
+async function lasciaTurno(t, slot) {
+  const p = t.turnisti[slot - 1];
+  const ok = await confirmDialog({
+    title: 'Non puoi fare il turno?',
+    message: 'Il posto resta da coprire: lo riempirà chi gestisce i turni o chi si offre.',
+    details: [[dataBreve(t.data), `${p.nome} esce`]],
+    confirmText: 'Lascia il turno'
+  });
+  if (!ok) return false;
+  try {
+    await API.post('/api/turni/lascia', { a: { id: t.id, slot } });
+    showStatus('Turno lasciato', 'success');
+    return true;
+  } catch (error) {
+    showStatus('Errore: ' + error.message, 'error');
+    return false;
+  }
+}

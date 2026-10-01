@@ -76,11 +76,11 @@ Elenco di tutte le consegne in ordine cronologico inverso: per ogni giornata la 
 
 # Turni
 
-Le prossime 12 settimane con i due turnisti di ogni consegna (martedì). La tua riga è segnata **TU**; **da coprire** = manca un turnista; **riunione** = riunione GASS.
+Le prossime 24 settimane con i due turnisti di ogni consegna (martedì). La tua riga è segnata **TU**; **da coprire** = manca un turnista; **riunione** = riunione GASS.
 
-Per scambiare un tuo turno clicca il tuo nome e scegli **scambia con…**: la persona scelta prende il tuo turno e tu il suo primo turno da oggi. Conferma nella finestra che riepiloga lo scambio.
+Sul tuo turno clicca il tuo nome: **scambia con…** (prima mettiti d'accordo con qualcuno: prende il tuo turno e tu il suo primo turno da oggi), **sposta al…** (una data con un posto libero) o **Non posso** (il posto resta da coprire). Ogni azione chiede conferma.
 
-Gli amministratori possono scambiare qualsiasi nome e anche **sostituisci con…** / **assegna a…**. **Giorno** sposta la consegna, la segna **niente consegna** o **riunione GASS**, aggiunge una nota. In fondo, **Pause** per i periodi senza consegne.
+Gli amministratori scelgono i nomi dai menu della tabella e mettono in pausa la **Generazione automatica dei turni**: in pausa, le settimane nuove arrivano da coprire. **Giorno** sposta la consegna, la segna **niente consegna** o **riunione GASS**, aggiunge una nota. In fondo, **Pause** per i periodi senza consegne.
 
 ---
 

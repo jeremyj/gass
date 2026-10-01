@@ -29,10 +29,11 @@ describe('GET /api/turni', () => {
     expect((await request(app).get('/api/turni')).status).toBe(401);
   });
 
-  it('generates and returns 12 weeks for any user', async () => {
+  it('generates and returns 24 weeks for any user', async () => {
     const res = await userAgent.get('/api/turni');
     expect(res.status).toBe(200);
-    expect(res.body.turni).toHaveLength(12);
+    expect(res.body.auto).toBe(true);
+    expect(res.body.turni).toHaveLength(24);
     expect(res.body.turni[0].turnisti).toHaveLength(2);
     expect(res.body.oggi).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });

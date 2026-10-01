@@ -273,20 +273,26 @@ Solo amministratori, da desktop: Saldi → **Modifica utente**.
 
 ### 6. Turni
 
-Le consegne sono di martedì. **Turni** elenca le prossime 12 settimane con i due turnisti di ciascuna; la tua riga è segnata **TU**. Etichette: **riunione** (riunione GASS), un giorno diverso dal martedì se la consegna è stata spostata, **niente consegna**, **da coprire** (turnista mancante). Puoi scambiare i tuoi turni (sotto); le altre modifiche le fanno gli amministratori, da desktop.
+Le consegne sono di martedì. **Turni** elenca le prossime 24 settimane con i due turnisti di ciascuna; la tua riga è segnata **TU**. Etichette: **riunione** (riunione GASS), un giorno diverso dal martedì se la consegna è stata spostata, **niente consegna**, **da coprire** (turnista mancante). Sui tuoi turni puoi scambiare, spostare o lasciare il posto (sotto); le altre modifiche le fanno gli amministratori, da desktop.
 
-#### Come si scelgono le coppie
+#### Chi decide le coppie
 
-Tocca a chi aspetta da più tempo dall'ultimo turno. Il compagno è, tra i 3 successivi in attesa, quello con cui ha fatto meno turni (a sorte in caso di parità). Le settimane già visibili non cambiano da sole: le nuove si aggiungono in fondo. Se una consegna salta, la coppia è la prima in coda per la volta successiva.
+Con la **generazione automatica** attiva, le settimane nuove si riempiono da sole: tocca a chi aspetta da più tempo dall'ultimo turno e il compagno è, tra i 3 successivi in attesa, quello con cui ha fatto meno turni (a sorte in caso di parità). Se una consegna salta, la coppia è la prima in coda per la volta successiva. Con la generazione automatica **in pausa**, le settimane nuove arrivano vuote (**da coprire**) e i nomi li sceglie un amministratore. In entrambi i casi le settimane già visibili non cambiano da sole.
 
-#### Scambiare un turno (tutti)
+#### I tuoi turni (tutti)
 
-Su desktop clicca il tuo nome, su mobile tocca **scambia** sulla tua riga, poi scegli la persona in **scambia con…**: prende il tuo turno e tu prendi il suo primo turno da oggi. Una finestra riepiloga lo scambio prima di confermare. L'elenco mostra solo chi ha un turno da oggi in poi e non è già in quella consegna. Lo scambio resta nel registro Attività (chi, con chi, quali date), non nella tabella dei turni.
+Su desktop clicca il tuo nome, su mobile tocca **cambia** sulla tua riga. Poi:
+
+- **scambia con…**: mettiti prima d'accordo con qualcuno, poi sceglilo: prende il tuo turno e tu prendi il suo primo turno da oggi. L'elenco mostra solo chi ha un turno da oggi in poi e non è già in quella consegna
+- **sposta al…**: passi a un'altra data che ha un posto libero; il tuo posto resta da coprire
+- **Non posso**: lasci il turno, il posto resta da coprire
+
+Ogni azione chiede conferma e resta nel registro Attività.
 
 #### Modifiche (amministratori, desktop)
 
-- **Scambio**: come sopra, ma su qualsiasi nome
-- **Sostituzione**: clicca un nome e scegli **sostituisci con…** (o **assegna a…** se da coprire, oppure **— lascia da coprire**). Scambi e sostituzioni chiedono conferma
+- **Nomi**: ogni nome è un menu; scegli la persona o **da coprire**. Riempire un posto libero è immediato, sostituire o togliere un nome chiede conferma
+- **Generazione automatica dei turni**: la casella sopra la tabella la mette in pausa o la riattiva (chiede conferma)
 - **Giorno**: sposta la consegna in un altro giorno della settimana, segna **niente consegna**, **riunione GASS** o aggiunge una nota. Con niente consegna la coppia torna libera ed è la prima in coda
 - **Pause**: un periodo senza consegne (ad esempio le feste). Le settimane già scritte nel periodo diventano niente consegna; eliminando la pausa le settimane mancanti si rigenerano, quelle già segnate niente consegna restano tali e si ripristinano da **Giorno**
 
@@ -385,7 +391,12 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.17.0
+Sistema GASS Pagamenti - Versione 2.18.0
+- **Turni** mostra le prossime 24 settimane
+- Sul proprio turno: **scambia con…**, **sposta al…** (una data con un posto libero), **Non posso** (il posto resta da coprire)
+- Gli amministratori scelgono i nomi dai menu della tabella e possono mettere in pausa la generazione automatica dei turni
+
+Versione 2.17.0
 - Nuova scheda **Turni** con le coppie delle prossime 12 settimane; gli amministratori le modificano da desktop
 - Stato utente a tre valori: attivo, sospeso, disattivato (Saldi → Modifica utente)
 

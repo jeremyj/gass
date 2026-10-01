@@ -303,6 +303,12 @@ function createDatabase(dbPath) {
       created_by INTEGER REFERENCES users(id),
       created_at DATETIME
     );
+
+    -- App switches (key/value), e.g. turni_auto = '0' pauses automatic turni
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT
+    );
   `);
 
   log('\n--- Data initialization ---');

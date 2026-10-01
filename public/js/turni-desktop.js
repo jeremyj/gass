@@ -1,4 +1,5 @@
-// Turni, desktop: next 12 weeks; everyone swaps their own turni, admins swap any, replace, move/skip days, manage pauses
+// Turni, desktop: next 24 weeks; everyone swaps, moves or leaves their own turni; admins pick every name
+// from a menu, move/skip days, manage pauses and pause automatic generation
 
 let turni = [];
 let attivi = [];
@@ -6,10 +7,20 @@ let picked = null; // { id, slot } of the name clicked first
 let giornoId = null;
 let myId = null;
 
+// Admin menu for one slot: every attivo, plus the current person if no longer attivo
+function nameSelectHtml(t, slot) {
+  const p = t.turnisti[slot - 1];
+  const people = p && !attivi.some(u => u.id === p.id) ? [...attivi, p] : attivi;
+  const options = people.map(u => `<option value="${u.id}"${p && u.id === p.id ? ' selected' : ''}>${escapeHtml(u.nome)}</option>`).join('');
+  return `<select class="name-sel${p ? '' : ' empty'}" aria-label="Turnista ${slot}, ${dataBreve(t.data)}" onchange="assignSlot(${t.id}, ${slot}, this)">
+    <option value=""${p ? '' : ' selected'}>da coprire</option>${options}</select>`;
+}
+
 function nameCell(t, slot) {
   const p = t.turnisti[slot - 1];
+  if (isAdmin() && !t.saltata && t.data >= toLocalDateString()) return `<td class="nm">${nameSelectHtml(t, slot)}</td>`;
   const label = t.saltata ? '' : p ? escapeHtml(p.nome) + (p.id === myId ? ' <span class="tag-tu">TU</span>' : '') : '<span class="da-coprire">da coprire</span>';
-  const canPick = !t.saltata && (isAdmin() || (p && p.id === myId && t.data >= toLocalDateString()));
+  const canPick = !t.saltata && p && p.id === myId && t.data >= toLocalDateString();
   if (!canPick) return `<td class="nm">${label}</td>`;
   const on = picked && picked.id === t.id && picked.slot === slot ? ' picked' : '';
   return `<td class="nm"><button type="button" class="name-btn${on}" onclick="pickName(${t.id}, ${slot})">${label}</button></td>`;
@@ -35,7 +46,7 @@ function renderTurni() {
   const next = turni.find(t => !t.saltata && t.turnisti.some(p => p && p.id === myId));
   document.getElementById('mio-turno').textContent = next
     ? `il tuo: ${formatDateLong(next.data)}`
-    : 'nessun turno per te nelle prossime 12 settimane';
+    : 'nessun turno per te nelle prossime 24 settimane';
   renderBanner();
 }
 
@@ -44,15 +55,11 @@ function renderBanner() {
   const t = picked && turni.find(x => x.id === picked.id);
   if (!t || t.saltata) picked = null;
   if (!picked) { banner.classList.add('initially-hidden'); return; }
-  const p = t.turnisti[picked.slot - 1];
-  const options = attivi.filter(u => !p || u.id !== p.id).map(u => `<option value="${u.id}">${escapeHtml(u.nome)}</option>`).join('');
   banner.innerHTML = `
-    <span><b>${p ? escapeHtml(p.nome) : 'Turno da coprire'}</b>, ${formatDateLong(t.data)}</span>
-    ${p ? scambioSelectHtml(turni, t, 'swap-select') : ''}
-    ${isAdmin() ? `<select id="replace-select"><option value="">${p ? 'sostituisci con…' : 'assegna a…'}</option>${options}${p ? '<option value="none">— lascia da coprire</option>' : ''}</select>` : ''}
+    <span><b>Il tuo turno</b>, ${formatDateLong(t.data)}</span>
+    ${azioniTurnoHtml(turni, t, picked.slot)}
     <button type="button" class="btn btn-line" onclick="cancelPick()">Annulla</button>`;
-  if (p) document.getElementById('swap-select').onchange = e => e.target.value && swapWith(Number(e.target.value));
-  if (isAdmin()) document.getElementById('replace-select').onchange = e => replaceName(e.target.value);
+  collegaAzioniTurno(turni, t, picked.slot, () => { picked = null; loadTurni(); }, renderBanner);
   banner.classList.remove('initially-hidden');
 }
 
@@ -69,35 +76,47 @@ function cancelPick() {
 
 const nomeUtente = id => attivi.find(u => u.id === id)?.nome || '';
 
-async function swapWith(userId) {
-  const t = turni.find(x => x.id === picked.id);
-  if (!await scambiaTurno(turni, t, picked.slot, userId)) return renderBanner();
-  picked = null;
-  await loadTurni();
-}
-
-async function replaceName(value) {
-  if (!value) return;
-  const t = turni.find(x => x.id === picked.id);
-  const p = t.turnisti[picked.slot - 1];
-  const nuovo = value === 'none' ? null : nomeUtente(Number(value));
-  const ok = await confirmDialog({
-    title: p ? 'Sostituire il turnista?' : 'Assegnare il turno?',
-    details: [[dataBreve(t.data), nuovo
-      ? (p ? `${nuovo} al posto di ${p.nome}` : nuovo)
-      : `da coprire (esce ${p.nome})`]],
-    confirmText: nuovo ? (p ? 'Sostituisci' : 'Assegna') : 'Lascia da coprire'
-  });
-  if (!ok) return renderBanner();
-  const field = picked.slot === 1 ? 'turnista1Id' : 'turnista2Id';
+// Admin menu change: filling a free slot is immediate, replacing or clearing a name asks first
+async function assignSlot(id, slot, select) {
+  const t = turni.find(x => x.id === id);
+  const p = t.turnisti[slot - 1];
+  const value = select.value ? Number(select.value) : null;
+  if (p) {
+    const nuovo = value ? nomeUtente(value) : null;
+    const ok = await confirmDialog({
+      title: nuovo ? 'Sostituire il turnista?' : 'Lasciare il posto da coprire?',
+      details: [[dataBreve(t.data), nuovo ? `${nuovo} al posto di ${p.nome}` : `da coprire (esce ${p.nome})`]],
+      confirmText: nuovo ? 'Sostituisci' : 'Lascia da coprire'
+    });
+    if (!ok) { select.value = p.id; return; }
+  }
   try {
-    await API.put(`/api/turni/${picked.id}`, { [field]: value === 'none' ? null : Number(value) });
-    picked = null;
+    await API.put(`/api/turni/${id}`, { [slot === 1 ? 'turnista1Id' : 'turnista2Id']: value });
     showStatus('Turno aggiornato', 'success');
-    await loadTurni();
   } catch (error) {
     showStatus('Errore: ' + error.message, 'error');
   }
+  await loadTurni();
+}
+
+async function toggleAuto(input) {
+  const auto = input.checked;
+  const ok = await confirmDialog({
+    title: auto ? 'Riattivare la generazione automatica?' : 'Mettere in pausa la generazione automatica?',
+    message: auto
+      ? 'Le settimane nuove verranno riempite dalla coda: tocca a chi aspetta da più tempo. Le settimane già in calendario non cambiano.'
+      : 'Le settimane nuove arriveranno vuote, da coprire: i nomi li sceglie un amministratore. Le settimane già in calendario non cambiano.',
+    confirmText: auto ? 'Riattiva' : 'Metti in pausa'
+  });
+  if (!ok) { input.checked = !auto; return; }
+  try {
+    await API.put('/api/turni/auto', { auto });
+    showStatus(auto ? 'Generazione automatica riattivata' : 'Generazione automatica in pausa', 'success');
+  } catch (error) {
+    input.checked = !auto;
+    showStatus('Errore: ' + error.message, 'error');
+  }
+  await loadTurni();
 }
 
 function openGiorno(id) {
@@ -198,9 +217,12 @@ async function loadTurni() {
     turni = result.turni;
     const hint = document.getElementById('turni-hint');
     hint.classList.remove('initially-hidden');
-    if (!isAdmin()) hint.textContent = 'Clic sul tuo nome per scambiare il turno: la persona scelta prende il tuo turno e ti lascia il suo primo turno da oggi.';
+    if (!isAdmin()) hint.textContent = 'Clic sul tuo nome: scambia il turno con chi si è accordato con te, spostalo su una data con un posto libero, oppure “Non posso” per lasciarlo da coprire.';
     if (isAdmin()) {
-      attivi = (await API.get('/api/participants')).participants.filter(p => p.stato === 'attivo');
+      attivi = (await API.get('/api/participants')).participants.filter(p => p.stato === 'attivo')
+        .sort((a, b) => a.nome.localeCompare(b.nome, 'it'));
+      document.getElementById('auto-wrap').classList.remove('initially-hidden');
+      document.getElementById('turni-auto').checked = result.auto;
       document.getElementById('pause-section').classList.remove('initially-hidden');
       renderPause(result.pause);
     }

@@ -344,7 +344,7 @@ async function submitEditUser() {
     const ok = await confirmDialog({
       title: stato === 'sospeso' ? "Sospendere l'utente?" : "Disattivare l'utente?",
       message: (stato === 'sospeso'
-        ? 'Non farà più turni; i suoi turni nelle prossime 12 settimane restano da coprire.'
+        ? 'Non farà più turni; i suoi turni nelle prossime 24 settimane restano da coprire.'
         : 'Non comparirà più negli elenchi e non potrà accedere; i suoi turni futuri restano da coprire.')
         + (saldo.cls && stato === 'disattivato' ? ` Attenzione: ha ancora ${saldo.amount} di ${saldo.word}.` : ''),
       details: [['Utente', username], ['Saldo', `${saldo.amount} ${saldo.word}`]],

@@ -600,8 +600,9 @@ tr.off td { opacity: .6; }
 .da-coprire { color: var(--debito); }
 .turno-mid { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .turno-tags { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
-.turno-swap { grid-column: 1 / -1; display: flex; gap: 8px; margin-top: 10px; }
-.turno-swap select { flex: 1; min-width: 0; }
+.turno-swap { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.turno-swap select { flex: 1 1 100%; min-width: 0; }
+.turno-swap .btn { flex: 1; }
 .tag-tu { font-size: 16px; font-weight: 800; letter-spacing: .03em; color: var(--s-deep); background: var(--s-tint); border: 1.5px solid var(--s-acc); border-radius: 6px; padding: 1px 9px; }
 .tag-riunione { font-size: 16px; font-weight: 700; color: #fff; background: var(--s-alt); border-radius: 6px; padding: 1px 9px; white-space: nowrap; }
 .turni-t td.d b { font-family: var(--serif); font-size: 19px; text-transform: capitalize; }
@@ -628,3 +629,7 @@ tr.off td { opacity: .6; }
 .pick-banner.initially-hidden { display: none; }
 .turni-t td.nm { text-align: left; }
 .pick-banner select { width: auto; min-width: 240px; }
+.auto-switch { display: flex; align-items: center; gap: 8px; justify-content: flex-end; margin: 0 0 12px; font-size: 16px; color: var(--salvia); cursor: pointer; }
+.auto-switch.initially-hidden { display: none; }
+.name-sel { width: 100%; padding: 5px 8px; font-size: 17px; font-weight: 700; }
+.name-sel.empty { color: var(--debito); border-color: var(--debito); border-style: dashed; }

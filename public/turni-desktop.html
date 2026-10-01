@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Turni</title>
-    <link rel="stylesheet" href="style.css?v=50">
+    <link rel="stylesheet" href="style.css?v=51">
 </head>
 <body>
     <nav class="nav-menu">
@@ -23,19 +23,20 @@
     </nav>
     <header class="stag">
         <div class="stag-art" aria-hidden="true"><svg class="stag-ill"><use href="#ill-zucca"/></svg></div>
-        <div class="stag-when">Prossime 12 settimane</div>
+        <div class="stag-when">Prossime 24 settimane</div>
         <h1>Turni</h1>
         <div id="mio-turno" class="stag-sub"></div>
     </header>
 
     <main class="container">
         <div id="status" class="status" role="status"></div>
+        <label id="auto-wrap" class="auto-switch initially-hidden"><input type="checkbox" id="turni-auto" onchange="toggleAuto(this)"> Generazione automatica dei turni</label>
         <div id="pick-banner" class="pick-banner initially-hidden"></div>
         <table class="t turni-t">
             <thead><tr><th class="left">Consegna</th><th class="left">Turnista</th><th class="left">Turnista</th><th class="left">Note</th><th class="admin-col"></th></tr></thead>
             <tbody id="turni-body"></tbody>
         </table>
-        <p id="turni-hint" class="hint initially-hidden">Clic su un nome: scambialo con un’altra persona (che prende questo turno e lascia il suo primo turno da oggi) o sostituiscilo. “Giorno”: sposta o salta la consegna, segna la riunione. Ogni modifica finisce in Attività.</p>
+        <p id="turni-hint" class="hint initially-hidden">Scegli i due nomi di ogni consegna dai menu; sostituire o togliere un nome chiede conferma. “Giorno”: sposta o salta la consegna, segna la riunione. Con la generazione automatica in pausa le settimane nuove arrivano da coprire. Ogni modifica finisce in Attività.</p>
 
         <section id="pause-section" class="pause-box initially-hidden">
             <h2>Pause</h2>
@@ -80,7 +81,7 @@
     <script src="js/shared/api-client.js"></script>
     <script src="js/shared/auth.js?v=32"></script>
     <script src="js/shared/version.js"></script>
-    <script src="js/shared/turni-common.js?v=1"></script>
-    <script src="js/turni-desktop.js?v=6"></script>
+    <script src="js/shared/turni-common.js?v=2"></script>
+    <script src="js/turni-desktop.js?v=7"></script>
 </body>
 </html>

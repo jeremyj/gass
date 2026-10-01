@@ -5,7 +5,7 @@
  * Commands:
  *   import <file.csv>  - Load weeks from a CSV: data;username1;username2;nota
  *                        (replaces every week from the first date in the file)
- *   list               - Show the next 12 weeks
+ *   list               - Show the next 24 weeks
  *
  * Docker usage:
  *   docker cp turni.csv gass:/app/data/turni.csv

@@ -1,8 +1,8 @@
-// Turni, mobile: agenda of the next 12 weeks; tap "scambia" on your own turno to swap it
+// Turni, mobile: agenda of the next 24 weeks; tap "cambia" on your own turno to swap, move or leave it
 
 let turni = [];
 let myId = null;
-let aperto = null; // id of the turno whose swap row is open
+let aperto = null; // id of the turno whose action row is open
 
 function turnoWhoHtml(t) {
   if (t.saltata) {
@@ -31,9 +31,9 @@ function renderTurni() {
     const mine = t.turnisti.some(p => p && p.id === myId);
     const canSwap = mine && !t.saltata && t.data >= toLocalDateString();
     const tags = (mine ? '<span class="tag-tu">TU</span>' : '') + (t.riunione ? '<span class="tag-riunione">riunione</span>' : '');
-    const action = canSwap && aperto !== t.id ? `<button type="button" class="link-btn" onclick="apriScambio(${t.id})">scambia</button>` : '';
+    const action = canSwap && aperto !== t.id ? `<button type="button" class="link-btn" onclick="apriScambio(${t.id})">cambia</button>` : '';
     const swapRow = canSwap && aperto === t.id
-      ? `<div class="turno-swap">${scambioSelectHtml(turni, t, 'swap-select')}<button type="button" class="btn btn-line" onclick="apriScambio(null)">Annulla</button></div>`
+      ? `<div class="turno-swap">${azioniTurnoHtml(turni, t, mySlot(t))}<button type="button" class="btn btn-line" onclick="apriScambio(null)">Annulla</button></div>`
       : '';
     html += `
       <li class="${i === 0 ? 'cur' : ''}${t.saltata ? ' off' : ''}">
@@ -43,13 +43,15 @@ function renderTurni() {
       </li>`;
   });
   list.innerHTML = html + '</ul>';
-  const select = document.getElementById('swap-select');
-  if (select) select.onchange = e => e.target.value && scambia(Number(e.target.value));
+  const t = turni.find(x => x.id === aperto);
+  if (t && document.getElementById('swap-select')) {
+    collegaAzioniTurno(turni, t, mySlot(t), () => { aperto = null; loadTurni(); }, renderTurni);
+  }
 
   const next = turni.find(t => !t.saltata && t.turnisti.some(p => p && p.id === myId));
   document.getElementById('mio-turno').textContent = next
     ? `il tuo: ${formatDateLong(next.data)}`
-    : 'nessun turno per te nelle prossime 12 settimane';
+    : 'nessun turno per te nelle prossime 24 settimane';
 }
 
 function apriScambio(id) {
@@ -57,13 +59,7 @@ function apriScambio(id) {
   renderTurni();
 }
 
-async function scambia(userId) {
-  const t = turni.find(x => x.id === aperto);
-  const slot = t.turnisti[0] && t.turnisti[0].id === myId ? 1 : 2;
-  if (!await scambiaTurno(turni, t, slot, userId)) return renderTurni();
-  aperto = null;
-  await loadTurni();
-}
+const mySlot = t => (t.turnisti[0] && t.turnisti[0].id === myId ? 1 : 2);
 
 async function loadTurni() {
   try {
