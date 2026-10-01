@@ -37,7 +37,7 @@ POST   /api/participants              - Create new participant
 DELETE /api/participants/:id          - Delete participant (admin; 400 if the user has movimenti or rettifiche)
 GET    /api/turni                     - Next 12 weeks (generates missing ones), pause list (any authenticated user)
 PUT    /api/turni/:id                 - Edit a week: turnisti, day, saltata, riunione, nota (admin)
-POST   /api/turni/scambio             - Swap two turnisti (admin)
+POST   /api/turni/scambio             - {a: {id, slot}, userId}: userId takes slot a, a's person takes userId's first turno from today (admin)
 POST   /api/turni/pause                - Add a pause (admin); DELETE /api/turni/pause/:id removes it
 GET    /api/version                   - Get application version from package.json (public, no auth)
 ```

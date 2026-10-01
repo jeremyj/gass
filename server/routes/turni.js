@@ -41,9 +41,9 @@ router.put('/:id', requireAdmin, (req, res) => {
 
 router.post('/scambio', requireAdmin, (req, res) => {
   const audit = auditOf(req);
-  const { a, b } = req.body || {};
-  if (!a || !b) return res.status(400).json({ success: false, error: 'Scambio non valido' });
-  const result = T.swapTurnisti(db, a, b, toLocalDateString(), audit);
+  const { a, userId } = req.body || {};
+  if (!a || !userId) return res.status(400).json({ success: false, error: 'Scambio non valido' });
+  const result = T.swapWithNext(db, a, Number(userId), toLocalDateString(), audit);
   if (result.error) return res.status(400).json({ success: false, error: result.error });
   log(req, audit, 'turno_scambio', `scambio ${result.changes.join(', ')}`);
   res.json({ success: true });

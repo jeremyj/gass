@@ -69,23 +69,17 @@ describe('admin edits', () => {
     expect((await adminAgent.put('/api/turni/999999').send({ nota: 'x' })).status).toBe(404);
   });
 
-  it('swaps two people', async () => {
-    const [a, b, c, d] = ['a', 'b', 'c', 'd'].map(u => createUser(db, { username: u }));
-    const x = createTurno(db, { settimana: '2099-01-06', t1: a, t2: b });
-    const y = createTurno(db, { settimana: '2099-01-13', t1: c, t2: d });
-    const res = await adminAgent.post('/api/turni/scambio').send({ a: { id: x, slot: 2 }, b: { id: y, slot: 1 } });
-    expect(res.status).toBe(200);
-    expect(db.prepare('SELECT turnista2_id FROM turni WHERE id = ?').get(x).turnista2_id).toBe(c);
-    expect(db.prepare("SELECT COUNT(*) n FROM activity_logs WHERE event_type = 'turno_scambio'").get().n).toBe(1);
-  });
-
-  it('logs who was swapped with whom', async () => {
+  it('swaps a person with someone else\'s next turno and logs who', async () => {
     const [a, b, c, d] = ['sa', 'sb', 'sc', 'sd'].map(u => createUser(db, { username: u, displayName: u.toUpperCase() }));
     const x = createTurno(db, { settimana: '2099-02-03', t1: a, t2: b });
     const y = createTurno(db, { settimana: '2099-02-10', t1: c, t2: d });
-    await adminAgent.post('/api/turni/scambio').send({ a: { id: x, slot: 1 }, b: { id: y, slot: 1 } });
-    const row = db.prepare("SELECT details FROM activity_logs WHERE event_type = 'turno_scambio' ORDER BY id DESC").get();
+    const res = await adminAgent.post('/api/turni/scambio').send({ a: { id: x, slot: 1 }, userId: c });
+    expect(res.status).toBe(200);
+    expect(db.prepare('SELECT turnista1_id t FROM turni WHERE id = ?').get(x).t).toBe(c);
+    expect(db.prepare('SELECT turnista1_id t FROM turni WHERE id = ?').get(y).t).toBe(a);
+    const row = db.prepare("SELECT details FROM activity_logs WHERE event_type = 'turno_scambio'").get();
     expect(row.details).toBe('scambio SA (03/02) ↔ SC (10/02)');
+    expect((await adminAgent.post('/api/turni/scambio').send({ a: { id: x, slot: 1 } })).status).toBe(400);
   });
 
   it('adds and deletes a pause', async () => {

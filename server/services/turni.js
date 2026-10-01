@@ -158,6 +158,17 @@ function swapTurnisti(db, a, b, today, audit) {
   return { changes: [`${nome(rowA[colA])} (${ddmm(rowA.data)}) ↔ ${nome(rowB[colB])} (${ddmm(rowB.data)})`] };
 }
 
+// The person picked in `a` takes userId's first turno from today; userId takes `a`'s place
+function swapWithNext(db, a, userId, today, audit) {
+  const next = db.prepare(`
+    SELECT id, turnista1_id FROM turni
+    WHERE data >= ? AND saltata = 0 AND id != ? AND (turnista1_id = ? OR turnista2_id = ?)
+    ORDER BY data LIMIT 1
+  `).get(today, Number(a.id), userId, userId);
+  if (!next) return { error: 'Nessun turno da oggi in poi per questa persona' };
+  return swapTurnisti(db, a, { id: next.id, slot: next.turnista1_id === Number(userId) ? 1 : 2 }, today, audit);
+}
+
 function addPause(db, { dal, al, nota }, today, audit) {
   if (!isDateString(dal) || !isDateString(al) || dal > al) return { error: 'Date della pausa non valide' };
   const text = (nota || '').trim() || 'pausa';
@@ -214,6 +225,6 @@ function importTurni(db, rows, today) {
 }
 
 module.exports = {
-  HORIZON_DAYS, ensureTurni, listTurni, listPause, updateTurno, swapTurnisti,
+  HORIZON_DAYS, ensureTurni, listTurni, listPause, updateTurno, swapTurnisti, swapWithNext,
   addPause, deletePause, freeFutureTurni, importTurni
 };

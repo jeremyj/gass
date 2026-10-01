@@ -156,6 +156,35 @@ describe('editing', () => {
     expect(T.swapTurnisti(db, { id: x, slot: 1 }, { id: x, slot: 2 }, '2026-10-01', audit).error).toBeTruthy();
   });
 
+  it('swapWithNext gives the picked slot to a person and them their first turno from today', () => {
+    const [a, b, c, d, e, f] = people(6);
+    const early = createTurno(db, { settimana: '2026-10-06', t1: e, t2: f });
+    const x = createTurno(db, { settimana: '2026-10-13', t1: a, t2: b });
+    const y = createTurno(db, { settimana: '2026-10-20', t1: c, t2: d });
+    const later = createTurno(db, { settimana: '2026-10-27', t1: e, t2: c });
+    // e's first turno from today is before the picked one: it still counts
+    expect(T.swapWithNext(db, { id: x, slot: 1 }, e, TODAY, audit).error).toBeUndefined();
+    const row = id => db.prepare('SELECT turnista1_id t1, turnista2_id t2 FROM turni WHERE id = ?').get(id);
+    expect(row(x)).toEqual({ t1: e, t2: b });
+    expect(row(early)).toEqual({ t1: a, t2: f });
+    expect(row(later)).toEqual({ t1: e, t2: c });
+    // d's slot goes to c, who is on 20/10 too: refused
+    expect(T.swapWithNext(db, { id: y, slot: 2 }, c, TODAY, audit).error).toBeTruthy();
+    expect(row(y)).toEqual({ t1: c, t2: d });
+  });
+
+  it('swapWithNext skips past and skipped turni and refuses a person without one', () => {
+    const [a, b, c, d, e] = people(5);
+    createTurno(db, { settimana: '2026-09-22', t1: c, t2: e });
+    const skipped = createTurno(db, { settimana: '2026-10-06', t1: c });
+    db.prepare('UPDATE turni SET saltata = 1 WHERE id = ?').run(skipped);
+    const x = createTurno(db, { settimana: '2026-10-13', t1: a, t2: b });
+    const y = createTurno(db, { settimana: '2026-10-20', t1: d, t2: c });
+    expect(T.swapWithNext(db, { id: x, slot: 2 }, c, TODAY, audit).error).toBeUndefined();
+    expect(db.prepare('SELECT turnista2_id t FROM turni WHERE id = ?').get(y).t).toBe(b);
+    expect(T.swapWithNext(db, { id: x, slot: 1 }, e, TODAY, audit).error).toBe('Nessun turno da oggi in poi per questa persona');
+  });
+
   it('swapTurnisti refuses a skipped or past consegna', () => {
     const [a, b, c, d] = people(4);
     const past = createTurno(db, { settimana: '2026-09-22', t1: a, t2: b });

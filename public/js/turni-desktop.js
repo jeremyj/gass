@@ -44,19 +44,21 @@ function renderBanner() {
   if (!t || t.saltata) picked = null;
   if (!picked) { banner.classList.add('initially-hidden'); return; }
   const p = t.turnisti[picked.slot - 1];
-  const options = attivi.map(u => `<option value="${u.id}">${escapeHtml(u.nome)}</option>`).join('');
+  const options = attivi.filter(u => !p || u.id !== p.id).map(u => `<option value="${u.id}">${escapeHtml(u.nome)}</option>`).join('');
   banner.innerHTML = `
-    <span><b>${p ? escapeHtml(p.nome) : 'Turno da coprire'}</b>, ${formatDateLong(t.data)}. Clicca un altro nome per scambiarli, oppure</span>
+    <span><b>${p ? escapeHtml(p.nome) : 'Turno da coprire'}</b>, ${formatDateLong(t.data)}</span>
+    ${p ? `<select id="swap-select" title="La persona scelta prende questo turno, ${escapeHtml(p.nome)} il suo primo turno da oggi"><option value="">scambia con…</option>${options}</select>` : ''}
     <select id="replace-select"><option value="">${p ? 'sostituisci con…' : 'assegna a…'}</option>${options}${p ? '<option value="none">— lascia da coprire</option>' : ''}</select>
     <button type="button" class="btn btn-line" onclick="cancelPick()">Annulla</button>`;
+  if (p) document.getElementById('swap-select').onchange = e => e.target.value && swapWith(Number(e.target.value));
   document.getElementById('replace-select').onchange = e => replaceName(e.target.value);
   banner.classList.remove('initially-hidden');
 }
 
 function pickName(id, slot) {
   if (picked && picked.id === id && picked.slot === slot) return cancelPick();
-  if (!picked) { picked = { id, slot }; return renderTurni(); }
-  swapNames(picked, { id, slot });
+  picked = { id, slot };
+  renderTurni();
 }
 
 function cancelPick() {
@@ -64,9 +66,9 @@ function cancelPick() {
   renderTurni();
 }
 
-async function swapNames(a, b) {
+async function swapWith(userId) {
   try {
-    await API.post('/api/turni/scambio', { a, b });
+    await API.post('/api/turni/scambio', { a: picked, userId });
     picked = null;
     showStatus('Turni scambiati', 'success');
     await loadTurni();
