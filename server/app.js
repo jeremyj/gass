@@ -79,6 +79,7 @@ function createApp() {
   const logsRouter = require('./routes/logs');
   const authRouter = require('./routes/auth');
   const usersRouter = require('./routes/users');
+  const turniRouter = require('./routes/turni');
 
   // OIDC routes (only when OIDC_ISSUER is configured)
   if (process.env.OIDC_ISSUER) {
@@ -95,7 +96,8 @@ function createApp() {
   app.use('/api/participants', participantsRouter);
   app.use('/api/storico', storicoRouter);
   app.use('/api/logs', logsRouter);
-  // Pages router last — catches /, /consegna, /storico, /debiti, /logs HTML pages
+  app.use('/api/turni', turniRouter);
+  // Pages router last — catches /, /consegna, /storico, /debiti, /logs, /turni HTML pages
   app.use('/', pagesRouter);
 
   // Error handler

@@ -47,6 +47,10 @@ function getEventIcon(eventType) {
     case 'user_deleted': return '🗑️';
     case 'password_changed': return '🔑';
     case 'saldo_updated': return '💰';
+    case 'turno_modificato': return '📅';
+    case 'turno_scambio': return '🔁';
+    case 'pausa_aggiunta': return '⏸️';
+    case 'pausa_eliminata': return '▶️';
     default: return '•';
   }
 }
@@ -77,6 +81,14 @@ function getEventDescription(event) {
       return `Password cambiata`;
     case 'saldo_updated':
       return `Saldo modificato per <strong>${escapeHtml(event.partecipante_nome || 'N/A')}</strong>`;
+    case 'turno_modificato':
+      return 'Turno modificato';
+    case 'turno_scambio':
+      return 'Turni scambiati';
+    case 'pausa_aggiunta':
+      return 'Pausa aggiunta';
+    case 'pausa_eliminata':
+      return 'Pausa eliminata';
     case 'movimento_changed':
       return `Movimento modificato per <strong>${escapeHtml(event.partecipante_nome || 'N/A')}</strong>`;
     default:
