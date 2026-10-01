@@ -137,6 +137,7 @@ function updateNoteButtonVisibility() {
 
 function updateConsegnaStatusUI(consegna) {
   currentConsegnaId = consegna?.id || null;
+  loadQuoteOggi();
   isConsegnaClosed = consegna?.chiusa === true;
 
   const statusSection = document.getElementById('consegna-status-section');

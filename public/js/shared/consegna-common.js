@@ -92,7 +92,6 @@ async function loadData(date = null) {
     const result = await API.get(url);
     participants = result.participants;
     renderParticipantSelect();
-    loadQuoteOggi();
   } catch (error) {
     showStatus('Errore: ' + error.message, 'error');
   }
@@ -380,7 +379,7 @@ async function annullaConsegna() {
   if (currentConsegnaId) {
     const ok = await confirmDialog({
       title: 'Annullare la consegna?',
-      message: 'La consegna e tutti i suoi movimenti verranno eliminati, e i saldi dei partecipanti ricalcolati. Le quote teatro registrate restano: si correggono dalla pagina Teatro.',
+      message: 'La consegna e tutti i suoi movimenti verranno eliminati, e i saldi dei partecipanti ricalcolati. Anche le quote teatro registrate in questa consegna verranno eliminate.',
       details: consegnaSummaryDetails(),
       confirmText: 'Elimina consegna',
       danger: true
@@ -615,7 +614,13 @@ async function registraTeatro(id) {
   });
   if (!ok) return;
   try {
-    await API.post('/api/teatro/pagamenti', { userId: id, importo, consegnaId: currentConsegnaId || null });
+    // A quota is recorded inside a consegna: a new one not saved yet is saved first (cassa only)
+    if (!currentConsegnaId) {
+      await postConsegna([]);
+      const { consegna } = await API.get(`/api/consegna/${document.getElementById('data').value}`);
+      updateConsegnaStatusUI(consegna);
+    }
+    await API.post('/api/teatro/pagamenti', { userId: id, importo, consegnaId: currentConsegnaId });
     const stato = await API.get(`/api/teatro/utente/${id}`);
     p.teatro_residuo = roundToCents(stato.residuo - stato.anticipo);
     const box = document.getElementById(`teatro_${id}`);
@@ -627,13 +632,12 @@ async function registraTeatro(id) {
   }
 }
 
-// Quotas collected on the selected day, shown with the cassa but outside its totals,
-// and only while a consegna is in progress on that day
+// Quotas collected in this consegna, shown with the cassa but outside its totals
 let quoteOggi = 0;
 
 async function loadQuoteOggi() {
   try {
-    quoteOggi = (await API.get(`/api/teatro/oggi?data=${getSelectedDate() || toLocalDateString()}`)).totale;
+    quoteOggi = currentConsegnaId ? (await API.get(`/api/teatro/consegna/${currentConsegnaId}`)).totale : 0;
   } catch (error) {
     quoteOggi = 0;
   }

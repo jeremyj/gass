@@ -3,6 +3,8 @@
  * payments are a running total spread over the owed semesters oldest first
  * (teatro-calc.allocate), an excess being an advance. The cassa teatro is separate
  * from the consegna cassa: payments made in GASS plus manual entries (teatro_cassa).
+ * A payment is always recorded inside an open consegna, dated on it; deleting the
+ * consegna deletes its payments (routes/consegna.js).
  * Payments imported from the old sheet (fonte = 'foglio') are not in the cassa.
  * Takes the db handle so the CLI can pass its own connection.
  */
@@ -107,8 +109,8 @@ function saldoCassa(db) {
   return round(p + c);
 }
 
-function quoteDelGiorno(db, data) {
-  return round(db.prepare('SELECT COALESCE(SUM(importo), 0) AS t FROM teatro_pagamenti WHERE data = ? AND fonte IS NULL').get(data).t);
+function quoteDellaConsegna(db, consegnaId) {
+  return round(db.prepare('SELECT COALESCE(SUM(importo), 0) AS t FROM teatro_pagamenti WHERE consegna_id = ?').get(consegnaId).t);
 }
 
 function setNota(db, userId, nota) {
@@ -183,5 +185,5 @@ function riepilogo(db) {
 
 module.exports = {
   DEFAULT_QUOTA, ensureSemestre, setQuota, setDovuto, statoTeatro, residui, registraPagamento, deletePagamento,
-  addCassa, saldoCassa, quoteDelGiorno, setNota, riepilogo, importFoglio
+  addCassa, saldoCassa, quoteDellaConsegna, setNota, riepilogo, importFoglio
 };

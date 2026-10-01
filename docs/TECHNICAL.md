@@ -44,8 +44,8 @@ PUT    /api/turni/auto                - {auto}: pause/resume automatic generatio
 PUT    /api/turni/note                - {note}: free-text notes shown above the turni, max 5000 chars (admin; GET returns `note`)
 GET    /api/turni?passati=1           - Same, with every past week too (admins only; ignored for others)
 GET    /api/teatro/utente/:id         - A person's quota teatro: per-semester {dovuto, pagato}, residuo, anticipo (any user)
-GET    /api/teatro/oggi?data=         - Quotas paid that day, shown next to the consegna cassa (any user)
-POST   /api/teatro/pagamenti          - {userId, importo, consegnaId?}: record a payment (any user)
+GET    /api/teatro/consegna/:id       - Quotas paid in that consegna, shown next to its cassa (any user)
+POST   /api/teatro/pagamenti          - {userId, importo, consegnaId}: record a payment in an open consegna, dated on it (any user; 400 without one)
 GET    /api/teatro                    - Grid, semesters, payments, cassa log, balance (admin)
 PUT    /api/teatro/dovuti             - {userId, semestre, dovuto}: owed amount, 0 = non dovuto, null = not in the GASS (admin)
 PUT    /api/teatro/semestri/:s        - {quota}: semester quota; people on the old quota follow it (admin)
@@ -281,7 +281,7 @@ Pure helpers in `server/services/teatro-calc.js` (`semestreOf`, `semestreLabel`,
 
 **Semesters open lazily.** `ensureSemestre(today)` (on `GET /api/teatro*`, `POST /pagamenti`, `GET /api/participants`) creates the current semester once, with the previous semester's quota (15 € if none), and a dovuto row for every `attivo` user. Sospesi and later joiners get none; an admin adds them.
 
-**Cassa teatro** balance = payments without `fonte` + `teatro_cassa` entries. Payments imported from the old sheet (`manage-teatro.js import`, `fonte = 'foglio'`, dated at the semester's end) are history only. A user with quota payments cannot be deleted (`deleteUser`).
+**Cassa teatro** balance = payments without `fonte` + `teatro_cassa` entries. Payments imported from the old sheet (`manage-teatro.js import`, `fonte = 'foglio'`, dated at the semester's end) are history only. A payment is always recorded in an open consegna and takes its date; the client saves a new consegna (cassa only) before the first quota. `DELETE /api/consegna/:id` deletes that consegna's payments too (logged as `teatro_modifica`). A user with quota payments cannot be deleted (`deleteUser`).
 
 **Import:** `manage-teatro.js import <file.csv>`, header `username;2024-1;2024-2;…;nota`; a number n = owed n and paid n (0 = non dovuto), `-` or empty = no row. Re-importing a person replaces their imported rows. `manage-teatro.js list` prints the grid.
 

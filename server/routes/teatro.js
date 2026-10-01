@@ -29,17 +29,21 @@ router.get('/utente/:id', (req, res) => {
   res.json({ success: true, ...T.statoTeatro(db, Number(req.params.id)) });
 });
 
-// Quotas collected on a day (default today), kept apart from the consegna cassa
-router.get('/oggi', (req, res) => {
-  res.json({ success: true, totale: T.quoteDelGiorno(db, req.query.data || toLocalDateString()) });
+// Quotas collected in a consegna, kept apart from its cassa
+router.get('/consegna/:id', (req, res) => {
+  res.json({ success: true, totale: T.quoteDellaConsegna(db, Number(req.params.id)) });
 });
 
+// A quota is paid at a consegna: it must exist and be open, and gives the payment its date
 router.post('/pagamenti', (req, res) => {
   const { userId, importo, consegnaId } = req.body || {};
-  const today = toLocalDateString();
-  T.ensureSemestre(db, today);
+  const consegna = consegnaId && db.prepare('SELECT id, data, chiusa FROM consegne WHERE id = ?').get(consegnaId);
+  if (!consegna || consegna.chiusa) {
+    return res.status(400).json({ success: false, error: 'La quota teatro si registra dentro una consegna aperta' });
+  }
+  T.ensureSemestre(db, toLocalDateString());
   act(req, res, 'teatro_pagamento', audit =>
-    T.registraPagamento(db, { userId: Number(userId), importo, data: today, consegnaId: consegnaId || null }, audit));
+    T.registraPagamento(db, { userId: Number(userId), importo, data: consegna.data, consegnaId: consegna.id }, audit));
 });
 
 router.get('/', requireAdmin, (req, res) => {

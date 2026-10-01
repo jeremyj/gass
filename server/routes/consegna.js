@@ -295,6 +295,19 @@ router.delete('/:id', requireAdmin, (req, res) => {
         createdAt: timestamp
       });
 
+      // Quota teatro paid in this consegna goes with it
+      const quote = db.prepare('SELECT COUNT(*) AS n, COALESCE(SUM(importo), 0) AS t FROM teatro_pagamenti WHERE consegna_id = ?').get(id);
+      if (quote.n) {
+        db.prepare('DELETE FROM teatro_pagamenti WHERE consegna_id = ?').run(id);
+        logActivity({
+          eventType: 'teatro_modifica',
+          actorUserId: req.session.userId,
+          details: `eliminate con la consegna ${consegna.data}: ${quote.n} quote teatro, ${quote.t} €`,
+          consegnaId: parseInt(id),
+          createdAt: timestamp
+        });
+      }
+
       db.prepare('DELETE FROM consegne WHERE id = ?').run(id);
 
       // Only participants with a movimento in the deleted consegna are affected
