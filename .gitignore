@@ -20,3 +20,4 @@ backups/
 
 # Password management scripts
 update-admin-password.js
+handoff/

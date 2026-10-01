@@ -76,3 +76,4 @@ messaggio-*.txt
 # Agent workspace and design material
 .superpowers/
 design/
+handoff/
