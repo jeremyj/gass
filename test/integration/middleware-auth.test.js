@@ -130,10 +130,10 @@ describe('requireAdmin middleware', () => {
 });
 
 describe('public endpoints', () => {
-  it('serves /inbreve without a session', async () => {
-    const res = await request(app).get('/inbreve');
+  it('serves the 2.17 news page without a session', async () => {
+    const res = await request(app).get('/v2.17');
     expect(res.status).toBe(200);
-    expect(res.text).toContain('GASS: come funziona');
+    expect(res.text).toContain('gass-turni.mp4');
   });
 
   it('serves /api/version without a session', async () => {

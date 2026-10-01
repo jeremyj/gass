@@ -15,14 +15,14 @@ router.get('/login', (req, res) => {
   res.sendFile(path.join(PUBLIC, 'login.html'));
 });
 
-// One-page guide for new users (public, no auth required)
-router.get('/inbreve', (req, res) => {
-  res.sendFile(path.join(PUBLIC, 'inbreve.html'));
-});
-
 // First-access video (public, no auth required)
 router.get('/comefunziona', (req, res) => {
   res.sendFile(path.join(PUBLIC, 'comefunziona.html'));
+});
+
+// What's new in 2.17: turni video (public, no auth required)
+router.get('/v2.17', (req, res) => {
+  res.sendFile(path.join(PUBLIC, 'v2.17.html'));
 });
 
 // API endpoint to get app version (public, no auth required)
