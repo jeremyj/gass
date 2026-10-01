@@ -82,6 +82,13 @@ table.t td.c, table.t th.c { text-align: center; }
 .mov { background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; }
 .mov div { display: flex; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--riga); }
 .mov div:last-child { border-bottom: 0; }
+.qbtn { display: flex; justify-content: space-between; align-items: center; border: 1.5px dashed var(--teatro); color: var(--teatro); border-radius: 9px; padding: 9px 12px; font-weight: 800; }
+.qrow { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; padding: 5px 0; font-size: 16px; align-items: center; }
+.qrow small { color: var(--salvia); }
+.qrow .ok { color: #2d6a2d; font-weight: 700; }
+.qrow .part { color: var(--debito); font-weight: 700; }
+.qin { border: 1.5px solid var(--teatro); border-radius: 8px; padding: 6px 10px; font-size: 20px; background: #fff; width: 110px; text-align: right; }
+.kv { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 8px 0; }
 </style>
 </head>
 <body>
@@ -90,8 +97,8 @@ table.t td.c, table.t th.c { text-align: center; }
   <p>Ogni gassista paga 15 € a semestre per l'affitto del teatro. I soldi vanno in una <b>cassa teatro</b>, separata dalla cassa delle consegne. Bisogna sapere chi ha pagato quali semestri, anche quando qualcuno resta indietro di 2-3 semestri. Dal foglio di oggi: semestri gennaio–giugno e luglio–dicembre, storico dal 2024, una quota per utente GASS (i nuclei come "Silvia &amp; Paolo" sono una riga sola). In ogni casella c'è un <b>importo</b> (15, 0, a volte parziale come 7) oppure "–" (non era ancora nel GASS), più una nota per persona; i sospesi pagano 0. Sotto, il registro della cassa teatro: affitto da 300 € a semestre versato in ritardo, controlli del "bussolotto", prelievi dalla cassa consegne. Il foglio si importa una volta e poi si continua in GASS.</p>
 
   <div class="section">
-    <h2><span class="tag">A</span>Spunta in Consegna + colonna in Saldi</h2>
-    <p>La tua idea. Si registra il pagamento dove passano i soldi: nella scheda del partecipante, alla consegna. GASS sa quali semestri mancano e li propone in ordine, dal più vecchio. Chi è indietro di 2 semestri vede due caselle: si spunta quello che paga. I soldi della quota <b>non</b> entrano nella cassa della consegna (incassato / lasciato in cassa): finiscono nella cassa teatro.</p>
+    <h2><span class="tag">A</span>Tasto "Quota teatro" in Consegna + colonna in Saldi</h2>
+    <p>Si registra il pagamento dove passano i soldi: nella scheda del partecipante, alla consegna. Un tasto apre il dettaglio dei semestri dovuti; si scrive quanto ha versato e GASS lo distribuisce sui semestri, dal più vecchio. I soldi della quota <b>non</b> entrano nella cassa della consegna (incassato / lasciato in cassa): finiscono nella cassa teatro.</p>
   </div>
   <div class="row">
     <div>
@@ -106,16 +113,35 @@ table.t td.c, table.t th.c { text-align: center; }
             </div>
             <div class="sec"><div class="lbl">Esito</div>debito saldato, lascia 2 € di credito</div>
             <div class="sec teatro">
-              <h4>Quota teatro <span>15 € a semestre</span></h4>
-              <div class="chk"><span class="box on">✓</span> 1° sem. 2026 <small>arretrato</small><span class="amt">15 €</span></div>
-              <div class="chk"><span class="box on">✓</span> 2° sem. 2026 <span class="amt">15 €</span></div>
-              <div class="tot"><span>Quota teatro, a parte</span><span>30 €</span></div>
+              <h4>Quota teatro <span>dovuti 2 semestri · 30 €</span></h4>
+              <div class="qrow"><span>1° sem. 2026 <small>quota 15 €</small></span><span></span><span class="ok">15 € ✓</span></div>
+              <div class="qrow"><span>2° sem. 2026 <small>quota 15 €</small></span><span></span><span class="part">5 di 15 €</span></div>
+              <div class="kv"><span class="lbl">Importo versato</span><span class="qin">20 €</span></div>
+              <div class="tot"><span>Resta da pagare</span><span>10 €</span></div>
             </div>
             <div class="btns"><div class="btn line">Annulla</div><div class="btn go">Salva movimento</div></div>
           </div>
         </div>
       </div>
-      <p class="cap"><b>Mobile, consegna.</b> Il riquadro viola compare solo se la persona ha semestri da pagare. Una casella per semestre mancante, il più vecchio in alto. Il totale è separato: chi riceve i soldi li mette nella busta del teatro.</p>
+      <p class="cap"><b>Mobile, consegna.</b> Sotto i movimenti, un tasto <b>Quota teatro</b> (solo se ci sono semestri dovuti, con il totale) apre questo riquadro: i semestri dovuti, dal più vecchio, con la quota di ognuno. Si scrive l'<b>importo versato</b>: copre i semestri in ordine; se non basta, l'ultimo resta parziale (qui 20 € = 1° sem. saldato + 5 € sul 2°, restano 10 €). Il totale va nel bussolotto, non nella cassa della consegna.</p>
+    </div>
+    <div>
+      <div class="phone" style="height:560px">
+        <div class="stag"><div class="when">Consegna di oggi</div><h3>martedì 6 ottobre</h3></div>
+        <div class="body">
+          <div class="card">
+            <div class="head"><div class="nm">Giulia Bianchi</div><span class="pill db">prima di oggi: debito −8 €</span></div>
+            <div class="sec two">
+              <div><div class="lbl">Conto produttore</div><div class="inp">15 <small>€</small></div></div>
+              <div><div class="lbl">Importo saldato</div><div class="inp">25 <small>€</small></div></div>
+            </div>
+            <div class="sec"><div class="lbl">Esito</div>debito saldato, lascia 2 € di credito</div>
+            <div class="sec"><div class="qbtn"><span>Quota teatro</span><span>dovuti 30 € ▸</span></div></div>
+            <div class="btns"><div class="btn line">Annulla</div><div class="btn go">Salva movimento</div></div>
+          </div>
+        </div>
+      </div>
+      <p class="cap"><b>Chiuso.</b> Il tasto c'è solo se la persona ha quote dovute e mostra il totale. Toccandolo si apre il dettaglio (a sinistra).</p>
     </div>
     <div>
       <div class="desk">
@@ -154,12 +180,19 @@ table.t td.c, table.t th.c { text-align: center; }
             <tr><th>Gassista</th><th class="c">1° 2025</th><th class="c">2° 2025</th><th class="c">1° 2026</th><th class="c">2° 2026</th><th>Note</th></tr>
             <tr><td><b>Irene Pronio</b> <span class="pill">sospeso</span></td><td class="c"><span class="g p">15</span></td><td class="c"><span class="g p">15</span></td><td class="c"><span class="g x">0</span></td><td class="c"><span class="g x">0</span></td><td>da gennaio 2026 solo ordini speciali</td></tr>
             <tr><td><b>Jeremy</b></td><td class="c"><span class="g n">0</span></td><td class="c"><span class="g p">15</span></td><td class="c"><span class="g p">15</span></td><td class="c"><span class="g n">0</span></td><td></td></tr>
-            <tr><td><b>Maurizio Ruffo</b></td><td class="c"><span class="g x">–</span></td><td class="c"><span class="g x">–</span></td><td class="c"><span class="g p">15</span></td><td class="c"><span class="g n">0</span></td><td>da marzo 2026</td></tr>
+            <tr><td><b>Maurizio Ruffo</b></td><td class="c"><span class="g x">–</span></td><td class="c"><span class="g x">–</span></td><td class="c"><span class="g p">7</span></td><td class="c"><span class="g n">0</span></td><td>da marzo 2026 (quota ridotta 7 €)</td></tr>
             <tr><td><b>Rachele Brivio</b></td><td class="c"><span class="g n">0</span></td><td class="c"><span class="g p">15</span></td><td class="c"><span class="g p">15</span></td><td class="c"><span class="g n">0</span></td><td></td></tr>
             <tr><td><b>Simone e Laura</b></td><td class="c"><span class="g n">0</span></td><td class="c"><span class="g p">15</span></td><td class="c"><span class="g p">15</span></td><td class="c"><span class="g n">0</span></td><td></td></tr>
             <tr><td><b>Totale</b></td><td class="c"><b>270</b></td><td class="c"><b>295</b></td><td class="c"><b>303</b></td><td class="c"><b>0</b></td><td></td></tr>
           </table>
           <p class="cap" style="max-width:none">Come il foglio: in ogni casella l'importo pagato (anche parziale), "–" se non era ancora nel GASS; rosso = dovuto e non pagato, grigio = sospeso (non deve). Clic su una casella per correggere l'importo. Le colonne più vecchie scorrono a sinistra.</p>
+          <h3 style="margin:18px 0 8px">Quota per semestre</h3>
+          <table class="t" style="margin-bottom:6px">
+            <tr><th>Semestre</th><th>Quota</th><th>Quote ridotte</th></tr>
+            <tr><td>1° sem. 2026</td><td><b>15 €</b></td><td>Maurizio Ruffo 7 € <small>(entrato a marzo)</small></td></tr>
+            <tr><td>2° sem. 2026</td><td><b>15 €</b> ✎</td><td>+ aggiungi</td></tr>
+          </table>
+          <p class="cap" style="max-width:none">La quota si fissa per semestre (può cambiare nel tempo, un semestre nuovo parte dall'ultima). Per una persona si può mettere una quota ridotta, ad esempio chi entra a metà semestre. "Dovuto" = quota (o ridotta) − quanto già versato.</p>
           <h3 style="margin:18px 0 8px;display:flex;justify-content:space-between;align-items:center">Registro cassa teatro <span class="btn th">Aggiungi voce</span></h3>
           <div class="mov">
             <div><span>30/09/2026 · affitto gennaio–giugno 2026, portati da Simone</span><b style="color:var(--debito)">−300 €</b></div>
@@ -206,10 +239,10 @@ table.t td.c, table.t th.c { text-align: center; }
     <ol>
       <li><b>Lo 0 nel foglio:</b> vuol dire "doveva e non ha pagato" (Jeremy 2024, Rachele 2° 2024) o anche "esentato"? Gli arretrati vecchi (2024) si chiedono ancora o si chiudono?</li>
       <li><b>Chi deve:</b> gli attivi sì, i sospesi no (come nel foglio). Un nuovo deve dal semestre in cui entra, anche se entra a metà (Maurizio: da marzo 2026, ha pagato il 1° 2026)?</li>
-      <li><b>Pagamenti parziali</b> (es. 7 €): li registriamo come importo libero, e il resto resta dovuto?</li>
+      <li><b>Quota ridotta per chi entra a metà:</b> la decide l'admin caso per caso (es. 7 €) o la calcoliamo noi dal mese di ingresso?</li>
       <li><b>Chi registra:</b> chiunque alla consegna (come i movimenti) o solo gli admin?</li>
       <li><b>Cassa teatro:</b> vogliamo anche le uscite (affitto versato) e il saldo della cassa, o basta sapere chi ha pagato?</li>
-      <li><b>Importo:</b> sempre 15 €, o può cambiare nel tempo (meglio un valore modificabile dagli admin)?</li>
+      <li><b>Versato più del dovuto:</b> l'eccedenza va in anticipo sul semestre successivo, o il campo non lo permette?</li>
     </ol>
   </div>
 </div>
