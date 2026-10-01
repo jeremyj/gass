@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GASS quota teatro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,500;0,700;1,500&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --calce: #F4F6F2; --carta: #FFFFFF; --inchiostro: #1E2420; --salvia: #5C6760; --riga: #DCE1DA;
+  --credito: #1F57B0; --credito-t: #E6EEFA; --debito: #A3175F; --debito-t: #F8E4EE;
+  --s-deep: #26392F; --s-acc: #E8890F; --s-alt: #6E4128; --s-tint: #FBEEDB; --s-on: #F3E6CF;
+  --teatro: #5B3A8C; --teatro-t: #EFE8F8;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #E3E7E2; color: var(--inchiostro); font-family: "Alegreya Sans", system-ui, sans-serif;
+  font-size: 16px; line-height: 1.45; font-variant-numeric: lining-nums tabular-nums; }
+.board { max-width: 1500px; margin: 0 auto; padding: 36px 16px 80px; }
+h1, h2, h3 { font-family: "Alegreya", Georgia, serif; }
+.board > h1 { font-size: 46px; line-height: 1.05; margin: 0 0 8px; }
+.board > p, .intro { margin: 0 0 22px; color: var(--salvia); max-width: 80ch; font-size: 17px; }
+.section { margin: 48px 0 18px; }
+.section h2 { font-size: 32px; margin: 0 0 4px; }
+.section .tag { display: inline-block; font-size: 14px; font-weight: 800; color: #fff; background: var(--s-deep); border-radius: 6px; padding: 1px 8px; margin-right: 8px; vertical-align: 6px; }
+.section p { margin: 0; color: var(--salvia); max-width: 90ch; }
+.row { display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; margin-top: 22px; }
+.cap { font-size: 15px; color: var(--salvia); margin: 12px 4px 0; max-width: 390px; }
+.cap b { color: var(--inchiostro); }
+.phone { width: 390px; height: 800px; border-radius: 38px; background: var(--calce); border: 10px solid #22262a; overflow: hidden; display: flex; flex-direction: column; }
+.desk { width: 1060px; max-width: 100%; border-radius: 10px; background: var(--calce); border: 1px solid #bcc3bd; overflow: hidden; }
+.stag { background: var(--s-deep); color: #fff; padding: 16px 20px; }
+.stag .when { font-size: 14px; color: var(--s-on); }
+.stag h3 { margin: 0; font-size: 30px; line-height: 1.05; }
+.d-nav { background: var(--s-deep); color: #fff; display: flex; gap: 22px; padding: 12px 24px; font-weight: 700; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,.15); }
+.d-nav b { color: #fff; border-bottom: 3px solid var(--s-acc); padding-bottom: 6px; }
+.d-nav span { color: #dfe5df; }
+.body { padding: 16px; overflow: auto; flex: 1; }
+.card { background: var(--carta); border: 1.5px solid var(--s-deep); border-radius: 12px; overflow: hidden; }
+.card .head { background: var(--s-tint); padding: 12px 16px; border-bottom: 1px solid var(--riga); }
+.card .head .nm { font-family: "Alegreya", serif; font-weight: 700; font-size: 22px; }
+.pill { display: inline-block; font-size: 14px; font-weight: 700; border-radius: 6px; padding: 1px 8px; }
+.pill.db { color: var(--debito); background: var(--debito-t); }
+.pill.cr { color: var(--credito); background: var(--credito-t); }
+.pill.ok { color: #2d6a2d; background: #e3f2df; }
+.pill.th { color: var(--teatro); background: var(--teatro-t); }
+.card .sec { padding: 12px 16px; border-bottom: 1px solid var(--riga); }
+.lbl { font-size: 14px; font-weight: 700; color: var(--salvia); }
+.inp { border: 1.5px solid var(--riga); border-radius: 8px; padding: 9px 12px; font-size: 22px; display: flex; justify-content: space-between; background: #fff; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.teatro { background: var(--teatro-t); border-left: 4px solid var(--teatro); }
+.teatro h4 { margin: 0 0 6px; font-size: 16px; color: var(--teatro); display: flex; justify-content: space-between; }
+.chk { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 17px; }
+.box { width: 22px; height: 22px; border: 2px solid var(--teatro); border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 15px; background: #fff; }
+.box.on { background: var(--teatro); }
+.chk .amt { margin-left: auto; font-weight: 700; }
+.chk small { color: var(--salvia); }
+.tot { display: flex; justify-content: space-between; font-weight: 800; padding-top: 6px; border-top: 1px dashed #c9b8e2; margin-top: 4px; }
+.btns { display: flex; gap: 10px; padding: 12px 16px; }
+.btn { flex: 1; text-align: center; font-weight: 800; border-radius: 9px; padding: 11px; }
+.btn.go { background: var(--s-deep); color: #fff; }
+.btn.line { border: 1.5px solid var(--inchiostro); }
+.btn.th { background: var(--teatro); color: #fff; flex: 0 0 auto; padding: 8px 14px; }
+table.t { width: 100%; border-collapse: collapse; background: var(--carta); border-radius: 10px; overflow: hidden; font-size: 15px; }
+table.t th { text-align: left; font-size: 13px; color: var(--salvia); padding: 8px 10px; border-bottom: 1px solid var(--riga); }
+table.t td { padding: 8px 10px; border-bottom: 1px solid var(--riga); }
+table.t td.c, table.t th.c { text-align: center; }
+.g { display: inline-flex; width: 30px; height: 26px; border-radius: 6px; align-items: center; justify-content: center; font-weight: 800; }
+.g.p { background: #e3f2df; color: #2d6a2d; }
+.g.n { background: var(--debito-t); color: var(--debito); }
+.g.x { color: #b8beb9; }
+.cassa { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 14px; }
+.kpi { background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; padding: 12px 14px; }
+.kpi .v { font-family: "Alegreya", serif; font-size: 28px; font-weight: 700; }
+.kpi.th { border-left: 4px solid var(--teatro); }
+.note { background: #FFF6E5; border: 1.5px solid var(--s-acc); border-radius: 10px; padding: 14px 18px; max-width: 980px; }
+.note ol { margin: 6px 0 0; padding-left: 22px; }
+.note li { margin: 6px 0; }
+.past td { color: var(--salvia); background: #f7f8f6; }
+.toggle { display: flex; justify-content: flex-end; gap: 18px; font-size: 15px; color: var(--salvia); margin-bottom: 10px; }
+.toggle .on { color: var(--inchiostro); font-weight: 700; }
+.mov { background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; }
+.mov div { display: flex; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--riga); }
+.mov div:last-child { border-bottom: 0; }
+</style>
+</head>
+<body>
+<div class="board">
+  <h1>Quota teatro</h1>
+  <p>Ogni gassista paga 15 € a semestre per l'affitto del teatro. I soldi vanno in una <b>cassa teatro</b>, separata dalla cassa delle consegne. Bisogna sapere chi ha pagato quali semestri, anche quando qualcuno resta indietro di 2-3 semestri. Dal foglio di oggi: semestri gennaio–giugno e luglio–dicembre, storico dal 2024, una quota per utente GASS (i nuclei come "Silvia &amp; Paolo" sono una riga sola). In ogni casella c'è un <b>importo</b> (15, 0, a volte parziale come 7) oppure "–" (non era ancora nel GASS), più una nota per persona; i sospesi pagano 0. Sotto, il registro della cassa teatro: affitto da 300 € a semestre versato in ritardo, controlli del "bussolotto", prelievi dalla cassa consegne. Il foglio si importa una volta e poi si continua in GASS.</p>
+
+  <div class="section">
+    <h2><span class="tag">A</span>Spunta in Consegna + colonna in Saldi</h2>
+    <p>La tua idea. Si registra il pagamento dove passano i soldi: nella scheda del partecipante, alla consegna. GASS sa quali semestri mancano e li propone in ordine, dal più vecchio. Chi è indietro di 2 semestri vede due caselle: si spunta quello che paga. I soldi della quota <b>non</b> entrano nella cassa della consegna (incassato / lasciato in cassa): finiscono nella cassa teatro.</p>
+  </div>
+  <div class="row">
+    <div>
+      <div class="phone">
+        <div class="stag"><div class="when">Consegna di oggi</div><h3>martedì 6 ottobre</h3></div>
+        <div class="body">
+          <div class="card">
+            <div class="head"><div class="nm">Giulia Bianchi</div><span class="pill db">prima di oggi: debito −8 €</span></div>
+            <div class="sec two">
+              <div><div class="lbl">Conto produttore</div><div class="inp">15 <small>€</small></div></div>
+              <div><div class="lbl">Importo saldato</div><div class="inp">25 <small>€</small></div></div>
+            </div>
+            <div class="sec"><div class="lbl">Esito</div>debito saldato, lascia 2 € di credito</div>
+            <div class="sec teatro">
+              <h4>Quota teatro <span>15 € a semestre</span></h4>
+              <div class="chk"><span class="box on">✓</span> 1° sem. 2026 <small>arretrato</small><span class="amt">15 €</span></div>
+              <div class="chk"><span class="box on">✓</span> 2° sem. 2026 <span class="amt">15 €</span></div>
+              <div class="tot"><span>Quota teatro, a parte</span><span>30 €</span></div>
+            </div>
+            <div class="btns"><div class="btn line">Annulla</div><div class="btn go">Salva movimento</div></div>
+          </div>
+        </div>
+      </div>
+      <p class="cap"><b>Mobile, consegna.</b> Il riquadro viola compare solo se la persona ha semestri da pagare. Una casella per semestre mancante, il più vecchio in alto. Il totale è separato: chi riceve i soldi li mette nella busta del teatro.</p>
+    </div>
+    <div>
+      <div class="desk">
+        <div class="d-nav"><span>Consegna</span><b>Saldi</b><span>Storico</span><span>Turni</span><span>Attività</span></div>
+        <div class="body">
+          <table class="t">
+            <tr><th>Partecipante</th><th>Saldo</th><th>Quota teatro</th><th>Ultimo movimento</th><th></th></tr>
+            <tr><td><b>Anna Ferri</b></td><td><span class="pill">0 € in pari</span></td><td><span class="pill ok">in regola</span></td><td>23/09/2026</td><td style="text-align:right">Transazioni · Quote</td></tr>
+            <tr><td><b>Giulia Bianchi</b></td><td><span class="pill cr">+2 € credito</span></td><td><span class="pill ok">in regola</span></td><td>06/10/2026</td><td style="text-align:right">Transazioni · Quote</td></tr>
+            <tr><td><b>Luca Conti</b></td><td><span class="pill db">−3 € debito</span></td><td><span class="pill db">3 semestri · 45 €</span></td><td>16/09/2026</td><td style="text-align:right">Transazioni · Quote</td></tr>
+            <tr><td><b>Marco Rossi</b></td><td><span class="pill cr">+5 € credito</span></td><td><span class="pill db">1 semestre · 15 €</span></td><td>16/09/2026</td><td style="text-align:right">Transazioni · Quote</td></tr>
+            <tr><td><b>Sara Galli</b></td><td><span class="pill cr">+7 € credito</span></td><td><span class="pill ok">in regola</span></td><td>16/09/2026</td><td style="text-align:right">Transazioni · Quote</td></tr>
+          </table>
+          <p class="cap" style="max-width:none">Totali in alto: <b>Quote mancanti: 2 persone, 60 €</b>.</p>
+        </div>
+      </div>
+      <p class="cap" style="max-width:700px"><b>Desktop, Saldi.</b> Una colonna nuova "Quota teatro": in regola, oppure quanti semestri mancano e quanto fa. "Quote" apre lo storico dei pagamenti della persona (quali semestri, quando, a chi). Su mobile, toccando un nome, la stessa riga sotto il saldo.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2><span class="tag">B</span>Scheda "Teatro" per gli admin</h2>
+    <p>Una pagina sola per la quota: la cassa teatro (entrate, uscite, quanto c'è), e una griglia persone × semestri dove si spunta chi ha pagato. Serve per sistemare il passato, per chi paga fuori consegna, e per vedere d'un colpo chi è indietro.</p>
+  </div>
+  <div class="row">
+    <div>
+      <div class="desk">
+        <div class="d-nav"><span>Consegna</span><span>Saldi</span><span>Storico</span><span>Turni</span><b>Teatro</b><span>Attività</span></div>
+        <div class="body">
+          <div class="cassa">
+            <div class="kpi th"><div class="lbl">Nel bussolotto (cassa teatro)</div><div class="v">0 €</div></div>
+            <div class="kpi"><div class="lbl">Quote 1° sem. 2026</div><div class="v">303 €</div></div>
+            <div class="kpi"><div class="lbl">Quote mancanti (attivi)</div><div class="v" style="color:var(--debito)">45 €</div></div>
+          </div>
+          <table class="t">
+            <tr><th>Gassista</th><th class="c">1° 2025</th><th class="c">2° 2025</th><th class="c">1° 2026</th><th class="c">2° 2026</th><th>Note</th></tr>
+            <tr><td><b>Irene Pronio</b> <span class="pill">sospeso</span></td><td class="c"><span class="g p">15</span></td><td class="c"><span class="g p">15</span></td><td class="c"><span class="g x">0</span></td><td class="c"><span class="g x">0</span></td><td>da gennaio 2026 solo ordini speciali</td></tr>
+            <tr><td><b>Jeremy</b></td><td class="c"><span class="g n">0</span></td><td class="c"><span class="g p">15</span></td><td class="c"><span class="g p">15</span></td><td class="c"><span class="g n">0</span></td><td></td></tr>
+            <tr><td><b>Maurizio Ruffo</b></td><td class="c"><span class="g x">–</span></td><td class="c"><span class="g x">–</span></td><td class="c"><span class="g p">15</span></td><td class="c"><span class="g n">0</span></td><td>da marzo 2026</td></tr>
+            <tr><td><b>Rachele Brivio</b></td><td class="c"><span class="g n">0</span></td><td class="c"><span class="g p">15</span></td><td class="c"><span class="g p">15</span></td><td class="c"><span class="g n">0</span></td><td></td></tr>
+            <tr><td><b>Simone e Laura</b></td><td class="c"><span class="g n">0</span></td><td class="c"><span class="g p">15</span></td><td class="c"><span class="g p">15</span></td><td class="c"><span class="g n">0</span></td><td></td></tr>
+            <tr><td><b>Totale</b></td><td class="c"><b>270</b></td><td class="c"><b>295</b></td><td class="c"><b>303</b></td><td class="c"><b>0</b></td><td></td></tr>
+          </table>
+          <p class="cap" style="max-width:none">Come il foglio: in ogni casella l'importo pagato (anche parziale), "–" se non era ancora nel GASS; rosso = dovuto e non pagato, grigio = sospeso (non deve). Clic su una casella per correggere l'importo. Le colonne più vecchie scorrono a sinistra.</p>
+          <h3 style="margin:18px 0 8px;display:flex;justify-content:space-between;align-items:center">Registro cassa teatro <span class="btn th">Aggiungi voce</span></h3>
+          <div class="mov">
+            <div><span>30/09/2026 · affitto gennaio–giugno 2026, portati da Simone</span><b style="color:var(--debito)">−300 €</b></div>
+            <div><span>30/09/2026 · controllo bussolotto: rimangono 0 €</span><b>0 €</b></div>
+            <div><span>10/04/2026 · affitto luglio–dicembre 2025, dati da Polly a Eleonora (5 € presi dalla cassa consegne)</span><b style="color:var(--debito)">−300 €</b></div>
+            <div><span>06/10/2026 · quote alla consegna (Giulia, Anna)</span><b style="color:var(--credito)">+30 €</b></div>
+          </div>
+        </div>
+      </div>
+      <p class="cap" style="max-width:700px"><b>Desktop, admin.</b> In alto quanto c'è nel bussolotto. La griglia è il foglio di oggi, importato una volta (dal 1° sem. 2024). Sotto, il registro: le quote prese alla consegna entrano da sole; affitto versato (a chi, da chi), controlli del bussolotto e prelievi dalla cassa consegne si aggiungono a mano con una nota libera.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2><span class="tag">A+B</span>Consigliata: le due insieme</h2>
+    <p>La spunta in Consegna è il gesto quotidiano (dove passano i soldi). La colonna in Saldi dice a tutti se sono in regola. La scheda Teatro è per chi tiene la cassa teatro: sistemare il passato, segnare chi paga fuori consegna, registrare l'affitto versato. Si può fare in due tempi: prima A (subito utile), poi B.</p>
+  </div>
+
+  <div class="section">
+    <h2><span class="tag">+</span>Turni passati, per gli admin</h2>
+    <p>Nella pagina Turni da desktop, sopra la tabella, un interruttore "Mostra turni passati": le settimane già fatte compaiono sopra in grigio, solo lettura. Per gli altri utenti non cambia nulla.</p>
+  </div>
+  <div class="row">
+    <div>
+      <div class="desk" style="width:900px">
+        <div class="d-nav"><span>Consegna</span><span>Saldi</span><span>Storico</span><b>Turni</b><span>Attività</span></div>
+        <div class="body">
+          <div class="toggle"><span class="on">☑ Mostra turni passati</span><span>☐ Generazione automatica dei turni</span></div>
+          <table class="t">
+            <tr><th>Consegna</th><th>Turnista</th><th>Turnista</th><th>Note</th></tr>
+            <tr class="past"><td>Mar 22/09</td><td>Ilaria Masinara</td><td>Rachele Brivio</td><td></td></tr>
+            <tr class="past"><td>Mar 29/09</td><td>Silke</td><td>Marco Zenonez</td><td>riunione GASS</td></tr>
+            <tr><td><b>Mar 06/10</b></td><td>Jeremy ▾</td><td>Sara Basta ▾</td><td></td></tr>
+            <tr><td><b>Mar 13/10</b></td><td style="color:var(--debito)">da coprire ▾</td><td>Silvia &amp; Paolo ▾</td><td></td></tr>
+          </table>
+        </div>
+      </div>
+      <p class="cap" style="max-width:700px"><b>Desktop, admin.</b> I turni passati restano nel database da sempre (dal 22/09); oggi la pagina li nasconde. L'interruttore li mostra in grigio, dal più vecchio; il resto della pagina non cambia.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>Da decidere per la quota teatro</b>
+    <ol>
+      <li><b>Lo 0 nel foglio:</b> vuol dire "doveva e non ha pagato" (Jeremy 2024, Rachele 2° 2024) o anche "esentato"? Gli arretrati vecchi (2024) si chiedono ancora o si chiudono?</li>
+      <li><b>Chi deve:</b> gli attivi sì, i sospesi no (come nel foglio). Un nuovo deve dal semestre in cui entra, anche se entra a metà (Maurizio: da marzo 2026, ha pagato il 1° 2026)?</li>
+      <li><b>Pagamenti parziali</b> (es. 7 €): li registriamo come importo libero, e il resto resta dovuto?</li>
+      <li><b>Chi registra:</b> chiunque alla consegna (come i movimenti) o solo gli admin?</li>
+      <li><b>Cassa teatro:</b> vogliamo anche le uscite (affitto versato) e il saldo della cassa, o basta sapere chi ha pagato?</li>
+      <li><b>Importo:</b> sempre 15 €, o può cambiare nel tempo (meglio un valore modificabile dagli admin)?</li>
+    </ol>
+  </div>
+</div>
+</body>
+</html>
