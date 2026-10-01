@@ -275,6 +275,37 @@ function createDatabase(dbPath) {
   // salda_tutto had no UI since 2025-10 and was never set in production
   safeDropColumn('movimenti', 'salda_tutto');
 
+  log('\n--- Turni (v2.17) ---');
+
+  // One row per consegna week, keyed by its Tuesday; data = real day (moved within the week)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS turni (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      settimana DATE NOT NULL UNIQUE,
+      data DATE NOT NULL,
+      turnista1_id INTEGER REFERENCES users(id),
+      turnista2_id INTEGER REFERENCES users(id),
+      saltata INTEGER NOT NULL DEFAULT 0,
+      riunione INTEGER NOT NULL DEFAULT 0,
+      nota TEXT,
+      scambio TEXT,
+      created_by INTEGER REFERENCES users(id),
+      created_at DATETIME,
+      updated_by INTEGER REFERENCES users(id),
+      updated_at DATETIME
+    );
+    CREATE INDEX IF NOT EXISTS idx_turni_data ON turni(data);
+
+    CREATE TABLE IF NOT EXISTS turni_pause (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      dal DATE NOT NULL,
+      al DATE NOT NULL,
+      nota TEXT,
+      created_by INTEGER REFERENCES users(id),
+      created_at DATETIME
+    );
+  `);
+
   log('\n--- Data initialization ---');
 
   const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
