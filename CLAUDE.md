@@ -19,7 +19,10 @@
   - `users.js` - User management API (admin-only, edit profile/password/admin status)
   - `storico.js` - History API
   - `logs.js` - Activity log API (admin-only)
+  - `turni.js` - Turni API (`GET` any user; edits, swaps, pauses admin-only)
 - **Services**: `server/services/calculations.js` - Pure business logic; `server/services/saldi.js` - saldo ledger (DB-backed); `server/services/validation.js` - `POST /api/consegna` payload validation; `server/services/activity.js` - `logActivity()`, the only writer of `activity_logs` rows
+- **Turni services**: `server/services/turni-schedule.js` (pure date/queue helpers, `pickPair`) and `server/services/turni.js` (`ensureTurni`, `listTurni`, `updateTurno`, `swapTurnisti`, pauses, `freeFutureTurni`, `importTurni`)
+- **CLI**: `manage-users.js`, `manage-turni.js` (`import <csv>` / `list`)
 - **Middleware**: `server/middleware/` - auth.js, userAgent.js
 
 ### Client-Side
@@ -34,8 +37,8 @@
   - `version.js` - Dynamic version footer
   - `utils.js` also holds the Storico → Consegna links: `openConsegnaOn(date)` (sets `gass_selected_date`, goes to `/consegna`), `riapriConsegna(id, date)` (admin), `storicoActionsHtml(consegna)` ("Completa consegna" on open ones, admin "Riapri consegna" on closed ones)
 - **Page-Specific**: `public/js/`
-  - Mobile: `consegna.js`, `debiti.js`, `storico.js`
-  - Desktop: `consegna-desktop.js`, `debiti-desktop.js`, `storico-desktop.js`, `logs-desktop.js`
+  - Mobile: `consegna.js`, `debiti.js`, `storico.js`, `turni.js` (`turni.html`, read-only agenda)
+  - Desktop: `consegna-desktop.js`, `debiti-desktop.js`, `storico-desktop.js`, `logs-desktop.js`, `turni-desktop.js` (`turni-desktop.html`, admin editing)
 
 ### HTML Script Loading Order
 ```html
@@ -74,6 +77,7 @@ Every user is a participant with a saldo. The `partecipanti` table was merged in
 - `display_name` = participant name shown in UI
 - `saldo` = current credit/debt balance — a **cache** of the ledger (see Saldo Ledger)
 - `ultima_modifica` = date of the last ledger event
+- `stato` = `attivo` | `sospeso` | `disattivato` (replaced `attivo`); `turni_dal` = date the turni wait restarts from (set when returning to `attivo`)
 - API returns `nome` (aliased from `display_name`) for frontend compatibility
 
 ### Audit Columns (all tables)
@@ -203,11 +207,15 @@ On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_
 - Reopen closed consegne
 - Add participants (desktop) - creates a full user account with username/password
 - Delete users (desktop, Modifica Utente) - `deleteUser(db, id)` in `server/services/users.js`, shared with `manage-users.js delete`: refused if last user or the user has movimenti or rettifiche (they would CASCADE away); otherwise every non-cascading FK to `users` (activity logs, audit `*_by` columns) is set to NULL first, found dynamically via `pragma_foreign_key_list`. The route also refuses deleting yourself (the `user_deleted` log's actor FK would fail)
-- Disable users (`users.attivo`, 2.16.0) - for leavers with history. `PUT /api/users/:id {attivo}` or `manage-users.js active`. Blocked at local login, OIDC callback and `requireAuth`. `GET /api/participants` still returns them (past consegne/saldi need them); filtering is client-side: `visibleParticipants()` (`debiti-common.js`, "Mostra disattivati" on desktop) and `renderParticipantSelect` (active only; `openMovimento` adds the option on the fly for a disabled user's saved movimento). Saldi totals count everyone
+- User `stato` (2.17.0, replaced `attivo` from 2.16.0): `PUT /api/users/:id {stato}` or `manage-users.js stato <u> <attivo|sospeso|disattivato>`. `disattivato` is for leavers with history: blocked at local login, OIDC callback and `requireAuth`. `sospeso` logs in, keeps its saldo and stays in the consegna select, but gets no turni. Leaving `attivo` calls `freeFutureTurni` (future slots become da coprire); returning sets `turni_dal` (a no-op for an already-attivo user). `GET /api/participants` returns everyone; filtering is client-side: `visibleParticipants()` (`debiti-common.js`, "Mostra disattivati" on desktop) and `renderParticipantSelect` (hides only disattivati; `openMovimento` adds the option on the fly for a disattivato user's saved movimento). Saldi totals count everyone
+- Turni editing (desktop `turni-desktop.js`): swap, replace/assign, "Giorno" modal, pauses; routes `PUT /api/turni/:id`, `POST /api/turni/scambio`, `POST/DELETE /api/turni/pause`
 - Activity logs page (desktop only)
 
+### Turni
+Queue rule in `turni-schedule.js` `pickPair`: first = waiting longest since their last turno (or `turni_dal`); partner = among the next `PARTNER_WINDOW = 3` in line, the one with fewest shared turni, ties random. Consegne are Tuesdays; `turni.settimana` is the week's Tuesday, `data` the real day. `ensureTurni` (every `GET /api/turni`) only fills missing non-pause Tuesdays in `[nextTuesday(today), today + HORIZON_DAYS)`, `HORIZON_DAYS = 84`; existing weeks never change by themselves. `saltata` frees the pair (first in line again). 10-year simulation (2026-10-01): 22 people gaps 10-12 weeks, 21 people 9-12, no pair more than 4 times; k = 3 chosen over 4/5 for regularity. Details in `docs/TECHNICAL.md#turni`.
+
 ### Dates are local
-Calendar dates (`data`, `ultima_modifica`, "today") are always the **local** date: use `toLocalDateString()` (`utils.js` client-side, `calculations.js` server-side). Never `toISOString().split('T')[0]` or SQLite `DATE()` — both give the UTC date, which is yesterday between 00:00 and 01:00/02:00 in Italy. The image sets `TZ=Europe/Rome` (+ `tzdata`, Alpine has none). Audit timestamps (`created_at`, `updated_at`) stay ISO UTC with `Z`.
+Calendar dates (`data`, `ultima_modifica`, "today") are always the **local** date: use `toLocalDateString()` (`utils.js` client-side, `calculations.js` server-side). Never `toISOString().split('T')[0]` or SQLite `DATE()` — both give the UTC date, which is yesterday between 00:00 and 01:00/02:00 in Italy. The image sets `TZ=Europe/Rome` (+ `tzdata`, Alpine has none). Audit timestamps (`created_at`, `updated_at`) stay ISO UTC with `Z`. Exception on purpose: `turni-schedule.js` does date arithmetic on UTC midnights of the `yyyy-mm-dd` strings (`addDays`, `tuesdayOf`), which is DST-safe because no local time is involved; "today" is still passed in as the local date.
 
 ### Currency Display
 Italian format: `formatNumber()` → `11,50` / `8` (hides `,00`); `formatEuro()` → `11,50 €`; `formatSigned()` → `+6 €` / `−1,50 €` (typographic minus, display only). `formatNumber` output is also written into readonly/computed inputs and read back with `parseAmount`, which accepts comma or dot, so never write `formatSigned`/`formatEuro` into an input. `normalizeInputField` turns a typed dot into a comma.
@@ -246,7 +254,7 @@ Auto-calculated fields (credito_lasciato, debito_lasciato, usa_credito, debito_s
 **Stack**: Vitest + supertest, `pool: forks` (each test file = isolated Node process)
 
 ```bash
-npm test                    # all 210 tests
+npm test                    # all 254 tests
 npm run test:unit           # pure function tests (no DB/HTTP)
 npm run test:integration    # API tests with in-memory SQLite
 npm run test:coverage       # with coverage report

@@ -74,6 +74,14 @@ Elenco di tutte le consegne in ordine cronologico inverso: per ogni giornata la 
 
 ---
 
+# Turni
+
+Le prossime 12 settimane con i due turnisti di ogni consegna (martedì). La tua riga è segnata **TU**; **da coprire** = manca un turnista; **riunione** = riunione GASS.
+
+Solo amministratori: clicca un nome e poi un altro per scambiarli, oppure scegli **sostituisci con…** / **assegna a…**. **Giorno** sposta la consegna, la segna **niente consegna** o **riunione GASS**, aggiunge una nota. In fondo, **Pause** per i periodi senza consegne.
+
+---
+
 # Solo per Amministratori
 
 | Funzione | Come accedervi |
@@ -84,5 +92,6 @@ Elenco di tutte le consegne in ordine cronologico inverso: per ogni giornata la 
 | Aggiungere partecipanti | Saldi → **+ Aggiungi partecipante** |
 | Modificare utenti | Saldi → **Modifica utente** |
 | Eliminare un utente | Saldi → **Modifica utente** → **Elimina utente** (solo se non ha movimenti né rettifiche di saldo) |
-| Disattivare / riattivare un utente | Saldi → **Modifica utente** → Stato → **Disattiva** / **Riattiva**; per vedere i disattivati spuntare **Mostra disattivati** |
+| Sospendere / disattivare / riattivare un utente | Saldi → **Modifica utente** → Stato (**Attivo**, **Sospeso**, **Disattivato**); per vedere i disattivati spuntare **Mostra disattivati** |
+| Modificare i turni | Turni → clicca un nome, **Giorno**, **Pause** |
 | Log attività | Menu → **Attività** |

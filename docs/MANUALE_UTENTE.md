@@ -31,13 +31,14 @@ L'applicazione si adatta automaticamente al dispositivo utilizzato:
 
 #### Versione Mobile
 - L'intestazione mostra il nome utente, l'icona della chiave (cambia password, solo account locali) e l'icona di uscita (**Esci**)
-- Navigazione tramite barra inferiore con tre schede:
+- Navigazione tramite barra inferiore con quattro schede:
   - **Consegna**: Registra nuove consegne
   - **Saldi**: Visualizza i saldi dei partecipanti
   - **Storico**: Consulta le consegne passate
+  - **Turni**: Chi fa la consegna nelle prossime settimane
 
 #### Versione Desktop
-- Navigazione tramite menu superiore: **Consegna**, **Saldi**, **Storico** e, solo per gli amministratori, **Attività**; a destra il nome utente, **Cambia password** (solo account locali) ed **Esci**
+- Navigazione tramite menu superiore: **Consegna**, **Saldi**, **Storico**, **Turni** e, solo per gli amministratori, **Attività**; a destra il nome utente, **Cambia password** (solo account locali) ed **Esci**
 - Layout ottimizzato per schermi più grandi
 
 #### Intestazione stagionale e importi
@@ -265,8 +266,25 @@ La data selezionata viene mantenuta quando si cambia sezione:
 Solo amministratori, da desktop: Saldi → **Modifica utente**.
 
 - **Elimina utente**: solo per chi non ha mai avuto movimenti né rettifiche di saldo
-- **Disattiva** (sotto Stato): per chi lascia il gruppo. L'utente non compare più in Saldi né in "Aggiungi partecipante" e non può più accedere; i suoi movimenti passati restano nello Storico e nelle consegne. Se ha ancora un credito o un debito, la conferma lo mostra; i totali di Saldi continuano a contarlo
-- Per rivedere i disattivati spuntare **Mostra disattivati** in Saldi (compaiono in grigio); **Riattiva** li rimette in elenco
+- **Stato** (tre schede): **Attivo** accede, ordina e fa i turni; **Sospeso** accede e vede il saldo, compare in "Aggiungi partecipante" ma non fa turni (per chi non ordina per un periodo); **Disattivato** è per chi lascia il gruppo: non accede, non compare più in Saldi né in "Aggiungi partecipante". I movimenti passati restano nello Storico e nelle consegne. Se ha ancora un credito o un debito, la conferma lo mostra; i totali di Saldi continuano a contarlo
+- Sospendendo o disattivando, i turni futuri dell'utente restano **da coprire**
+- Tornando ad **Attivo** l'attesa per il turno riparte da quel giorno
+- Per rivedere i disattivati spuntare **Mostra disattivati** in Saldi (compaiono in grigio)
+
+### 6. Turni
+
+Le consegne sono di martedì. **Turni** elenca le prossime 12 settimane con i due turnisti di ciascuna; la tua riga è segnata **TU**. Etichette: **riunione** (riunione GASS), un giorno diverso dal martedì se la consegna è stata spostata, **niente consegna**, **da coprire** (turnista mancante). La pagina è in sola lettura; solo gli amministratori modificano i turni, da desktop.
+
+#### Come si scelgono le coppie
+
+Tocca a chi aspetta da più tempo dall'ultimo turno. Il compagno è, tra i 3 successivi in attesa, quello con cui ha fatto meno turni (a sorte in caso di parità). Le settimane già visibili non cambiano da sole: le nuove si aggiungono in fondo. Se una consegna salta, la coppia è la prima in coda per la volta successiva.
+
+#### Modifiche (amministratori, desktop)
+
+- **Scambio**: clicca un nome e poi un altro nome
+- **Sostituzione**: clicca un nome e scegli **sostituisci con…** (o **assegna a…** se da coprire, oppure **— lascia da coprire**)
+- **Giorno**: sposta la consegna in un altro giorno della settimana, segna **niente consegna**, **riunione GASS** o aggiunge una nota. Con niente consegna la coppia torna libera ed è la prima in coda
+- **Pause**: un periodo senza consegne (ad esempio le feste). Le settimane già scritte nel periodo diventano niente consegna; eliminando la pausa le settimane mancanti si rigenerano, quelle già segnate niente consegna restano tali e si ripristinano da **Giorno**
 
 ## Comprendere i Calcoli dei Saldi
 
@@ -363,7 +381,11 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.16.2
+Sistema GASS Pagamenti - Versione 2.17.0
+- Nuova scheda **Turni** con le coppie delle prossime 12 settimane; gli amministratori le modificano da desktop
+- Stato utente a tre valori: attivo, sospeso, disattivato (Saldi → Modifica utente)
+
+Versione 2.16.2
 - Saldi su mobile: toccando un nome si vedono le transazioni; il modulo per cambiare il saldo si apre solo con il pulsante **Modifica saldo** (amministratori)
 
 Versione 2.16.1

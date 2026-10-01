@@ -87,12 +87,22 @@ node manage-users.js password <username> <nuova-password>
 # Eliminare utente (rifiutato se ha movimenti o rettifiche di saldo: disattivarlo)
 node manage-users.js delete <username>
 
-# Disattivare / riattivare utente
-node manage-users.js active <username> <on|off>
+# Stato utente: attivo, sospeso (accede, niente turni), disattivato (non accede)
+node manage-users.js stato <username> <attivo|sospeso|disattivato>
 
 # Aiuto
 node manage-users.js help
 ```
+
+**Turni** (`manage-turni.js`):
+```bash
+# Importare i turni da CSV (data;username1;username2;nota), sostituisce ogni settimana dalla prima data del file
+node manage-turni.js import <file.csv>
+
+# Mostrare le prossime 12 settimane
+node manage-turni.js list
+```
+Una nota che contiene "riunione" segna la riunione GASS. In Docker: `docker cp turni.csv gass:/app/data/turni.csv`, poi `docker exec gass node manage-turni.js import /app/data/turni.csv`.
 
 **Esempi Docker**:
 ```bash

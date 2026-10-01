@@ -68,6 +68,12 @@ Elenco di tutte le consegne in ordine cronologico inverso, con data, stato (aper
 
 ---
 
+# Turni
+
+Le prossime 12 settimane con i due turnisti di ogni consegna (martedì). La tua riga è segnata **TU**; **da coprire** = manca un turnista; **riunione** = riunione GASS. Solo gli amministratori modificano i turni, da desktop.
+
+---
+
 # Solo per Amministratori
 
 | Funzione | Come accedervi |
