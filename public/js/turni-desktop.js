@@ -66,7 +66,24 @@ function cancelPick() {
   renderTurni();
 }
 
+const nomeUtente = id => attivi.find(u => u.id === id)?.nome || '';
+const dataBreve = d => `${weekdayShort(d)} ${formatDateItalian(d).slice(0, 5)}`;
+
 async function swapWith(userId) {
+  const t = turni.find(x => x.id === picked.id);
+  const p = t.turnisti[picked.slot - 1];
+  const altro = nomeUtente(userId);
+  // Same rule as the server: their first non-skipped turno from today, other than this one
+  const suo = turni.find(x => x.id !== t.id && !x.saltata && x.data >= toLocalDateString() && x.turnisti.some(q => q && q.id === userId));
+  const ok = await confirmDialog({
+    title: 'Scambiare i turni?',
+    details: [
+      [dataBreve(t.data), `${altro} al posto di ${p.nome}`],
+      [suo ? dataBreve(suo.data) : 'primo turno di ' + altro, `${p.nome} al posto di ${altro}`]
+    ],
+    confirmText: 'Scambia'
+  });
+  if (!ok) return renderBanner();
   try {
     await API.post('/api/turni/scambio', { a: picked, userId });
     picked = null;
@@ -79,6 +96,17 @@ async function swapWith(userId) {
 
 async function replaceName(value) {
   if (!value) return;
+  const t = turni.find(x => x.id === picked.id);
+  const p = t.turnisti[picked.slot - 1];
+  const nuovo = value === 'none' ? null : nomeUtente(Number(value));
+  const ok = await confirmDialog({
+    title: p ? 'Sostituire il turnista?' : 'Assegnare il turno?',
+    details: [[dataBreve(t.data), nuovo
+      ? (p ? `${nuovo} al posto di ${p.nome}` : nuovo)
+      : `da coprire (esce ${p.nome})`]],
+    confirmText: nuovo ? (p ? 'Sostituisci' : 'Assegna') : 'Lascia da coprire'
+  });
+  if (!ok) return renderBanner();
   const field = picked.slot === 1 ? 'turnista1Id' : 'turnista2Id';
   try {
     await API.put(`/api/turni/${picked.id}`, { [field]: value === 'none' ? null : Number(value) });
@@ -94,7 +122,7 @@ function openGiorno(id) {
   const t = turni.find(x => x.id === id);
   giornoId = id;
   document.getElementById('giorno-title').textContent = `Consegna di ${formatDateLong(t.settimana)}`;
-  document.getElementById('giorno-data').value = t.data;
+  setDateField('giorno-data', t.data);
   document.getElementById('giorno-saltata').checked = t.saltata;
   document.getElementById('giorno-riunione').checked = t.riunione;
   document.getElementById('giorno-nota').value = t.nota || '';
@@ -120,7 +148,7 @@ async function saveGiorno() {
   }
   try {
     await API.put(`/api/turni/${giornoId}`, {
-      data: document.getElementById('giorno-data').value,
+      data: dateFieldValue('giorno-data'),
       saltata,
       riunione: document.getElementById('giorno-riunione').checked,
       nota: document.getElementById('giorno-nota').value
@@ -143,8 +171,9 @@ function renderPause(pause) {
 }
 
 async function addPause() {
-  const dal = document.getElementById('pausa-dal').value;
-  const al = document.getElementById('pausa-al').value;
+  const dal = dateFieldValue('pausa-dal');
+  const al = dateFieldValue('pausa-al');
+  if (!dal || !al) return showStatus('Scegli le date della pausa', 'error');
   const ok = await confirmDialog({
     title: 'Aggiungere la pausa?',
     message: 'Le consegne già in programma in queste date diventano "niente consegna" e i loro turnisti tornano i primi in fila.',
@@ -198,4 +227,7 @@ async function loadTurni() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', loadTurni);
+document.addEventListener('DOMContentLoaded', () => {
+  ['pausa-dal', 'pausa-al', 'giorno-data'].forEach(initDateField);
+  loadTurni();
+});

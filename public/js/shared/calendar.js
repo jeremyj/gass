@@ -42,27 +42,22 @@ function toggleDatePicker() {
   }
 }
 
-function renderDatePicker() {
-  const container = document.getElementById('date-picker-container');
-  if (!container) return;
-
+// Month grid shared by the page date picker and the date fields.
+// onDay(dateStr) / onNav(delta) return the onclick JS for a day / the arrows.
+function pickerHtml(year, month, selectedStr, { onDay, onNav, marked = new Set(), footer = '' }) {
   const monthNames = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
     'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
   const weekDays = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
 
-  const firstDay = new Date(pickerYear, pickerMonth, 1);
-  const lastDay = new Date(pickerYear, pickerMonth + 1, 0);
-  const daysInMonth = lastDay.getDate();
+  const firstDay = new Date(year, month, 1);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
   const startingDayOfWeek = (firstDay.getDay() + 6) % 7; // Convert to Monday=0
-
-  const today = new Date();
-  const dataInput = document.getElementById('data');
-  const selectedDateStr = dataInput ? dataInput.value : '';
+  const todayStr = toLocalDateString();
 
   let html = '<div class="date-picker-header">';
-  html += `<button type="button" class="date-picker-nav" onclick="changePickerMonth(-1, event)">◀</button>`;
-  html += `<div class="date-picker-month">${monthNames[pickerMonth]} ${pickerYear}</div>`;
-  html += `<button type="button" class="date-picker-nav" onclick="changePickerMonth(1, event)">▶</button>`;
+  html += `<button type="button" class="date-picker-nav" onclick="${onNav(-1)}">◀</button>`;
+  html += `<div class="date-picker-month">${monthNames[month]} ${year}</div>`;
+  html += `<button type="button" class="date-picker-nav" onclick="${onNav(1)}">▶</button>`;
   html += '</div>';
 
   html += '<div class="date-picker-weekdays">';
@@ -75,34 +70,37 @@ function renderDatePicker() {
   for (let i = 0; i < startingDayOfWeek; i++) {
     html += '<div class="date-picker-day empty"></div>';
   }
-
   for (let day = 1; day <= daysInMonth; day++) {
-    const dateStr = `${pickerYear}-${String(pickerMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const isToday = today.getDate() === day && today.getMonth() === pickerMonth && today.getFullYear() === pickerYear;
-    const isSelected = dateStr === selectedDateStr;
-    const hasConsegna = consegneDates.has(dateStr);
-
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     let classes = 'date-picker-day';
-    if (isToday) classes += ' today';
-    if (isSelected) classes += ' selected';
-    if (hasConsegna) classes += ' has-consegna';
-
-    html += `<div class="${classes}" onclick="selectPickerDate('${dateStr}')">${day}</div>`;
+    if (dateStr === todayStr) classes += ' today';
+    if (dateStr === selectedStr) classes += ' selected';
+    if (marked.has(dateStr)) classes += ' has-consegna';
+    html += `<div class="${classes}" onclick="${onDay(dateStr)}">${day}</div>`;
   }
   html += '</div>';
 
+  return html + `<div class="date-picker-legend">${footer}</div>`;
+}
+
+function renderDatePicker() {
+  const container = document.getElementById('date-picker-container');
+  if (!container) return;
+
+  const dataInput = document.getElementById('data');
   // Footer: legend (only if we have consegne dates) and the "Oggi" shortcut
-  html += '<div class="date-picker-legend">';
+  let footer = '';
   if (consegneDates.size > 0) {
-    html += '<div class="date-picker-legend-item">';
-    html += '<div class="date-picker-legend-color"></div>';
-    html += '<span>Con consegna</span>';
-    html += '</div>';
+    footer += '<div class="date-picker-legend-item"><div class="date-picker-legend-color"></div><span>Con consegna</span></div>';
   }
-  html += `<button type="button" class="date-picker-today" onclick="selectPickerDate(toLocalDateString())">Oggi</button>`;
-  html += '</div>';
+  footer += `<button type="button" class="date-picker-today" onclick="selectPickerDate(toLocalDateString())">Oggi</button>`;
 
-  container.innerHTML = html;
+  container.innerHTML = pickerHtml(pickerYear, pickerMonth, dataInput ? dataInput.value : '', {
+    onDay: d => `selectPickerDate('${d}')`,
+    onNav: delta => `changePickerMonth(${delta}, event)`,
+    marked: consegneDates,
+    footer
+  });
 }
 
 function changePickerMonth(delta, event) {
@@ -214,6 +212,82 @@ function restoreDateFromStorage() {
 
   return toLocalDateString();
 }
+
+// ===== DATE FIELDS =====
+// A text input that opens the app calendar. The yyyy-mm-dd value lives in
+// dataset.value (read with dateFieldValue), the input shows dd/mm/yyyy.
+// The popup sits on <body> so a modal's scroll box does not clip it.
+
+const dateFields = {}; // id -> { year, month, popup }
+
+function initDateField(id) {
+  const input = document.getElementById(id);
+  input.readOnly = true;
+  input.classList.add('date-field');
+  const popup = document.createElement('div');
+  popup.className = 'date-picker-popup date-field-popup initially-hidden';
+  document.body.appendChild(popup);
+  dateFields[id] = { year: 0, month: 0, popup };
+  input.addEventListener('click', () => toggleDateField(id));
+}
+
+function setDateField(id, dateStr) {
+  const input = document.getElementById(id);
+  input.dataset.value = dateStr || '';
+  input.value = dateStr ? formatDateItalian(dateStr) : '';
+}
+
+function dateFieldValue(id) {
+  return document.getElementById(id).dataset.value || '';
+}
+
+function toggleDateField(id) {
+  const f = dateFields[id];
+  if (!f.popup.classList.contains('initially-hidden')) return closeDateField(id);
+  const [y, m] = (dateFieldValue(id) || toLocalDateString()).split('-').map(Number);
+  f.year = y; f.month = m - 1;
+  renderDateField(id);
+  f.popup.classList.remove('initially-hidden');
+  // Below the field, or above it when the window has no room left below
+  const r = document.getElementById(id).getBoundingClientRect();
+  const h = f.popup.offsetHeight + 12;
+  const top = r.bottom + h > window.innerHeight && r.top > h ? r.top - h : r.bottom;
+  f.popup.style.top = `${top + window.scrollY}px`;
+  f.popup.style.left = `${r.left + window.scrollX}px`;
+}
+
+function closeDateField(id) {
+  dateFields[id].popup.classList.add('initially-hidden');
+}
+
+function renderDateField(id) {
+  const f = dateFields[id];
+  f.popup.innerHTML = pickerHtml(f.year, f.month, dateFieldValue(id), {
+    onDay: d => `pickDateField('${id}', '${d}')`,
+    onNav: delta => `moveDateField('${id}', ${delta}, event)`,
+    footer: `<button type="button" class="date-picker-today" onclick="pickDateField('${id}', toLocalDateString())">Oggi</button>`
+  });
+}
+
+function moveDateField(id, delta, event) {
+  if (event) event.stopPropagation();
+  const f = dateFields[id];
+  const d = new Date(f.year, f.month + delta, 1);
+  f.year = d.getFullYear(); f.month = d.getMonth();
+  renderDateField(id);
+}
+
+function pickDateField(id, dateStr) {
+  setDateField(id, dateStr);
+  closeDateField(id);
+}
+
+document.addEventListener('click', function(event) {
+  for (const [id, f] of Object.entries(dateFields)) {
+    if (f.popup.classList.contains('initially-hidden')) continue;
+    if (!f.popup.contains(event.target) && event.target.id !== id) closeDateField(id);
+  }
+});
 
 // ===== CLICK OUTSIDE HANDLER =====
 

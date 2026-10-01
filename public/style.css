@@ -59,7 +59,7 @@ label { font-size: 17px; font-weight: 700; color: var(--salvia); }
 
 input, select, button, output { font: inherit; color: inherit; font-variant-numeric: lining-nums tabular-nums; }
 
-input[type="text"], input[type="password"], input[type="date"], select, .input-field {
+input[type="text"], input[type="password"], select, .input-field {
   width: 100%;
   background: var(--carta);
   border: 1.5px solid var(--riga);
@@ -619,7 +619,8 @@ tr.off td { opacity: .6; }
 .pause-form input { height: 50px; }
 .pause-form label { display: flex; flex-direction: column; gap: 4px; font-size: 16px; color: var(--salvia); }
 .pause-form .btn { height: 50px; white-space: nowrap; }
-input[type="date"] { cursor: pointer; }
+.date-field { cursor: pointer; }
+.date-field-popup { top: auto; z-index: 1200; margin-top: 6px; }
 .pick-banner.initially-hidden { display: none; }
 .turni-t td.nm { text-align: left; }
 .pick-banner select { width: auto; min-width: 240px; }
