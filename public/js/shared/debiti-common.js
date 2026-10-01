@@ -39,7 +39,22 @@ function renderSaldiTotals() {
   el.innerHTML = `
     <div><small>Crediti, ${persone(crediti.length)}</small><b class="cr">${formatSigned(sum(crediti))}</b></div>
     <div><small>Debiti, ${persone(debiti.length)}</small><b class="db">${formatSigned(sum(debiti))}</b></div>
+    ${teatroMancanti()}
   `;
+}
+
+// Quota teatro still owed (teatro_residuo > 0) or paid ahead (< 0): its own colour, apart from the saldo
+function teatroLabel(residuo) {
+  if (residuo > 0) return { cls: 'th-db', text: `da pagare ${formatEuro(residuo)}` };
+  if (residuo < 0) return { cls: 'th-ok', text: `anticipo ${formatEuro(-residuo)}` };
+  return { cls: 'th-ok', text: 'in regola' };
+}
+
+function teatroMancanti() {
+  const owing = participants.filter(p => p.teatro_residuo > 0);
+  if (!owing.length) return '';
+  const tot = owing.reduce((acc, p) => acc + p.teatro_residuo, 0);
+  return `<div><small>Quote teatro mancanti, ${owing.length === 1 ? '1 persona' : `${owing.length} persone`}</small><b class="th">${formatEuro(tot)}</b></div>`;
 }
 
 // Why "Modifica saldo" is missing on a past date (admins only)

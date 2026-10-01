@@ -25,7 +25,7 @@ function renderParticipants() {
 
   const list = visibleParticipants();
   if (list.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" class="text-center">Nessun partecipante</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center">Nessun partecipante</td></tr>`;
     return;
   }
 
@@ -57,6 +57,7 @@ function createParticipantRow(p) {
              onfocus="handleInputFocus(this)"
              onkeydown="if(event.key==='Enter'){event.preventDefault();saveSaldo(${p.id})}">
     </td>
+    <td><span class="pill ${teatroLabel(p.teatro_residuo).cls}">${teatroLabel(p.teatro_residuo).text}</span></td>
     <td>${formatDateItalian(p.ultima_modifica)}</td>
     <td class="lk">
       <button type="button" class="link-btn" onclick="showTransactionsModal(${p.id})">Transazioni</button>

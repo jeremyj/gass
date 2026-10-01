@@ -40,7 +40,7 @@ function createParticipantCard(p) {
   if (p.stato !== 'attivo') card.classList.add('off');
   const summary = `
     <span class="nm">${escapeHtml(p.nome)}${adminBadge}</span>
-    <span class="sub">ultimo movimento ${formatDateItalian(p.ultima_modifica)}</span>
+    <span class="sub">ultimo movimento ${formatDateItalian(p.ultima_modifica)}${p.teatro_residuo ? ` · <span class="th-inline ${teatroLabel(p.teatro_residuo).cls}">teatro ${teatroLabel(p.teatro_residuo).text}</span>` : ''}</span>
     <span class="esito ${saldo.cls}"><b>${saldo.amount}</b><small>${saldo.word}</small></span>
   `;
 

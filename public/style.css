@@ -396,6 +396,11 @@ tr.off td { opacity: .6; }
 .teatro-done { color: var(--teatro); font-weight: 700; margin: 14px 0; }
 .teatro-oggi { margin: 8px 0 0; padding: 8px 12px; border-left: 4px solid var(--teatro); background: var(--teatro-t); border-radius: 6px; color: var(--teatro); font-weight: 700; display: flex; justify-content: space-between; }
 .teatro-oggi.initially-hidden { display: none; }
+.pill.th-db, .th-inline.th-db { color: var(--teatro); background: var(--teatro-t); }
+.pill.th-ok { color: var(--salvia); background: transparent; border: 1px solid var(--riga); }
+.th-inline { font-weight: 700; border-radius: 4px; padding: 0 4px; }
+.th-inline.th-ok { color: var(--salvia); }
+b.th { color: var(--teatro); }
 
 .participant-card-flow { margin-top: 16px; background: var(--carta); border: 1.5px solid var(--s-deep); border-radius: 12px; overflow: hidden; }
 .entry-head { display: flex; gap: 12px; align-items: flex-start; padding: 14px 18px; background: var(--s-tint); border-bottom: 1px solid var(--riga); }
@@ -435,6 +440,7 @@ tr.off td { opacity: .6; }
 .tot2:empty { display: none; }
 .tot2 > div { padding: 12px 20px; }
 .tot2 > div + div { border-left: 1px solid var(--riga); }
+.tot2 > div:nth-child(3) { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--riga); display: flex; justify-content: space-between; align-items: baseline; }
 .tot2 small { display: block; font-size: 16px; color: var(--salvia); }
 .tot2 b { font-family: var(--serif); font-size: 26px; }
 
