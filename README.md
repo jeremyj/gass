@@ -84,8 +84,11 @@ node manage-users.js add <username> <password> "<Nome Completo>"
 # Cambiare password
 node manage-users.js password <username> <nuova-password>
 
-# Eliminare utente
+# Eliminare utente (rifiutato se ha movimenti o rettifiche di saldo: disattivarlo)
 node manage-users.js delete <username>
+
+# Disattivare / riattivare utente
+node manage-users.js active <username> <on|off>
 
 # Aiuto
 node manage-users.js help
