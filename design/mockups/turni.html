@@ -241,24 +241,21 @@ table.reg { overflow: visible; }
 .reg tr.open td { background: #FFF6E5; }
 .warn { display: inline-block; font-size: 13px; font-weight: 700; color: var(--debito); background: var(--debito-t); border-radius: 5px; padding: 1px 7px; margin-left: 6px; }
 .gone { text-decoration: line-through; color: #B7BFB9; font-weight: 400; }
-.pop { position: absolute; left: 12px; top: 58px; width: 360px; background: #fff; border: 1.5px solid var(--s-deep); border-radius: 10px; box-shadow: 0 10px 28px rgba(0,0,0,.18); padding: 14px 16px; z-index: 2; font-size: 15px; text-align: left; white-space: normal; }
+.pop { position: absolute; left: 180px; bottom: 8px; width: 360px; background: #fff; border: 1.5px solid var(--s-deep); border-radius: 10px; box-shadow: 0 10px 28px rgba(0,0,0,.18); padding: 14px 16px; z-index: 2; font-size: 15px; text-align: left; white-space: normal; }
 .pop h5 { margin: 0 0 8px; font-family: "Alegreya", serif; font-size: 19px; }
 .pop label { display: flex; gap: 8px; align-items: flex-start; padding: 5px 0; }
 .pop label span small { display: block; color: var(--salvia); font-size: 13.5px; }
 .pop .in { display: inline-block; border: 1.5px solid var(--riga); border-radius: 6px; padding: 0 8px; font-weight: 700; margin-left: 4px; }
 .pop .bt { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
 
-.lay { display: grid; grid-template-columns: 1fr 310px; gap: 22px; align-items: start; }
+.lay { display: grid; grid-template-columns: 1fr; gap: 18px; }
+.lay > div:last-child { max-width: 520px; }
 .rbox { background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; overflow: hidden; }
 .rbox + .rbox { margin-top: 18px; }
 .rbox h4 { margin: 0; padding: 12px 16px; font-family: "Alegreya", serif; font-size: 20px; border-bottom: 1px solid var(--riga); }
 .rbox h4 small { display: block; font-family: "Alegreya Sans"; font-size: 13.5px; color: var(--salvia); font-weight: 400; }
 .rbox .grp { padding: 10px 16px; border-bottom: 1px solid var(--riga); font-size: 15px; }
 .rbox .grp > b { display: block; font-size: 13px; color: var(--salvia); margin-bottom: 6px; }
-.chips { display: flex; flex-wrap: wrap; gap: 5px; }
-.chips span { border: 1px solid var(--riga); border-radius: 6px; padding: 1px 7px; font-size: 14px; background: #fff; }
-.chips span.new { border-color: var(--s-acc); background: var(--s-tint); font-weight: 700; }
-.chips span.out { color: var(--salvia); background: #F2F3F1; }
 .rbox .ft { padding: 10px 16px 14px; font-size: 14px; color: var(--salvia); display: flex; flex-direction: column; gap: 8px; }
 .ex { list-style: none; margin: 0; padding: 0; }
 .ex li { padding: 9px 16px; border-bottom: 1px solid var(--riga); font-size: 15px; display: flex; justify-content: space-between; gap: 10px; }
@@ -269,14 +266,13 @@ table.reg { overflow: visible; }
 .rules li, .qs li { margin: 6px 0; font-size: 17px; }
 .rules li span, .qs li span { color: var(--salvia); }
 .qs { background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; padding: 18px 22px; max-width: 1180px; }
-.coda { list-style: none; margin: 0; padding: 4px 0; counter-reset: c; }
-.coda li { counter-increment: c; display: grid; grid-template-columns: 24px 1fr auto; gap: 6px; padding: 4px 16px; font-size: 15px; }
-.coda li::before { content: counter(c); color: var(--salvia); font-size: 13px; font-weight: 700; align-self: center; }
-.coda li > span:last-child { color: var(--salvia); font-size: 14px; }
-.coda li.nw { background: var(--s-tint); }
-.coda li.more { color: var(--salvia); font-style: italic; }
-.coda li.more::before { content: ""; }
-.tagn { font-size: 12.5px; font-weight: 700; color: var(--s-deep); border: 1px solid var(--s-acc); border-radius: 5px; padding: 0 5px; margin-left: 4px; }
+.ustate { width: 460px; background: var(--carta); border: 1px solid var(--riga); border-radius: 12px; padding: 18px 20px; box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+.ustate h4 { margin: 0 0 12px; font-family: "Alegreya", serif; font-size: 22px; }
+.ustate .lbl { font-size: 14px; font-weight: 700; color: var(--salvia); margin-bottom: 6px; }
+.ustate .opt { display: flex; gap: 10px; align-items: flex-start; padding: 9px 12px; border: 1.5px solid var(--riga); border-radius: 8px; margin-bottom: 8px; }
+.ustate .opt.on { border-color: var(--s-deep); background: var(--s-tint); }
+.ustate .opt small { display: block; color: var(--salvia); font-size: 14px; }
+.ustate .bt { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -320,21 +316,21 @@ table.reg { overflow: visible; }
 </svg>
 
 <div class="board">
-  <h1>GASS: turni (3), coda continua</h1>
-  <p>Agenda su mobile, due turnisti alla pari, sempre le prossime 12 settimane, solo gli admin modificano da desktop. Niente più blocchi: una <b>coda</b> continua. Si parte dal giro del 22 settembre del foglio. Oggi è giovedì 1 ottobre 2026, utente “jeremy”. L’8 dicembre (Immacolata) è l’esempio di consegna spostata.</p>
+  <h1>GASS: turni (4)</h1>
+  <p>Agenda su mobile, due turnisti alla pari, sempre le prossime 12 settimane, solo gli admin modificano da desktop. Una famiglia (“s&amp;p”, “Riccardo e camille”) è un solo utente, quindi un solo turnista. Le coppie le sceglie il sistema, a rotazione continua. Si parte dal giro del 22 settembre del foglio. Oggi è giovedì 1 ottobre 2026, utente “jeremy”. L’8 dicembre (Immacolata) è l’esempio di consegna spostata.</p>
 
-  <h2 class="sec">Come funziona la coda</h2>
+  <h2 class="sec">Come si scelgono le coppie</h2>
   <div class="rules">
     <ol>
-      <li><b>Ordine</b>: in coda c’è chi è in turno, ordinato per data dell’ultimo turno fatto. <span>Si parte dalle date del foglio dal 22 settembre in poi.</span></li>
-      <li><b>Ogni settimana</b> che entra nelle 12, la prende la persona che aspetta da più tempo, insieme alla successiva che non sia stata la sua ultima compagna. <span>Tra chi aspetta da tanto uguale si sorteggia: le coppie cambiano sempre.</span></li>
+      <li><b>Chi è in turno</b>: tutti gli utenti <b>attivi</b>. Tocca a chi aspetta da più tempo dall’ultimo turno. <span>Si parte dalle date del foglio dal 22 settembre in poi.</span></li>
+      <li><b>Ogni settimana</b> che entra nelle 12, la prende chi aspetta da più tempo, insieme a qualcuno che non sia stato il suo ultimo compagno di turno. <span>Tra chi aspetta da tanto uguale si sorteggia: le coppie cambiano sempre.</span></li>
       <li><b>Le 12 settimane visibili sono fisse</b>: cambiano solo a mano (scambio, giorno, assegna).</li>
-      <li><b>Dispari</b>: nessun problema, l’ultima di un giro fa coppia con la prima del successivo. Nessuno fa due turni.</li>
-      <li><b>Chi entra</b> va in fondo alla coda. <b>Chi esce</b> lascia un turno “da coprire” se ne aveva uno nelle 12 settimane.</li>
-      <li><b>Fuori turno</b> (non ordina): esce dalla coda; quando rientra, va in fondo.</li>
-      <li><b>Consegna saltata</b>: quel turno non conta, la coppia torna in testa alla coda (recupero automatico).</li>
+      <li><b>Dispari</b>: nessun problema, chi resta senza coppia la trova la settimana dopo. Nessuno fa due turni.</li>
+      <li><b>Nuovo utente</b>: fa il primo turno dopo tutti gli altri. <b>Utente sospeso o disattivato</b>: esce dai turni; se ne aveva uno nelle 12 settimane, quel turno resta “da coprire”.</li>
+      <li><b>Sospeso</b> (nuovo stato utente): è ancora nel GASS ma al momento non ordina, quindi niente turni. Quando torna attivo, riparte come un nuovo utente. <span>Elisa, alessandro, alice, albertina.</span></li>
+      <li><b>Consegna saltata</b>: quel turno non conta, i due tornano i primi a cui tocca (recupero automatico).</li>
       <li><b>Consegna spostata</b> (es. mercoledì): stessa coppia, cambia solo il giorno.</li>
-      <li><b>Pause</b> (Natale, agosto): nessuna consegna, la coda resta ferma e riparte dopo.</li>
+      <li><b>Pause</b> (Natale, agosto): nessuna consegna, i turni riprendono dopo senza saltare nessuno.</li>
     </ol>
   </div>
 
@@ -375,7 +371,7 @@ table.reg { overflow: visible; }
     </div>
   </div>
 
-  <h2 class="sec">Desktop: coda, scambi e calendario (solo admin)</h2>
+  <h2 class="sec">Desktop: turni, scambi e calendario (solo admin)</h2>
   <div class="row">
     <div>
       <div class="desk">
@@ -393,16 +389,16 @@ table.reg { overflow: visible; }
                   <tr><td class="d"><b>mar 27 ottobre</b></td><td class="nm">fernanda</td><td class="nm">Simone e laura</td><td></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
                   <tr><td class="d"><b>mar 3 novembre</b></td><td class="nm">franceska v</td><td class="nm">marco b</td><td><span class="riun">riunione GASS</span></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
                   <tr><td class="d"><b>mar 10 novembre</b></td><td class="nm">Riccardo e camille</td><td class="nm">sara e Simone</td><td></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
-                  <tr class="open"><td class="d"><b>mar 17 novembre</b></td><td class="nm"><span class="gone">Irene p</span><span class="warn">da coprire, uscita dal gruppo</span></td><td class="nm">paoletta m</td><td></td><td class="act"><a href="#">Assegna</a><a href="#">Giorno</a></td></tr>
+                  <tr class="open"><td class="d"><b>mar 17 novembre</b></td><td class="nm"><span class="gone">Irene p</span><span class="warn">da coprire, sospesa</span></td><td class="nm">paoletta m</td><td></td><td class="act"><a href="#">Assegna</a><a href="#">Giorno</a></td></tr>
                   <tr><td class="d"><b>mar 24 novembre</b></td><td class="nm">sara b<span class="sw-tag"><svg width="14" height="14"><use href="#i-swap"/></svg>da 1/12</span></td><td class="nm">salvatore</td><td></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
                   <tr><td class="d"><b>mar 1 dicembre</b></td><td class="nm">maurizio<span class="sw-tag"><svg width="14" height="14"><use href="#i-swap"/></svg>da 24/11</span></td><td class="nm">polly</td><td></td><td class="act"><a href="#">Scambia</a><a href="#">Giorno</a></td></tr>
-                  <tr class="giro"><td colspan="5">Da qui in giù scelti dalla <b>coda</b>: una settimana nuova si aggiunge ogni martedì</td></tr>
+                  <tr class="giro"><td colspan="5">Da qui in giù scelti dal sistema: una settimana nuova si aggiunge ogni martedì</td></tr>
                   <tr class="draft"><td class="d" style="position:relative"><b>mer 9 dicembre</b><span class="mv">da mar 8, Immacolata</span>
                     <div class="pop">
                       <h5>Consegna di martedì 8 dicembre</h5>
                       <label><input type="radio" name="g"><span>Normale, martedì 8</span></label>
                       <label><input type="radio" name="g" checked><span>Sposta a <span class="in">mer 9 dic</span><small>stessa coppia, cambia solo il giorno</small></span></label>
-                      <label><input type="radio" name="g"><span>Niente consegna<small>Ilaria e marco z tornano in testa alla coda</small></span></label>
+                      <label><input type="radio" name="g"><span>Niente consegna<small>Ilaria e marco z faranno il turno la prossima volta</small></span></label>
                       <label style="display:block">Motivo <span class="in" style="font-weight:400">festa (Immacolata)</span></label>
                       <div class="bt"><button class="btn line sm">Annulla</button><button class="btn go sm">Salva</button></div>
                     </div>
@@ -415,30 +411,6 @@ table.reg { overflow: visible; }
             </div>
             <div>
               <div class="rbox">
-                <h4>Coda<small>dopo il 22 dicembre · chi tocca dopo, in ordine</small></h4>
-                <ol class="coda">
-                  <li><span>jeremy</span><span>6 ott</span></li>
-                  <li><span>s&amp;p</span><span>13 ott</span></li>
-                  <li><span>francesca b</span><span>20 ott</span></li>
-                  <li><span>Cristina</span><span>20 ott</span></li>
-                  <li><span>fernanda</span><span>27 ott</span></li>
-                  <li><span>Simone e laura</span><span>27 ott</span></li>
-                  <li><span>franceska v</span><span>3 nov</span></li>
-                  <li><span>marco b</span><span>3 nov</span></li>
-                  <li><span>Riccardo e camille</span><span>10 nov</span></li>
-                  <li><span>sara e Simone</span><span>10 nov</span></li>
-                  <li><span>paoletta m</span><span>17 nov</span></li>
-                  <li><span>sara b</span><span>24 nov</span></li>
-                  <li><span>salvatore</span><span>24 nov</span></li>
-                  <li><span>maurizio</span><span>1 dic</span></li>
-                  <li><span>polly</span><span>1 dic</span></li>
-                  <li class="nw"><span>stefania <span class="tagn">nuova</span></span><span>—</span></li>
-                  <li class="more"><span>poi Ilaria, marco z, Rachele, silke, Sara B, matias</span><span></span></li>
-                </ol>
-                <div class="grp"><b>Fuori turno (non ordinano)</b><div class="chips"><span class="out">elisa</span><span class="out">alessandro</span><span class="out">alice</span><span class="out">albertina</span></div></div>
-                <div class="ft"><span>A destra la data dell’ultimo turno. Clic su un nome: metti fuori turno, o rimetti in coda (in fondo).</span><a href="#" style="color:var(--s-deep);font-weight:700">+ Aggiungi in coda</a></div>
-              </div>
-              <div class="rbox">
                 <h4>Pause</h4>
                 <ul class="ex">
                   <li><span><b>Natale</b> 29 dic – 5 gen</span><a href="#">modifica</a></li>
@@ -449,15 +421,29 @@ table.reg { overflow: visible; }
           </div>
         </div>
       </div>
-      <p class="cap" style="max-width:1180px"><b>Desktop.</b> A sinistra le 12 settimane: fino al 1 dicembre il foglio, da lì in giù dalla coda (Ilaria e Rachele aspettano dal 22 settembre ma sono state in coppia, quindi si separano). Chi esce lascia un turno “da coprire”, evidenziato. “Giorno” sposta o salta una consegna. A destra la coda in ordine di attesa, chi è fuori turno e le pause.</p>
+      <p class="cap" style="max-width:1180px"><b>Desktop.</b> Le 12 settimane: fino al 1 dicembre il foglio, poi le coppie scelte dal sistema (Ilaria e Rachele aspettano dal 22 settembre ma hanno appena fatto turno insieme, quindi vanno con altri). Chi viene sospeso lascia un turno “da coprire”, evidenziato, con “Assegna”. “Giorno” sposta o salta una consegna. Sotto, le pause.</p>
+    </div>
+  </div>
+
+  <h2 class="sec">Stato utente: attivo, sospeso, disattivato</h2>
+  <div class="row">
+    <div>
+      <div class="ustate">
+        <h4>Modifica utente: elisa</h4>
+        <div class="lbl">Stato</div>
+        <label class="opt"><input type="radio" name="st"><span><b>Attivo</b><small>Accede, ordina, fa i turni.</small></span></label>
+        <label class="opt on"><input type="radio" name="st" checked><span><b>Sospeso</b><small>Accede e vede il suo saldo, ma al momento non ordina: niente turni.</small></span></label>
+        <label class="opt"><input type="radio" name="st"><span><b>Disattivato</b><small>Ha lasciato il GASS: non accede e non compare negli elenchi. Lo storico resta.</small></span></label>
+        <div class="bt"><button class="btn line sm">Annulla</button><button class="btn go sm">Salva</button></div>
+      </div>
+      <p class="cap"><b>Modifica utente (Saldi, desktop).</b> Il pulsante Disattiva/Riattiva di oggi diventa una scelta fra tre stati. Nell’elenco dei saldi i sospesi restano visibili, con l’etichetta “sospeso”.</p>
     </div>
   </div>
 
   <h2 class="sec">Ancora da decidere</h2>
   <div class="qs">
     <ol>
-      <li><b>Coppie e famiglie</b> (“silvia e paolo”, “s&amp;p”, “Riccardo e camille”) sono un solo utente GASS o due? <span>Se sono due, servono “insieme sempre” per farli contare come un turno.</span></li>
-      <li><b>Fuori turno</b>: attendo la tua verifica su elisa, alessandro, alice, albertina.</li>
+      <li><b>Sospeso alla consegna</b>: un sospeso compare ancora nell’elenco “Aggiungi partecipante” della consegna (per un ordine occasionale o per saldare un debito), o è nascosto come i disattivati?</li>
     </ol>
   </div>
 </div>
