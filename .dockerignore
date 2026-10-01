@@ -70,6 +70,7 @@ Thumbs.db
 # Local artifacts (videos, generated summaries, agent settings)
 *.mp4
 summary-*
+messaggio-*.txt
 .claude/
 
 # Agent workspace and design material
