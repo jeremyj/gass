@@ -79,17 +79,13 @@ describe('admin edits', () => {
     expect(db.prepare("SELECT COUNT(*) n FROM activity_logs WHERE event_type = 'turno_scambio'").get().n).toBe(1);
   });
 
-  it('keeps every swap of a consegna, with who', async () => {
-    const [a, b, c, d, e, f] = ['sa', 'sb', 'sc', 'sd', 'se', 'sf'].map(u => createUser(db, { username: u, displayName: u.toUpperCase() }));
+  it('logs who was swapped with whom', async () => {
+    const [a, b, c, d] = ['sa', 'sb', 'sc', 'sd'].map(u => createUser(db, { username: u, displayName: u.toUpperCase() }));
     const x = createTurno(db, { settimana: '2099-02-03', t1: a, t2: b });
     const y = createTurno(db, { settimana: '2099-02-10', t1: c, t2: d });
-    const z = createTurno(db, { settimana: '2099-02-17', t1: e, t2: f });
     await adminAgent.post('/api/turni/scambio').send({ a: { id: x, slot: 1 }, b: { id: y, slot: 1 } });
-    await adminAgent.post('/api/turni/scambio').send({ a: { id: x, slot: 2 }, b: { id: z, slot: 2 } });
-    const scambio = id => db.prepare('SELECT scambio FROM turni WHERE id = ?').get(id).scambio;
-    expect(scambio(x)).toBe('SA ↔ SC (10/02); SB ↔ SF (17/02)');
-    expect(scambio(y)).toBe('SC ↔ SA (03/02)');
-    expect(scambio(z)).toBe('SF ↔ SB (03/02)');
+    const row = db.prepare("SELECT details FROM activity_logs WHERE event_type = 'turno_scambio' ORDER BY id DESC").get();
+    expect(row.details).toBe('scambio SA (03/02) ↔ SC (10/02)');
   });
 
   it('adds and deletes a pause', async () => {

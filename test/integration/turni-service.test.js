@@ -139,13 +139,13 @@ describe('editing', () => {
     expect(T.updateTurno(db, id, { turnista2Id: null }, audit).error).toBeUndefined();
   });
 
-  it('swapTurnisti exchanges two people and records it on both rows', () => {
+  it('swapTurnisti exchanges two people and names them in the change', () => {
     const [a, b, c, d] = people(4);
     const x = createTurno(db, { settimana: '2026-11-24', t1: a, t2: b });
     const y = createTurno(db, { settimana: '2026-12-01', t1: c, t2: d });
-    expect(T.swapTurnisti(db, { id: x, slot: 1 }, { id: y, slot: 1 }, '2026-10-01', audit).error).toBeUndefined();
-    expect(db.prepare('SELECT turnista1_id, scambio FROM turni WHERE id = ?').get(x)).toEqual({ turnista1_id: c, scambio: 'p1 ↔ p3 (01/12)' });
-    expect(db.prepare('SELECT turnista1_id, scambio FROM turni WHERE id = ?').get(y)).toEqual({ turnista1_id: a, scambio: 'p3 ↔ p1 (24/11)' });
+    expect(T.swapTurnisti(db, { id: x, slot: 1 }, { id: y, slot: 1 }, '2026-10-01', audit).changes).toEqual(['p1 (24/11) ↔ p3 (01/12)']);
+    expect(db.prepare('SELECT turnista1_id FROM turni WHERE id = ?').get(x)).toEqual({ turnista1_id: c });
+    expect(db.prepare('SELECT turnista1_id FROM turni WHERE id = ?').get(y)).toEqual({ turnista1_id: a });
   });
 
   it('swapTurnisti refuses a swap that puts someone twice on one consegna', () => {

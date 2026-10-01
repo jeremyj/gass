@@ -288,7 +288,6 @@ function createDatabase(dbPath) {
       saltata INTEGER NOT NULL DEFAULT 0,
       riunione INTEGER NOT NULL DEFAULT 0,
       nota TEXT,
-      scambio TEXT,
       created_by INTEGER REFERENCES users(id),
       created_at DATETIME,
       updated_by INTEGER REFERENCES users(id),

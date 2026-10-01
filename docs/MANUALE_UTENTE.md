@@ -281,7 +281,7 @@ Tocca a chi aspetta da più tempo dall'ultimo turno. Il compagno è, tra i 3 suc
 
 #### Modifiche (amministratori, desktop)
 
-- **Scambio**: clicca un nome e poi un altro nome. Nelle note di entrambe le consegne resta una riga per ogni scambio, ad esempio *scambio Anna ↔ Luca (03/11)*: Anna è passata al 03/11, Luca è arrivato da lì
+- **Scambio**: clicca un nome e poi un altro nome. Lo scambio resta nel registro Attività (chi, con chi, quali date), non nella tabella dei turni
 - **Sostituzione**: clicca un nome e scegli **sostituisci con…** (o **assegna a…** se da coprire, oppure **— lascia da coprire**)
 - **Giorno**: sposta la consegna in un altro giorno della settimana, segna **niente consegna**, **riunione GASS** o aggiunge una nota. Con niente consegna la coppia torna libera ed è la prima in coda
 - **Pause**: un periodo senza consegne (ad esempio le feste). Le settimane già scritte nel periodo diventano niente consegna; eliminando la pausa le settimane mancanti si rigenerano, quelle già segnate niente consegna restano tali e si ripristinano da **Giorno**

@@ -67,7 +67,6 @@ function listTurni(db, today) {
     saltata: r.saltata === 1,
     riunione: r.riunione === 1,
     nota: r.nota,
-    scambio: r.scambio,
     turnisti: [
       r.turnista1_id ? { id: r.turnista1_id, nome: r.nome1 } : null,
       r.turnista2_id ? { id: r.turnista2_id, nome: r.nome2 } : null
@@ -149,17 +148,14 @@ function swapTurnisti(db, a, b, today, audit) {
       return { error: 'Con questo scambio una persona farebbe entrambi i turni della stessa consegna' };
     }
   }
-  // Each swap is appended ("out ↔ in (dd/mm)"), so a consegna swapped twice keeps both
-  const nome = id => (id && db.prepare('SELECT display_name FROM users WHERE id = ?').get(id)?.display_name) || 'da coprire';
-  const addScambio = (row, out, inn, other) =>
-    [row.scambio, `${nome(out)} ↔ ${nome(inn)} (${ddmm(other.data)})`].filter(Boolean).join('; ');
   db.transaction(() => {
-    db.prepare(`UPDATE turni SET ${colA} = ?, scambio = ?, updated_by = ?, updated_at = ? WHERE id = ?`)
-      .run(newA[colA], addScambio(rowA, rowA[colA], rowB[colB], rowB), audit.userId, audit.timestamp, rowA.id);
-    db.prepare(`UPDATE turni SET ${colB} = ?, scambio = ?, updated_by = ?, updated_at = ? WHERE id = ?`)
-      .run(newB[colB], addScambio(rowB, rowB[colB], rowA[colA], rowA), audit.userId, audit.timestamp, rowB.id);
+    db.prepare(`UPDATE turni SET ${colA} = ?, updated_by = ?, updated_at = ? WHERE id = ?`)
+      .run(newA[colA], audit.userId, audit.timestamp, rowA.id);
+    db.prepare(`UPDATE turni SET ${colB} = ?, updated_by = ?, updated_at = ? WHERE id = ?`)
+      .run(newB[colB], audit.userId, audit.timestamp, rowB.id);
   })();
-  return { changes: [`${rowA.data} ↔ ${rowB.data}`] };
+  const nome = id => (id && db.prepare('SELECT display_name FROM users WHERE id = ?').get(id)?.display_name) || 'da coprire';
+  return { changes: [`${nome(rowA[colA])} (${ddmm(rowA.data)}) ↔ ${nome(rowB[colB])} (${ddmm(rowB.data)})`] };
 }
 
 function addPause(db, { dal, al, nota }, today, audit) {

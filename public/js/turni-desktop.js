@@ -19,7 +19,6 @@ function noteCell(t) {
   if (t.saltata) parts.push(`<i>niente consegna${t.nota ? `: ${escapeHtml(t.nota)}` : ''}</i>`);
   else if (t.nota) parts.push(escapeHtml(t.nota));
   if (t.riunione) parts.push('<span class="tag-riunione">riunione GASS</span>');
-  if (t.scambio) t.scambio.split('; ').forEach(s => parts.push(`<span class="scambio">scambio ${escapeHtml(s)}</span>`));
   return `<td class="left">${parts.join(' ')}</td>`;
 }
 
