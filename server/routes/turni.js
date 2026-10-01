@@ -22,7 +22,7 @@ router.get('/', (req, res) => {
   try {
     const oggi = toLocalDateString();
     T.ensureTurni(db, oggi);
-    res.json({ success: true, oggi, auto: T.isAuto(db), note: T.getNote(db), turni: T.listTurni(db, oggi), pause: T.listPause(db, oggi) });
+    res.json({ success: true, oggi, auto: T.isAuto(db), note: T.getNote(db), turni: T.listTurni(db, oggi, { passati: !!req.query.passati && !!req.session.isAdmin }), pause: T.listPause(db, oggi) });
   } catch (error) {
     console.error('[TURNI] Error loading turni:', error);
     res.status(500).json({ success: false, error: 'Errore nel caricamento dei turni' });

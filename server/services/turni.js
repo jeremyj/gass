@@ -78,7 +78,8 @@ function ensureTurni(db, today, rnd = Math.random) {
   })();
 }
 
-function listTurni(db, today) {
+// The next weeks from today; with passati, every week written so far as well
+function listTurni(db, today, { passati = false } = {}) {
   return db.prepare(`
     SELECT t.*, u1.display_name AS nome1, u2.display_name AS nome2
     FROM turni t
@@ -86,7 +87,7 @@ function listTurni(db, today) {
     LEFT JOIN users u2 ON u2.id = t.turnista2_id
     WHERE t.data >= ? AND t.settimana < ?
     ORDER BY t.settimana
-  `).all(today, addDays(today, HORIZON_DAYS)).map(r => ({
+  `).all(passati ? '' : today, addDays(today, HORIZON_DAYS)).map(r => ({
     id: r.id,
     settimana: r.settimana,
     data: r.data,

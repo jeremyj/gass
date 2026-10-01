@@ -30,21 +30,23 @@ function nameCell(t, slot) {
 function noteCell(t) {
   const parts = [];
   if (t.saltata) parts.push(`<i>niente consegna${t.nota ? `: ${escapeHtml(t.nota)}` : ''}</i>`);
-  else if (t.nota) parts.push(escapeHtml(t.nota));
+  else if (t.nota && !(t.riunione && /^riunione( gass)?$/i.test(t.nota.trim()))) parts.push(escapeHtml(t.nota));
   if (t.riunione) parts.push('<span class="tag-riunione">riunione GASS</span>');
   return `<td class="left">${parts.join(' ')}</td>`;
 }
 
 function renderTurni() {
   const body = document.getElementById('turni-body');
-  body.innerHTML = turni.map((t, i) => `
-    <tr class="${i === 0 ? 'cur' : ''}${t.saltata ? ' off' : ''}">
+  const today = toLocalDateString();
+  const curId = turni.find(t => t.data >= today)?.id;
+  body.innerHTML = turni.map(t => `
+    <tr class="${t.id === curId ? 'cur' : ''}${t.saltata ? ' off' : ''}${t.data < today ? ' past' : ''}">
       <td class="left d"><b>${weekdayShort(t.data)} ${formatDateItalian(t.data).slice(0, 5)}</b>${t.data !== t.settimana ? `<span class="mv">da ${weekdayShort(t.settimana)} ${formatDateItalian(t.settimana).slice(0, 5)}</span>` : ''}</td>
       ${nameCell(t, 1)}${nameCell(t, 2)}${noteCell(t)}
-      <td class="admin-col">${isAdmin() ? `<button type="button" class="link-btn" onclick="openGiorno(${t.id})">Giorno</button>` : ''}</td>
+      <td class="admin-col">${isAdmin() && t.data >= today ? `<button type="button" class="link-btn" onclick="openGiorno(${t.id})">Giorno</button>` : ''}</td>
     </tr>`).join('');
 
-  const next = turni.find(t => !t.saltata && t.turnisti.some(p => p && p.id === myId));
+  const next = turni.find(t => t.data >= today && !t.saltata && t.turnisti.some(p => p && p.id === myId));
   document.getElementById('mio-turno').textContent = next
     ? `il tuo: ${formatDateLong(next.data)}`
     : 'nessun turno per te nelle prossime 24 settimane';
@@ -238,7 +240,8 @@ async function loadTurni() {
   try {
     const user = await sessionReady;
     myId = user?.id;
-    const result = await API.get('/api/turni');
+    const passati = document.getElementById('turni-passati')?.checked;
+    const result = await API.get(`/api/turni${passati ? '?passati=1' : ''}`);
     turni = result.turni;
     autoOn = result.auto;
     const hint = document.getElementById('turni-hint');
@@ -248,6 +251,7 @@ async function loadTurni() {
       attivi = (await API.get('/api/participants')).participants.filter(p => p.stato === 'attivo')
         .sort((a, b) => a.nome.localeCompare(b.nome, 'it'));
       document.getElementById('auto-wrap').classList.remove('initially-hidden');
+      document.getElementById('passati-wrap').classList.remove('initially-hidden');
       document.getElementById('turni-auto').checked = result.auto;
       document.getElementById('pause-section').classList.remove('initially-hidden');
       renderPause(result.pause);

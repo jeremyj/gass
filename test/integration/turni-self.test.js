@@ -54,4 +54,10 @@ describe('own turno and automatic generation', () => {
     expect((await userAgent.get('/api/turni')).body.note).toBe('Dicembre: Anna affianca Luca');
     expect((await adminAgent.put('/api/turni/note').send({ note: 'a'.repeat(5001) })).status).toBe(400);
   });
+  it('shows past weeks to admins who ask for them', async () => {
+    createTurno(db, { settimana: '2020-01-07' });
+    expect((await adminAgent.get('/api/turni')).body.turni.some(t => t.settimana === '2020-01-07')).toBe(false);
+    expect((await adminAgent.get('/api/turni?passati=1')).body.turni[0].settimana).toBe('2020-01-07');
+    expect((await userAgent.get('/api/turni?passati=1')).body.turni.some(t => t.settimana === '2020-01-07')).toBe(false);
+  });
 });
