@@ -57,7 +57,9 @@ function createParticipantRow(p) {
              onfocus="handleInputFocus(this)"
              onkeydown="if(event.key==='Enter'){event.preventDefault();saveSaldo(${p.id})}">
     </td>
-    ${p.teatro_residuo ? `<td><span class="pill ${teatroLabel(p.teatro_residuo).cls}">${teatroLabel(p.teatro_residuo).text}</span></td>` : '<td class="mute">–</td>'}
+    ${p.teatro_residuo > 0
+      ? `<td><span class="th-mark n" title="deve ${formatEuro(p.teatro_residuo)}">✗</span></td>`
+      : `<td><span class="th-mark p" title="${p.teatro_residuo < 0 ? `anticipo ${formatEuro(-p.teatro_residuo)}` : 'tutto pagato'}">✓</span></td>`}
     <td>${formatDateItalian(p.ultima_modifica)}</td>
     <td class="lk">
       <button type="button" class="link-btn" onclick="showTransactionsModal(${p.id})">Transazioni</button>

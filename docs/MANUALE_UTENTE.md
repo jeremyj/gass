@@ -174,7 +174,7 @@ La pagina Saldi mostra una panoramica dei saldi di tutti i partecipanti.
 #### Visualizzazione Saldi Attuali
 
 - **Mobile**: in cima due totali ("Crediti, N persone +X €" e "Debiti, N persone −X €"), poi la lista **Partecipanti**
-- **Desktop**: tabella con Partecipante, Username (solo amministratori), Saldo (importo con segno, o "–"), Quota teatro (deve X €, anticipo, o "–"), Ultimo movimento e le azioni come link di testo
+- **Desktop**: tabella con Partecipante, Username (solo amministratori), Saldo (importo con segno, o "–"), Quota teatro (✗ = uno o più semestri da pagare, ✓ = tutto pagato; l'importo al passaggio del mouse), Ultimo movimento e le azioni come link di testo
 - Colori: **blu** = credito (+), **rosso vino** = debito (−), **grigio** = "0 € in pari"
 
 #### Storico Transazioni

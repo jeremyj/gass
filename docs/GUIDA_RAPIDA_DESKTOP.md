@@ -86,7 +86,7 @@ Gli amministratori scelgono i nomi dai menu della tabella e mettono in pausa la 
 
 # Quota teatro
 
-Ogni semestre (gennaio–giugno, luglio–dicembre) si paga una quota per l'affitto del teatro, in una cassa separata da quella della consegna. Nella scheda del partecipante, **Quota teatro** mostra i semestri dovuti: scrivi l'importo versato (copre i semestri dal più vecchio; quello che avanza è un anticipo) e **Registra quota**. In **Saldi** la colonna **Quota teatro** dice chi è in pari e chi deve ancora.
+Ogni semestre (gennaio–giugno, luglio–dicembre) si paga una quota per l'affitto del teatro, in una cassa separata da quella della consegna. Nella scheda del partecipante, **Quota teatro** mostra i semestri dovuti: scrivi l'importo versato (copre i semestri dal più vecchio; quello che avanza è un anticipo) e **Registra quota**. In **Saldi** la colonna **Quota teatro** ha ✓ per chi ha pagato tutto e ✗ per chi deve ancora qualche semestre.
 
 ---
 

@@ -408,6 +408,9 @@ tr.off td { opacity: .6; }
 .teatro-oggi.initially-hidden { display: none; }
 .pill.th-db, .th-inline.th-db { color: var(--teatro); background: var(--teatro-t); }
 .pill.th-ok { color: var(--salvia); background: transparent; border: 1px solid var(--riga); }
+.th-mark { font-weight: 800; }
+.th-mark.p { color: #2d6a2d; }
+.th-mark.n { color: var(--debito); }
 .th-inline { font-weight: 700; border-radius: 4px; padding: 0 4px; }
 .th-inline.th-ok { color: var(--salvia); }
 b.th { color: var(--teatro); }
