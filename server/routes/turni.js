@@ -22,11 +22,19 @@ router.get('/', (req, res) => {
   try {
     const oggi = toLocalDateString();
     T.ensureTurni(db, oggi);
-    res.json({ success: true, oggi, auto: T.isAuto(db), turni: T.listTurni(db, oggi), pause: T.listPause(db, oggi) });
+    res.json({ success: true, oggi, auto: T.isAuto(db), note: T.getNote(db), turni: T.listTurni(db, oggi), pause: T.listPause(db, oggi) });
   } catch (error) {
     console.error('[TURNI] Error loading turni:', error);
     res.status(500).json({ success: false, error: 'Errore nel caricamento dei turni' });
   }
+});
+
+router.put('/note', requireAdmin, (req, res) => {
+  const audit = auditOf(req);
+  const result = T.setNote(db, (req.body || {}).note);
+  if (result.error) return res.status(400).json({ success: false, error: result.error });
+  log(req, audit, 'turno_modificato', 'note dei turni aggiornate');
+  res.json({ success: true });
 });
 
 router.put('/auto', requireAdmin, (req, res) => {

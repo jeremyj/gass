@@ -41,6 +41,7 @@ POST   /api/turni/scambio             - {a: {id, slot}, userId}: userId takes sl
 POST   /api/turni/lascia              - {a: {id, slot}}: the slot becomes da coprire (own slot, admin any)
 POST   /api/turni/sposta              - {a: {id, slot}, to}: the person moves to a free slot of consegna `to` (own slot, admin any)
 PUT    /api/turni/auto                - {auto}: pause/resume automatic generation (admin)
+PUT    /api/turni/note                - {note}: free-text notes shown above the turni, max 5000 chars (admin; GET returns `note`)
 POST   /api/turni/pause                - Add a pause (admin); DELETE /api/turni/pause/:id removes it
 GET    /api/version                   - Get application version from package.json (public, no auth)
 ```

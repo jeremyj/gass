@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Turni</title>
-    <link rel="stylesheet" href="style.css?v=51">
+    <link rel="stylesheet" href="style.css?v=53">
 </head>
 <body>
     <nav class="nav-menu">
@@ -31,6 +31,12 @@
     <main class="container">
         <div id="status" class="status" role="status"></div>
         <label id="auto-wrap" class="auto-switch initially-hidden"><input type="checkbox" id="turni-auto" onchange="toggleAuto(this)"> Generazione automatica dei turni</label>
+        <section id="turni-note-box" class="turni-note initially-hidden" aria-label="Note sui turni">
+            <h2>Note</h2>
+            <p id="turni-note-view" class="turni-note-text initially-hidden"></p>
+            <textarea id="turni-note-edit" class="initially-hidden" rows="3" placeholder="Note sui turni: affiancamenti, chi non può, accordi…" oninput="document.getElementById('turni-note-save').classList.remove('initially-hidden')"></textarea>
+            <button type="button" id="turni-note-save" class="btn btn-go initially-hidden" onclick="saveNote()">Salva note</button>
+        </section>
         <div id="pick-banner" class="pick-banner initially-hidden"></div>
         <table class="t turni-t">
             <thead><tr><th class="left">Consegna</th><th class="left">Turnista</th><th class="left">Turnista</th><th class="left">Note</th><th class="admin-col"></th></tr></thead>
@@ -59,7 +65,7 @@
                     <input type="text" id="giorno-data">
                     <small class="hint">stessa coppia, solo nella stessa settimana</small>
                 </div>
-                <div class="form-group"><label><input type="checkbox" id="giorno-saltata"> Niente consegna <small class="hint">i due turnisti torneranno i primi in fila</small></label></div>
+                <div class="form-group"><label><input type="checkbox" id="giorno-saltata"> Niente consegna <small class="hint" id="giorno-saltata-hint">i due turnisti torneranno i primi in fila</small></label></div>
                 <div class="form-group"><label><input type="checkbox" id="giorno-riunione"> Riunione GASS</label></div>
                 <div class="form-group"><label for="giorno-nota">Nota</label><input type="text" id="giorno-nota" placeholder="es. festa (Immacolata)"></div>
                 <div id="giorno-error" class="error-message initially-hidden"></div>
@@ -82,6 +88,6 @@
     <script src="js/shared/auth.js?v=32"></script>
     <script src="js/shared/version.js"></script>
     <script src="js/shared/turni-common.js?v=2"></script>
-    <script src="js/turni-desktop.js?v=7"></script>
+    <script src="js/turni-desktop.js?v=9"></script>
 </body>
 </html>

@@ -19,7 +19,7 @@
   - `users.js` - User management API (admin-only, edit profile/password/admin status)
   - `storico.js` - History API
   - `logs.js` - Activity log API (admin-only)
-  - `turni.js` - Turni API (`GET` any user; `POST /scambio`, `/lascia`, `/sposta` any user for their own slot, admin for any; edits, pauses, `PUT /auto` admin-only; `/auto` is declared before `/:id`)
+  - `turni.js` - Turni API (`GET` any user; `POST /scambio`, `/lascia`, `/sposta` any user for their own slot, admin for any; edits, pauses, `PUT /auto`, `PUT /note` admin-only; both are declared before `/:id`)
 - **Services**: `server/services/calculations.js` - Pure business logic; `server/services/saldi.js` - saldo ledger (DB-backed); `server/services/validation.js` - `POST /api/consegna` payload validation; `server/services/activity.js` - `logActivity()`, the only writer of `activity_logs` rows
 - **Turni services**: `server/services/turni-schedule.js` (pure date/queue helpers, `pickPair`) and `server/services/turni.js` (`ensureTurni`, `listTurni`, `updateTurno`, `swapWithNext` (→ `swapTurnisti`), `leaveTurno`, `moveTurno`, `isAuto`/`setAuto`, pauses, `freeFutureTurni`, `importTurni`)
 - **CLI**: `manage-users.js`, `manage-turni.js` (`import <csv>` / `list`)
@@ -213,7 +213,7 @@ On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_
 - Activity logs page (desktop only)
 
 ### Turni
-Queue rule in `turni-schedule.js` `pickPair`: first = waiting longest since their last turno (or `turni_dal`); partner = among the next `PARTNER_WINDOW = 3` in line, the one with fewest shared turni, ties random. Consegne are Tuesdays; `turni.settimana` is the week's Tuesday, `data` the real day. `ensureTurni` (every `GET /api/turni`) only fills missing non-pause Tuesdays in `[nextTuesday(today), today + HORIZON_DAYS)`, `HORIZON_DAYS = 168` (24 weeks); existing weeks never change by themselves. Automatic generation can be paused (`settings` table, key `turni_auto`, admin checkbox on the desktop page): new weeks are then written empty and an admin picks the names from per-slot menus (decided 2026-10-01: Paola, who ran the turni by hand, keeps composing them). Users can swap, move to a free slot (`moveTurno`) or leave (`leaveTurno`) their own turno; filling an empty slot from the admin menu needs no confirmation, replacing or clearing does. `saltata` frees the pair (first in line again). 10-year simulation (2026-10-01): 22 people gaps 10-12 weeks, 21 people 9-12, no pair more than 4 times; k = 3 chosen over 4/5 for regularity. Details in `docs/TECHNICAL.md#turni`.
+Queue rule in `turni-schedule.js` `pickPair`: first = waiting longest since their last turno (or `turni_dal`); partner = among the next `PARTNER_WINDOW = 3` in line, the one with fewest shared turni, ties random. Consegne are Tuesdays; `turni.settimana` is the week's Tuesday, `data` the real day. `ensureTurni` (every `GET /api/turni`) only fills missing non-pause Tuesdays in `[nextTuesday(today), today + HORIZON_DAYS)`, `HORIZON_DAYS = 168` (24 weeks); existing weeks never change by themselves. Automatic generation can be paused (`settings` table, key `turni_auto`, admin checkbox on the desktop page): new weeks are then written empty and an admin picks the names from per-slot menus (decided 2026-10-01: Paola, who ran the turni by hand, keeps composing them). Users can swap, move to a free slot (`moveTurno`) or leave (`leaveTurno`) their own turno; filling an empty slot from the admin menu needs no confirmation, replacing or clearing does. `settings.turni_note` holds free-text notes (admin writes on desktop, everyone reads, mobile too). While paused the desktop hides the "primi in fila" hints (`autoOn`), since the queue no longer matters. `saltata` frees the pair (first in line again). 10-year simulation (2026-10-01): 22 people gaps 10-12 weeks, 21 people 9-12, no pair more than 4 times; k = 3 chosen over 4/5 for regularity. Details in `docs/TECHNICAL.md#turni`.
 
 ### Dates are local
 Calendar dates (`data`, `ultima_modifica`, "today") are always the **local** date: use `toLocalDateString()` (`utils.js` client-side, `calculations.js` server-side). Never `toISOString().split('T')[0]` or SQLite `DATE()` — both give the UTC date, which is yesterday between 00:00 and 01:00/02:00 in Italy. The image sets `TZ=Europe/Rome` (+ `tzdata`, Alpine has none). Audit timestamps (`created_at`, `updated_at`) stay ISO UTC with `Z`. Exception on purpose: `turni-schedule.js` does date arithmetic on UTC midnights of the `yyyy-mm-dd` strings (`addDays`, `tuesdayOf`), which is DST-safe because no local time is involved; "today" is still passed in as the local date.
@@ -255,7 +255,7 @@ Auto-calculated fields (credito_lasciato, debito_lasciato, usa_credito, debito_s
 **Stack**: Vitest + supertest, `pool: forks` (each test file = isolated Node process)
 
 ```bash
-npm test                    # all 267 tests
+npm test                    # all 268 tests
 npm run test:unit           # pure function tests (no DB/HTTP)
 npm run test:integration    # API tests with in-memory SQLite
 npm run test:coverage       # with coverage report

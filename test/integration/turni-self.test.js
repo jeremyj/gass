@@ -47,4 +47,11 @@ describe('own turno and automatic generation', () => {
     expect((await adminAgent.put('/api/turni/auto').send({ auto: true })).status).toBe(200);
   });
 
+  it('keeps free-text notes that admins write and everyone reads', async () => {
+    expect((await userAgent.get('/api/turni')).body.note).toBe('');
+    expect((await userAgent.put('/api/turni/note').send({ note: 'x' })).status).toBe(403);
+    expect((await adminAgent.put('/api/turni/note').send({ note: '  Dicembre: Anna affianca Luca\n' })).status).toBe(200);
+    expect((await userAgent.get('/api/turni')).body.note).toBe('Dicembre: Anna affianca Luca');
+    expect((await adminAgent.put('/api/turni/note').send({ note: 'a'.repeat(5001) })).status).toBe(400);
+  });
 });

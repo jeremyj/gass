@@ -6,6 +6,7 @@ let attivi = [];
 let picked = null; // { id, slot } of the name clicked first
 let giornoId = null;
 let myId = null;
+let autoOn = true; // automatic generation: the queue only matters while it is on
 
 // Admin menu for one slot: every attivo, plus the current person if no longer attivo
 function nameSelectHtml(t, slot) {
@@ -99,6 +100,29 @@ async function assignSlot(id, slot, select) {
   await loadTurni();
 }
 
+// Notes above the table: admins edit them, everyone else reads them when there are any
+function renderNote(note) {
+  const box = document.getElementById('turni-note-box');
+  const view = document.getElementById('turni-note-view');
+  const edit = document.getElementById('turni-note-edit');
+  box.classList.toggle('initially-hidden', !isAdmin() && !note);
+  view.textContent = note;
+  view.classList.toggle('initially-hidden', isAdmin());
+  edit.classList.toggle('initially-hidden', !isAdmin());
+  if (isAdmin() && document.activeElement !== edit) edit.value = note;
+  document.getElementById('turni-note-save').classList.add('initially-hidden');
+}
+
+async function saveNote() {
+  try {
+    await API.put('/api/turni/note', { note: document.getElementById('turni-note-edit').value });
+    document.getElementById('turni-note-save').classList.add('initially-hidden');
+    showStatus('Note salvate', 'success');
+  } catch (error) {
+    showStatus('Errore: ' + error.message, 'error');
+  }
+}
+
 async function toggleAuto(input) {
   const auto = input.checked;
   const ok = await confirmDialog({
@@ -128,6 +152,7 @@ function openGiorno(id) {
   document.getElementById('giorno-riunione').checked = t.riunione;
   document.getElementById('giorno-nota').value = t.nota || '';
   document.getElementById('giorno-error').classList.add('initially-hidden');
+  document.getElementById('giorno-saltata-hint').classList.toggle('initially-hidden', !autoOn);
   document.getElementById('giorno-modal').classList.remove('initially-hidden');
 }
 
@@ -142,7 +167,7 @@ async function saveGiorno() {
   if (saltata && !t.saltata && t.turnisti.some(Boolean)) {
     const ok = await confirmDialog({
       title: 'Niente consegna?',
-      message: 'I due turnisti verranno tolti da questa data e saranno i primi a fare il prossimo turno libero.',
+      message: 'I due turnisti verranno tolti da questa data' + (autoOn ? ' e saranno i primi a fare il prossimo turno libero.' : '.'),
       confirmText: 'Niente consegna'
     });
     if (!ok) return;
@@ -177,7 +202,7 @@ async function addPause() {
   if (!dal || !al) return showStatus('Scegli le date della pausa', 'error');
   const ok = await confirmDialog({
     title: 'Aggiungere la pausa?',
-    message: 'Le consegne già in programma in queste date diventano "niente consegna" e i loro turnisti tornano i primi in fila.',
+    message: 'Le consegne già in programma in queste date diventano "niente consegna"' + (autoOn ? ' e i loro turnisti tornano i primi in fila.' : '.'),
     details: [['Dal', formatDateItalian(dal)], ['Al', formatDateItalian(al)]],
     confirmText: 'Aggiungi pausa'
   });
@@ -215,6 +240,7 @@ async function loadTurni() {
     myId = user?.id;
     const result = await API.get('/api/turni');
     turni = result.turni;
+    autoOn = result.auto;
     const hint = document.getElementById('turni-hint');
     hint.classList.remove('initially-hidden');
     if (!isAdmin()) hint.textContent = 'Clic sul tuo nome: scambia il turno con chi si è accordato con te, spostalo su una data con un posto libero, oppure “Non posso” per lasciarlo da coprire.';
@@ -227,6 +253,7 @@ async function loadTurni() {
       renderPause(result.pause);
     }
     document.body.classList.toggle('turni-readonly', !isAdmin());
+    renderNote(result.note);
     renderTurni();
   } catch (error) {
     showStatus('Errore: ' + error.message, 'error');

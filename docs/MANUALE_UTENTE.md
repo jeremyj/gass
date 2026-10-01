@@ -292,7 +292,8 @@ Ogni azione chiede conferma e resta nel registro Attività.
 #### Modifiche (amministratori, desktop)
 
 - **Nomi**: ogni nome è un menu; scegli la persona o **da coprire**. Riempire un posto libero è immediato, sostituire o togliere un nome chiede conferma
-- **Generazione automatica dei turni**: la casella sopra la tabella la mette in pausa o la riattiva (chiede conferma)
+- **Generazione automatica dei turni**: la casella sopra la tabella la mette in pausa o la riattiva (chiede conferma). In pausa, "niente consegna" toglie solo i due nomi da quella data, senza toccare la coda
+- **Note**: il riquadro sopra la tabella, per appunti liberi (affiancamenti, chi non può…). Lo scrivono gli amministratori da desktop, lo leggono tutti su desktop e mobile
 - **Giorno**: sposta la consegna in un altro giorno della settimana, segna **niente consegna**, **riunione GASS** o aggiunge una nota. Con niente consegna la coppia torna libera ed è la prima in coda
 - **Pause**: un periodo senza consegne (ad esempio le feste). Le settimane già scritte nel periodo diventano niente consegna; eliminando la pausa le settimane mancanti si rigenerano, quelle già segnate niente consegna restano tali e si ripristinano da **Giorno**
 
@@ -395,6 +396,7 @@ Sistema GASS Pagamenti - Versione 2.18.0
 - **Turni** mostra le prossime 24 settimane
 - Sul proprio turno: **scambia con…**, **sposta al…** (una data con un posto libero), **Non posso** (il posto resta da coprire)
 - Gli amministratori scelgono i nomi dai menu della tabella e possono mettere in pausa la generazione automatica dei turni
+- Riquadro **Note** sopra i turni, scritto dagli amministratori e visibile a tutti
 
 Versione 2.17.0
 - Nuova scheda **Turni** con le coppie delle prossime 12 settimane; gli amministratori le modificano da desktop

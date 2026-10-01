@@ -79,7 +79,7 @@ function createTurno(db, { settimana, data = settimana, t1 = null, t2 = null, sa
 function clearTurni(db) {
   db.prepare('DELETE FROM turni').run();
   db.prepare('DELETE FROM turni_pause').run();
-  db.prepare("DELETE FROM settings WHERE key = 'turni_auto'").run();
+  db.prepare("DELETE FROM settings WHERE key IN ('turni_auto', 'turni_note')").run();
 }
 
 /**
@@ -112,7 +112,7 @@ function clearConsegne(db) {
 function clearNonAdminUsers(db) {
   db.prepare('DELETE FROM turni').run();
   db.prepare('DELETE FROM turni_pause').run();
-  db.prepare("DELETE FROM settings WHERE key = 'turni_auto'").run();
+  db.prepare("DELETE FROM settings WHERE key IN ('turni_auto', 'turni_note')").run();
   // Must delete FK-dependent activity_logs rows before deleting users
   db.prepare("DELETE FROM activity_logs WHERE target_user_id IN (SELECT id FROM users WHERE username != 'admin')").run();
   db.prepare("DELETE FROM activity_logs WHERE actor_user_id IN (SELECT id FROM users WHERE username != 'admin')").run();

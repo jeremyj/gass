@@ -66,6 +66,8 @@ async function loadTurni() {
     const [result, user] = await Promise.all([API.get('/api/turni'), sessionReady]);
     turni = result.turni;
     myId = user?.id;
+    document.getElementById('turni-note-view').textContent = result.note;
+    document.getElementById('turni-note-box').classList.toggle('initially-hidden', !result.note);
     renderTurni();
   } catch (error) {
     showStatus('Errore: ' + error.message, 'error');

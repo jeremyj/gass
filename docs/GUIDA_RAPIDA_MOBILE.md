@@ -72,7 +72,7 @@ Elenco di tutte le consegne in ordine cronologico inverso, con data, stato (aper
 
 Le prossime 24 settimane con i due turnisti di ogni consegna (martedì). La tua riga è segnata **TU**; **da coprire** = manca un turnista; **riunione** = riunione GASS.
 
-Sul tuo turno tocca **cambia**: **scambia con…** (prima mettiti d'accordo con qualcuno: prende il tuo turno e tu il suo primo turno da oggi), **sposta al…** (una data con un posto libero) o **Non posso** (il posto resta da coprire). Ogni azione chiede conferma. Le altre modifiche le fanno gli amministratori, da desktop.
+Sul tuo turno tocca **cambia**: **scambia con…** (prima mettiti d'accordo con qualcuno: prende il tuo turno e tu il suo primo turno da oggi), **sposta al…** (una data con un posto libero) o **Non posso** (il posto resta da coprire). Ogni azione chiede conferma. Se ci sono, le **Note** sui turni compaiono sopra l'elenco. Le altre modifiche le fanno gli amministratori, da desktop.
 
 ---
 

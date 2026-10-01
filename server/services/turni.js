@@ -44,6 +44,19 @@ function setAuto(db, auto) {
     .run(auto ? '1' : '0');
 }
 
+// Free-text notes shown above the turni (settings.turni_note)
+const NOTE_MAX = 5000;
+function getNote(db) {
+  return db.prepare("SELECT value FROM settings WHERE key = 'turni_note'").get()?.value || '';
+}
+
+function setNote(db, note) {
+  const text = String(note || '').trim();
+  if (text.length > NOTE_MAX) return { error: `Note troppo lunghe (massimo ${NOTE_MAX} caratteri)` };
+  db.prepare("INSERT INTO settings (key, value) VALUES ('turni_note', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").run(text);
+  return {};
+}
+
 // Inserts a row for every Tuesday from the next one to the horizon that has none
 // and is not in a pause (so weeks freed by a deleted pause get filled). Existing
 // rows are never touched and past weeks are never backfilled. While paused, new
@@ -269,6 +282,6 @@ function importTurni(db, rows, today) {
 }
 
 module.exports = {
-  HORIZON_DAYS, isAuto, setAuto, ensureTurni, listTurni, listPause, updateTurno, swapTurnisti, swapWithNext, leaveTurno, moveTurno,
+  HORIZON_DAYS, isAuto, setAuto, getNote, setNote, ensureTurni, listTurni, listPause, updateTurno, swapTurnisti, swapWithNext, leaveTurno, moveTurno,
   addPause, deletePause, freeFutureTurni, importTurni
 };

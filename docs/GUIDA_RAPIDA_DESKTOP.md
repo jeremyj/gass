@@ -80,7 +80,7 @@ Le prossime 24 settimane con i due turnisti di ogni consegna (martedì). La tua 
 
 Sul tuo turno clicca il tuo nome: **scambia con…** (prima mettiti d'accordo con qualcuno: prende il tuo turno e tu il suo primo turno da oggi), **sposta al…** (una data con un posto libero) o **Non posso** (il posto resta da coprire). Ogni azione chiede conferma.
 
-Gli amministratori scelgono i nomi dai menu della tabella e mettono in pausa la **Generazione automatica dei turni**: in pausa, le settimane nuove arrivano da coprire. **Giorno** sposta la consegna, la segna **niente consegna** o **riunione GASS**, aggiunge una nota. In fondo, **Pause** per i periodi senza consegne.
+Gli amministratori scelgono i nomi dai menu della tabella e mettono in pausa la **Generazione automatica dei turni**: in pausa, le settimane nuove arrivano da coprire. Il riquadro **Note** sopra la tabella è per appunti liberi: lo scrivono gli amministratori, lo leggono tutti. **Giorno** sposta la consegna, la segna **niente consegna** o **riunione GASS**, aggiunge una nota. In fondo, **Pause** per i periodi senza consegne.
 
 ---
 
