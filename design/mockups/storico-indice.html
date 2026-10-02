@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GASS storico come indice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,500;0,700;1,500&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --calce: #F4F6F2; --carta: #FFFFFF; --inchiostro: #1E2420; --salvia: #5C6760; --riga: #DCE1DA;
+  --credito: #1F57B0; --credito-t: #E6EEFA; --debito: #A3175F; --debito-t: #F8E4EE;
+  --s-deep: #26392F; --s-acc: #E8890F; --s-alt: #6E4128; --s-tint: #FBEEDB; --s-on: #F3E6CF;
+  --teatro: #5B3A8C; --teatro-t: #EFE8F8;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #E3E7E2; color: var(--inchiostro); font-family: "Alegreya Sans", system-ui, sans-serif;
+  font-size: 16px; line-height: 1.45; font-variant-numeric: lining-nums tabular-nums; }
+.board { max-width: 1500px; margin: 0 auto; padding: 36px 16px 80px; }
+h1, h2, h3 { font-family: "Alegreya", Georgia, serif; }
+.board > h1 { font-size: 46px; line-height: 1.05; margin: 0 0 8px; }
+.board > p { margin: 0 0 22px; color: var(--salvia); max-width: 80ch; font-size: 17px; }
+.section { margin: 48px 0 18px; }
+.section h2 { font-size: 32px; margin: 0 0 4px; }
+.section .tag { display: inline-block; font-size: 14px; font-weight: 800; color: #fff; background: var(--s-deep); border-radius: 6px; padding: 1px 8px; margin-right: 8px; vertical-align: 6px; }
+.section p { margin: 0; color: var(--salvia); max-width: 90ch; }
+.row { display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; margin-top: 22px; }
+.cap { font-size: 15px; color: var(--salvia); margin: 12px 4px 0; max-width: 390px; }
+.cap b { color: var(--inchiostro); }
+
+.phone { width: 390px; height: 800px; border-radius: 38px; background: var(--calce); border: 10px solid #22262a; overflow: hidden; display: flex; flex-direction: column; position: relative; }
+.desk { width: 1060px; max-width: 100%; border-radius: 10px; background: var(--calce); border: 1px solid #bcc3bd; overflow: hidden; }
+.stag { background: var(--s-deep); color: #fff; padding: 16px 20px; }
+.stag .when { font-size: 14px; color: var(--s-on); }
+.stag h3 { margin: 0; font-size: 30px; line-height: 1.05; }
+.stag .acts { display: flex; gap: 10px; align-items: center; margin-top: 10px; font-size: 15px; }
+.ghost { border: 1.5px solid rgba(255,255,255,.5); border-radius: 8px; padding: 3px 10px; color: #fff; }
+.avviso { background: #FFF6E5; border: 1.5px solid var(--s-acc); border-left-width: 5px; border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; font-size: 16px; }
+.avviso .link { white-space: nowrap; }
+.rule { width: 100%; max-width: 1060px; border-collapse: collapse; background: var(--carta); border-radius: 10px; overflow: hidden; margin-top: 18px; }
+.rule th, .rule td { padding: 9px 12px; border-bottom: 1px solid var(--riga); text-align: left; vertical-align: top; }
+.rule th { font-size: 14px; color: var(--salvia); }
+.btn { display: block; text-align: center; font-weight: 800; border-radius: 9px; padding: 12px; }
+.btn.go { background: var(--s-deep); color: #fff; }
+.hint { color: var(--salvia); font-size: 16px; margin: 0 4px 10px; }
+.det { color: var(--s-deep); font-weight: 800; white-space: nowrap; }
+.idx .act { display: flex; justify-content: space-between; }
+.addday { display: flex; justify-content: center; border: 1.5px dashed var(--s-deep); color: var(--s-deep); border-radius: 10px; padding: 10px; font-weight: 800; margin-bottom: 14px; background: var(--carta); }
+.d-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.d-bar .addday { margin: 0; padding: 6px 14px; }
+.dfield { border: 1.5px solid var(--riga); border-radius: 8px; padding: 6px 10px; background: #fff; font-size: 17px; }
+.d-nav { background: var(--s-deep); color: #fff; display: flex; gap: 22px; padding: 12px 24px; font-weight: 700; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,.15); }
+.d-nav b { color: #fff; border-bottom: 3px solid var(--s-acc); padding-bottom: 6px; }
+.d-nav span { color: #dfe5df; }
+.body { padding: 16px; overflow: auto; flex: 1; }
+.bnav { display: flex; justify-content: space-around; background: var(--carta); border-top: 1px solid var(--riga); padding: 10px 0 14px; font-size: 13px; color: var(--salvia); font-weight: 700; }
+.bnav .on { color: var(--s-deep); border-top: 3px solid var(--s-acc); margin-top: -10px; padding-top: 7px; }
+
+.pill { display: inline-block; font-size: 14px; font-weight: 700; border-radius: 6px; padding: 1px 8px; }
+.pill.chiusa { color: var(--salvia); background: #E8ECE7; }
+.pill.aperta { color: #8a4a00; background: var(--s-tint); }
+.pill.th { color: var(--teatro); background: var(--teatro-t); }
+.link { color: var(--s-deep); font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
+
+/* storico index, mobile */
+.idx { list-style: none; margin: 0; padding: 0; background: var(--carta); border: 1px solid var(--riga); border-radius: 12px; overflow: hidden; }
+.idx li { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 12px 14px; border-bottom: 1px solid var(--riga); position: relative; }
+.idx li:last-child { border-bottom: 0; }
+.idx .dt { font-family: "Alegreya", serif; font-weight: 700; font-size: 20px; }
+.idx .sub { color: var(--salvia); font-size: 16px; grid-column: 1; }
+.idx .cassa { grid-column: 2; grid-row: 1 / span 2; text-align: right; align-self: center; }
+.idx .cassa b { display: block; font-size: 20px; }
+.idx .cassa small { color: var(--salvia); font-size: 14px; }
+.idx .chev { color: var(--salvia); margin-left: 6px; }
+.idx .act { grid-column: 1 / -1; margin-top: 4px; font-size: 16px; }
+.idx li.tap { background: var(--s-tint); outline: 3px solid var(--s-acc); outline-offset: -3px; }
+.month { font-size: 14px; font-weight: 800; color: var(--salvia); text-transform: uppercase; letter-spacing: .06em; margin: 14px 4px 6px; }
+.month:first-child { margin-top: 0; }
+
+/* consegna, mobile */
+.conto { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: var(--carta); border: 1px solid var(--riga); border-radius: 12px; padding: 10px; text-align: center; }
+.conto label { display: block; font-size: 13px; color: var(--salvia); font-weight: 700; }
+.conto b { font-size: 19px; }
+.conto .tot b { color: var(--s-deep); }
+.stato { display: flex; gap: 12px; align-items: center; margin: 12px 2px; font-size: 16px; }
+.nota-g { color: var(--salvia); font-style: italic; margin: 0 2px 10px; }
+.sect { display: flex; justify-content: space-between; align-items: baseline; margin: 14px 2px 6px; }
+.sect h4 { margin: 0; font-family: "Alegreya", serif; font-size: 20px; }
+.sect span { color: var(--salvia); font-size: 15px; }
+.mov { list-style: none; margin: 0; padding: 0; background: var(--carta); border: 1px solid var(--riga); border-radius: 12px; overflow: hidden; }
+.mov li { display: grid; grid-template-columns: 1fr auto; gap: 0 10px; padding: 10px 14px; border-bottom: 1px solid var(--riga); }
+.mov li:last-child { border-bottom: 0; }
+.mov .nm { font-weight: 800; font-size: 17px; }
+.mov .sub { color: var(--salvia); font-size: 16px; grid-column: 1; }
+.mov .sub b { color: var(--inchiostro); }
+.mov .esito { grid-column: 2; grid-row: 1 / span 2; text-align: right; align-self: center; }
+.mov .esito b { display: block; }
+.mov .esito small { color: var(--salvia); font-size: 14px; }
+.mov .cr b { color: var(--credito); }
+.mov .db b { color: var(--debito); }
+.new { background: #FFF6E5; border-radius: 4px; padding: 0 3px; }
+
+/* desktop */
+table.t { width: 100%; border-collapse: collapse; background: var(--carta); border-radius: 10px; overflow: hidden; font-size: 15px; }
+table.t th { text-align: left; font-size: 13px; color: var(--salvia); padding: 8px 10px; border-bottom: 1px solid var(--riga); }
+table.t td { padding: 9px 10px; border-bottom: 1px solid var(--riga); }
+table.t td.n, table.t th.n { text-align: right; }
+table.t td.mute { color: #b8beb9; text-align: right; }
+table.t td.cr { color: var(--credito); font-weight: 700; text-align: right; }
+table.t td.db { color: var(--debito); font-weight: 700; text-align: right; }
+table.t tfoot td { font-weight: 800; border-bottom: 0; background: #f7f8f6; }
+table.t tr.tap td { background: var(--s-tint); }
+table.t tr.hov td { background: #f3f6f2; cursor: pointer; }
+table.t th.new-col, table.t td.new-col { background: #FFF6E5; }
+table.t td.th { color: var(--teatro); font-weight: 700; text-align: right; }
+.d-grid { display: grid; grid-template-columns: 290px 1fr; gap: 18px; align-items: start; }
+.cassa-v { background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; padding: 12px 14px; }
+.cassa-v p { display: flex; justify-content: space-between; margin: 6px 0; }
+.cassa-v p label { color: var(--salvia); }
+.cassa-v p.tot { border-top: 1.5px solid var(--inchiostro); padding-top: 8px; font-weight: 800; }
+.cassa-v .nt { color: var(--salvia); font-style: italic; margin-top: 8px; font-size: 15px; }
+.d-head { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 10px; }
+.d-head h4 { margin: 0; font-family: "Alegreya", serif; font-size: 22px; }
+
+/* workflow */
+.flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 0; margin-top: 22px; }
+.step { background: var(--carta); border: 1.5px solid var(--s-deep); border-radius: 12px; padding: 14px 16px; width: 250px; }
+.step h4 { margin: 0 0 4px; font-family: "Alegreya", serif; font-size: 20px; }
+.step p { margin: 0; color: var(--salvia); font-size: 15px; }
+.arrow { align-self: center; padding: 0 10px; font-size: 15px; color: var(--salvia); text-align: center; width: 130px; }
+.arrow b { display: block; font-size: 28px; color: var(--s-acc); line-height: 1; }
+.lane { margin: 18px 0 0; }
+.lane > .lbl { font-size: 14px; font-weight: 800; color: var(--salvia); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+
+.cmp { width: 100%; max-width: 1060px; border-collapse: collapse; background: var(--carta); border-radius: 10px; overflow: hidden; margin-top: 18px; }
+.cmp th, .cmp td { padding: 9px 12px; border-bottom: 1px solid var(--riga); text-align: left; vertical-align: top; }
+.cmp th { font-size: 14px; color: var(--salvia); }
+.note { background: #FFF6E5; border: 1.5px solid var(--s-acc); border-radius: 10px; padding: 14px 18px; max-width: 980px; margin-top: 48px; }
+.note ol { margin: 6px 0 0; padding-left: 22px; }
+.note li { margin: 6px 0; }
+</style>
+</head>
+<body>
+<div class="board">
+  <h1>Storico come indice</h1>
+  <p>Oggi una consegna chiusa si legge in due posti: nella pagina Consegna (scegliendo la data) e nello Storico, che ridisegna la stessa cassa e la stessa lista con un codice suo. Proposta: lo Storico diventa un <b>indice</b> delle consegne, una riga per consegna; toccandola si apre la <b>pagina Consegna</b> su quella data, che resta l'unico dettaglio. La pagina Consegna prende le due cose che oggi ci sono solo nello Storico: la quota teatro per persona e i dettagli del movimento (salda debito, usa credito). Spariscono i calendari "Cambia data" di Consegna e Saldi: la pagina Consegna sa da sola quale consegna aprire (dai turni), le consegne passate si aprono dallo Storico, la storia del saldo di una persona è nelle sue Transazioni. <span class="new">Evidenziato</span> = nuovo rispetto a oggi.</p>
+
+  <div class="section">
+    <h2><span class="tag">1</span>Storico: una riga per consegna</h2>
+    <p>Data, stato, quante persone hanno ritirato, incassato e quanto è rimasto in cassa. Niente più fisarmonica né tabelle per ogni consegna. La riga intera apre la consegna, e lo dice: "Dettaglio ›" su ogni riga. Restano i due link di oggi: "Completa consegna" su quella aperta e, per gli admin, "Riapri consegna" su quelle chiuse.</p>
+  </div>
+  <div class="row">
+    <div>
+      <div class="phone">
+        <div class="stag"><div class="when">GASS Torpignattara</div><h3>Storico</h3></div>
+        <div class="body">
+          <p class="hint">Tocca una consegna per vederne il dettaglio.</p>
+          <div class="month">ottobre 2026</div>
+          <ul class="idx">
+            <li>
+              <span class="dt">martedì 6 ottobre</span>
+              <span class="cassa"><b>212,50 €</b><small>in cassa</small></span>
+              <span class="sub"><span class="pill aperta">aperta</span> 4 persone</span>
+              <span class="act"><span class="link">Completa consegna</span><span class="det">Dettaglio ›</span></span>
+            </li>
+          </ul>
+          <div class="month">settembre 2026</div>
+          <ul class="idx">
+            <li class="tap">
+              <span class="dt">martedì 29 settembre</span>
+              <span class="cassa"><b>187 €</b><small>in cassa</small></span>
+              <span class="sub"><span class="pill chiusa">chiusa</span> 11 persone <span class="pill th">teatro 45 €</span></span>
+              <span class="act"><span class="link">Riapri consegna</span><span class="det">Dettaglio ›</span></span>
+            </li>
+            <li>
+              <span class="dt">martedì 22 settembre</span>
+              <span class="cassa"><b>143,20 €</b><small>in cassa</small></span>
+              <span class="sub"><span class="pill chiusa">chiusa</span> 9 persone</span>
+              <span class="act"><span class="link">Riapri consegna</span><span class="det">Dettaglio ›</span></span>
+            </li>
+            <li>
+              <span class="dt">martedì 15 settembre</span>
+              <span class="cassa"><b>120 €</b><small>in cassa</small></span>
+              <span class="sub"><span class="pill chiusa">chiusa</span> 10 persone</span>
+              <span class="act"><span class="link">Riapri consegna</span><span class="det">Dettaglio ›</span></span>
+            </li>
+          </ul>
+        </div>
+        <div class="bnav"><span>Consegna</span><span>Saldi</span><span class="on">Storico</span><span>Turni</span></div>
+      </div>
+      <p class="cap"><b>Mobile.</b> Raggruppato per mese, la più recente in alto. Tocco sulla riga (evidenziata) = apre la consegna del 29/9; "Dettaglio ›" e la frase in alto dicono che si può toccare. "Riapri consegna" compare solo agli admin; per gli altri le righe chiuse non hanno link sotto. Si carica solo il riepilogo, non tutti i movimenti di tutte le consegne.</p>
+    </div>
+    <div>
+      <div class="desk">
+        <div class="d-nav"><span>Consegna</span><span>Saldi</span><b>Storico</b><span>Turni</span><span>Teatro</span><span>Attività</span></div>
+        <div class="body">
+          <div class="d-bar"><span class="hint" style="margin:0">Clic su una consegna per vederne il dettaglio.</span></div>
+          <table class="t">
+            <thead><tr><th>Consegna</th><th>Stato</th><th class="n">Persone</th><th class="n">Trovato</th><th class="n">Incassato</th><th class="n">Pagato</th><th class="n">In cassa</th><th class="n">Teatro</th><th></th><th></th></tr></thead>
+            <tbody>
+              <tr><td><b>mar 6 ottobre</b></td><td><span class="pill aperta">aperta</span></td><td class="n">4</td><td class="n">187</td><td class="n">96,50</td><td class="n">71</td><td class="n"><b>212,50</b></td><td class="mute">–</td><td class="n"><span class="link">Completa consegna</span></td><td class="n det">Dettaglio ›</td></tr>
+              <tr class="hov"><td><b>mar 29 settembre</b></td><td><span class="pill chiusa">chiusa</span></td><td class="n">11</td><td class="n">143,20</td><td class="n">268,30</td><td class="n">224,50</td><td class="n"><b>187</b></td><td class="th">45</td><td class="n"><span class="link">Riapri consegna</span></td><td class="n det">Dettaglio ›</td></tr>
+              <tr><td><b>mar 22 settembre</b></td><td><span class="pill chiusa">chiusa</span></td><td class="n">9</td><td class="n">120</td><td class="n">201,70</td><td class="n">178,50</td><td class="n"><b>143,20</b></td><td class="mute">–</td><td class="n"><span class="link">Riapri consegna</span></td><td class="n det">Dettaglio ›</td></tr>
+              <tr><td><b>mar 15 settembre</b></td><td><span class="pill chiusa">chiusa</span></td><td class="n">10</td><td class="n">95</td><td class="n">230</td><td class="n">205</td><td class="n"><b>120</b></td><td class="mute">–</td><td class="n"><span class="link">Riapri consegna</span></td><td class="n det">Dettaglio ›</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p class="cap" style="max-width:700px"><b>Desktop.</b> Una tabella sola invece di una sezione completa per consegna: si legge l'andamento della cassa settimana per settimana (il "trovato" di una riga è l'"in cassa" della riga sotto). Clic sulla riga (al passaggio del mouse si colora, "Dettaglio ›" in fondo) = apre la consegna. La colonna Teatro è il totale delle quote pagate in quella consegna, a parte dalla cassa.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2><span class="tag">2</span>Quale consegna apre "Consegna"</h2>
+    <p>Senza calendario la pagina decide da sola, guardando l'<b>ultimo giorno di turno</b> fino a oggi (il giorno reale del turno, escluse le settimane "saltata"). Le consegne passate chiuse si aprono dallo Storico.</p>
+  </div>
+  <table class="rule">
+    <tr><th>Ultimo turno (es. martedì 6/10)</th><th>Si apre</th><th>Esempio</th></tr>
+    <tr><td>senza consegna</td><td><b>quel giorno</b>, vuoto, con "Nuova consegna"</td><td>Martedì stesso; oppure mercoledì, se martedì nessuno l'ha inserita</td></tr>
+    <tr><td>consegna aperta</td><td><b>quel giorno</b>, da completare e chiudere</td><td>Martedì in corso; oppure mercoledì, da chiudere</td></tr>
+    <tr><td>consegna chiusa</td><td><b>oggi</b>, vuoto, con "Nuova consegna"</td><td>Venerdì dopo una consegna chiusa; una consegna straordinaria di giovedì</td></tr>
+    <tr><td colspan="3"><b>In ogni caso</b>: un avviso in alto per ogni altra consegna ancora aperta, con il link per completarla.</td></tr>
+  </table>
+  <div class="row">
+    <div>
+      <div class="phone" style="height:620px">
+        <div class="stag"><div class="when">Consegna di oggi</div><h3>martedì 6 ottobre</h3></div>
+        <div class="body">
+          <div class="avviso">La consegna di <b>martedì 29 settembre</b> è ancora aperta. <span class="link">Completala ›</span></div>
+          <div class="conto">
+            <div><label>Trovato</label><b>143,20</b></div>
+            <div><label>Incassato</label><b>+0</b></div>
+            <div><label>Pagato</label><b>−0</b></div>
+            <div class="tot"><label>In cassa</label><b>=143,20</b></div>
+          </div>
+          <div class="btn go" style="margin-top:14px">Nuova consegna</div>
+        </div>
+        <div class="bnav"><span class="on">Consegna</span><span>Saldi</span><span>Storico</span><span>Turni</span></div>
+      </div>
+      <p class="cap"><b>Mobile, martedì 6/10.</b> Oggi c'è il turno: si apre oggi. Il 29/9 nessuno l'ha chiusa: l'avviso porta lì. Il "trovato" è l'ultima cassa conosciuta, come oggi.</p>
+    </div>
+    <div>
+      <div class="phone" style="height:620px">
+        <div class="stag"><div class="when">Consegna di</div><h3>martedì 6 ottobre</h3></div>
+        <div class="body">
+          <div class="conto">
+            <div><label>Trovato</label><b>187</b></div>
+            <div><label>Incassato</label><b>+96,50</b></div>
+            <div><label>Pagato</label><b>−71</b></div>
+            <div class="tot"><label>In cassa</label><b>=212,50</b></div>
+          </div>
+          <div class="stato"><span class="pill aperta">Consegna aperta</span><span class="link">Chiudi consegna</span></div>
+          <div class="sect"><h4>Chi ha ritirato</h4><span>4 persone</span></div>
+          <ul class="mov">
+            <li><span class="nm">Anna Ferri</span><span class="esito"><b>–</b><small>saldato</small></span><span class="sub">conto <b>18</b>, pagato <b>18</b></span></li>
+            <li><span class="nm">Luca Conti</span><span class="esito db"><b>−3 €</b><small>debito</small></span><span class="sub">conto <b>23</b>, pagato <b>20</b></span></li>
+          </ul>
+        </div>
+        <div class="bnav"><span class="on">Consegna</span><span>Saldi</span><span>Storico</span><span>Turni</span></div>
+      </div>
+      <p class="cap"><b>Mobile, mercoledì 7/10.</b> Ultimo turno martedì 6/10, consegna aperta: si apre martedì per chiuderla. L'intestazione dice "Consegna di martedì 6 ottobre", non "di oggi".</p>
+    </div>
+    <div>
+      <div class="phone" style="height:620px">
+        <div class="stag"><div class="when">Consegna di oggi</div><h3>venerdì 9 ottobre</h3></div>
+        <div class="body">
+          <div class="conto">
+            <div><label>Trovato</label><b>212,50</b></div>
+            <div><label>Incassato</label><b>+0</b></div>
+            <div><label>Pagato</label><b>−0</b></div>
+            <div class="tot"><label>In cassa</label><b>=212,50</b></div>
+          </div>
+          <div class="btn go" style="margin-top:14px">Nuova consegna</div>
+        </div>
+        <div class="bnav"><span class="on">Consegna</span><span>Saldi</span><span>Storico</span><span>Turni</span></div>
+      </div>
+      <p class="cap"><b>Mobile, venerdì 9/10.</b> Martedì è chiusa: si apre oggi, vuoto. "Nuova consegna" serve solo per una consegna straordinaria; finché non si salva un movimento non viene scritto niente. La consegna di martedì si rilegge dallo Storico.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2><span class="tag">3</span>Consegna: l'unico dettaglio, anche per quelle chiuse</h2>
+    <p>È la pagina Consegna di oggi, aperta sulla data scelta. Chiusa: tutto in sola lettura, la lista resta visibile. Niente più "Cambia data": si torna allo Storico con il tasto indietro (o la barra in basso). In più rispetto a oggi: i dettagli completi nella riga di ogni persona, la quota teatro per persona e chi ha pagato solo la quota senza ritirare niente.</p>
+  </div>
+  <div class="row">
+    <div>
+      <div class="phone">
+        <div class="stag">
+          <div class="when">Consegna di</div>
+          <h3>martedì 29 settembre</h3>
+        </div>
+        <div class="body">
+          <div class="conto">
+            <div><label>Trovato</label><b>143,20</b></div>
+            <div><label>Incassato</label><b>+268,30</b></div>
+            <div><label>Pagato</label><b>−224,50</b></div>
+            <div class="tot"><label>In cassa</label><b>=187</b></div>
+          </div>
+          <div class="stato"><span class="pill chiusa">Consegna chiusa</span><span class="link">Riapri consegna</span></div>
+          <p class="nota-g">Note: riunione GASS dopo la consegna</p>
+          <div class="sect"><h4>Chi ha ritirato</h4><span>11 persone</span></div>
+          <ul class="mov">
+            <li><span class="nm">Anna Ferri</span><span class="esito"><b>–</b><small>saldato</small></span><span class="sub">conto <b>18</b>, pagato <b>18</b><span class="new">, quota teatro <b>15</b></span></span></li>
+            <li><span class="nm">Giulia Bianchi</span><span class="esito cr"><b>+2 €</b><small>credito</small></span><span class="sub">conto <b>15</b>, pagato <b>25</b><span class="new">, salda debito <b>8</b></span></span></li>
+            <li><span class="nm">Luca Conti</span><span class="esito db"><b>−3 €</b><small>debito</small></span><span class="sub">conto <b>23</b>, pagato <b>20</b></span></li>
+            <li><span class="nm">Marco Rossi</span><span class="esito"><b>–</b><small>saldato</small></span><span class="sub">conto <b>12</b>, pagato <b>7</b><span class="new">, usa credito <b>5</b></span></span></li>
+            <li class="new"><span class="nm">Sara Galli</span><span class="esito"><b>–</b><small>solo teatro</small></span><span class="sub">quota teatro <b>15</b></span></li>
+          </ul>
+        </div>
+        <div class="bnav"><span class="on">Consegna</span><span>Saldi</span><span>Storico</span><span>Turni</span></div>
+      </div>
+      <p class="cap"><b>Mobile, consegna chiusa.</b> La riga di ogni persona mostra anche salda debito, usa credito e quota teatro (oggi le mostra solo lo Storico). Sara ha pagato solo la quota teatro: oggi nella pagina Consegna non compare. Niente "Cambia data" in testata. "Riapri consegna" solo per gli admin, come oggi.</p>
+    </div>
+    <div>
+      <div class="desk">
+        <div class="d-nav"><span>Consegna</span><span>Saldi</span><span>Storico</span><span>Turni</span><span>Teatro</span><span>Attività</span></div>
+        <div class="stag">
+          <div class="when">Consegna di</div>
+          <h3>martedì 29 settembre</h3>
+          <div class="acts"><span class="pill chiusa">Consegna chiusa</span><span style="color:var(--s-on);font-weight:700;text-decoration:underline">Riapri consegna</span></div>
+        </div>
+        <div class="body">
+          <div class="d-grid">
+            <div class="cassa-v">
+              <p><label>Trovato in cassa</label><span>143,20</span></p>
+              <p><label>+ Incassato</label><span>268,30</span></p>
+              <p><label>− Pagato al produttore</label><span>224,50</span></p>
+              <p class="tot"><label>= Lasciato in cassa</label><span>187</span></p>
+              <p style="color:var(--teatro)"><label style="color:var(--teatro)">Quote teatro, a parte</label><span>45</span></p>
+              <div class="nt">Note: riunione GASS dopo la consegna</div>
+            </div>
+            <div>
+              <div class="d-head"><h4>Movimenti</h4></div>
+              <table class="t">
+                <thead><tr><th>Partecipante</th><th class="n">Conto produttore</th><th class="n">Importo saldato</th><th class="n">Lascia credito</th><th class="n">Lascia debito</th><th class="n">Usa credito</th><th class="n">Salda debito</th><th class="n new-col">Quota teatro</th><th>Note</th></tr></thead>
+                <tbody>
+                  <tr><td><b>Anna Ferri</b></td><td class="n">18</td><td class="n">18</td><td class="mute">–</td><td class="mute">–</td><td class="mute">–</td><td class="mute">–</td><td class="th new-col">15</td><td></td></tr>
+                  <tr><td><b>Giulia Bianchi</b></td><td class="n">15</td><td class="n">25</td><td class="cr">+2</td><td class="mute">–</td><td class="mute">–</td><td class="n">8</td><td class="mute new-col">–</td><td></td></tr>
+                  <tr><td><b>Luca Conti</b></td><td class="n">23</td><td class="n">20</td><td class="mute">–</td><td class="db">−3</td><td class="mute">–</td><td class="mute">–</td><td class="mute new-col">–</td><td>porta i 3 € martedì</td></tr>
+                  <tr><td><b>Marco Rossi</b></td><td class="n">12</td><td class="n">7</td><td class="mute">–</td><td class="mute">–</td><td class="n">5</td><td class="mute">–</td><td class="mute new-col">–</td><td></td></tr>
+                  <tr class="tap"><td><b>Sara Galli</b></td><td class="mute">–</td><td class="mute">–</td><td class="mute">–</td><td class="mute">–</td><td class="mute">–</td><td class="mute">–</td><td class="th new-col">15</td><td></td></tr>
+                </tbody>
+                <tfoot><tr><td>Totale</td><td class="n">224,50</td><td class="n">268,30</td><td class="n">14</td><td class="n">9,50</td><td class="n">11</td><td class="n">22</td><td class="n new-col">45</td><td></td></tr></tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="cap" style="max-width:700px"><b>Desktop, consegna chiusa.</b> La tabella di oggi più la colonna <b>Quota teatro</b> e la riga di chi ha pagato solo la quota (Sara, evidenziata). Il totale delle quote resta anche nella colonna della cassa: oggi su una consegna chiusa non si vede. È esattamente quello che oggi mostra lo Storico per ogni consegna.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2><span class="tag">4</span>Percorsi</h2>
+    <p>Tutti i percorsi finiscono sulla pagina Consegna. Lo Storico serve solo a trovare la consegna.</p>
+  </div>
+  <div class="lane">
+    <div class="lbl">Rileggere una consegna chiusa (tutti)</div>
+    <div class="flow">
+      <div class="step"><h4>Storico</h4><p>Elenco delle consegne, cassa in vista.</p></div>
+      <div class="arrow"><b>→</b>tocco sulla riga</div>
+      <div class="step"><h4>Consegna 29/9</h4><p>Chiusa, sola lettura: cassa, chi ha ritirato, teatro.</p></div>
+      <div class="arrow"><b>→</b>tasto indietro</div>
+      <div class="step"><h4>Storico</h4><p>Torna alla stessa posizione nell'elenco.</p></div>
+    </div>
+  </div>
+  <div class="lane">
+    <div class="lbl">Correggere una consegna chiusa (admin), come oggi</div>
+    <div class="flow">
+      <div class="step"><h4>Storico</h4><p>"Riapri consegna" sulla riga.</p></div>
+      <div class="arrow"><b>→</b>riapre e apre</div>
+      <div class="step"><h4>Consegna 29/9</h4><p>Aperta, modificabile: si corregge il movimento.</p></div>
+      <div class="arrow"><b>→</b>"Chiudi consegna"</div>
+      <div class="step"><h4>Consegna 29/9</h4><p>Di nuovo chiusa.</p></div>
+    </div>
+  </div>
+  <div class="lane">
+    <div class="lbl">Chiudere o inserire il giorno dopo il turno (tutti)</div>
+    <div class="flow">
+      <div class="step"><h4>Barra: Consegna</h4><p>Mercoledì 7/10.</p></div>
+      <div class="arrow"><b>→</b></div>
+      <div class="step"><h4>Consegna 6/10</h4><p>Aperta o vuota: si completa, si inserisce, si chiude.</p></div>
+      <div class="arrow"><b>→</b>"Chiudi consegna"</div>
+      <div class="step"><h4>Consegna di oggi</h4><p>Dalla volta dopo la barra apre oggi.</p></div>
+    </div>
+  </div>
+  <div class="lane">
+    <div class="lbl">Finire una consegna rimasta aperta da tempo</div>
+    <div class="flow">
+      <div class="step"><h4>Avviso in Consegna</h4><p>"Completala ›" (o dallo Storico, "Completa consegna").</p></div>
+      <div class="arrow"><b>→</b></div>
+      <div class="step"><h4>Consegna 29/9</h4><p>Aperta: si aggiungono movimenti e si chiude.</p></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2><span class="tag">=</span>Cosa cambia</h2>
+  </div>
+  <table class="cmp">
+    <tr><th></th><th>Oggi</th><th>Proposta</th></tr>
+    <tr><td><b>Storico mobile</b></td><td>Fisarmonica: una consegna aperta alla volta, con cassa e lista completa</td><td>Elenco per mese; tocco = pagina Consegna</td></tr>
+    <tr><td><b>Storico desktop</b></td><td>Tutte le consegne aperte una sotto l'altra, ognuna con cassa e tabella</td><td>Una tabella, una riga per consegna</td></tr>
+    <tr><td><b>Consegna chiusa</b></td><td>Riga mobile solo con conto e pagato; niente quota teatro</td><td>Riga completa; colonna e righe quota teatro</td></tr>
+    <tr><td><b>Calendario in Consegna</b></td><td>"Cambia data" per aprire o creare una consegna di un altro giorno; la data scelta resta passando ad altre pagine</td><td>Tolto: la pagina apre l'ultimo turno se è da fare o da chiudere, altrimenti oggi; avviso per le consegne aperte; le passate dallo Storico</td></tr>
+    <tr><td><b>Calendario in Saldi</b></td><td>"Cambia data": i saldi di tutti a una data passata</td><td>Tolto: Saldi è sempre oggi ("Modifica saldo" sempre disponibile agli admin); la storia di una persona è nelle sue Transazioni</td></tr>
+    <tr><td><b>Riapri / Completa</b></td><td>Nello Storico e nella Consegna</td><td>Invariato</td></tr>
+    <tr><td><b>Dati</b></td><td>Lo Storico scarica tutti i movimenti di tutte le consegne (e lo rifà a ogni tocco su mobile)</td><td>Lo Storico scarica solo il riepilogo; i movimenti si leggono una consegna alla volta</td></tr>
+  </table>
+
+  <div class="note">
+    <b>Deciso</b>
+    <ol>
+      <li>Confrontare due consegne non serve: una alla volta.</li>
+      <li>Niente "‹ Storico": basta il tasto indietro e la barra in basso.</li>
+      <li>Indice desktop con tutta la cassa.</li>
+      <li>Ogni riga dell'indice dice che si apre ("Dettaglio ›" e una frase in alto).</li>
+      <li>Niente calendario in Consegna: apre l'ultimo turno se è senza consegna o aperta, altrimenti oggi; sempre un avviso per le consegne aperte.</li>
+      <li>Niente "Cambia data" in Saldi: bastano le Transazioni.</li>
+      <li>L'avviso delle consegne aperte solo nella pagina Consegna; nello Storico basta il badge "aperta".</li>
+    </ol>
+  </div>
+</div>
+</body>
+</html>
