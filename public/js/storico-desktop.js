@@ -27,17 +27,17 @@ function renderStorico(consegne) {
     return;
   }
   container.innerHTML = `
-    <p class="hint hint-top">Clic su una consegna per vederne il dettaglio.</p>
+    ${storicoHint('Clic su')}
     <table class="t">
       <thead>
         <tr>
           <th>Consegna</th><th class="left">Stato</th><th>Persone</th><th>Trovato</th><th>Incassato</th>
-          <th>Pagato</th><th>In cassa</th><th>Quota teatro</th><th></th>
+          <th>Pagato</th><th>In cassa</th><th>Quota teatro</th>
         </tr>
       </thead>
       <tbody>${consegne.map(c => `
         <tr class="clickable" onclick="openConsegnaOn('${c.data}')">
-          <td class="nm">${formatDateLong(c.data)}</td>
+          <td class="nm">${storicoDateLink(c.data, formatDateLong(c.data))}</td>
           <td class="left"><span class="stato-label ${c.chiusa ? 'chiusa' : 'aperta'}">${c.chiusa ? 'Chiusa' : 'Aperta'}</span></td>
           <td>${c.num_movimenti}</td>
           ${cassaCell(c.trovato_in_cassa)}
@@ -45,7 +45,6 @@ function renderStorico(consegne) {
           <td>${formatNumber(c.pagato_produttore)}</td>
           ${cassaCell(c.lasciato_in_cassa, true)}
           ${numCell(c.teatro)}
-          <td class="lk">${storicoActionsHtml(c)}</td>
         </tr>`).join('')}
       </tbody>
     </table>
@@ -53,6 +52,6 @@ function renderStorico(consegne) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  await sessionReady; // "Riapri consegna" is admin-only
+  await sessionReady; // the hint mentions reopening to admins only
   loadStorico();
 });

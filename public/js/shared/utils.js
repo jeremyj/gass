@@ -169,23 +169,14 @@ function openConsegnaOn(dateStr) {
   window.location.href = consegnaHref(dateStr);
 }
 
-// Admin: reopen a closed consegna and open it for editing (uses API from api-client.js)
-async function riapriConsegna(id, dateStr) {
-  try {
-    await API.post(`/api/consegna/${id}/reopen`, {});
-    openConsegnaOn(dateStr);
-  } catch (error) {
-    showStatus('Errore: ' + error.message, 'error');
-  }
+// Storico: the date is a real link (keyboard, new tab); the row onclick is only a pointer shortcut
+function storicoDateLink(dateStr, label) {
+  return `<a class="row-link" href="${consegnaHref(dateStr)}" onclick="event.stopPropagation()">${label}</a>`;
 }
 
-// Links on a Storico row: "Dettaglio" (a real link, so keyboard and new tab work) and,
-// for admins on a closed consegna, "Riapri consegna"
-function storicoActionsHtml(consegna) {
-  const riapri = consegna.chiusa && isAdmin()
-    ? `<button type="button" class="link-btn" onclick="event.stopPropagation(); riapriConsegna(${consegna.id}, '${consegna.data}')">Riapri consegna</button>`
-    : '';
-  return `${riapri}<a class="det" href="${consegnaHref(consegna.data)}" onclick="event.stopPropagation()">Dettaglio</a>`;
+// Storico instruction: the Consegna page has the detail and, for admins, "Riapri consegna"
+function storicoHint(verbo) {
+  return `<p class="hint hint-top">${verbo} una consegna per vederne il dettaglio${isAdmin() ? ' o riaprirla' : ''}.</p>`;
 }
 
 // 'mar', 'mer', … for a yyyy-mm-dd date (local)
