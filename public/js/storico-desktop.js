@@ -1,139 +1,51 @@
-// ===== DATA LOADING =====
+// ===== STORICO: one row per consegna, opening it on the Consegna page =====
 
 async function loadStorico() {
   try {
-    const result = await API.get('/api/storico/dettaglio');
-    renderStorico(result.storico);
+    const result = await API.get('/api/storico');
+    renderStorico(result.consegne);
   } catch (error) {
     showStatus('Errore: ' + error.message, 'error');
   }
 }
 
-// ===== RENDERING =====
+// Zeros render as "–" so the real figures stand out
+function numCell(value) {
+  return value ? `<td>${formatNumber(value)}</td>` : '<td class="mute">–</td>';
+}
 
-function renderStorico(storico) {
+function renderStorico(consegne) {
   const container = document.getElementById('storico-list');
-  container.innerHTML = '';
-
-  if (storico.length === 0) {
+  if (!consegne.length) {
     container.innerHTML = '<p>Nessuna consegna registrata</p>';
     return;
   }
-
-  storico.forEach(consegna => {
-    const section = createConsegnaSection(consegna);
-    container.appendChild(section);
-  });
-}
-
-function createConsegnaSection(consegna) {
-  const section = document.createElement('section');
-  section.className = 'storico-section';
-
-  section.innerHTML = `
-    <div class="storico-header">
-      <h2>${formatDateLong(consegna.data)}</h2>
-      <span class="stato-label ${consegna.chiusa ? 'chiusa' : 'aperta'}">${consegna.chiusa ? 'Chiusa' : 'Aperta'}</span>
-      <span class="storico-meta">${(consegna.movimenti?.length || 0) === 1 ? '1 movimento' : `${consegna.movimenti?.length || 0} movimenti`}</span>
-      <span class="storico-acts">${storicoActionsHtml(consegna)}</span>
-    </div>
+  container.innerHTML = `
+    <p class="hint hint-top">Clic su una consegna per vederne il dettaglio.</p>
+    <table class="t">
+      <thead>
+        <tr>
+          <th>Consegna</th><th>Stato</th><th>Persone</th><th>Trovato</th><th>Incassato</th>
+          <th>Pagato</th><th>In cassa</th><th>Quota teatro</th><th></th><th></th>
+        </tr>
+      </thead>
+      <tbody>${consegne.map(c => `
+        <tr class="clickable" onclick="openConsegnaOn('${c.data}')">
+          <td class="nm">${formatDateLong(c.data)}</td>
+          <td><span class="stato-label ${c.chiusa ? 'chiusa' : 'aperta'}">${c.chiusa ? 'Chiusa' : 'Aperta'}</span></td>
+          <td>${c.num_movimenti}</td>
+          <td>${formatNumber(c.trovato_in_cassa)}</td>
+          <td>${formatNumber(c.incassato)}</td>
+          <td>${formatNumber(c.pagato_produttore)}</td>
+          <td><b>${formatNumber(c.lasciato_in_cassa)}</b></td>
+          ${numCell(c.teatro)}
+          <td>${storicoActionsHtml(c)}</td>
+          <td class="det">Dettaglio ›</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
   `;
-
-  const content = document.createElement('div');
-  content.className = 'd-grid';
-  content.appendChild(createCassaSummary(consegna));
-
-  const movimenti = document.createElement('div');
-  if (consegna.movimenti?.length || consegna.teatro_extra?.length) {
-    movimenti.appendChild(createMovimentiTable(consegna.movimenti || [], consegna.teatro_extra || []));
-  }
-  content.appendChild(movimenti);
-
-  section.appendChild(content);
-  return section;
 }
-
-// Same sum as the consegna page: trovato + incassato − pagato = lasciato
-function createCassaSummary(consegna) {
-  const incassato = (consegna.movimenti || []).reduce((sum, m) => sum + (m.importo_saldato || 0), 0);
-  const summary = document.createElement('div');
-  summary.className = 'cassa-v';
-  summary.innerHTML = `
-    <p><label>Trovato in cassa</label><output>${formatNumber(consegna.trovato_in_cassa)}</output></p>
-    <p><label>+ Incassato</label><output>${formatNumber(roundToCents(incassato))}</output></p>
-    <p><label>− Pagato al produttore</label><output>${formatNumber(consegna.pagato_produttore)}</output></p>
-    <p class="tot"><label>= Lasciato in cassa</label><output>${formatNumber(consegna.lasciato_in_cassa)}</output></p>
-    ${consegna.note ? `<div class="nt">Note: <i>${escapeHtml(consegna.note)}</i></div>` : ''}
-  `;
-  return summary;
-}
-
-// Zeros render as "–" so the real figures stand out
-function numCell(value, cls = '') {
-  return value ? `<td class="${cls}">${formatNumber(value)}</td>` : '<td class="mute">–</td>';
-}
-
-// teatroExtra: quote teatro paid by people with no movimento in this consegna
-function createMovimentiTable(movimenti, teatroExtra) {
-  const sum = fn => roundToCents(movimenti.reduce((acc, m) => acc + (fn(m) || 0), 0));
-  const teatroTot = roundToCents(sum(m => m.teatro) + teatroExtra.reduce((acc, t) => acc + t.importo, 0));
-
-  const rows = movimenti.map(m => `
-    <tr>
-      <td class="nm">${escapeHtml(m.nome)}</td>
-      ${numCell(m.conto_produttore)}
-      ${numCell(m.importo_saldato)}
-      ${m.credito_lasciato ? `<td class="cr">+${formatNumber(m.credito_lasciato)}</td>` : '<td class="mute">–</td>'}
-      ${debitoNuovo(m) ? `<td class="db">−${formatNumber(debitoNuovo(m))}</td>` : '<td class="mute">–</td>'}
-      ${numCell(m.usa_credito)}
-      ${numCell(debitoPagato(m))}
-      ${numCell(m.teatro)}
-      <td class="nt">${escapeHtml(m.note)}</td>
-    </tr>
-  `).join('') + teatroExtra.map(t => `
-    <tr>
-      <td class="nm">${escapeHtml(t.nome)}</td>
-      ${'<td class="mute">–</td>'.repeat(6)}
-      ${numCell(t.importo)}
-      <td class="nt"></td>
-    </tr>
-  `).join('');
-
-  const table = document.createElement('table');
-  table.className = 't';
-  table.innerHTML = `
-    <thead>
-      <tr>
-        <th>Partecipante</th>
-        <th>Conto produttore</th>
-        <th>Importo saldato</th>
-        <th>Lascia credito</th>
-        <th>Lascia debito</th>
-        <th>Usa credito</th>
-        <th>Salda debito</th>
-        <th>Quota teatro</th>
-        <th class="nt">Note</th>
-      </tr>
-    </thead>
-    <tbody>${rows}</tbody>
-    <tfoot>
-      <tr>
-        <td>Totale</td>
-        ${numCell(sum(m => m.conto_produttore))}
-        ${numCell(sum(m => m.importo_saldato))}
-        ${numCell(sum(m => m.credito_lasciato))}
-        ${numCell(sum(debitoNuovo))}
-        ${numCell(sum(m => m.usa_credito))}
-        ${numCell(sum(debitoPagato))}
-        ${numCell(teatroTot)}
-        <td></td>
-      </tr>
-    </tfoot>
-  `;
-  return table;
-}
-
-// ===== INITIALIZATION =====
 
 document.addEventListener('DOMContentLoaded', async () => {
   await sessionReady; // "Riapri consegna" is admin-only

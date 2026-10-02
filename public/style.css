@@ -517,19 +517,11 @@ b.th { color: var(--teatro); }
 
 /* ===== STORICO (mobile) ===== */
 
-.storico-list { list-style: none; padding-top: 16px; }
-.storico-consegna-card { margin-bottom: 10px; background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; overflow: hidden; }
-.storico-consegna-header { display: flex; flex-direction: column; align-items: flex-start; width: 100%; padding: 12px 14px; background: none; border: 0; text-align: left; cursor: pointer; }
-.storico-consegna-card.expanded .storico-consegna-header { background: var(--s-tint); border-bottom: 1px solid var(--riga); }
-.storico-consegna-date { font-family: var(--serif); font-weight: 700; font-size: 20px; }
-.storico-consegna-meta { font-size: 17px; color: var(--salvia); }
-.storico-consegna-content { padding: 14px; }
-.storico-consegna-content .mov-list > li { cursor: default; padding: 10px 12px; }
-.storico-consegna-content .sub { font-size: 16px; }
-.storico-consegna-content .esito b { font-size: 18px; }
-.storico-consegna-content .cassa-v { margin-bottom: 12px; }
-.storico-acts { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 14px; }
-.storico-acts:empty { display: none; }
+.storico-list { padding-top: 16px; }
+.storico-month { font-size: 16px; font-weight: 800; color: var(--salvia); text-transform: uppercase; letter-spacing: .06em; margin: 18px 4px 6px; }
+.storico-list .mov-list { margin: 0; }
+.storico-acts { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 12px; }
+.det { color: var(--s-deep); font-weight: 800; white-space: nowrap; }
 
 /* ===== MODALS ===== */
 
@@ -638,12 +630,6 @@ b.th { color: var(--teatro); }
   .form-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 14px; }
   .form-row label { display: block; margin-bottom: 4px; }
 
-  .storico-section { margin-bottom: 30px; }
-  .storico-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 10px; }
-  .storico-header h2 { font-size: 26px; }
-  .storico-meta { margin-left: auto; color: var(--salvia); font-size: 18px; }
-  .storico-header .storico-acts { margin: 0; }
-
   .logs-table td { font-size: 18px; text-align: left; }
   .logs-table th { text-align: left; }
   .activity-log td:nth-child(2) { text-align: center; }
@@ -721,8 +707,3 @@ b.th { color: var(--teatro); }
 .turni-note .btn.initially-hidden { display: none; }
 .name-sel { width: 100%; padding: 5px 8px; font-size: 17px; font-weight: 700; }
 .name-sel.empty { color: var(--debito); border-color: var(--debito); border-style: dashed; }
-
-@media (max-width: 768px) {
-  .storico-consegna-content { padding: 10px 8px; }
-  .storico-consegna-content .mov-list > li { gap: 2px 8px; }
-}
