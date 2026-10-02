@@ -16,7 +16,7 @@ const round = x => Math.round(x * 100) / 100;
 const nomeDi = (db, id) => db.prepare('SELECT display_name FROM users WHERE id = ?').get(id)?.display_name;
 
 // Opens the semester of `today` once: its quota is the last semester's, and every
-// attivo owes it. People who join later are added by an admin (setDovuto).
+// attivo owes it. Later stato changes adjust it (syncDovutoCorrente).
 function ensureSemestre(db, today) {
   const s = semestreOf(today);
   if (db.prepare('SELECT 1 FROM teatro_semestri WHERE semestre = ?').get(s)) return;
@@ -27,6 +27,23 @@ function ensureSemestre(db, today) {
     db.prepare(`INSERT OR IGNORE INTO teatro_dovuti (user_id, semestre, dovuto)
                 SELECT id, ?, ? FROM users WHERE stato = 'attivo'`).run(s, quota);
   })();
+}
+
+// The current semester follows stato changes: becoming attivo adds the full quota, leaving
+// attivo removes it unless it was set by hand (reduced / non dovuto) or something was paid on it.
+// Past semesters never change.
+function syncDovutoCorrente(db, userId, stato, today) {
+  const s = semestreOf(today);
+  const sem = db.prepare('SELECT quota FROM teatro_semestri WHERE semestre = ?').get(s);
+  if (!sem) return; // not open yet: ensureSemestre will pick the attivi
+  if (stato === 'attivo') {
+    db.prepare('INSERT OR IGNORE INTO teatro_dovuti (user_id, semestre, dovuto) VALUES (?, ?, ?)').run(userId, s, sem.quota);
+    return;
+  }
+  const riga = statoTeatro(db, userId).righe.find(r => r.semestre === s);
+  if (riga && riga.dovuto === sem.quota && riga.pagato === 0) {
+    db.prepare('DELETE FROM teatro_dovuti WHERE user_id = ? AND semestre = ?').run(userId, s);
+  }
 }
 
 function setQuota(db, semestre, quota, audit) {
@@ -195,6 +212,6 @@ function riepilogo(db) {
 }
 
 module.exports = {
-  DEFAULT_QUOTA, ensureSemestre, setQuota, setDovuto, statoTeatro, residui, registraPagamento, deletePagamento,
+  DEFAULT_QUOTA, ensureSemestre, syncDovutoCorrente, setQuota, setDovuto, statoTeatro, residui, registraPagamento, deletePagamento,
   addCassa, saldoCassa, quoteDellaConsegna, quotePerPersona, setNota, riepilogo, importFoglio
 };

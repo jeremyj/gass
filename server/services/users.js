@@ -39,11 +39,13 @@ function deleteUser(db, id) {
 
 const { toLocalDateString } = require('./calculations');
 const { freeFutureTurni } = require('./turni');
+const { syncDovutoCorrente } = require('./teatro');
 
 const STATI = ['attivo', 'sospeso', 'disattivato'];
 
 /**
- * Change a user's stato. Returning to attivo restarts their turni wait from today.
+ * Change a user's stato. Returning to attivo restarts their turni wait from today;
+ * the current semester's quota teatro follows (syncDovutoCorrente).
  * Returns null on success, or the reason it was refused.
  */
 function setStato(db, id, stato, today = toLocalDateString()) {
@@ -52,6 +54,7 @@ function setStato(db, id, stato, today = toLocalDateString()) {
     db.prepare('UPDATE users SET stato = ?, turni_dal = CASE WHEN ? = \'attivo\' AND stato != \'attivo\' THEN ? ELSE turni_dal END WHERE id = ?')
       .run(stato, stato, today, id);
     if (stato !== 'attivo') freeFutureTurni(db, id, today);
+    syncDovutoCorrente(db, id, stato, today);
   })();
   return null;
 }

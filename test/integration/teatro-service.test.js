@@ -5,7 +5,7 @@ const db = setupTestDb();
 
 const { createUser, clearNonAdminUsers, clearTeatro } = require('../helpers/seed');
 const T = require('../../server/services/teatro');
-const { deleteUser } = require('../../server/services/users');
+const { deleteUser, setStato } = require('../../server/services/users');
 
 const audit = { userId: null, timestamp: '2026-10-01T10:00:00.000Z' };
 
@@ -24,6 +24,22 @@ describe('semesters', () => {
     T.ensureSemestre(db, '2026-10-02');
     expect(db.prepare("SELECT quota FROM teatro_semestri WHERE semestre = '2026-2'").get().quota).toBe(12);
     expect(db.prepare("SELECT user_id, dovuto FROM teatro_dovuti WHERE semestre = '2026-2'").all()).toEqual([{ user_id: a, dovuto: 12 }]);
+  });
+
+  it('follows stato changes in the current semester only, keeping paid and hand-set quotas', () => {
+    const [a, b, c, d] = ['a', 'b', 'c', 'd'].map(u => createUser(db, { username: u }));
+    const s = createUser(db, { username: 's', stato: 'sospeso' });
+    T.ensureSemestre(db, '2026-04-01');
+    T.ensureSemestre(db, '2026-10-01');
+    T.setDovuto(db, c, '2026-2', 7, audit);
+    T.registraPagamento(db, { userId: d, importo: 30, data: '2026-10-01' }, audit);
+    const dov = (id, sem = '2026-2') => db.prepare('SELECT dovuto FROM teatro_dovuti WHERE user_id = ? AND semestre = ?').get(id, sem)?.dovuto;
+    [a, b, c, d].forEach(id => setStato(db, id, 'sospeso', '2026-10-02'));
+    expect([dov(a), dov(b), dov(c), dov(d)]).toEqual([undefined, undefined, 7, 15]); // reduced and paid stay
+    expect(dov(a, '2026-1')).toBe(15); // past semesters untouched
+    setStato(db, s, 'attivo', '2026-10-02');
+    setStato(db, a, 'attivo', '2026-10-02');
+    expect([dov(s), dov(a), dov(s, '2026-1')]).toEqual([15, 15, undefined]);
   });
 
   it('starts from 15 € when no semester exists', () => {
