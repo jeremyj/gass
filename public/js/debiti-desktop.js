@@ -34,7 +34,6 @@ function renderParticipants() {
     tbody.appendChild(row);
   });
 
-  renderSaldiHint();
 }
 
 function createParticipantRow(p) {
@@ -43,7 +42,7 @@ function createParticipantRow(p) {
   const adminBadge = p.is_admin ? '<span class="admin-badge">admin</span>' : '';
   const statoBadge = p.stato === 'attivo' ? '' : `<span class="admin-badge">${p.stato}</span>`;
 
-  const canEdit = isAdmin() && isViewingToday();
+  const canEdit = isAdmin();
   if (p.stato !== 'attivo') row.classList.add('off');
 
   row.innerHTML = `
@@ -245,13 +244,9 @@ function closeTransactionsModal() {
 // ===== INITIALIZATION =====
 
 document.addEventListener('DOMContentLoaded', async () => {
-  initCalendar({ onDateSelected: loadParticipants });
-
   // Ensure user data is loaded before rendering participant rows
   await sessionReady;
-
-  const dateToLoad = restoreDateFromStorage();
-  setDateDisplay(dateToLoad);
+  setDateDisplay(toLocalDateString());
 
   if (!isAdmin()) {
     const addBtn = document.getElementById('btn-add-participant');
@@ -263,7 +258,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   loadParticipants();
-  loadConsegneDates();
 });
 
 // ===== EDIT USER MODAL =====

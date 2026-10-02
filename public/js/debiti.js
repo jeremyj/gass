@@ -16,7 +16,6 @@ function renderParticipants() {
   const container = document.getElementById('saldi-list');
   container.innerHTML = '';
 
-  renderSaldiHint();
 
   const list = visibleParticipants();
   if (list.length === 0) {
@@ -52,7 +51,7 @@ function createParticipantCard(p) {
   }
 
   card.classList.add('open');
-  const canEdit = isAdmin() && isViewingToday();
+  const canEdit = isAdmin();
 
   let editSectionHtml = '';
   if (canEdit) {
@@ -192,7 +191,7 @@ function renderTransactions(container, transactions) {
 async function toggleParticipantCard(id) {
   if (expandedParticipantId === id) {
     // Trying to close - check for unsaved changes (admin only)
-    if (isAdmin() && isViewingToday() && hasUnsavedChanges(id)) {
+    if (isAdmin() && hasUnsavedChanges(id)) {
       const ok = await confirmDialog({
         title: 'Modifiche non salvate',
         message: 'Vuoi chiudere senza salvare?',
@@ -205,7 +204,7 @@ async function toggleParticipantCard(id) {
     originalSaldoValues = {}; // Clear saved values
   } else {
     // Opening card - save original values for admin edit tracking
-    if (isAdmin() && isViewingToday()) {
+    if (isAdmin()) {
       const participant = participants.find(p => p.id === id);
       if (participant) {
         originalSaldoValues[id] = {
@@ -302,21 +301,8 @@ async function saveSaldo(id) {
 // ===== INITIALIZATION =====
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Initialize calendar with page-specific callback
-  initCalendar({
-    onDateSelected: () => {
-      transactionsCache = {}; // Clear cache on date change
-      loadParticipants();
-    }
-  });
-
-  // Load consegna dates for calendar indicators
-  loadConsegneDates();
-
   // Saldi are editable only by admins: know the user before rendering
   await sessionReady;
-
-  // Restore date from localStorage or use today's date
-  const dateToLoad = restoreDateFromStorage();
-  setDateDisplay(dateToLoad);
+  setDateDisplay(toLocalDateString());
+  loadParticipants();
 });

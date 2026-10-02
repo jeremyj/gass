@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const db = require('../config/database');
 const { requireAuth, requireAdmin, getAuditFields } = require('../middleware/auth');
 const { roundToCents, toLocalDateString } = require('../services/calculations');
-const { saldoAt, currentSaldo, recalculateSaldo, getTransactions } = require('../services/saldi');
+const { currentSaldo, recalculateSaldo, getTransactions } = require('../services/saldi');
 const { logActivity } = require('../services/activity');
 const { deleteUser } = require('../services/users');
 const teatro = require('../services/teatro');
@@ -16,29 +16,19 @@ router.use(requireAuth);
 // Get all participants with their balances
 router.get('/', (req, res) => {
   const timestamp = new Date().toISOString();
-  const { date } = req.query;
-
-  console.log(`[PARTICIPANTS] ${timestamp} - GET request${date ? ` for date: ${date}` : ''}`);
+  console.log(`[PARTICIPANTS] ${timestamp} - GET request`);
 
   try {
     let participants = db.prepare(
       'SELECT id, username, display_name AS nome, saldo, ultima_modifica, is_admin, stato FROM users ORDER BY display_name'
     ).all();
 
-    // With a date, replay each participant's ledger up to and including it
-    if (date) {
-      participants = participants.map(u => {
-        const { saldo, ultimaModifica } = saldoAt(u.id, date);
-        return { ...u, saldo, ultima_modifica: ultimaModifica };
-      });
-    }
-
     // Quota teatro still owed (negative = paid in advance)
     teatro.ensureSemestre(db, toLocalDateString());
     const residui = teatro.residui(db);
     participants = participants.map(u => ({ ...u, teatro_residuo: residui[u.id] }));
 
-    console.log(`[PARTICIPANTS] ${timestamp} - Retrieved ${participants.length} participants with ${date ? `saldi as of ${date}` : 'current saldi'}`);
+    console.log(`[PARTICIPANTS] ${timestamp} - Retrieved ${participants.length} participants`);
     res.json({ success: true, participants });
   } catch (error) {
     console.error(`[PARTICIPANTS] ${timestamp} - Error fetching participants:`, error);

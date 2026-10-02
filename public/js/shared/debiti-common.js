@@ -8,16 +8,7 @@
 
 async function loadParticipants() {
   try {
-    const dateInput = document.getElementById('data');
-    const date = dateInput ? dateInput.value : null;
-    const today = toLocalDateString();
-
-    let url = '/api/participants';
-    if (date && date !== today) {
-      url += `?date=${date}`;
-    }
-
-    const result = await API.get(url);
+    const result = await API.get('/api/participants');
     participants = result.participants;
     renderParticipants();
     renderSaldiTotals();
@@ -57,17 +48,6 @@ function teatroMancanti() {
   return `<div><small>Quote teatro<span class="who"><span class="sep">, </span>${owing.length} da pagare</span></small><b class="th">${formatEuro(tot)}</b></div>`;
 }
 
-// Why "Modifica saldo" is missing on a past date (admins only)
-function renderSaldiHint() {
-  const hint = document.getElementById('saldi-hint');
-  if (!hint) return;
-  const showHint = isAdmin() && !isViewingToday();
-  hint.style.display = showHint ? 'block' : 'none';
-  if (showHint) {
-    hint.textContent = `"Modifica saldo" compare solo alla data di oggi. Stai guardando il ${formatDateLong(document.getElementById('data').value)}.`;
-  }
-}
-
 // Saldo with sign and word, never colour alone: { cls, amount, word }
 function saldoLabel(saldo) {
   if (saldo > 0) return { cls: 'cr', amount: formatSigned(saldo), word: 'credito' };
@@ -86,10 +66,4 @@ function visibleParticipants() {
   return participants
     .filter(p => p.stato !== 'disattivato' || showOff)
     .sort((a, b) => STATO_ORDER[a.stato] - STATO_ORDER[b.stato] || a.nome.localeCompare(b.nome, 'it'));
-}
-
-function isViewingToday() {
-  const dateInput = document.getElementById('data');
-  const today = toLocalDateString();
-  return !dateInput || dateInput.value === today;
 }

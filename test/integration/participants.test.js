@@ -7,6 +7,7 @@ const db = setupTestDb();
 const { setupTestApp } = require('../helpers/setup-app');
 const { createUser, createConsegna, createMovimento, createRettifica, clearConsegne, clearNonAdminUsers } = require('../helpers/seed');
 const request = require('supertest');
+const { saldoAt } = require('../../server/services/saldi');
 const { toLocalDateString } = require('../../server/services/calculations');
 
 let app, adminAgent;
@@ -49,21 +50,6 @@ describe('GET /api/participants', () => {
     expect(res.body.participants.find(p => p.username === 'admin').stato).toBe('attivo');
   });
 
-  it('calculates historical saldi as of a given date when ?date= provided', async () => {
-    // users.saldo must reflect current state after all movimenti (as POST /api/consegna would set it)
-    // +30 (c1) + +20 (c2) = 50 total
-    const userId = createUser(db, { username: 'mario', displayName: 'Mario', saldo: 50 });
-    const c1 = createConsegna(db, { data: '2026-01-01' });
-    const c2 = createConsegna(db, { data: '2026-02-01' });
-    createMovimento(db, { consegnaId: c1, partecipanteId: userId, creditoLasciato: 30 });
-    createMovimento(db, { consegnaId: c2, partecipanteId: userId, creditoLasciato: 20 });
-
-    // Historical saldo up to and including 2026-01-01: saldo(50) - all_mv(50) + date_mv(30) = 30
-    const res = await adminAgent.get('/api/participants?date=2026-01-01');
-    expect(res.status).toBe(200);
-    const mario = res.body.participants.find(p => p.nome === 'Mario');
-    expect(mario.saldo).toBe(30);
-  });
 });
 
 describe('POST /api/participants', () => {
@@ -231,18 +217,23 @@ describe('PUT /api/participants/:id', () => {
 });
 
 describe('manual rettifiche in the ledger', () => {
-  it('historical saldo counts a rettifica only from its date', async () => {
+  it('historical saldo counts a rettifica only from its date', () => {
     const userId = createUser(db, { username: 'mario', displayName: 'Mario' });
     const c1 = createConsegna(db, { data: '2026-01-01' });
     createMovimento(db, { consegnaId: c1, partecipanteId: userId, creditoLasciato: 30 });
     createRettifica(db, { partecipanteId: userId, data: '2026-01-10', importo: -5 });
 
-    const before = await adminAgent.get('/api/participants?date=2026-01-09');
-    expect(before.body.participants.find(p => p.id === userId).saldo).toBe(30);
-    const after = await adminAgent.get('/api/participants?date=2026-01-10');
-    const mario = after.body.participants.find(p => p.id === userId);
-    expect(mario.saldo).toBe(25);
-    expect(mario.ultima_modifica).toBe('2026-01-10');
+    expect(saldoAt(userId, '2026-01-09').saldo).toBe(30);
+    expect(saldoAt(userId, '2026-01-10')).toEqual({ saldo: 25, ultimaModifica: '2026-01-10' });
+  });
+
+  it('GET /api/participants ignores ?date= and returns current saldi', async () => {
+    const userId = createUser(db, { username: 'mario', displayName: 'Mario' });
+    createRettifica(db, { partecipanteId: userId, data: '2026-01-10', importo: -5 });
+    db.prepare('UPDATE users SET saldo = -5 WHERE id = ?').run(userId);
+
+    const res = await adminAgent.get('/api/participants?date=2026-01-01');
+    expect(res.body.participants.find(p => p.id === userId).saldo).toBe(-5);
   });
 
   it('transactions include rettifiche with the running saldo', async () => {
