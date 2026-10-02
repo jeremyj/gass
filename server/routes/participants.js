@@ -7,6 +7,7 @@ const { currentSaldo, recalculateSaldo, getTransactions } = require('../services
 const { logActivity } = require('../services/activity');
 const { deleteUser } = require('../services/users');
 const teatro = require('../services/teatro');
+const { semestreOf } = require('../services/teatro-calc');
 
 const router = express.Router();
 
@@ -23,10 +24,13 @@ router.get('/', (req, res) => {
       'SELECT id, username, display_name AS nome, saldo, ultima_modifica, is_admin, stato FROM users ORDER BY display_name'
     ).all();
 
-    // Quota teatro still owed (negative = paid in advance)
-    teatro.ensureSemestre(db, toLocalDateString());
+    // Quota teatro still owed (negative = paid in advance) and the current semester's quota (0 = none)
+    const oggi = toLocalDateString();
+    teatro.ensureSemestre(db, oggi);
     const residui = teatro.residui(db);
-    participants = participants.map(u => ({ ...u, teatro_residuo: residui[u.id] }));
+    const dovuti = Object.fromEntries(db.prepare('SELECT user_id, dovuto FROM teatro_dovuti WHERE semestre = ?')
+      .all(semestreOf(oggi)).map(r => [r.user_id, r.dovuto]));
+    participants = participants.map(u => ({ ...u, teatro_residuo: residui[u.id], teatro_dovuto: dovuti[u.id] || 0 }));
 
     console.log(`[PARTICIPANTS] ${timestamp} - Retrieved ${participants.length} participants`);
     res.json({ success: true, participants });

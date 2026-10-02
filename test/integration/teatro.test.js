@@ -40,6 +40,7 @@ describe('/api/teatro', () => {
     expect(db.prepare('SELECT data, consegna_id c FROM teatro_pagamenti').get()).toEqual({ data: '2099-05-05', c: consegna });
     const p = (await userAgent.get('/api/participants')).body.participants.find(x => x.id === me);
     expect(p.teatro_residuo).toBe(-5); // 15 owed, 20 paid: 5 in advance
+    expect(p.teatro_dovuto).toBe(15); // the current semester's quota
     expect(db.prepare("SELECT COUNT(*) n FROM activity_logs WHERE event_type = 'teatro_pagamento'").get().n).toBe(1);
     expect((await userAgent.get(`/api/teatro/consegna/${consegna}`)).body.totale).toBe(20);
     expect((await userAgent.post('/api/teatro/pagamenti').send({ userId: me, importo: -1, consegnaId: consegna })).status).toBe(400);

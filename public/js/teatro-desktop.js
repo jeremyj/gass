@@ -10,9 +10,9 @@ function cellHtml(p, s) {
   const r = cellOf(p, s.semestre);
   const click = `onclick="openDovuto(${p.id}, '${s.semestre}')"`;
   if (!r) return `<td class="c"><button type="button" class="g x" ${click} title="Non era nel GASS">–</button></td>`;
-  if (r.dovuto === 0) return `<td class="c"><button type="button" class="g x" ${click} title="Non dovuto">0</button></td>`;
+  if (r.dovuto === 0) return `<td class="c"><button type="button" class="g x" ${click} title="Non dovuto">–</button></td>`;
   const paid = r.pagato >= r.dovuto;
-  return `<td class="c"><button type="button" class="g ${paid ? 'p' : 'n'}" ${click} title="${formatNumber(r.pagato)}/${formatEuro(r.dovuto)}">${paid ? '✓' : '–'}</button></td>`;
+  return `<td class="c"><button type="button" class="g ${paid ? 'p' : 'n'}" ${click} title="${formatNumber(r.pagato)}/${formatEuro(r.dovuto)}">${paid ? '✓' : '✗'}</button></td>`;
 }
 
 // Same order as Saldi: attivi and "no turni" (sospeso), then disattivati, each alphabetical

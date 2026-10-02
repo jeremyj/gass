@@ -56,7 +56,9 @@ function createParticipantRow(p) {
     </td>
     ${p.teatro_residuo > 0
       ? `<td><span class="th-mark n" title="deve ${formatEuro(p.teatro_residuo)}">✗</span></td>`
-      : `<td><span class="th-mark p" title="${p.teatro_residuo < 0 ? `anticipo ${formatEuro(-p.teatro_residuo)}` : 'tutto pagato'}">✓</span></td>`}
+      : p.teatro_dovuto === 0 && p.teatro_residuo === 0
+        ? '<td><span class="th-mark" title="nessuna quota questo semestre">–</span></td>'
+        : `<td><span class="th-mark p" title="${p.teatro_residuo < 0 ? `anticipo ${formatEuro(-p.teatro_residuo)}` : 'tutto pagato'}">✓</span></td>`}
     <td>${formatDateItalian(p.ultima_modifica)}</td>
     <td class="lk">
       <button type="button" class="link-btn" onclick="showTransactionsModal(${p.id})">Transazioni</button>
