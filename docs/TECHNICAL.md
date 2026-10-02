@@ -25,13 +25,12 @@ RESTful API with the following endpoints:
 
 ```
 GET    /api/participants              - Retrieve all participants with current balances
-GET    /api/participants?date         - Calculate participant balances as of specific date
 GET    /api/participants/:id/transactions - Ledger (movimenti + rettifiche) with running saldo (any authenticated user)
-GET    /api/consegna/:date            - Retrieve delivery data for specific date
+GET    /api/consegna/apertura         - {data, aperte}: date the Consegna page opens on, all open consegne (declared before /:date)
+GET    /api/consegna/:date            - Delivery data for a date; each movimento has `teatro`, plus `teatroExtra` [{user_id, nome, importo}] for quota-only payers
 POST   /api/consegna                  - Create or update delivery with movements
 DELETE /api/consegna/:id              - Delete delivery and recalculate affected balances (admin)
-GET    /api/storico                   - Retrieve all deliveries (summary)
-GET    /api/storico/dettaglio         - Retrieve all deliveries with detailed movements
+GET    /api/storico                   - All deliveries newest first, with trovato_in_cassa, num_movimenti, incassato, teatro (Storico index)
 PUT    /api/participants/:id          - Set participant balance (stored as a rettifica, admin)
 POST   /api/participants              - Create new participant
 DELETE /api/participants/:id          - Delete participant (admin; 400 if the user has movimenti, rettifiche or quota teatro payments)
@@ -65,15 +64,15 @@ GET    /api/version                   - Get application version from package.jso
 #### Desktop Views
 - `consegna-desktop.html/js` (1159 lines) - Delivery entry form
 - `debiti-desktop.html/js` (427 lines) - Balance overview with transactions modal
-- `storico-desktop.html/js` (193 lines) - Historical records
+- `storico-desktop.html/js` - Storico index (one table row per consegna)
 
 #### Mobile Views
 - `consegna.html/js` (1223 lines) - Delivery entry form
 - `debiti.html/js` (416 lines) - Balance overview with inline transaction history
-- `storico.html/js` (239 lines) - Historical records
+- `storico.html/js` - Storico index (rows grouped by month)
 
 #### Shared Components
-- `calendar.js` (363 lines) - Date picker with delivery indicators and localStorage persistence
+- `calendar.js` - Month grid of the date fields (`initDateField`), header date (`setDateDisplay`)
 - `utils.js` (67 lines) - Formatting and parsing utilities
 - `version.js` - Dynamic version display from package.json
 - `api-client.js` - Centralized API communication layer
@@ -213,7 +212,7 @@ function applySaldoChanges(saldo, movimento) {
 | Question | Function | Events replayed |
 |----------|----------|-----------------|
 | Current saldo | `recalculateSaldo()` | all |
-| Saldo as of date D (`GET /api/participants?date=D`) | `saldoAt()` | dated ≤ D |
+| Saldo as of date D | `saldoAt()` | dated ≤ D |
 | Starting saldo of the consegna form for D (`saldiBefore`) | `saldoBeforeConsegna()` | before the participant's movimento on D (same-day rettifiche entered earlier count) |
 | Transaction history with running saldo (`saldo_dopo`) | `getTransactions()` | all, returned newest first |
 
@@ -382,7 +381,7 @@ These fields are always disabled to prevent manual editing and ensure data integ
   - Green: Positive balance (credit)
   - Gray: Zero balance
 - Shows last modification date for each participant
-- Date picker to view historical balances
+- Always today's saldi; a person's history is in their transactions
 
 #### Transaction History
 - **Desktop**: "Transazioni" button on each row opens a modal with the full ledger (`GET /api/participants/:id/transactions`)
@@ -390,52 +389,20 @@ These fields are always disabled to prevent manual editing and ensure data integ
 - Manual edits appear as "Rettifica manuale" rows
 - Any authenticated user can view any participant's transactions
 
-#### Historical View
-- Select any past date
-- System replays each ledger up to that date (`saldoAt()`)
-
 ### 3. Storico (Historical Records)
 
-#### Features
-- Lists all deliveries in reverse chronological order (newest first)
-- Expandable cards showing:
-  - **CASSA section**: trovato, pagato, lasciato amounts
-  - **MOVIMENTI section**: All participant transactions
-- Delete button to remove delivery and recalculate affected balances
-- Visual indicators for manual overrides (discrepanze)
+An index: one row per consegna, newest first (`GET /api/storico`). Mobile groups rows by month; desktop is one table with the whole cassa (trovato, incassato, pagato, in cassa) and the quota teatro total. A row opens the consegna on the Consegna page via `openConsegnaOn(date)` → `/consegna?data=yyyy-mm-dd`; "Completa consegna" (open) and admin "Riapri consegna" (closed, `riapriConsegna`) stay on the row and stop the click from bubbling.
 
-### 4. Calendar Component
+### 4. Consegna page date
 
-#### Features
-- Month navigation (previous/next)
-- Visual indicators:
-  - Highlighted dates with saved deliveries
-  - Today marker
-  - Selected date highlight
-- Quick date selection for all views
-- Shared component across mobile and desktop
-- Date persistence across tab navigation using localStorage
+No date picker. `dataIniziale()` (`consegna-common.js`) takes `?data=` when it is a valid `yyyy-mm-dd`, else asks `GET /api/consegna/apertura` (`server/services/apertura.js`):
 
-#### Calendar Behavior
-- **Opens to Current Month**: Calendar always opens showing today's month
-  - Date picker (mobile + desktop): Resets to current month via `toggleDatePicker()`
-- **Simplified Legend**: Shows only "Con consegna" indicator
-  - Removed redundant "Senza consegna" legend item for cleaner UI
-  - All dates without deliveries appear in standard styling (white background)
+| Last turno ≤ today (`turni.data`, `saltata = 0`) | Opens |
+|---|---|
+| no consegna, or an open one | that day |
+| consegna closed, or no turno | today |
 
-#### Date Persistence
-The calendar component maintains the selected date across page navigation:
-- Selected dates are stored in `localStorage` with key `gass_selected_date`
-- On page load, the system checks for a saved date before defaulting
-- Ensures consistent date context when switching between tabs (Consegna, Saldi, Storico)
-- Falls back to page-specific defaults if no saved date exists
-
-#### Dynamic Participant Updates
-When a participant is open in the Consegna form:
-- Date changes automatically reload the participant's data for the new date
-- System preserves the selected participant across date changes
-- Ensures transaction data, balances, and movements reflect the newly selected date
-- Implementation: `checkDateData()` in `consegna.js` remembers and re-renders current participant after loading new date data
+`renderAvvisoAperte()` (called at the end of `checkDateData()`) lists every other open consegna in `#avviso-aperte` with a link to it. No date is kept in `sessionStorage`: the Consegna menu link always applies the rule, Saldi is always today.
 
 ### 5. Responsive Design
 

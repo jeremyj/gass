@@ -14,14 +14,14 @@
 - **Routes**: `server/routes/`
   - `pages.js` - HTML routing with mobile/desktop detection; `/login`, `/comefunziona` (first-access video) `/v2.17` (turni video, "what's new" page named after the version) and `/admin-video` (desktop admin video, unlinked, shared with admins) — videos in `public/video/`, recorded in `~/.cache/gass-video/rec/`: `record-turni.js`, `record-admin.js` (desktop, demo `admin`), and `record-full3.js` for everything after login, spliced after the 2026-09-30 login part at 47.0s; see the video memory) and `/api/version` are public
   - `auth.js` - Authentication endpoints (login, logout, password change)
-  - `consegna.js` - Delivery API (GET/:date, POST, DELETE/:id)
+  - `consegna.js` - Delivery API (`GET /apertura` declared before `GET /:date`, POST, DELETE/:id); `GET /:date` adds `movimenti[].teatro` and `teatroExtra` (quota-only payers)
   - `participants.js` - Participant API (CRUD, saldo management, `GET /:id/transactions` — any authenticated user)
   - `users.js` - User management API (admin-only, edit profile/password/admin status)
-  - `storico.js` - History API
+  - `storico.js` - History API: `GET /` only (index summary: `num_movimenti`, `incassato`, `teatro`, chained `trovato_in_cassa`); `/dettaglio` was removed in 2.23.0
   - `logs.js` - Activity log API (admin-only)
   - `teatro.js` - Quota teatro API (`GET /utente/:id`, `/consegna/:id`, `POST /pagamenti` any user, only inside an open consegna; grid, dovuti, quotas, notes, payment deletion, cassa admin-only)
   - `turni.js` - Turni API (`GET` any user; `POST /scambio`, `/lascia`, `/sposta` any user for their own slot, admin for any; edits, pauses, `PUT /auto`, `PUT /note` admin-only; both are declared before `/:id`)
-- **Services**: `server/services/calculations.js` - Pure business logic; `server/services/saldi.js` - saldo ledger (DB-backed); `server/services/validation.js` - `POST /api/consegna` payload validation; `server/services/activity.js` - `logActivity()`, the only writer of `activity_logs` rows
+- **Services**: `server/services/calculations.js` - Pure business logic; `server/services/saldi.js` - saldo ledger (DB-backed); `server/services/validation.js` - `POST /api/consegna` payload validation; `server/services/activity.js` - `logActivity()`, the only writer of `activity_logs` rows; `server/services/apertura.js` - `apertura(db, today)`: date the Consegna page opens on (last non-saltata turno ≤ today while it has no consegna or an open one, else today) + all open consegne
 - **Turni services**: `server/services/turni-schedule.js` (pure date/queue helpers, `pickPair`) and `server/services/turni.js` (`ensureTurni`, `listTurni`, `updateTurno`, `swapWithNext` (→ `swapTurnisti`), `leaveTurno`, `moveTurno`, `isAuto`/`setAuto`, pauses, `freeFutureTurni`, `importTurni`)
 - **Teatro services**: `server/services/teatro-calc.js` (pure: semesters, FIFO `allocate`) and `server/services/teatro.js` (`ensureSemestre`, `statoTeatro`, `residui`, `registraPagamento`, `setDovuto`, `setQuota`, `addCassa`, `riepilogo`, `importFoglio`)
 - **CLI**: `manage-users.js`, `manage-turni.js` (`import <csv>` / `list`), `manage-teatro.js` (`import <csv>` / `list`)
@@ -32,13 +32,13 @@
   - `api-client.js` - **Always use `API.*` methods for server calls**
   - `utils.js` - formatNumber, formatEuro, formatSigned, formatDateItalian, parseAmount, showStatus, `confirmDialog` (use instead of `confirm()`), `debitoPagato`/`debitoNuovo`
   - `season.js` - season theme: `applySeason(date)` sets `body.s-<stagione>` and the header drawing (4 per season in `SEASONS[*].ills`, rotating weekly by `weekIndex(date)`, Monday-based, so a date always gets the same one). The palette changes only with the season, the drawing weekly; only 4 of the 16 drawings (zucca, pomodoro, carciofo, fave) use `--s-*` vars, the rest have fixed colours; `formatDateLong`; injects the SVG sprite (produce drawings + nav icons, `<use href="#i-…">`)
-  - `calendar.js` - Date picker (mobile + desktop), `loadConsegneDates()`; the "Oggi" footer button calls `selectPickerDate(toLocalDateString())`, same path as clicking a day; `pickerHtml()` draws the month grid for both the page picker and the date fields (`initDateField(id)` / `setDateField` / `dateFieldValue`: a readonly text input showing dd/mm/yyyy, popup on `<body>` so modals don't clip it). Use date fields instead of `<input type="date">`, whose calendar follows the browser language
+  - `calendar.js` - `setDateDisplay(date)` (header date + season, no callback) and `getSelectedDate()`; no page date picker since 2.23.0; `pickerHtml()` draws the month grid of the date fields (`initDateField(id)` / `setDateField` / `dateFieldValue`: a readonly text input showing dd/mm/yyyy, popup on `<body>` so modals don't clip it). Use date fields instead of `<input type="date">`, whose calendar follows the browser language
   - `consegna-common.js` - Shared consegna business logic (mobile + desktop): participant card (`renderParticipant(id, buttonsHtml)`, `populateExistingMovimento`), save path (`saveParticipant`, `postConsegna`), `openMovimento(id)` (click a row of the day's list), `esitoMovimento(m)`; page scripts keep only their button row, `closeParticipant` and post-save handling
   - `debiti-common.js` - Shared debiti loading and helpers (mobile + desktop)
   - `turni-common.js` - Swap ("scambia con…") candidates, confirm modal and API call, used by `turni.js` and `turni-desktop.js`
   - `auth.js` - Session/logout handling; `await sessionReady` before rendering anything that depends on `isAdmin()` (else admin-only controls stay hidden when the session response arrives after the page data — this hid "Riapri consegna" on mobile until 2.12.0)
   - `version.js` - Dynamic version footer
-  - `utils.js` also holds the Storico → Consegna links: `openConsegnaOn(date)` (sets `gass_selected_date`, goes to `/consegna`), `riapriConsegna(id, date)` (admin), `storicoActionsHtml(consegna)` ("Completa consegna" on open ones, admin "Riapri consegna" on closed ones)
+  - `utils.js` also holds the Storico → Consegna links: `openConsegnaOn(date)` (goes to `/consegna?data=<date>`), `riapriConsegna(id, date)` (admin), `storicoActionsHtml(consegna)` ("Completa consegna" on open ones, admin "Riapri consegna" on closed ones)
 - **Page-Specific**: `public/js/`
   - Mobile: `consegna.js`, `debiti.js`, `storico.js`, `turni.js` (`turni.html`, agenda + self swap)
   - Desktop: `consegna-desktop.js`, `debiti-desktop.js`, `storico-desktop.js`, `logs-desktop.js`, `teatro-desktop.js` (`teatro-desktop.html`, admin; nav item `#nav-teatro` toggled with `#nav-logs` in `auth.js`), `turni-desktop.js` (`turni-desktop.html`, self swap + admin editing)
@@ -178,18 +178,16 @@ On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_
 - Cassa is one row (`.conto`): Trovato + Incassato − Pagato = In cassa. All four cassa values (mobile and desktop) are display-only `<output>`s, read and written through `.value` like inputs; `#incassatoCassa` is filled by `updateIncassato()`
 - The day's movimenti are listed ("Chi ha ritirato"); tapping a row opens it
 - The participant card becomes a full-screen entry at ≤ 768px (pure CSS on `.participant-card-flow`); `#status` is a fixed toast above it
-- Calendar opens to current month
 - Saldi card (mobile) opens on Transazioni; the admin saldo form is behind a "Modifica saldo" button (`showSaldoEdit`/`hideSaldoEdit` in `debiti.js`). The user disliked the form opening (and the keyboard popping up) on every tap of a name
 
 ### Desktop
 - Form card below the table, buttons Annulla / Salva movimento
 - Table column order: Conto Produttore, Importo Saldato, Lascia Credito, Lascia Debito, Usa Credito, Salda Debito
 
-### Date Selection
-- Date persisted in `sessionStorage` (`gass_selected_date`)
-- Page reload → today's date
-- Tab navigation → preserved date
-- Uses `performance.getEntriesByType('navigation')` to detect reload vs navigation
+### Date Selection (2.23.0)
+- No page date picker and no shared date (`gass_selected_date` is gone). Consegna: `dataIniziale()` uses `?data=` (from Storico; must match `yyyy-mm-dd`) else `GET /api/consegna/apertura`; pages call `setDateDisplay(date)` then `checkDateData()` explicitly. Saldi is always today (`GET /api/participants` has no `?date=`)
+- `renderAvvisoAperte()` runs at the end of `checkDateData()`: warns about every open consegna other than the one shown (Consegna page only; Storico has the badge). Decided with the user 2026-10-02, mockup `design/mockups/storico-indice.html`
+- Storico is an index (rows open the consegna); the Consegna page is the only detail view, with quota teatro per person (`teatroExtra`, `addTeatroToList` after a payment)
 
 ### Visibility Sync
 `syncDebitoCreditoVisibility(id)` in `consegna-common.js` shows the computed partial lines (`debitoSaldato_`, `usaCredito_`) only when part of the debt/credit is used, the result line `credito_`/`debito_` only when > 0 (else `pari_`), and hides the `passi_` box when empty. Computed amounts are disabled inputs styled as text lines (`.computed`): their values are what `readMovimentoForm` submits, so keep them as inputs. A full payoff shows only as a note (`remainingDebt_`: "Debito saldato per intero" / `remainingCredit_`: "Credito usato per intero") and is flagged with `dataset.full` on the field, which `readMovimentoForm` sends as `saldaDebitoTotale`. The "Salda intero debito" / "Usa intero credito" checkboxes were removed in 2.9.0: the auto-compensation unchecked them on every recalculation, so they only repeated the title.
@@ -206,7 +204,7 @@ On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_
 
 ### Admin-Only Features
 - Delete a saved consegna (`DELETE /api/consegna/:id` has `requireAdmin`; "Annulla Consegna" is hidden for others once the consegna exists)
-- Edit saldi (debiti page, only for today's date - historical saldi are read-only)
+- Edit saldi (debiti page)
 - Reopen closed consegne
 - Add participants (desktop) - creates a full user account with username/password
 - Delete users (desktop, Modifica Utente) - `deleteUser(db, id)` in `server/services/users.js`, shared with `manage-users.js delete`: refused if last user or the user has movimenti or rettifiche (they would CASCADE away); otherwise every non-cascading FK to `users` (activity logs, audit `*_by` columns) is set to NULL first, found dynamically via `pragma_foreign_key_list`. The route also refuses deleting yourself (the `user_deleted` log's actor FK would fail)

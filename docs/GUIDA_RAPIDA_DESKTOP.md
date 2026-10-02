@@ -13,17 +13,13 @@ Per cambiare la password in seguito vai su **https://auth.x86.it**, nelle impost
 
 ![](screenshots/01-login.png){ width=50% }
 
-**Navigazione:** menu in alto — *Consegna*, *Saldi*, *Storico* (e *Attività* per gli amministratori); a destra il tuo nome, *Cambia password* (solo account locali) ed *Esci*. L'intestazione scura cambia colore con la stagione della data scelta.
+**Navigazione:** menu in alto — *Consegna*, *Saldi*, *Storico* (e *Attività* per gli amministratori); a destra il tuo nome, *Cambia password* (solo account locali) ed *Esci*. L'intestazione scura cambia colore con la stagione.
 
 ---
 
 # Consegna
 
-Pagina principale per registrare i movimenti giornalieri. Usa **Cambia data** per scegliere la data (**Oggi** torna a oggi) — le date con sfondo colorato e sottolineatura ("Con consegna") hanno già una consegna registrata.
-
-![Il calendario mostra le date con consegne](screenshots/calendario.png){ width=60% }
-
-Se per la data selezionata non esiste ancora una consegna, appare il pulsante **Nuova consegna** — cliccalo per iniziare.
+Pagina principale per registrare i movimenti giornalieri. La pagina si apre da sola sull'ultimo giorno di turno fino a oggi, se non ha ancora una consegna o ce l'ha aperta; altrimenti su oggi. Se non esiste ancora una consegna, appare il pulsante **Nuova consegna** — cliccalo per iniziare. In cima un riquadro avvisa delle altre consegne ancora aperte ("La consegna di … è ancora aperta. Completala ›"). Le consegne passate si aprono da **Storico**.
 
 ## Dati Giornata (Cassa)
 
@@ -34,7 +30,7 @@ La colonna a sinistra mostra la cassa come una somma, calcolata automaticamente 
 - **− Pagato al produttore** — somma dei conti produttore di tutti i movimenti del giorno
 - **= Lasciato in cassa** — trovato + incassato - pagato
 
-Sotto, le **Note della giornata** (con **Salva note** quando cambiano). Lo stato (*Consegna aperta* / *chiusa*) e i pulsanti Chiudi / Riapri / Annulla consegna sono nell'intestazione, accanto a **Cambia data**.
+Sotto, le **Note della giornata** (con **Salva note** quando cambiano). Lo stato (*Consegna aperta* / *chiusa*) e i pulsanti Chiudi / Riapri / Annulla consegna sono nell'intestazione.
 
 ## Registrare un Movimento
 
@@ -44,7 +40,7 @@ Sotto, le **Note della giornata** (con **Salva note** quando cambiano). Lo stato
 4. Il sistema calcola automaticamente eventuali **Lascia credito** o **Lascia debito** e lo mostra nel riquadro finale
 5. Clicca **Salva movimento**
 
-La tabella ha le colonne Partecipante, Conto produttore, Importo saldato, Lascia credito, Lascia debito, Usa credito, Salda debito, Note e la riga **Totale**; gli zeri sono mostrati come "–".
+La tabella ha le colonne Partecipante, Conto produttore, Importo saldato, Lascia credito, Lascia debito, Usa credito, Salda debito, Quota teatro, Note e la riga **Totale**; gli zeri sono mostrati come "–".
 
 > Se il partecipante ha un debito o credito pregressi, il sistema li compensa automaticamente — controlla il riepilogo prima di salvare.
 
@@ -52,7 +48,7 @@ La tabella ha le colonne Partecipante, Conto produttore, Importo saldato, Lascia
 
 ## Chiudere la Consegna
 
-Dopo aver inserito tutti i movimenti clicca **Chiudi consegna** e conferma il riepilogo per bloccare la giornata. Se la cassa è negativa compare l'avviso "Cassa negativa": controlla i movimenti prima di chiudere. Solo un amministratore può riaprirla: in **Storico** con **Riapri consegna**, oppure qui con **Cambia data** e poi **Riapri consegna** nell'intestazione.
+Dopo aver inserito tutti i movimenti clicca **Chiudi consegna** e conferma il riepilogo per bloccare la giornata. Se la cassa è negativa compare l'avviso "Cassa negativa": controlla i movimenti prima di chiudere. Solo un amministratore può riaprirla: in **Storico** con **Riapri consegna**, oppure aprendola da Storico e usando **Riapri consegna** nell'intestazione.
 
 ---
 
@@ -60,7 +56,7 @@ Dopo aver inserito tutti i movimenti clicca **Chiudi consegna** e conferma il ri
 
 Panoramica dei saldi di tutti i partecipanti. **Blu** con "+" = credito, **rosso vino** con "−" = debito, "–" = in pari.
 
-Usa **Cambia data** per vedere i saldi in una data passata. Clicca **Transazioni** per vedere lo storico movimenti di un partecipante.
+Clicca **Transazioni** per vedere lo storico movimenti di un partecipante.
 
 ![Pagina Saldi con tabella partecipanti](screenshots/03-saldi.png){ width=100% }
 
@@ -68,7 +64,7 @@ Usa **Cambia data** per vedere i saldi in una data passata. Clicca **Transazioni
 
 # Storico
 
-Elenco di tutte le consegne in ordine cronologico inverso: per ogni giornata la data, lo stato (Aperta/Chiusa), la cassa a sinistra e la tabella dei movimenti (con la quota teatro pagata quel giorno) e il Totale a destra. Se una giornata è ancora aperta, **Completa consegna** la apre nella pagina Consegna.
+Indice delle consegne dalla più recente, in una tabella con Consegna, Stato, Persone, Trovato, Incassato, Pagato, In cassa e Quota teatro. Clicca una riga per aprire la consegna nella pagina Consegna (il tasto indietro riporta qui); se è ancora aperta, **Completa consegna** la apre allo stesso modo.
 
 ![Pagina Storico](screenshots/05-storico.png){ width=100% }
 
@@ -94,11 +90,11 @@ Ogni semestre (gennaio–giugno, luglio–dicembre) si paga una quota per l'affi
 
 | Funzione | Come accedervi |
 |---|---|
-| Riaprire consegna chiusa | Storico → **Riapri consegna** (accanto alla data), oppure Consegna → **Cambia data** → **Riapri consegna** |
+| Riaprire consegna chiusa | Storico → **Riapri consegna** (sulla riga della consegna) |
 | Eliminare una consegna salvata | Consegna → **Annulla consegna** |
 | Quote teatro: griglia, quote ridotte, cassa teatro | **Teatro** (menu in alto) |
 | Vedere i turni passati | Turni → **Mostra turni passati** |
-| Modificare un saldo | Saldi → **Modifica saldo** (solo data odierna) |
+| Modificare un saldo | Saldi → **Modifica saldo** |
 | Aggiungere partecipanti | Saldi → **+ Aggiungi partecipante** |
 | Modificare utenti | Saldi → **Modifica utente** |
 | Eliminare un utente | Saldi → **Modifica utente** → **Elimina utente** (solo se non ha movimenti né rettifiche di saldo) |

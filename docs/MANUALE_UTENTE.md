@@ -42,7 +42,7 @@ L'applicazione si adatta automaticamente al dispositivo utilizzato:
 - Layout ottimizzato per schermi più grandi
 
 #### Intestazione stagionale e importi
-- Ogni pagina ha un'intestazione scura i cui colori seguono la stagione della data selezionata (autunno set–nov, inverno dic–feb, primavera mar–mag, estate giu–ago), con il disegno di un frutto o di una verdura di stagione che cambia ogni settimana. La riga sopra la data dice "Consegna di oggi" / "Saldi di oggi" per oggi, "Consegna di" / "Saldi al" per un'altra data; l'anno compare solo se non è quello corrente.
+- Ogni pagina ha un'intestazione scura i cui colori seguono la stagione della data mostrata (autunno set–nov, inverno dic–feb, primavera mar–mag, estate giu–ago), con il disegno di un frutto o di una verdura di stagione che cambia ogni settimana. La riga sopra la data dice "Consegna di oggi" / "Saldi di oggi" per oggi, "Consegna di <giorno>" per una consegna di un altro giorno; l'anno compare solo se non è quello corrente.
 - Gli importi sono nel formato italiano ("11,50 €", senza decimali se interi: "8 €"). Nei campi si può scrivere la virgola o il punto; il campo mostra la virgola.
 - Colori dei saldi (non cambiano con la stagione): **blu** con "+" e la parola "credito", **rosso vino** con "−" e la parola "debito", **grigio** "0 € in pari". Nella tabella Saldi del desktop solo l'importo con il segno, o "–".
 
@@ -50,7 +50,9 @@ L'applicazione si adatta automaticamente al dispositivo utilizzato:
 
 ### 1. Consegna - Registrazione Transazioni
 
-La pagina Consegna permette di registrare i movimenti per una data specifica.
+La pagina Consegna permette di registrare i movimenti di una giornata. Dal menu si apre da sola sul giorno giusto: l'ultimo giorno di turno fino a oggi (le settimane segnate "niente consegna" non contano), se quel giorno non ha ancora una consegna o ce l'ha ancora aperta, così il giorno dopo il turno la trovi lì per inserire i movimenti o chiuderla. Se l'ultima consegna è già chiusa si apre su oggi, con **Nuova consegna** (per esempio per una consegna straordinaria). Le consegne passate si aprono da **Storico**.
+
+In cima alla pagina, un riquadro elenca ogni altra consegna ancora aperta ("La consegna di <data> è ancora aperta. Completala ›"); il link la apre.
 
 #### Dati Giornata (Cassa)
 
@@ -80,13 +82,13 @@ La cassa è una somma calcolata automaticamente dal sistema, non si scrive nulla
 
 **Mobile**: la cassa è la riga in cima alla pagina; sotto ci sono lo stato ("Consegna aperta" / "Consegna chiusa") con i link **Chiudi consegna** / **Riapri consegna** (e **Annulla consegna** per gli amministratori) e le Note della giornata.
 
-**Desktop**: la colonna a sinistra contiene la cassa e le note; lo stato e i pulsanti Chiudi / Riapri / Annulla consegna sono nell'intestazione, accanto a **Cambia data**.
+**Desktop**: la colonna a sinistra contiene la cassa e le note; lo stato e i pulsanti Chiudi / Riapri / Annulla consegna sono nell'intestazione.
 
 #### Registrare un Movimento
 
-Se per la data non esiste ancora una consegna, premere **Nuova consegna**.
+Se per il giorno non esiste ancora una consegna, premere **Nuova consegna**.
 
-I movimenti sono elencati sotto **Chi ha ritirato** (mobile) o **Movimenti** (desktop): ogni riga mostra partecipante, conto, pagato e l'esito ("+1 € credito" / "−1 € debito"). Toccare (mobile) o cliccare (desktop) una riga per modificarla. Su desktop la tabella ha le colonne Partecipante, Conto produttore, Importo saldato, Lascia credito, Lascia debito, Usa credito, Salda debito, Note, più la riga **Totale**; gli zeri sono mostrati come "–".
+I movimenti sono elencati sotto **Chi ha ritirato** (mobile) o **Movimenti** (desktop): ogni riga mostra partecipante, conto, pagato e l'esito ("+1 € credito" / "−1 € debito"); su mobile, quando ci sono, anche "salda debito", "usa credito" e "quota teatro". Chi ha pagato solo la quota teatro senza ritirare ha una riga a parte ("solo teatro" su mobile). Toccare (mobile) o cliccare (desktop) una riga per modificarla. Su desktop la tabella ha le colonne Partecipante, Conto produttore, Importo saldato, Lascia credito, Lascia debito, Usa credito, Salda debito, Quota teatro, Note, più la riga **Totale**; gli zeri sono mostrati come "–".
 
 Per registrare un movimento per un partecipante:
 
@@ -148,9 +150,9 @@ Nelle tabelle dei movimenti (Consegna, Storico, Saldi) la colonna **Salda Debito
 Dopo aver registrato tutti i movimenti, è possibile chiudere la consegna:
 
 - **Chiudi consegna**: Blocca tutte le modifiche per la giornata. Qualsiasi utente può chiudere una consegna. Prima di chiudere viene mostrato un riepilogo (movimenti, incassato, pagato, lasciato in cassa) da confermare.
-- **Riapri consegna** (solo amministratori): Sblocca la consegna per permettere modifiche successive. Per una consegna passata: in **Storico**, **Riapri consegna** sotto quella giornata (la riapre e la apre nella pagina Consegna); oppure **Cambia data**, scegli il giorno, poi **Riapri consegna** accanto a "Consegna chiusa".
+- **Riapri consegna** (solo amministratori): Sblocca la consegna per permettere modifiche successive. Per una consegna passata: in **Storico**, **Riapri consegna** sulla riga di quella giornata (la riapre e la apre nella pagina Consegna); oppure aprirla da Storico e usare **Riapri consegna** nell'intestazione.
 
-Quando una consegna è chiusa, lo stato diventa "Consegna chiusa" e non è più possibile modificarla: su mobile l'elenco resta visibile in sola lettura, senza il controllo per aggiungere partecipanti.
+Anche a consegna chiusa l'elenco mostra la quota teatro di ciascuno e il totale "Quote teatro … a parte" della cassa. Quando una consegna è chiusa, lo stato diventa "Consegna chiusa" e non è più possibile modificarla: su mobile l'elenco resta visibile in sola lettura, senza il controllo per aggiungere partecipanti.
 
 #### Salvataggio
 
@@ -158,18 +160,9 @@ Quando una consegna è chiusa, lo stato diventa "Consegna chiusa" e non è più 
 - **Pulsante "Annulla"**: Chiude il modulo senza salvare
 - **Pulsante "Salva note"** (desktop): Appare quando si modificano le note della giornata, permette di salvare solo le note senza dover salvare movimenti
 
-#### Cambio Data con Partecipante Aperto
-
-Funzionalità avanzata per confrontare transazioni:
-- Se si cambia data (**Cambia data**) mentre un partecipante è aperto, il sistema:
-  - Carica automaticamente i dati del partecipante per la nuova data
-  - Mantiene aperto il modulo del partecipante
-  - Aggiorna tutti i campi (saldo, movimenti) per la nuova data
-- Utile per confrontare rapidamente le transazioni dello stesso partecipante in date diverse
-
 ### 2. Saldi - Panoramica Bilanci
 
-La pagina Saldi mostra una panoramica dei saldi di tutti i partecipanti.
+La pagina Saldi mostra una panoramica dei saldi di tutti i partecipanti, sempre a oggi. Lo storico di una persona è in **Transazioni**.
 
 #### Visualizzazione Saldi Attuali
 
@@ -177,7 +170,7 @@ La pagina Saldi mostra una panoramica dei saldi di tutti i partecipanti.
 - **Desktop**: tabella con Partecipante, Username (solo amministratori), Saldo (importo con segno, o "–"), Quota teatro (✗ = uno o più semestri da pagare, ✓ = tutto pagato; l'importo al passaggio del mouse), Ultimo movimento e le azioni come link di testo
 - Colori: **blu** = credito (+), **rosso vino** = debito (−), **grigio** = "0 € in pari"
 
-#### Storico Transazioni
+#### Transazioni
 
 Ogni partecipante può visualizzare il proprio storico movimenti:
 
@@ -190,27 +183,17 @@ Le modifiche manuali del saldo fatte da un amministratore compaiono come **Retti
 
 Tutti gli utenti autenticati possono visualizzare le transazioni di qualsiasi partecipante.
 
-#### Visualizzazione Storica
-
-Per vedere i saldi in una data passata:
-1. Premere **Cambia data** in alto
-2. Selezionare la data desiderata
-3. Il sistema ricalcola automaticamente i saldi come erano in quella data
-
-Questo è utile per:
-- Verificare i saldi in un momento specifico del passato
-- Controllare l'evoluzione dei saldi nel tempo
-
 ### 3. Storico - Consultazione Cronologica
 
 La pagina Storico permette di consultare tutte le consegne registrate.
 
 #### Visualizzazione
 
-- Le consegne sono mostrate in ordine cronologico inverso (più recenti in alto)
-- **Mobile**: ogni consegna mostra la data completa e "aperta/chiusa, in cassa X €"; toccandola si espande con la cassa (Trovato + Incassato − Pagato = In cassa, una voce per riga) e la lista dei partecipanti con l'esito
-- **Desktop**: ogni consegna ha il titolo con la data, l'etichetta Aperta/Chiusa, la colonna della cassa a sinistra e la tabella dei movimenti con la riga Totale a destra
-- Sulle consegne ancora aperte, **Completa consegna** apre quella giornata nella pagina Consegna per aggiungere movimenti o chiuderla; per gli amministratori, sulle consegne chiuse, **Riapri consegna** la riapre e la apre per modificarla
+Lo Storico è un indice: una riga per consegna, in ordine cronologico inverso (più recenti in alto). Non mostra i movimenti: toccando (mobile) o cliccando (desktop) una riga si apre quella consegna nella pagina Consegna, in sola lettura se è chiusa. Il pulsante indietro del browser o del telefono riporta allo Storico.
+
+- **Mobile**: consegne raggruppate per mese; ogni riga mostra la data, l'etichetta aperta/chiusa, le persone, la quota teatro (se c'è) e "in cassa X €", più **Dettaglio ›**. In cima: "Tocca una consegna per vederne il dettaglio."
+- **Desktop**: una tabella con Consegna, Stato, Persone, Trovato, Incassato, Pagato, In cassa, Quota teatro, il link di azione e **Dettaglio ›**. In cima: "Clic su una consegna per vederne il dettaglio."
+- Sulle consegne ancora aperte, **Completa consegna** le apre per aggiungere movimenti o chiuderle; per gli amministratori, sulle consegne chiuse, **Riapri consegna** la riapre e la apre per modificarla
 
 #### Indicatore Note
 
@@ -218,7 +201,7 @@ Quando un movimento ha una nota associata, viene visualizzato un indicatore acca
 
 #### Dettagli Movimento
 
-Per ogni movimento vengono mostrati:
+Aprendo una consegna, per ogni movimento vengono mostrati:
 - **Conto**: Conto produttore (importo della spesa)
 - **Pagato**: Importo saldato dal partecipante
 - **Salda debito**: Eventuale debito saldato
@@ -235,34 +218,7 @@ Solo un amministratore può eliminare una consegna già salvata, con **Annulla c
 - Il sistema ricalcola automaticamente tutti i saldi successivi
 - Verificare attentamente prima di eliminare
 
-### 4. Uso del Calendario
-
-Il calendario è disponibile in tutte le sezioni per facilitare la selezione delle date.
-
-#### Selezione Data
-
-1. Premere **Cambia data**
-2. Utilizzare le frecce per navigare tra i mesi
-3. Cliccare sulla data desiderata, oppure su **Oggi** per tornare alla data di oggi
-
-#### Indicatori Visivi
-
-Il calendario mostra:
-- **Sfondo colorato con sottolineatura**: Date con consegne registrate (legenda "Con consegna")
-- **Evidenziazione**: Data oggi
-- **Selezione**: Data attualmente selezionata
-
-#### Apertura Mese Corrente
-
-Il calendario si apre sempre sul mese corrente per facilitare l'accesso alle date recenti.
-
-#### Persistenza Data
-
-La data selezionata viene mantenuta quando si cambia sezione:
-- Se si seleziona una data in Consegna e si passa a Saldi, la data rimane la stessa
-- Questo facilita la consultazione coerente dei dati attraverso le diverse sezioni
-
-### 5. Gestione Partecipanti
+### 4. Gestione Partecipanti
 
 Solo amministratori, da desktop: Saldi → **Modifica utente**.
 
@@ -272,7 +228,7 @@ Solo amministratori, da desktop: Saldi → **Modifica utente**.
 - Tornando ad **Attivo** l'attesa per il turno riparte da quel giorno
 - Per rivedere i disattivati spuntare **Mostra disattivati** in Saldi (compaiono in grigio)
 
-### 6. Turni
+### 5. Turni
 
 Le consegne sono di martedì. **Turni** elenca le prossime 24 settimane con i due turnisti di ciascuna; la tua riga è segnata **TU**. Etichette: **riunione** (riunione GASS), un giorno diverso dal martedì se la consegna è stata spostata, **niente consegna**, **da coprire** (turnista mancante). Sui tuoi turni puoi scambiare, spostare o lasciare il posto (sotto); le altre modifiche le fanno gli amministratori, da desktop.
 
@@ -299,7 +255,7 @@ Ogni azione chiede conferma e resta nel registro Attività.
 - **Pause**: un periodo senza consegne (ad esempio le feste). Le settimane già scritte nel periodo diventano niente consegna; eliminando la pausa le settimane mancanti si rigenerano, quelle già segnate niente consegna restano tali e si ripristinano da **Giorno**
 - **Mostra turni passati**: la casella sopra la tabella mostra anche le settimane già fatte, in grigio e in sola lettura
 
-### 7. Quota teatro
+### 6. Quota teatro
 
 Ogni gassista paga una quota a semestre (gennaio–giugno, luglio–dicembre) per l'affitto del teatro. I soldi vanno in una **cassa teatro** separata: non entrano nella cassa della consegna.
 
@@ -386,17 +342,9 @@ Il sistema calcola automaticamente tutti i valori. Se i calcoli sembrano errati:
 
 1. Verificare che tutti i movimenti siano stati inseriti correttamente
 2. Controllare lo storico per vedere l'evoluzione dei saldi
-3. Utilizzare la visualizzazione storica per verificare i saldi in date passate
+3. Aprire la consegna da Storico per vedere i movimenti di quel giorno
 
 Se il problema persiste, contattare l'amministratore.
-
-### La Data Si Resetta Quando Cambio Sezione
-
-La data dovrebbe essere mantenuta automaticamente tra le sezioni. Se questo non accade:
-
-1. Verificare che il browser permetta l'uso di localStorage
-2. Cancellare la cache del browser
-3. Contattare l'amministratore se il problema persiste
 
 ### Non Vedo le Righe di Compensazione
 
@@ -412,7 +360,13 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.19.0
+Sistema GASS Pagamenti - Versione 2.23.0
+- **Storico** è un indice con una riga per consegna: toccandola si apre nella pagina Consegna
+- **Consegna** si apre da sola sul giorno giusto, senza calendario; un riquadro avvisa delle altre consegne ancora aperte
+- Quota teatro per persona nell'elenco della consegna, anche a consegna chiusa
+- **Saldi** è sempre a oggi: lo storico di una persona è in **Transazioni**
+
+Versione 2.19.0
 - **Quota teatro**: pagamento alla consegna, situazione in Saldi, pagina **Teatro** per gli amministratori con griglia dei semestri e registro della cassa teatro
 - Turni: gli amministratori possono mostrare i turni passati
 
