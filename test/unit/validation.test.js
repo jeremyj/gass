@@ -20,6 +20,11 @@ describe('validateConsegnaPayload', () => {
     expect(validateConsegnaPayload(payload({ trovatoInCassa: -5 }, []), saldo(0))).toBeNull();
   });
 
+  it('rejects a well-formed date that does not exist', () => {
+    expect(validateConsegnaPayload(payload({ data: '2026-02-31' }), saldo(0))).toMatch(/Data/);
+    expect(validateConsegnaPayload(payload({ data: '2026-13-01' }), saldo(0))).toMatch(/Data/);
+  });
+
   it('rejects a malformed date', () => {
     expect(validateConsegnaPayload(payload({ data: '30/09/2026' }), saldo(0))).toMatch(/Data/);
   });

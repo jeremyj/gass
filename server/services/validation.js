@@ -1,6 +1,8 @@
 // Validation of POST /api/consegna payloads. Every movimento is replayed into the saldo
 // ledger, so a bad amount would corrupt every later saldo of that participant.
 
+const { isDateString } = require('./turni-schedule');
+
 const MOVIMENTO_AMOUNTS = ['contoProduttore', 'importoSaldato', 'usaCredito',
                            'debitoLasciato', 'creditoLasciato', 'debitoSaldato'];
 const CASSA_AMOUNTS = ['trovatoInCassa', 'pagatoProduttore', 'lasciatoInCassa'];
@@ -12,7 +14,7 @@ const isOptionalAmount = v => v == null || (isOptionalNumber(v) && v >= 0);
 // Returns an Italian error message, or null when the payload is valid.
 // saldoBefore(id) gives the saldo the participant's consegna form started from.
 function validateConsegnaPayload(body, saldoBefore) {
-  if (!body || typeof body.data !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(body.data)) {
+  if (!body || !isDateString(body.data)) {
     return 'Data non valida';
   }
   for (const field of CASSA_AMOUNTS) {

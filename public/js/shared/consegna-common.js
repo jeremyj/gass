@@ -12,7 +12,8 @@
 // Date to open: ?data= from Storico, else the server's pick (last turno to finish, or today)
 async function dataIniziale() {
   const fromUrl = new URLSearchParams(location.search).get('data');
-  if (/^\d{4}-\d{2}-\d{2}$/.test(fromUrl || '')) return fromUrl;
+  // A real yyyy-mm-dd only: 2026-02-31 would roll over to March
+  if (fromUrl && toLocalDateString(new Date(`${fromUrl}T00:00:00`)) === fromUrl) return fromUrl;
   try {
     return (await API.get('/api/consegna/apertura')).data;
   } catch (error) {
