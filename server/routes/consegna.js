@@ -5,6 +5,7 @@ const { calculateTrovatoInCassa, roundToCents } = require('../services/calculati
 const { saldoBeforeConsegna, recalculateSaldo } = require('../services/saldi');
 const { validateConsegnaPayload } = require('../services/validation');
 const { logActivity } = require('../services/activity');
+const { quotePerPersona } = require('../services/teatro');
 
 const router = express.Router();
 
@@ -53,6 +54,11 @@ router.get('/:date', (req, res) => {
       WHERE m.consegna_id = ?
     `).all(consegna.id);
 
+    // Quota teatro paid in this consegna: on the payer's movimento, or as a row of its own
+    const quote = quotePerPersona(db, consegna.id);
+    movimenti.forEach(m => { m.teatro = quote.find(q => q.user_id === m.partecipante_id)?.importo || 0; });
+    const teatroExtra = quote.filter(q => !movimenti.some(m => m.partecipante_id === q.user_id));
+
     console.log(`[CONSEGNA] ${timestamp} - Retrieved ${movimenti.length} movimenti for consegna ${consegna.id}`);
 
     console.log(`[CONSEGNA] ${timestamp} - Successfully processed consegna for ${date}`);
@@ -66,6 +72,7 @@ router.get('/:date', (req, res) => {
         chiusa: consegna.chiusa === 1
       },
       movimenti,
+      teatroExtra,
       saldiBefore,
       lasciatoPrecedente: previousConsegna?.lasciato_in_cassa ?? null
     });

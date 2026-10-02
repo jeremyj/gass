@@ -384,3 +384,30 @@ describe('POST /api/consegna/ — validation', () => {
     expect(m).toEqual({ conto_produttore: 10, importo_saldato: 10 });
   });
 });
+
+describe('GET /api/consegna/:date quote teatro', () => {
+  it('puts each quota on the payer movimento, or in teatroExtra without one', async () => {
+    const a = createUser(db, { username: 'ta', displayName: 'Anna' });
+    const b = createUser(db, { username: 'tb', displayName: 'Bruno' });
+    const c = createConsegna(db, { data: '2026-03-03' });
+    createMovimento(db, { consegnaId: c, partecipanteId: a });
+    const pay = db.prepare('INSERT INTO teatro_pagamenti (user_id, data, importo, consegna_id) VALUES (?, ?, ?, ?)');
+    pay.run(a, '2026-03-03', 10, c);
+    pay.run(a, '2026-03-03', 5, c);
+    pay.run(b, '2026-03-03', 15, c);
+
+    const res = await adminAgent.get('/api/consegna/2026-03-03');
+    expect(res.body.movimenti[0].teatro).toBe(15);
+    expect(res.body.teatroExtra).toEqual([{ user_id: b, nome: 'Bruno', importo: 15 }]);
+  });
+
+  it('gives teatro 0 and an empty teatroExtra without payments', async () => {
+    const a = createUser(db, { username: 'ta', displayName: 'Anna' });
+    const c = createConsegna(db, { data: '2026-03-03' });
+    createMovimento(db, { consegnaId: c, partecipanteId: a });
+
+    const res = await adminAgent.get('/api/consegna/2026-03-03');
+    expect(res.body.movimenti[0].teatro).toBe(0);
+    expect(res.body.teatroExtra).toEqual([]);
+  });
+});

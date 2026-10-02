@@ -113,6 +113,17 @@ function quoteDellaConsegna(db, consegnaId) {
   return round(db.prepare('SELECT COALESCE(SUM(importo), 0) AS t FROM teatro_pagamenti WHERE consegna_id = ?').get(consegnaId).t);
 }
 
+// Quotas paid in a consegna, one row per person
+function quotePerPersona(db, consegnaId) {
+  return db.prepare(`
+    SELECT t.user_id, u.display_name AS nome, ROUND(SUM(t.importo), 2) AS importo
+    FROM teatro_pagamenti t JOIN users u ON u.id = t.user_id
+    WHERE t.consegna_id = ?
+    GROUP BY t.user_id
+    ORDER BY u.display_name
+  `).all(consegnaId);
+}
+
 function setNota(db, userId, nota) {
   if (!nomeDi(db, userId)) return { error: 'Partecipante non trovato' };
   db.prepare('UPDATE users SET teatro_nota = ? WHERE id = ?').run(String(nota || '').trim() || null, userId);
@@ -185,5 +196,5 @@ function riepilogo(db) {
 
 module.exports = {
   DEFAULT_QUOTA, ensureSemestre, setQuota, setDovuto, statoTeatro, residui, registraPagamento, deletePagamento,
-  addCassa, saldoCassa, quoteDellaConsegna, setNota, riepilogo, importFoglio
+  addCassa, saldoCassa, quoteDellaConsegna, quotePerPersona, setNota, riepilogo, importFoglio
 };
