@@ -307,7 +307,7 @@ Ogni gassista paga una quota a semestre (gennaio–giugno, luglio–dicembre) pe
 
 Nella scheda del partecipante, se ha quote da pagare, c'è il tasto **Quota teatro** con il totale dovuto. Toccandolo si vedono i semestri dovuti, dal più vecchio. Scrivi l'**importo versato**: copre i semestri in ordine; se non basta l'ultimo resta parziale, se avanza va in anticipo sui semestri successivi. **Registra quota** chiede conferma. La quota si registra sempre dentro una consegna aperta: se la consegna è appena iniziata e non ancora salvata, viene salvata in quel momento. Il pagamento è indipendente dal movimento: si può pagare la quota senza fare la spesa; se il riquadro è aperto e non hai registrato niente, **Salva movimento** chiede conferma. Con la cassa compare **Quote teatro di questa consegna, a parte dalla cassa**: il totale delle quote registrate in questa consegna, che non entrano nella sua cassa. Annullando la consegna si annullano anche le sue quote.
 
-In **Saldi** ogni partecipante ha la sua situazione: **in pari**, **deve** (con l'importo) o **anticipo**; in alto il totale delle quote mancanti.
+In **Saldi** ogni partecipante ha la sua situazione: su mobile, sotto il nome, **deve** (con l'importo) o **anticipo**; su desktop, nella colonna **Quota teatro**, ✗ se deve ancora qualche semestre e ✓ se ha pagato tutto (l'importo al passaggio del mouse). In alto il totale delle quote mancanti.
 
 #### Pagina Teatro (amministratori, desktop)
 
