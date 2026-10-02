@@ -39,13 +39,12 @@ function createParticipantRow(p) {
   const row = document.createElement('tr');
   const saldo = saldoLabel(p.saldo);
   const adminBadge = p.is_admin ? '<span class="admin-badge">admin</span>' : '';
-  const statoBadge = p.stato === 'attivo' ? '' : `<span class="admin-badge">${p.stato}</span>`;
 
   const canEdit = isAdmin();
-  if (p.stato !== 'attivo') row.classList.add('off');
+  if (p.stato === 'disattivato') row.classList.add('off');
 
   row.innerHTML = `
-    <td class="nm">${escapeHtml(p.nome)}${statoBadge}</td>
+    <td class="nm">${escapeHtml(p.nome)}${statoBadge(p.stato)}</td>
     ${isAdmin() ? `<td class="left">${escapeHtml(p.username) || '–'}${adminBadge}</td>` : ''}
     <td>
       <span id="saldo-view-${p.id}" class="${saldo.cls ? `pill ${saldo.cls}` : 'mute'}">${saldo.cls ? saldo.amount : '–'}</span>
@@ -338,13 +337,13 @@ async function submitEditUser() {
     const username = document.getElementById('edit-user-username').textContent;
     const saldo = saldoLabel(participants.find(p => p.id === editingUserId)?.saldo || 0);
     const ok = await confirmDialog({
-      title: stato === 'sospeso' ? "Sospendere l'utente?" : "Disattivare l'utente?",
+      title: stato === 'sospeso' ? 'Togliere dai turni?' : "Disattivare l'utente?",
       message: (stato === 'sospeso'
-        ? 'Non farà più turni; i suoi turni nelle prossime 24 settimane restano da coprire.'
+        ? 'Non farà più turni; i suoi turni futuri restano da coprire.'
         : 'Non comparirà più negli elenchi e non potrà accedere; i suoi turni futuri restano da coprire.')
         + (saldo.cls && stato === 'disattivato' ? ` Attenzione: ha ancora ${saldo.amount} di ${saldo.word}.` : ''),
       details: [['Utente', username], ['Saldo', `${saldo.amount} ${saldo.word}`]],
-      confirmText: stato === 'sospeso' ? 'Sospendi' : 'Disattiva utente',
+      confirmText: stato === 'sospeso' ? 'Togli dai turni' : 'Disattiva utente',
       danger: stato === 'disattivato'
     });
     if (!ok) return;

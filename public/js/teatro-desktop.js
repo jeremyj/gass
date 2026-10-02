@@ -15,8 +15,8 @@ function cellHtml(p, s) {
   return `<td class="c"><button type="button" class="g ${paid ? 'p' : 'n'}" ${click} title="${formatNumber(r.pagato)}/${formatEuro(r.dovuto)}">${paid ? '✓' : '–'}</button></td>`;
 }
 
-// Same order as Saldi: attivi, then sospesi, then disattivati, each alphabetical
-const STATO_ORDER = { attivo: 0, sospeso: 1, disattivato: 2 };
+// Same order as Saldi: attivi and "no turni" (sospeso), then disattivati, each alphabetical
+const STATO_ORDER = { attivo: 0, sospeso: 0, disattivato: 1 };
 
 // Only the last 2 semesters unless "Mostra semestri precedenti" is ticked
 const RECENT_SEMESTRI = 2;
@@ -29,8 +29,8 @@ function renderGrid() {
   document.getElementById('teatro-head').innerHTML = `<tr><th class="left">Gassista</th>${semestri.map(s =>
     `<th class="c"><button type="button" class="link-btn" onclick="editQuota('${s.semestre}')" title="Cambia la quota">${escapeHtml(s.label)}<br><small>${formatEuro(s.quota)}</small></button></th>`).join('')}<th class="left">Note</th></tr>`;
   document.getElementById('teatro-body').innerHTML = persone.map(p => `
-    <tr class="${p.stato === 'attivo' ? '' : 'off'}">
-      <td class="nm">${escapeHtml(p.nome)}${p.stato === 'attivo' ? '' : `<span class="admin-badge">${p.stato}</span>`}</td>
+    <tr class="${p.stato === 'disattivato' ? 'off' : ''}">
+      <td class="nm">${escapeHtml(p.nome)}${statoBadge(p.stato)}</td>
       ${semestri.map(s => cellHtml(p, s)).join('')}
       <td><input type="text" class="nota-in" value="${escapeHtml(p.nota || '')}" placeholder="nota" onchange="saveNota(${p.id}, this.value)"></td>
     </tr>`).join('');
