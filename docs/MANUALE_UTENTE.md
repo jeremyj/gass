@@ -150,7 +150,7 @@ Nelle tabelle dei movimenti (Consegna, Storico, Saldi) la colonna **Salda Debito
 Dopo aver registrato tutti i movimenti, è possibile chiudere la consegna:
 
 - **Chiudi consegna**: Blocca tutte le modifiche per la giornata. Qualsiasi utente può chiudere una consegna. Prima di chiudere viene mostrato un riepilogo (movimenti, incassato, pagato, lasciato in cassa) da confermare.
-- **Riapri consegna** (solo amministratori): Sblocca la consegna per permettere modifiche successive. Per una consegna passata: in **Storico**, **Riapri consegna** sulla riga di quella giornata (la riapre e la apre nella pagina Consegna); oppure aprirla da Storico e usare **Riapri consegna** nell'intestazione.
+- **Riapri consegna** (solo amministratori): Sblocca la consegna per permettere modifiche successive. Per una consegna passata: aprirla da **Storico** e usare **Riapri consegna** nell'intestazione.
 
 Anche a consegna chiusa l'elenco mostra la quota teatro di ciascuno e il totale "Quote teatro … a parte" della cassa. Quando una consegna è chiusa, lo stato diventa "Consegna chiusa" e non è più possibile modificarla: su mobile l'elenco resta visibile in sola lettura, senza il controllo per aggiungere partecipanti.
 
@@ -167,7 +167,7 @@ La pagina Saldi mostra una panoramica dei saldi di tutti i partecipanti, sempre 
 #### Visualizzazione Saldi Attuali
 
 - **Mobile**: in cima due totali ("Crediti, N persone +X €" e "Debiti, N persone −X €"), poi la lista **Partecipanti**
-- **Desktop**: tabella con Partecipante, Username (solo amministratori), Saldo (importo con segno, o "–"), Quota teatro (✗ = uno o più semestri da pagare, ✓ = tutto pagato; l'importo al passaggio del mouse), Ultimo movimento e le azioni come link di testo
+- **Desktop**: tabella con Partecipante, Username (solo amministratori), Saldo (importo con segno, o "–"), Quota teatro (✗ = uno o più semestri da pagare, ✓ = tutto pagato, – = nessuna quota questo semestre, ad esempio chi è "no turni"; l'importo al passaggio del mouse), Ultimo movimento e le azioni come link di testo
 - Colori: **blu** = credito (+), **rosso vino** = debito (−), **grigio** = "0 € in pari"
 
 #### Transazioni
@@ -191,10 +191,10 @@ La pagina Storico permette di consultare tutte le consegne registrate.
 
 Lo Storico è un indice: una riga per consegna, in ordine cronologico inverso (più recenti in alto). Non mostra i movimenti: toccando (mobile) o cliccando (desktop) una riga si apre quella consegna nella pagina Consegna, in sola lettura se è chiusa. Il pulsante indietro del browser o del telefono riporta allo Storico.
 
-- **Mobile**: consegne raggruppate per mese ("Ottobre 2026"); ogni riga mostra il giorno, l'etichetta aperta/chiusa, le persone, la quota teatro (se c'è) e "in cassa X €", più **Dettaglio**. In cima: "Tocca una consegna per vederne il dettaglio."
-- **Desktop**: una tabella con Consegna, Stato, Persone, Trovato, Incassato, Pagato, In cassa, Quota teatro, **Riapri consegna** (amministratori) e **Dettaglio**. In cima: "Clic su una consegna per vederne il dettaglio."
+- **Mobile**: consegne raggruppate per mese ("Ottobre 2026"); ogni riga mostra il giorno, l'etichetta aperta/chiusa, le persone, la quota teatro (se c'è) e "in cassa X €". In cima: "Tocca una consegna per vederne il dettaglio" (per gli amministratori "… o riaprirla").
+- **Desktop**: una tabella con Consegna, Stato, Persone, Trovato, Incassato, Pagato, In cassa, Quota teatro. In cima: "Clic su una consegna per vederne il dettaglio" (per gli amministratori "… o riaprirla").
 - Una cassa negativa è in rosso, come nella pagina Consegna
-- Per gli amministratori, sulle consegne chiuse, **Riapri consegna** la riapre e la apre per modificarla
+- Per riaprire una consegna chiusa (amministratori): aprirla e usare **Riapri consegna**
 
 #### Indicatore Note
 
@@ -268,12 +268,12 @@ Ogni gassista paga una quota a semestre (gennaio–giugno, luglio–dicembre) pe
 
 Nella scheda del partecipante, se ha quote da pagare, c'è il tasto **Quota teatro** con il totale dovuto. Toccandolo si vedono i semestri dovuti, dal più vecchio. Scrivi l'**importo versato**: copre i semestri in ordine; se non basta l'ultimo resta parziale, se avanza va in anticipo sui semestri successivi. **Registra quota** chiede conferma. La quota si registra sempre dentro una consegna aperta: se la consegna è appena iniziata e non ancora salvata, viene salvata in quel momento. Il pagamento è indipendente dal movimento: si può pagare la quota senza fare la spesa; se il riquadro è aperto e non hai registrato niente, **Salva movimento** chiede conferma. Con la cassa compare **Quote teatro di questa consegna, a parte dalla cassa**: il totale delle quote registrate in questa consegna, che non entrano nella sua cassa. Annullando la consegna si annullano anche le sue quote.
 
-In **Saldi** ogni partecipante ha la sua situazione: su mobile, sotto il nome, **deve** (con l'importo) o **anticipo**; su desktop, nella colonna **Quota teatro**, ✗ se deve ancora qualche semestre e ✓ se ha pagato tutto (l'importo al passaggio del mouse). In alto il totale delle quote mancanti.
+In **Saldi** ogni partecipante ha la sua situazione: su mobile, sotto il nome, **deve** (con l'importo) o **anticipo**; su desktop, nella colonna **Quota teatro**, ✗ se deve ancora qualche semestre, ✓ se ha pagato tutto e – se questo semestre non ha quota (l'importo al passaggio del mouse). In alto il totale delle quote mancanti.
 
 #### Pagina Teatro (amministratori, desktop)
 
 - In alto: quanto c'è **nel bussolotto** (cassa teatro), le quote del semestre in corso, le quote mancanti
-- La **griglia** gassisti × semestri (gli ultimi due; **Mostra semestri precedenti** per vedere quelli più vecchi): righe in ordine alfabetico, i disattivati in fondo; in ogni casella **✓** verde = pagato, **–** rosso = manca qualcosa (versato/dovuto al passaggio del mouse), grigio **0** = non dovuto, grigio **–** = non era nel GASS. Clic su una casella per cambiare quanto deve: una quota ridotta (ad esempio chi entra a metà semestre), **Non dovuto** o **Non era nel GASS**
+- La **griglia** gassisti × semestri (gli ultimi due; **Mostra semestri precedenti** per vedere quelli più vecchi): righe in ordine alfabetico, i disattivati in fondo; in ogni casella **✓** verde = pagato, **✗** rosso = manca qualcosa (versato/dovuto al passaggio del mouse), grigio **–** = non dovuto o non era nel GASS. Clic su una casella per cambiare quanto deve: una quota ridotta (ad esempio chi entra a metà semestre), **Non dovuto** o **Non era nel GASS**
 - Clic sull'intestazione di un semestre per cambiarne la **quota**: vale per chi ha la quota piena, le ridotte restano. Un semestre nuovo parte dalla quota dell'ultimo e la devono tutti gli attivi; i "no turni" no
 - **Note** per persona, come nel vecchio foglio
 - **Registro cassa teatro**: le quote pagate (con la × per eliminare un pagamento sbagliato) e le voci aggiunte a mano, ad esempio l'affitto versato (uscita) con chi l'ha portato
@@ -365,7 +365,11 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.24.0
+Sistema GASS Pagamenti - Versione 2.24.1
+- Teatro: nella griglia ✗ = da pagare, – = non dovuto; in Saldi (desktop) – per chi non ha quota questo semestre
+- Storico: tolti i link **Dettaglio** e **Riapri consegna** dalle righe; si apre la consegna toccandola, e lì c'è **Riapri consegna**
+
+Versione 2.24.0
 - **Turni**: da desktop tutti modificano tutti i turni (nomi e **Giorno**); pause, generazione automatica e note restano agli amministratori
 - Turni: prossimi 6 mesi; **Mostra turni passati** (ultimi 3 mesi) per tutti, anche su mobile
 - Lo stato **Sospeso** si chiama **No turni**: in Saldi e Teatro non è più in grigio, solo un'etichetta accanto al nome

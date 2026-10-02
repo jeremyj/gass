@@ -24,7 +24,7 @@ GASS Pagamenti is a financial management system for tracking deliveries, cash mo
 RESTful API with the following endpoints:
 
 ```
-GET    /api/participants              - Retrieve all participants with current balances
+GET    /api/participants              - Retrieve all participants with current balances, `teatro_residuo` (owed, negative = advance) and `teatro_dovuto` (current semester quota, 0 = none)
 GET    /api/participants/:id/transactions - Ledger (movimenti + rettifiche) with running saldo (any authenticated user)
 GET    /api/consegna/apertura         - {data, aperte}: date the Consegna page opens on, all open consegne (declared before /:date)
 GET    /api/consegna/:date            - Delivery data for a date; each movimento has `teatro`, plus `teatroExtra` [{user_id, nome, importo}] for quota-only payers
@@ -391,7 +391,7 @@ These fields are always disabled to prevent manual editing and ensure data integ
 
 ### 3. Storico (Historical Records)
 
-An index: one row per consegna, newest first (`GET /api/storico`). Mobile groups rows by month; desktop is one table with the whole cassa (trovato, incassato, pagato, in cassa) and the quota teatro total. A row opens the consegna on the Consegna page via `openConsegnaOn(date)` → `consegnaHref(date)` = `/consegna?data=yyyy-mm-dd`. `storicoActionsHtml` adds a real `<a class="det">Dettaglio</a>` to that URL (keyboard, new tab; the `<tr>`/`<li>` onclick is only a pointer shortcut) and, for admins on closed ones, "Riapri consegna" (`riapriConsegna`); both stop the click from bubbling. Negative cassa amounts use `formatCassa` (typographic minus) and the `db` class.
+An index: one row per consegna, newest first (`GET /api/storico`). Mobile groups rows by month; desktop is one table with the whole cassa (trovato, incassato, pagato, in cassa) and the quota teatro total. A row opens the consegna on the Consegna page via `openConsegnaOn(date)` → `consegnaHref(date)` = `/consegna?data=yyyy-mm-dd`. The date is a real link to that URL (`storicoDateLink`, `.row-link`: keyboard, new tab; the `<tr>`/`<li>` onclick is only a pointer shortcut). No per-row actions since 2.24.1: reopening is done on the Consegna page; `storicoHint` writes the instruction above the list ("o riaprirla" for admins). Negative cassa amounts use `formatCassa` (typographic minus) and the `db` class.
 
 ### 4. Consegna page date
 

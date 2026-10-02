@@ -40,7 +40,7 @@ In cima la riga della cassa mostra i totali della giornata come una somma: Trova
 
 ## Chiudere la Consegna
 
-Dopo aver salvato almeno un movimento, sotto la riga della cassa compare il link **Chiudi consegna** — cliccalo e conferma il riepilogo per bloccare la giornata. Solo un amministratore può riaprirla: in **Storico** con **Riapri consegna**, oppure aprendola da Storico e usando **Riapri consegna** qui. Se la cassa è negativa compare l'avviso "Cassa negativa": controlla i movimenti prima di chiudere.
+Dopo aver salvato almeno un movimento, sotto la riga della cassa compare il link **Chiudi consegna** — cliccalo e conferma il riepilogo per bloccare la giornata. Solo un amministratore può riaprirla: la apre da **Storico** e usa **Riapri consegna** qui. Se la cassa è negativa compare l'avviso "Cassa negativa": controlla i movimenti prima di chiudere.
 
 ![Conferma di chiusura con il riepilogo](screenshots/m02c-chiudi.png){ width=45% }
 
@@ -58,7 +58,7 @@ In cima i totali dei crediti e dei debiti, poi la lista **Partecipanti** con il 
 
 # Storico
 
-Indice delle consegne, raggruppate per mese e dalla più recente: per ognuna data, stato (aperta/chiusa), persone, quota teatro e cassa. Tocca una consegna o **Dettaglio** per aprirla nella pagina Consegna (il tasto indietro riporta qui). Una cassa negativa è in rosso.
+Indice delle consegne, raggruppate per mese e dalla più recente: per ognuna data, stato (aperta/chiusa), persone, quota teatro e cassa. Tocca una consegna per aprirla nella pagina Consegna (il tasto indietro riporta qui). Una cassa negativa è in rosso.
 
 ![Pagina Storico](screenshots/m05-storico.png){ width=45% }
 
@@ -82,6 +82,6 @@ Ogni semestre (gennaio–giugno, luglio–dicembre) si paga una quota per l'affi
 
 | Funzione | Come accedervi |
 |---|---|
-| Riaprire consegna chiusa | Storico → **Riapri consegna** (sulla riga della consegna) |
+| Riaprire consegna chiusa | Storico → tocca la consegna → **Riapri consegna** |
 | Eliminare una consegna salvata | Consegna → **Annulla consegna** |
 | Modificare un saldo | Saldi → tocca il nome → **Modifica saldo** |

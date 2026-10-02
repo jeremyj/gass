@@ -48,7 +48,7 @@ La tabella ha le colonne Partecipante, Conto produttore, Importo saldato, Lascia
 
 ## Chiudere la Consegna
 
-Dopo aver inserito tutti i movimenti clicca **Chiudi consegna** e conferma il riepilogo per bloccare la giornata. Se la cassa è negativa compare l'avviso "Cassa negativa": controlla i movimenti prima di chiudere. Solo un amministratore può riaprirla: in **Storico** con **Riapri consegna**, oppure aprendola da Storico e usando **Riapri consegna** nell'intestazione.
+Dopo aver inserito tutti i movimenti clicca **Chiudi consegna** e conferma il riepilogo per bloccare la giornata. Se la cassa è negativa compare l'avviso "Cassa negativa": controlla i movimenti prima di chiudere. Solo un amministratore può riaprirla: la apre da **Storico** e usa **Riapri consegna** nell'intestazione.
 
 ---
 
@@ -64,7 +64,7 @@ Clicca **Transazioni** per vedere lo storico movimenti di un partecipante.
 
 # Storico
 
-Indice delle consegne dalla più recente, in una tabella con Consegna, Stato, Persone, Trovato, Incassato, Pagato, In cassa e Quota teatro. Clicca una riga o **Dettaglio** per aprire la consegna nella pagina Consegna (il tasto indietro riporta qui). Una cassa negativa è in rosso.
+Indice delle consegne dalla più recente, in una tabella con Consegna, Stato, Persone, Trovato, Incassato, Pagato, In cassa e Quota teatro. Clicca una riga per aprire la consegna nella pagina Consegna (il tasto indietro riporta qui). Una cassa negativa è in rosso.
 
 ![Pagina Storico](screenshots/05-storico.png){ width=100% }
 
@@ -82,7 +82,7 @@ Gli amministratori mettono in pausa la **Generazione automatica dei turni** (in 
 
 # Quota teatro
 
-Ogni semestre (gennaio–giugno, luglio–dicembre) si paga una quota per l'affitto del teatro, in una cassa separata da quella della consegna. Nella scheda del partecipante, **Quota teatro** mostra i semestri dovuti: scrivi l'importo versato (copre i semestri dal più vecchio; quello che avanza è un anticipo) e **Registra quota**. In **Saldi** la colonna **Quota teatro** ha ✓ per chi ha pagato tutto e ✗ per chi deve ancora qualche semestre.
+Ogni semestre (gennaio–giugno, luglio–dicembre) si paga una quota per l'affitto del teatro, in una cassa separata da quella della consegna. Nella scheda del partecipante, **Quota teatro** mostra i semestri dovuti: scrivi l'importo versato (copre i semestri dal più vecchio; quello che avanza è un anticipo) e **Registra quota**. In **Saldi** la colonna **Quota teatro** ha ✓ per chi ha pagato tutto, ✗ per chi deve ancora qualche semestre e – per chi questo semestre non ha quota.
 
 ---
 
@@ -90,7 +90,7 @@ Ogni semestre (gennaio–giugno, luglio–dicembre) si paga una quota per l'affi
 
 | Funzione | Come accedervi |
 |---|---|
-| Riaprire consegna chiusa | Storico → **Riapri consegna** (sulla riga della consegna) |
+| Riaprire consegna chiusa | Storico → clicca la consegna → **Riapri consegna** |
 | Eliminare una consegna salvata | Consegna → **Annulla consegna** |
 | Quote teatro: griglia, quote ridotte, cassa teatro | **Teatro** (menu in alto) |
 | Modificare un saldo | Saldi → **Modifica saldo** |
