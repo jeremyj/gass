@@ -681,6 +681,9 @@ b.th { color: var(--teatro); }
 .turni-t td.nm { text-align: left; }
 .auto-switch { display: flex; align-items: center; gap: 8px; justify-content: flex-end; margin: 0 0 12px; font-size: 16px; color: var(--salvia); cursor: pointer; }
 .auto-switch.initially-hidden { display: none; }
+/* Mobile Turni: left on the month headings' edge, right above the agenda where past weeks appear */
+.passati-m { justify-content: flex-start; min-height: 44px; margin: 10px 0 -8px; padding: 0 4px; font-size: 17px; }
+.passati-m input { width: 22px; height: 22px; margin: 0; accent-color: var(--s-acc); }
 .turni-switches { display: flex; justify-content: flex-end; gap: 24px; }
 .turni-t tr.past td { color: var(--salvia); background: #f7f8f6; }
 .turni-note { background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; padding: 12px 16px; margin: 0 0 14px; }
