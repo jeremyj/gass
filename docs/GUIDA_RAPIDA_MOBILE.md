@@ -19,7 +19,7 @@ Per cambiare la password in seguito vai su **https://auth.x86.it**, nelle impost
 
 # Consegna
 
-La pagina si apre da sola sull'ultimo giorno di turno fino a oggi, se non ha ancora una consegna o ce l'ha aperta; altrimenti su oggi. Se non esiste ancora una consegna, appare il pulsante **Nuova consegna**. In cima un riquadro avvisa delle altre consegne ancora aperte ("La consegna di … è ancora aperta. Completala ›"). Le consegne passate si aprono da **Storico**.
+La pagina si apre da sola sull'ultimo giorno di turno fino a oggi, se non ha ancora una consegna o ce l'ha aperta; altrimenti su oggi. Se non esiste ancora una consegna, appare il pulsante **Nuova consegna**. In cima un riquadro avvisa delle altre consegne ancora aperte ("Sono ancora aperte le consegne di …", con le date come link). Le consegne passate si aprono da **Storico**.
 
 In cima la riga della cassa mostra i totali della giornata come una somma: Trovato, + Incassato, − Pagato, = In cassa — tutti calcolati automaticamente, non si inserisce nulla. Sotto, lo stato (*Consegna aperta* / *Consegna chiusa*) e le *Note della giornata*.
 
@@ -58,7 +58,7 @@ In cima i totali dei crediti e dei debiti, poi la lista **Partecipanti** con il 
 
 # Storico
 
-Indice delle consegne, raggruppate per mese e dalla più recente: per ognuna data, stato (aperta/chiusa), persone, quota teatro e cassa. Tocca una consegna per aprirla nella pagina Consegna (il tasto indietro riporta qui); se è ancora aperta, **Completa consegna** la apre allo stesso modo.
+Indice delle consegne, raggruppate per mese e dalla più recente: per ognuna data, stato (aperta/chiusa), persone, quota teatro e cassa. Tocca una consegna o **Dettaglio** per aprirla nella pagina Consegna (il tasto indietro riporta qui). Una cassa negativa è in rosso.
 
 ![Pagina Storico](screenshots/m05-storico.png){ width=45% }
 

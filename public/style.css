@@ -369,7 +369,7 @@ tr.off td { opacity: .6; }
 .consegna-closed .add-select { display: none; }
 
 /* Consegna page: other consegne still open */
-.avviso { background: #FFF6E5; border: 1.5px solid var(--s-acc); border-left-width: 5px; border-radius: 10px; padding: 10px 14px; margin: 14px 0; font-size: 17px; }
+.avviso { background: var(--s-tint); border: 1.5px solid var(--s-acc); border-left-width: 5px; border-radius: 10px; padding: 10px 14px; margin: 14px 0; font-size: 17px; }
 .avviso p { margin: 4px 0; }
 .mov-list > li.inert { cursor: default; }
 
@@ -512,10 +512,11 @@ b.th { color: var(--teatro); }
 /* ===== STORICO (mobile) ===== */
 
 .storico-list { padding-top: 16px; }
-.storico-month { font-size: 16px; font-weight: 800; color: var(--salvia); text-transform: uppercase; letter-spacing: .06em; margin: 18px 4px 6px; }
+.storico-month { font-size: 18px; font-weight: 800; color: var(--salvia); margin: 18px 4px 6px; }
 .storico-list .mov-list { margin: 0; }
 .storico-acts { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 12px; }
-.det { color: var(--s-deep); font-weight: 800; white-space: nowrap; }
+.det { color: var(--s-deep); font-weight: 800; white-space: nowrap; text-underline-offset: 3px; }
+.storico-acts .det { margin-left: auto; }
 
 /* ===== MODALS ===== */
 
@@ -598,14 +599,14 @@ b.th { color: var(--teatro); }
   .t td { padding: 10px; text-align: right; border-bottom: 1px solid var(--riga); }
   .t th:first-child, .t td:first-child { text-align: left; padding-left: 16px; }
   .t .left, .t .nt { text-align: left; }
-  .t td.nt { color: var(--salvia); font-size: 18px; max-width: 220px; }
+  .t td.nt { color: var(--salvia); font-size: 18px; min-width: 160px; max-width: 220px; }
   .t td.nm { font-weight: 700; }
   .t td.mute, .t span.mute { color: #B7BFB9; }
   .t td.cr, .t td.db { font-weight: 700; }
   .t tbody tr.clickable:hover td { background: var(--s-tint); }
   .t tfoot td { font-weight: 700; border-bottom: 0; background: #F7F8F6; }
   .t .lk { white-space: nowrap; }
-  .t .lk .link-btn { margin-left: 14px; }
+  .t .lk .link-btn, .t .lk .det { margin-left: 14px; }
   .saldo-input { width: 8ch; padding: 4px 8px; text-align: right; }
 
   #selected-participants:not(:empty) { margin-top: 18px; }

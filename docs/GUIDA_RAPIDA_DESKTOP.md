@@ -19,7 +19,7 @@ Per cambiare la password in seguito vai su **https://auth.x86.it**, nelle impost
 
 # Consegna
 
-Pagina principale per registrare i movimenti giornalieri. La pagina si apre da sola sull'ultimo giorno di turno fino a oggi, se non ha ancora una consegna o ce l'ha aperta; altrimenti su oggi. Se non esiste ancora una consegna, appare il pulsante **Nuova consegna** — cliccalo per iniziare. In cima un riquadro avvisa delle altre consegne ancora aperte ("La consegna di … è ancora aperta. Completala ›"). Le consegne passate si aprono da **Storico**.
+Pagina principale per registrare i movimenti giornalieri. La pagina si apre da sola sull'ultimo giorno di turno fino a oggi, se non ha ancora una consegna o ce l'ha aperta; altrimenti su oggi. Se non esiste ancora una consegna, appare il pulsante **Nuova consegna** — cliccalo per iniziare. In cima un riquadro avvisa delle altre consegne ancora aperte ("Sono ancora aperte le consegne di …", con le date come link). Le consegne passate si aprono da **Storico**.
 
 ## Dati Giornata (Cassa)
 
@@ -64,7 +64,7 @@ Clicca **Transazioni** per vedere lo storico movimenti di un partecipante.
 
 # Storico
 
-Indice delle consegne dalla più recente, in una tabella con Consegna, Stato, Persone, Trovato, Incassato, Pagato, In cassa e Quota teatro. Clicca una riga per aprire la consegna nella pagina Consegna (il tasto indietro riporta qui); se è ancora aperta, **Completa consegna** la apre allo stesso modo.
+Indice delle consegne dalla più recente, in una tabella con Consegna, Stato, Persone, Trovato, Incassato, Pagato, In cassa e Quota teatro. Clicca una riga o **Dettaglio** per aprire la consegna nella pagina Consegna (il tasto indietro riporta qui). Una cassa negativa è in rosso.
 
 ![Pagina Storico](screenshots/05-storico.png){ width=100% }
 

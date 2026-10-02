@@ -31,10 +31,12 @@ async function renderAvvisoAperte() {
   } catch (error) {
     aperte = [];
   }
-  el.innerHTML = aperte.map(c => `
-    <p>La consegna di <b>${formatDateLong(c.data)}</b> è ancora aperta.
-      <button type="button" class="link-btn" onclick="openConsegnaOn('${c.data}')">Completala ›</button></p>
-  `).join('');
+  // One sentence, however many: each date links to its consegna
+  const links = aperte.map(c => `<a class="link-btn" href="${consegnaHref(c.data)}">${formatDateLong(c.data)}</a>`);
+  const elenco = links.length > 1 ? `${links.slice(0, -1).join(', ')} e ${links[links.length - 1]}` : links[0];
+  el.innerHTML = links.length > 1
+    ? `<p>Sono ancora aperte le consegne di ${elenco}.</p>`
+    : `<p>La consegna di ${elenco} è ancora aperta.</p>`;
   el.classList.toggle('initially-hidden', !aperte.length);
 }
 

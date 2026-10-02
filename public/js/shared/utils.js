@@ -90,6 +90,11 @@ function formatEuro(value) {
   return `${formatNumber(value)} €`;
 }
 
+// Cassa amounts: a negative one gets the typographic minus, a positive one no sign
+function formatCassa(value) {
+  return value < 0 ? `−${formatNumber(-value)}` : formatNumber(value);
+}
+
 // "+6 €" / "−1 €" (typographic minus) — display only, never written into inputs
 function formatSigned(value) {
   const num = roundToCents(parseFloat(value) || 0);
@@ -149,9 +154,13 @@ function confirmDialog({ title, message = '', details = [], confirmText = 'Confe
 
 // ===== STORICO → CONSEGNA =====
 
-// Open the consegna page on a given date
+// The consegna page on a given date
+function consegnaHref(dateStr) {
+  return `/consegna?data=${dateStr}`;
+}
+
 function openConsegnaOn(dateStr) {
-  window.location.href = `/consegna?data=${dateStr}`;
+  window.location.href = consegnaHref(dateStr);
 }
 
 // Admin: reopen a closed consegna and open it for editing (uses API from api-client.js)
@@ -164,14 +173,13 @@ async function riapriConsegna(id, dateStr) {
   }
 }
 
-// Link under a consegna in Storico: finish an open one, or (admin) reopen a closed one
+// Links on a Storico row: "Dettaglio" (a real link, so keyboard and new tab work) and,
+// for admins on a closed consegna, "Riapri consegna"
 function storicoActionsHtml(consegna) {
-  if (!consegna.chiusa) {
-    return `<button type="button" class="link-btn" onclick="event.stopPropagation(); openConsegnaOn('${consegna.data}')">Completa consegna</button>`;
-  }
-  return isAdmin()
+  const riapri = consegna.chiusa && isAdmin()
     ? `<button type="button" class="link-btn" onclick="event.stopPropagation(); riapriConsegna(${consegna.id}, '${consegna.data}')">Riapri consegna</button>`
     : '';
+  return `${riapri}<a class="det" href="${consegnaHref(consegna.data)}" onclick="event.stopPropagation()">Dettaglio</a>`;
 }
 
 // 'mar', 'mer', … for a yyyy-mm-dd date (local)

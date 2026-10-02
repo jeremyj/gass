@@ -52,7 +52,7 @@ L'applicazione si adatta automaticamente al dispositivo utilizzato:
 
 La pagina Consegna permette di registrare i movimenti di una giornata. Dal menu si apre da sola sul giorno giusto: l'ultimo giorno di turno fino a oggi (le settimane segnate "niente consegna" non contano), se quel giorno non ha ancora una consegna o ce l'ha ancora aperta, così il giorno dopo il turno la trovi lì per inserire i movimenti o chiuderla. Se l'ultima consegna è già chiusa si apre su oggi, con **Nuova consegna** (per esempio per una consegna straordinaria). Le consegne passate si aprono da **Storico**.
 
-In cima alla pagina, un riquadro elenca ogni altra consegna ancora aperta ("La consegna di <data> è ancora aperta. Completala ›"); il link la apre.
+In cima alla pagina, un riquadro elenca in una frase le altre consegne ancora aperte ("Sono ancora aperte le consegne di …"); ogni data è un link che apre quella consegna.
 
 #### Dati Giornata (Cassa)
 
@@ -191,9 +191,10 @@ La pagina Storico permette di consultare tutte le consegne registrate.
 
 Lo Storico è un indice: una riga per consegna, in ordine cronologico inverso (più recenti in alto). Non mostra i movimenti: toccando (mobile) o cliccando (desktop) una riga si apre quella consegna nella pagina Consegna, in sola lettura se è chiusa. Il pulsante indietro del browser o del telefono riporta allo Storico.
 
-- **Mobile**: consegne raggruppate per mese; ogni riga mostra la data, l'etichetta aperta/chiusa, le persone, la quota teatro (se c'è) e "in cassa X €", più **Dettaglio ›**. In cima: "Tocca una consegna per vederne il dettaglio."
-- **Desktop**: una tabella con Consegna, Stato, Persone, Trovato, Incassato, Pagato, In cassa, Quota teatro, il link di azione e **Dettaglio ›**. In cima: "Clic su una consegna per vederne il dettaglio."
-- Sulle consegne ancora aperte, **Completa consegna** le apre per aggiungere movimenti o chiuderle; per gli amministratori, sulle consegne chiuse, **Riapri consegna** la riapre e la apre per modificarla
+- **Mobile**: consegne raggruppate per mese ("Ottobre 2026"); ogni riga mostra il giorno, l'etichetta aperta/chiusa, le persone, la quota teatro (se c'è) e "in cassa X €", più **Dettaglio**. In cima: "Tocca una consegna per vederne il dettaglio."
+- **Desktop**: una tabella con Consegna, Stato, Persone, Trovato, Incassato, Pagato, In cassa, Quota teatro, **Riapri consegna** (amministratori) e **Dettaglio**. In cima: "Clic su una consegna per vederne il dettaglio."
+- Una cassa negativa è in rosso, come nella pagina Consegna
+- Per gli amministratori, sulle consegne chiuse, **Riapri consegna** la riapre e la apre per modificarla
 
 #### Indicatore Note
 
@@ -360,7 +361,11 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.23.0
+Sistema GASS Pagamenti - Versione 2.23.1
+- Storico: **Dettaglio** su ogni riga (si apre anche da tastiera o in una nuova scheda); tolto **Completa consegna**, che apriva la stessa pagina; cassa negativa in rosso
+- Il riquadro delle consegne aperte è una frase sola
+
+Versione 2.23.0
 - **Storico** è un indice con una riga per consegna: toccandola si apre nella pagina Consegna
 - **Consegna** si apre da sola sul giorno giusto, senza calendario; un riquadro avvisa delle altre consegne ancora aperte
 - Quota teatro per persona nell'elenco della consegna, anche a consegna chiusa

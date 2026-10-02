@@ -19,7 +19,7 @@ function renderStorico(consegne) {
   const months = [];
   consegne.forEach(c => {
     const key = c.data.slice(0, 7);
-    if (months[months.length - 1]?.key !== key) months.push({ key, label: `${monthName(c.data)} ${c.data.slice(0, 4)}`, items: [] });
+    if (months[months.length - 1]?.key !== key) months.push({ key, label: `${capitalize(monthName(c.data))} ${c.data.slice(0, 4)}`, items: [] });
     months[months.length - 1].items.push(c);
   });
   container.innerHTML = '<p class="hint hint-top">Tocca una consegna per vederne il dettaglio.</p>' + months.map(m => `
@@ -28,15 +28,24 @@ function renderStorico(consegne) {
   `).join('');
 }
 
+function capitalize(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+// The month heading already says month and year
+function dayLabel(dateStr) {
+  return new Date(dateStr + 'T00:00:00').toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric' });
+}
+
 function consegnaRowHtml(c) {
   const persone = c.num_movimenti === 1 ? '1 persona' : `${c.num_movimenti} persone`;
   const stato = c.chiusa ? 'chiusa' : 'aperta';
   return `
     <li onclick="openConsegnaOn('${c.data}')">
-      <span class="nm">${formatDateLong(c.data)}</span>
-      <span class="sub"><span class="stato-label ${stato}">${stato}</span> ${persone}${c.teatro ? `, quota teatro <b>${formatNumber(c.teatro)}</b>` : ''}</span>
-      <span class="esito"><b>${formatEuro(c.lasciato_in_cassa)}</b><small>in cassa</small></span>
-      <span class="sub storico-acts">${storicoActionsHtml(c)}<span class="det">Dettaglio ›</span></span>
+      <span class="nm">${dayLabel(c.data)}</span>
+      <span class="sub"><span class="stato-label ${stato}">${stato}</span>, ${persone}${c.teatro ? `, quota teatro <b>${formatNumber(c.teatro)}</b>` : ''}</span>
+      <span class="esito${c.lasciato_in_cassa < 0 ? ' db' : ''}"><b>${formatCassa(c.lasciato_in_cassa)} €</b><small>in cassa</small></span>
+      <span class="sub storico-acts">${storicoActionsHtml(c)}</span>
     </li>
   `;
 }

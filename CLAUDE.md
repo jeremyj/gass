@@ -38,7 +38,7 @@
   - `turni-common.js` - Swap ("scambia con…") candidates, confirm modal and API call, used by `turni.js` and `turni-desktop.js`
   - `auth.js` - Session/logout handling; `await sessionReady` before rendering anything that depends on `isAdmin()` (else admin-only controls stay hidden when the session response arrives after the page data — this hid "Riapri consegna" on mobile until 2.12.0)
   - `version.js` - Dynamic version footer
-  - `utils.js` also holds the Storico → Consegna links: `openConsegnaOn(date)` (goes to `/consegna?data=<date>`), `riapriConsegna(id, date)` (admin), `storicoActionsHtml(consegna)` ("Completa consegna" on open ones, admin "Riapri consegna" on closed ones)
+  - `utils.js` also holds the Storico → Consegna links: `openConsegnaOn(date)` (goes to `/consegna?data=<date>`), `riapriConsegna(id, date)` (admin), `consegnaHref(date)`, `storicoActionsHtml(consegna)` (a real `<a class="det">Dettaglio</a>` link on every row, the row onclick being only a pointer shortcut, plus admin "Riapri consegna" on closed ones; "Completa consegna" was dropped in 2.23.1: same target as Dettaglio), `formatCassa` (negative cassa with typographic minus; Storico adds the `db` class)
 - **Page-Specific**: `public/js/`
   - Mobile: `consegna.js`, `debiti.js`, `storico.js`, `turni.js` (`turni.html`, agenda + self swap)
   - Desktop: `consegna-desktop.js`, `debiti-desktop.js`, `storico-desktop.js`, `logs-desktop.js`, `teatro-desktop.js` (`teatro-desktop.html`, admin; nav item `#nav-teatro` toggled with `#nav-logs` in `auth.js`), `turni-desktop.js` (`turni-desktop.html`, self swap + admin editing)
@@ -186,7 +186,7 @@ On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_
 
 ### Date Selection (2.23.0)
 - No page date picker and no shared date (`gass_selected_date` is gone). Consegna: `dataIniziale()` uses `?data=` (from Storico; must match `yyyy-mm-dd`) else `GET /api/consegna/apertura`; pages call `setDateDisplay(date)` then `checkDateData()` explicitly. Saldi is always today (`GET /api/participants` has no `?date=`)
-- `renderAvvisoAperte()` runs at the end of `checkDateData()`: warns about every open consegna other than the one shown (Consegna page only; Storico has the badge). Decided with the user 2026-10-02, mockup `design/mockups/storico-indice.html`
+- `renderAvvisoAperte()` runs at the end of `checkDateData()`: warns, in one sentence with each date linked, about every open consegna other than the one shown (it includes future-dated open consegne; whether to exclude them is undecided) (Consegna page only; Storico has the badge). Decided with the user 2026-10-02, mockup `design/mockups/storico-indice.html`
 - Storico is an index (rows open the consegna); the Consegna page is the only detail view, with quota teatro per person (`teatroExtra`, `addTeatroToList` after a payment)
 
 ### Visibility Sync

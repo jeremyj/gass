@@ -391,7 +391,7 @@ These fields are always disabled to prevent manual editing and ensure data integ
 
 ### 3. Storico (Historical Records)
 
-An index: one row per consegna, newest first (`GET /api/storico`). Mobile groups rows by month; desktop is one table with the whole cassa (trovato, incassato, pagato, in cassa) and the quota teatro total. A row opens the consegna on the Consegna page via `openConsegnaOn(date)` → `/consegna?data=yyyy-mm-dd`; "Completa consegna" (open) and admin "Riapri consegna" (closed, `riapriConsegna`) stay on the row and stop the click from bubbling.
+An index: one row per consegna, newest first (`GET /api/storico`). Mobile groups rows by month; desktop is one table with the whole cassa (trovato, incassato, pagato, in cassa) and the quota teatro total. A row opens the consegna on the Consegna page via `openConsegnaOn(date)` → `consegnaHref(date)` = `/consegna?data=yyyy-mm-dd`. `storicoActionsHtml` adds a real `<a class="det">Dettaglio</a>` to that URL (keyboard, new tab; the `<tr>`/`<li>` onclick is only a pointer shortcut) and, for admins on closed ones, "Riapri consegna" (`riapriConsegna`); both stop the click from bubbling. Negative cassa amounts use `formatCassa` (typographic minus) and the `db` class.
 
 ### 4. Consegna page date
 
@@ -402,7 +402,7 @@ No date picker. `dataIniziale()` (`consegna-common.js`) takes `?data=` when it i
 | no consegna, or an open one | that day |
 | consegna closed, or no turno | today |
 
-`renderAvvisoAperte()` (called at the end of `checkDateData()`) lists every other open consegna in `#avviso-aperte` with a link to it. No date is kept in `sessionStorage`: the Consegna menu link always applies the rule, Saldi is always today.
+`renderAvvisoAperte()` (called at the end of `checkDateData()`) lists every other open consegna in `#avviso-aperte` as one sentence, each date a link (`consegnaHref`). No date is kept in `sessionStorage`: the Consegna menu link always applies the rule, Saldi is always today.
 
 ### 5. Responsive Design
 

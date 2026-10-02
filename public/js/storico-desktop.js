@@ -14,6 +14,12 @@ function numCell(value) {
   return value ? `<td>${formatNumber(value)}</td>` : '<td class="mute">–</td>';
 }
 
+// Negative cassa in the debito colour, as on the Consegna page
+function cassaCell(value, bold = false) {
+  const text = bold ? `<b>${formatCassa(value)}</b>` : formatCassa(value);
+  return `<td${value < 0 ? ' class="db"' : ''}>${text}</td>`;
+}
+
 function renderStorico(consegne) {
   const container = document.getElementById('storico-list');
   if (!consegne.length) {
@@ -25,22 +31,21 @@ function renderStorico(consegne) {
     <table class="t">
       <thead>
         <tr>
-          <th>Consegna</th><th>Stato</th><th>Persone</th><th>Trovato</th><th>Incassato</th>
-          <th>Pagato</th><th>In cassa</th><th>Quota teatro</th><th></th><th></th>
+          <th>Consegna</th><th class="left">Stato</th><th>Persone</th><th>Trovato</th><th>Incassato</th>
+          <th>Pagato</th><th>In cassa</th><th>Quota teatro</th><th></th>
         </tr>
       </thead>
       <tbody>${consegne.map(c => `
         <tr class="clickable" onclick="openConsegnaOn('${c.data}')">
           <td class="nm">${formatDateLong(c.data)}</td>
-          <td><span class="stato-label ${c.chiusa ? 'chiusa' : 'aperta'}">${c.chiusa ? 'Chiusa' : 'Aperta'}</span></td>
+          <td class="left"><span class="stato-label ${c.chiusa ? 'chiusa' : 'aperta'}">${c.chiusa ? 'Chiusa' : 'Aperta'}</span></td>
           <td>${c.num_movimenti}</td>
-          <td>${formatNumber(c.trovato_in_cassa)}</td>
+          ${cassaCell(c.trovato_in_cassa)}
           <td>${formatNumber(c.incassato)}</td>
           <td>${formatNumber(c.pagato_produttore)}</td>
-          <td><b>${formatNumber(c.lasciato_in_cassa)}</b></td>
+          ${cassaCell(c.lasciato_in_cassa, true)}
           ${numCell(c.teatro)}
-          <td>${storicoActionsHtml(c)}</td>
-          <td class="det">Dettaglio ›</td>
+          <td class="lk">${storicoActionsHtml(c)}</td>
         </tr>`).join('')}
       </tbody>
     </table>
