@@ -1,16 +1,22 @@
 const express = require('express');
 const db = require('../config/database');
 const { requireAuth, requireAdmin, getAuditFields } = require('../middleware/auth');
-const { calculateTrovatoInCassa, roundToCents } = require('../services/calculations');
+const { calculateTrovatoInCassa, roundToCents, toLocalDateString } = require('../services/calculations');
 const { saldoBeforeConsegna, recalculateSaldo } = require('../services/saldi');
 const { validateConsegnaPayload } = require('../services/validation');
 const { logActivity } = require('../services/activity');
 const { quotePerPersona } = require('../services/teatro');
+const { apertura } = require('../services/apertura');
 
 const router = express.Router();
 
 // Require authentication for all consegna routes
 router.use(requireAuth);
+
+// Date the Consegna page opens on, and the open consegne to warn about (declared before /:date)
+router.get('/apertura', (req, res) => {
+  res.json({ success: true, ...apertura(db, toLocalDateString()) });
+});
 
 // Get consegna data for a specific date
 router.get('/:date', (req, res) => {
