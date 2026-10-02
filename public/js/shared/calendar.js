@@ -153,18 +153,6 @@ function setDateDisplay(dateStr) {
     headerWhen.classList.toggle('not-today', !isToday);
   }
   applySeason(dateStr);
-
-  // Set picker to the same month/year
-  pickerYear = parseInt(year);
-  pickerMonth = parseInt(month) - 1;
-
-  // Persist selected date in sessionStorage (for tab navigation)
-  sessionStorage.setItem('gass_selected_date', dateStr);
-
-  // Call page-specific callback
-  if (onDateSelected) {
-    onDateSelected(dateStr);
-  }
 }
 
 // ===== HELPER FUNCTIONS =====

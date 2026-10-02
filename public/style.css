@@ -374,6 +374,11 @@ tr.off td { opacity: .6; }
 .consegna-closed .mov-list > li, .consegna-closed tr.clickable { cursor: default; }
 .consegna-closed .add-select { display: none; }
 
+/* Consegna page: other consegne still open */
+.avviso { background: #FFF6E5; border: 1.5px solid var(--s-acc); border-left-width: 5px; border-radius: 10px; padding: 10px 14px; margin: 14px 0; font-size: 17px; }
+.avviso p { margin: 4px 0; }
+.mov-list > li.inert { cursor: default; }
+
 /* "+ Aggiungi partecipante": a native select styled as a dashed button */
 .add-select {
   margin-top: 14px;

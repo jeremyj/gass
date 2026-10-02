@@ -5,7 +5,61 @@
 //   participants, existingConsegnaMovimenti, saldiBefore,
 //   currentConsegnaId, isConsegnaClosed
 // and these page-specific functions: saveWithParticipant(id), saveCassaOnly() (desktop only)
-// Depends on: utils.js, calendar.js (loadConsegneDates, getSelectedDate), api-client.js (API)
+// Depends on: utils.js, calendar.js (setDateDisplay, getSelectedDate), api-client.js (API)
+
+// ===== OPENING =====
+
+// Date to open: ?data= from Storico, else the server's pick (last turno to finish, or today)
+async function dataIniziale() {
+  const fromUrl = new URLSearchParams(location.search).get('data');
+  if (/^\d{4}-\d{2}-\d{2}$/.test(fromUrl || '')) return fromUrl;
+  try {
+    return (await API.get('/api/consegna/apertura')).data;
+  } catch (error) {
+    return toLocalDateString();
+  }
+}
+
+// Other consegne still open, each linked so someone completes it
+async function renderAvvisoAperte() {
+  const el = document.getElementById('avviso-aperte');
+  if (!el) return;
+  let aperte = [];
+  try {
+    aperte = (await API.get('/api/consegna/apertura')).aperte.filter(c => c.data !== getSelectedDate());
+  } catch (error) {
+    aperte = [];
+  }
+  el.innerHTML = aperte.map(c => `
+    <p>La consegna di <b>${formatDateLong(c.data)}</b> è ancora aperta.
+      <button type="button" class="link-btn" onclick="openConsegnaOn('${c.data}')">Completala ›</button></p>
+  `).join('');
+  el.classList.toggle('initially-hidden', !aperte.length);
+}
+
+// ===== QUOTA TEATRO IN THE DAY'S LIST =====
+
+// People who paid a quota teatro in this consegna but have no movimento
+let teatroExtra = [];
+
+// After a quota is recorded: show it in the list without reloading the page
+function addTeatroToList(id, nome, importo) {
+  const m = (existingConsegnaMovimenti || []).find(x => x.partecipante_id === id);
+  const t = teatroExtra.find(x => x.user_id === id);
+  if (m) m.teatro = roundToCents((m.teatro || 0) + importo);
+  else if (t) t.importo = roundToCents(t.importo + importo);
+  else teatroExtra.push({ user_id: id, nome, importo });
+  renderMovimentiGiorno();
+}
+
+// "conto 15, pagato 25, salda debito 8, quota teatro 15" (mobile list rows)
+function movimentoDetails(m) {
+  const details = [`conto <b>${formatNumber(m.conto_produttore || 0)}</b>`, `pagato <b>${formatNumber(m.importo_saldato || 0)}</b>`];
+  if (debitoPagato(m)) details.push(`salda debito <b>${formatNumber(debitoPagato(m))}</b>`);
+  if (m.usa_credito) details.push(`usa credito <b>${formatNumber(m.usa_credito)}</b>`);
+  if (m.teatro) details.push(`quota teatro <b>${formatNumber(m.teatro)}</b>`);
+  return details.join(', ');
+}
 
 // ===== CASSA CALCULATIONS =====
 
@@ -388,7 +442,6 @@ async function annullaConsegna() {
     try {
       await API.delete(`/api/consegna/${currentConsegnaId}`);
       showStatus('Consegna annullata', 'success');
-      await loadConsegneDates();
       await checkDateData();
     } catch (error) {
       showStatus('Errore: ' + error.message, 'error');
@@ -627,6 +680,7 @@ async function registraTeatro(id) {
     box.outerHTML = teatroButtonHtml(id) || `<p class="teatro-done">Quota teatro registrata: ${formatEuro(importo)}</p>`;
     showStatus('Quota teatro registrata', 'success');
     loadQuoteOggi();
+    addTeatroToList(id, p.nome, importo);
   } catch (error) {
     showStatus('Errore: ' + error.message, 'error');
   }
@@ -647,9 +701,8 @@ async function loadQuoteOggi() {
 function renderQuoteOggi() {
   const el = document.getElementById('quote-teatro-oggi');
   if (!el) return;
-  const inProgress = getPartecipantiSection()?.style.display === 'block';
   el.querySelector('output').textContent = formatEuro(quoteOggi);
-  el.classList.toggle('initially-hidden', !(quoteOggi && inProgress));
+  el.classList.toggle('initially-hidden', !quoteOggi);
 }
 
 function addHiddenFields(card, id, haCredito, haDebito) {

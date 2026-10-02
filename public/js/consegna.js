@@ -41,6 +41,8 @@ async function checkDateData() {
 
     // Clear saved original values
     originalParticipantValues = {};
+
+    renderAvvisoAperte();
   } catch (error) {
     console.error('Error checking date data:', error);
   }
@@ -52,6 +54,7 @@ function loadExistingConsegna(result) {
 
   // Load movements first (needed for calculations)
   existingConsegnaMovimenti = result.movimenti || [];
+  teatroExtra = result.teatroExtra || [];
   saldiBefore = result.saldiBefore || {};
 
   // Set trovato from stored value, formatted
@@ -83,6 +86,7 @@ function loadNewConsegna(result) {
 
   // Clear movements
   existingConsegnaMovimenti = null;
+  teatroExtra = [];
   saldiBefore = result.saldiBefore || {};
 
   // Set trovato from previous lasciato, formatted
@@ -232,12 +236,18 @@ function renderMovimentiGiorno() {
     return `
       <li onclick="openMovimento(${m.partecipante_id})">
         <span class="nm">${escapeHtml(m.nome)}</span>
-        <span class="sub">conto <b>${formatNumber(m.conto_produttore || 0)}</b>, pagato <b>${formatNumber(m.importo_saldato || 0)}</b></span>
+        <span class="sub">${movimentoDetails(m)}</span>
         <span class="esito ${esito.cls}"><b>${esito.amount}</b><small>${esito.word}</small></span>
         ${m.note ? `<span class="nota">${escapeHtml(m.note)}</span>` : ''}
       </li>
     `;
-  }).join('');
+  }).join('') + teatroExtra.map(t => `
+      <li class="inert">
+        <span class="nm">${escapeHtml(t.nome)}</span>
+        <span class="sub">quota teatro <b>${formatNumber(t.importo)}</b></span>
+        <span class="esito"><b>–</b><small>solo teatro</small></span>
+      </li>
+  `).join('');
 }
 
 function participantButtonsHTML(id) {
@@ -324,7 +334,6 @@ async function saveWithParticipant(currentId) {
     // Reload consegna data to get updated movements
     await checkDateData();
 
-    await loadConsegneDates(); // Refresh calendar
 
     // Close participant card after save
     const container = document.getElementById('selected-participants');
@@ -343,16 +352,8 @@ async function saveWithParticipant(currentId) {
 // ===== INITIALIZATION =====
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Initialize calendar with page-specific callback
-  initCalendar({
-    onDateSelected: checkDateData
-  });
-
   // Reopen/annulla are admin-only: know the user before rendering the consegna status
   await sessionReady;
-  await loadConsegneDates();
-
-  // Use restoreDateFromStorage which handles reload vs tab navigation
-  const dateToLoad = restoreDateFromStorage();
-  setDateDisplay(dateToLoad); // triggers checkDateData → loadData(dateValue)
+  setDateDisplay(await dataIniziale());
+  checkDateData();
 });

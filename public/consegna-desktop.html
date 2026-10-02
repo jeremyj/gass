@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Consegna</title>
-    <link rel="stylesheet" href="style.css?v=70">
+    <link rel="stylesheet" href="style.css?v=71">
 </head>
 <body>
     <nav class="nav-menu">
@@ -28,10 +28,6 @@
         <div id="header-when" class="stag-when" data-label="Consegna di" data-today="Consegna di oggi">Consegna di oggi</div>
         <h1 id="header-date-display"></h1>
         <div class="stag-acts">
-            <div class="header-date-section">
-                <button type="button" class="change-date-btn ghost" onclick="toggleDatePicker()">Cambia data</button>
-                <div id="date-picker-container" class="date-picker-popup initially-hidden"></div>
-            </div>
             <div id="consegna-status-section" class="stato initially-hidden">
                 <span id="closed-badge" class="stato-label chiusa initially-hidden">Consegna chiusa</span>
                 <span id="open-badge" class="stato-label aperta">Consegna aperta</span>
@@ -46,6 +42,7 @@
         <input type="hidden" id="data-display">
 
         <div id="status" class="status" role="status"></div>
+        <div id="avviso-aperte" class="avviso initially-hidden" role="status"></div>
 
         <form id="consegna-form" class="d-grid" onsubmit="event.preventDefault(); saveData();">
             <aside class="cassa-v" aria-label="Cassa">
@@ -95,13 +92,13 @@
         <span id="app-version"></span>
     </footer>
 
-    <script src="js/shared/utils.js?v=35"></script>
+    <script src="js/shared/utils.js?v=36"></script>
     <script src="js/shared/season.js?v=33"></script>
-    <script src="js/shared/calendar.js?v=33"></script>
+    <script src="js/shared/calendar.js?v=34"></script>
     <script src="js/shared/api-client.js"></script>
-    <script src="js/shared/consegna-common.js?v=37"></script>
+    <script src="js/shared/consegna-common.js?v=38"></script>
     <script src="js/shared/auth.js?v=33"></script>
     <script src="js/shared/version.js"></script>
-    <script src="js/consegna-desktop.js?v=33"></script>
+    <script src="js/consegna-desktop.js?v=34"></script>
 </body>
 </html>

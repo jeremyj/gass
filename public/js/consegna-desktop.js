@@ -33,6 +33,8 @@ async function checkDateData() {
 
     const select = document.getElementById('participant-select');
     if (select) select.value = '';
+
+    renderAvvisoAperte();
   } catch (error) {
     console.error('Error checking date data:', error);
   }
@@ -44,6 +46,7 @@ function loadExistingConsegna(result) {
   const lasciatoField = document.getElementById('lasciatoInCassa');
 
   existingConsegnaMovimenti = result.movimenti || [];
+  teatroExtra = result.teatroExtra || [];
   saldiBefore = result.saldiBefore || {};
 
   trovatoField.value = formatNumber(result.consegna.trovato_in_cassa || 0);
@@ -71,6 +74,7 @@ function loadNewConsegna(result) {
   const lasciatoField = document.getElementById('lasciatoInCassa');
 
   existingConsegnaMovimenti = [];
+  teatroExtra = [];
   saldiBefore = result.saldiBefore || {};
 
   const trovatoValue = result.lasciatoPrecedente ?? 0;
@@ -104,7 +108,7 @@ function renderMovimentiGiorno() {
   const container = document.getElementById('movimenti-giorno');
   const movimenti = existingConsegnaMovimenti || [];
 
-  if (movimenti.length === 0) {
+  if (movimenti.length === 0 && teatroExtra.length === 0) {
     container.innerHTML = '';
     return;
   }
@@ -119,7 +123,15 @@ function renderMovimentiGiorno() {
         ${debitoNuovo(m) ? `<td class="db">−${formatNumber(debitoNuovo(m))}</td>` : '<td class="mute">–</td>'}
         ${cell(m.usa_credito)}
         ${cell(debitoPagato(m))}
+        ${cell(m.teatro)}
         <td class="nt">${escapeHtml(m.note || '')}</td>
+      </tr>
+    `).join('') + teatroExtra.map(t => `
+      <tr>
+        <td class="nm">${escapeHtml(t.nome)}</td>
+        ${'<td class="mute">–</td>'.repeat(6)}
+        ${cell(t.importo)}
+        <td class="nt"></td>
       </tr>
     `).join('');
 
@@ -134,6 +146,7 @@ function renderMovimentiGiorno() {
           <th>Lascia debito</th>
           <th>Usa credito</th>
           <th>Salda debito</th>
+          <th>Quota teatro</th>
           <th class="nt">Note</th>
         </tr>
       </thead>
@@ -147,6 +160,7 @@ function renderMovimentiGiorno() {
           ${cell(sum(debitoNuovo))}
           ${cell(sum(m => m.usa_credito))}
           ${cell(sum(debitoPagato))}
+          ${cell(roundToCents(sum(m => m.teatro) + teatroExtra.reduce((acc, t) => acc + t.importo, 0)))}
           <td></td>
         </tr>
       </tfoot>
@@ -309,12 +323,8 @@ async function saveWithParticipant(currentId) {
 // ===== INITIALIZATION =====
 
 document.addEventListener('DOMContentLoaded', async () => {
-  initCalendar({ onDateSelected: checkDateData });
-
   // Ensure user data is loaded before rendering consegna status
   await sessionReady;
-  await loadConsegneDates();
-
-  const dateToLoad = restoreDateFromStorage();
-  setDateDisplay(dateToLoad); // triggers checkDateData → loadData(dateValue)
+  setDateDisplay(await dataIniziale());
+  checkDateData();
 });

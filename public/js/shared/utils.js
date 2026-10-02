@@ -151,8 +151,7 @@ function confirmDialog({ title, message = '', details = [], confirmText = 'Confe
 
 // Open the consegna page on a given date (the page restores it from sessionStorage)
 function openConsegnaOn(dateStr) {
-  sessionStorage.setItem('gass_selected_date', dateStr);
-  window.location.href = '/consegna';
+  window.location.href = `/consegna?data=${dateStr}`;
 }
 
 // Admin: reopen a closed consegna and open it for editing (uses API from api-client.js)
@@ -168,10 +167,10 @@ async function riapriConsegna(id, dateStr) {
 // Link under a consegna in Storico: finish an open one, or (admin) reopen a closed one
 function storicoActionsHtml(consegna) {
   if (!consegna.chiusa) {
-    return `<button type="button" class="link-btn" onclick="openConsegnaOn('${consegna.data}')">Completa consegna</button>`;
+    return `<button type="button" class="link-btn" onclick="event.stopPropagation(); openConsegnaOn('${consegna.data}')">Completa consegna</button>`;
   }
   return isAdmin()
-    ? `<button type="button" class="link-btn" onclick="riapriConsegna(${consegna.id}, '${consegna.data}')">Riapri consegna</button>`
+    ? `<button type="button" class="link-btn" onclick="event.stopPropagation(); riapriConsegna(${consegna.id}, '${consegna.data}')">Riapri consegna</button>`
     : '';
 }
 
