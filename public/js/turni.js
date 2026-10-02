@@ -1,4 +1,4 @@
-// Turni, mobile: agenda of the next 24 weeks; tap "cambia" on your own turno to swap, move or leave it
+// Turni, mobile: agenda of the next 6 months (last 3 on request); tap "cambia" on your own turno to swap, move or leave it
 
 let turni = [];
 let myId = null;
@@ -20,23 +20,25 @@ function renderTurni() {
     list.innerHTML = '<p class="empty-state">Nessun turno in programma</p>';
     return;
   }
+  const today = toLocalDateString();
+  const curId = turni.find(t => t.data >= today)?.id;
   let html = '';
   let month = '';
-  turni.forEach((t, i) => {
+  turni.forEach(t => {
     const m = monthName(t.data);
     if (m !== month) {
       html += `${month ? '</ul>' : ''}<h2 class="turni-mese">${m}</h2><ul class="turni-ag">`;
       month = m;
     }
     const mine = t.turnisti.some(p => p && p.id === myId);
-    const canSwap = mine && !t.saltata && t.data >= toLocalDateString();
+    const canSwap = mine && !t.saltata && t.data >= today;
     const tags = (mine ? '<span class="tag-tu">TU</span>' : '') + (t.riunione ? '<span class="tag-riunione">riunione</span>' : '');
     const action = canSwap && aperto !== t.id ? `<button type="button" class="link-btn" onclick="apriScambio(${t.id})">cambia</button>` : '';
     const swapRow = canSwap && aperto === t.id
       ? `<div class="turno-swap">${azioniTurnoHtml(turni, t, mySlot(t))}<button type="button" class="btn btn-line" onclick="apriScambio(null)">Annulla</button></div>`
       : '';
     html += `
-      <li class="${i === 0 ? 'cur' : ''}${t.saltata ? ' off' : ''}">
+      <li class="${t.id === curId ? 'cur' : ''}${t.data < today ? ' past' : ''}${t.saltata ? ' off' : ''}">
         <div class="turno-dd${t.data !== t.settimana ? ' moved' : ''}"><b>${Number(t.data.slice(8))}</b><small>${weekdayShort(t.data)}</small></div>
         <div class="turno-who">${turnoWhoHtml(t)}</div>
         <div class="turno-act">${tags}${action}</div>${swapRow}
@@ -48,11 +50,11 @@ function renderTurni() {
     collegaAzioniTurno(turni, t, mySlot(t), () => { aperto = null; loadTurni(); }, renderTurni);
   }
 
-  const next = turni.find(t => !t.saltata && t.turnisti.some(p => p && p.id === myId));
+  const next = turni.find(t => t.data >= today && !t.saltata && t.turnisti.some(p => p && p.id === myId));
   // "il tuo prossimo turno" with the date in a badge
   document.getElementById('mio-turno').innerHTML = next
     ? `il tuo prossimo turno <span class="mio-data">${formatDateLong(next.data)}</span>`
-    : 'nessun turno per te nelle prossime 24 settimane';
+    : 'nessun turno per te nei prossimi 6 mesi';
 }
 
 function apriScambio(id) {
@@ -64,7 +66,8 @@ const mySlot = t => (t.turnisti[0] && t.turnisti[0].id === myId ? 1 : 2);
 
 async function loadTurni() {
   try {
-    const [result, user] = await Promise.all([API.get('/api/turni'), sessionReady]);
+    const passati = document.getElementById('turni-passati').checked;
+    const [result, user] = await Promise.all([API.get(`/api/turni${passati ? '?passati=1' : ''}`), sessionReady]);
     turni = result.turni;
     myId = user?.id;
     document.getElementById('turni-note-view').textContent = result.note;

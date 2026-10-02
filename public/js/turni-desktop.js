@@ -1,14 +1,13 @@
-// Turni, desktop: next 24 weeks; everyone swaps, moves or leaves their own turni; admins pick every name
-// from a menu, move/skip days, manage pauses and pause automatic generation
+// Turni, desktop: next 6 months (last 3 on request); everyone picks every name from a menu and
+// moves/skips days; admins manage pauses, notes and pause automatic generation
 
 let turni = [];
 let attivi = [];
-let picked = null; // { id, slot } of the name clicked first
 let giornoId = null;
 let myId = null;
 let autoOn = true; // automatic generation: the queue only matters while it is on
 
-// Admin menu for one slot: every attivo, plus the current person if no longer attivo
+// Menu for one slot: every attivo, plus the current person if no longer attivo
 function nameSelectHtml(t, slot) {
   const p = t.turnisti[slot - 1];
   const people = p && !attivi.some(u => u.id === p.id) ? [...attivi, p] : attivi;
@@ -19,12 +18,10 @@ function nameSelectHtml(t, slot) {
 
 function nameCell(t, slot) {
   const p = t.turnisti[slot - 1];
-  if (isAdmin() && !t.saltata && t.data >= toLocalDateString()) return `<td class="nm">${nameSelectHtml(t, slot)}</td>`;
-  const label = t.saltata ? '' : p ? escapeHtml(p.nome) + (p.id === myId ? ' <span class="tag-tu">TU</span>' : '') : '<span class="da-coprire">da coprire</span>';
-  const canPick = !t.saltata && p && p.id === myId && t.data >= toLocalDateString();
-  if (!canPick) return `<td class="nm">${label}</td>`;
-  const on = picked && picked.id === t.id && picked.slot === slot ? ' picked' : '';
-  return `<td class="nm"><button type="button" class="name-btn${on}" onclick="pickName(${t.id}, ${slot})">${label}</button></td>`;
+  const tu = p && p.id === myId ? ' <span class="tag-tu">TU</span>' : '';
+  if (!t.saltata && t.data >= toLocalDateString()) return `<td class="nm"><div class="nm-row">${nameSelectHtml(t, slot)}${tu}</div></td>`;
+  const label = t.saltata ? '' : p ? escapeHtml(p.nome) + tu : '<span class="da-coprire">da coprire</span>';
+  return `<td class="nm">${label}</td>`;
 }
 
 function noteCell(t) {
@@ -43,44 +40,19 @@ function renderTurni() {
     <tr class="${t.id === curId ? 'cur' : ''}${t.saltata ? ' off' : ''}${t.data < today ? ' past' : ''}">
       <td class="left d"><b>${weekdayShort(t.data)} ${formatDateItalian(t.data).slice(0, 5)}</b>${t.data !== t.settimana ? `<span class="mv">da ${weekdayShort(t.settimana)} ${formatDateItalian(t.settimana).slice(0, 5)}</span>` : ''}</td>
       ${nameCell(t, 1)}${nameCell(t, 2)}${noteCell(t)}
-      <td class="admin-col">${isAdmin() && t.data >= today ? `<button type="button" class="link-btn" onclick="openGiorno(${t.id})">Giorno</button>` : ''}</td>
+      <td>${t.data >= today ? `<button type="button" class="link-btn" onclick="openGiorno(${t.id})">Giorno</button>` : ''}</td>
     </tr>`).join('');
 
   const next = turni.find(t => t.data >= today && !t.saltata && t.turnisti.some(p => p && p.id === myId));
   // "il tuo prossimo turno" with the date in a badge
   document.getElementById('mio-turno').innerHTML = next
     ? `il tuo prossimo turno <span class="mio-data">${formatDateLong(next.data)}</span>`
-    : 'nessun turno per te nelle prossime 24 settimane';
-  renderBanner();
-}
-
-function renderBanner() {
-  const banner = document.getElementById('pick-banner');
-  const t = picked && turni.find(x => x.id === picked.id);
-  if (!t || t.saltata) picked = null;
-  if (!picked) { banner.classList.add('initially-hidden'); return; }
-  banner.innerHTML = `
-    <span><b>Il tuo turno</b>, ${formatDateLong(t.data)}</span>
-    ${azioniTurnoHtml(turni, t, picked.slot)}
-    <button type="button" class="btn btn-line" onclick="cancelPick()">Annulla</button>`;
-  collegaAzioniTurno(turni, t, picked.slot, () => { picked = null; loadTurni(); }, renderBanner);
-  banner.classList.remove('initially-hidden');
-}
-
-function pickName(id, slot) {
-  if (picked && picked.id === id && picked.slot === slot) return cancelPick();
-  picked = { id, slot };
-  renderTurni();
-}
-
-function cancelPick() {
-  picked = null;
-  renderTurni();
+    : 'nessun turno per te nei prossimi 6 mesi';
 }
 
 const nomeUtente = id => attivi.find(u => u.id === id)?.nome || '';
 
-// Admin menu change: filling a free slot is immediate, replacing or clearing a name asks first
+// Menu change: filling a free slot is immediate, replacing or clearing a name asks first
 async function assignSlot(id, slot, select) {
   const t = turni.find(x => x.id === id);
   const p = t.turnisti[slot - 1];
@@ -212,7 +184,6 @@ async function addPause() {
   if (!ok) return;
   try {
     await API.post('/api/turni/pause', { dal, al, nota: document.getElementById('pausa-nota').value });
-    picked = null;
     document.getElementById('pausa-nota').value = '';
     showStatus('Pausa aggiunta', 'success');
     await loadTurni();
@@ -230,7 +201,6 @@ async function deletePause(id) {
   if (!ok) return;
   try {
     await API.delete(`/api/turni/pause/${id}`);
-    picked = null;
     await loadTurni();
   } catch (error) {
     showStatus('Errore: ' + error.message, 'error');
@@ -245,19 +215,14 @@ async function loadTurni() {
     const result = await API.get(`/api/turni${passati ? '?passati=1' : ''}`);
     turni = result.turni;
     autoOn = result.auto;
-    const hint = document.getElementById('turni-hint');
-    hint.classList.remove('initially-hidden');
-    if (!isAdmin()) hint.textContent = 'Clic sul tuo nome: scambia il turno con chi si è accordato con te, spostalo su una data con un posto libero, oppure “Non posso” per lasciarlo da coprire.';
+    attivi = (await API.get('/api/participants')).participants.filter(p => p.stato === 'attivo')
+      .sort((a, b) => a.nome.localeCompare(b.nome, 'it'));
     if (isAdmin()) {
-      attivi = (await API.get('/api/participants')).participants.filter(p => p.stato === 'attivo')
-        .sort((a, b) => a.nome.localeCompare(b.nome, 'it'));
       document.getElementById('auto-wrap').classList.remove('initially-hidden');
-      document.getElementById('passati-wrap').classList.remove('initially-hidden');
       document.getElementById('turni-auto').checked = result.auto;
       document.getElementById('pause-section').classList.remove('initially-hidden');
       renderPause(result.pause);
     }
-    document.body.classList.toggle('turni-readonly', !isAdmin());
     renderNote(result.note);
     renderTurni();
   } catch (error) {

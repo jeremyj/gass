@@ -22,22 +22,22 @@ function people(n) {
 }
 
 describe('ensureTurni', () => {
-  it('fills the next 24 Tuesdays from the first one after today', () => {
+  it('fills the next 26 Tuesdays from the first one after today', () => {
     people(6);
     T.ensureTurni(db, TODAY, rnd);
     const weeks = db.prepare('SELECT settimana FROM turni ORDER BY settimana').all().map(r => r.settimana);
     expect(weeks[0]).toBe('2026-10-06');
-    expect(weeks).toHaveLength(24); // 2026-10-06 .. 2027-03-16 (today + 168 = 2027-03-18, excluded)
-    expect(weeks[23]).toBe('2027-03-16');
+    expect(weeks).toHaveLength(26); // 2026-10-06 .. 2027-03-30 (today + 182 = 2027-04-01, excluded)
+    expect(weeks[25]).toBe('2027-03-30');
   });
 
-  it('counts today when today is a Tuesday, still 24 weeks', () => {
+  it('counts today when today is a Tuesday, still 26 weeks', () => {
     people(2);
     T.ensureTurni(db, '2026-10-06', rnd);
     const weeks = db.prepare('SELECT settimana FROM turni ORDER BY settimana').all().map(r => r.settimana);
-    expect(weeks).toHaveLength(24);
+    expect(weeks).toHaveLength(26);
     expect(weeks[0]).toBe('2026-10-06');
-    expect(weeks[23]).toBe('2027-03-16');
+    expect(weeks[25]).toBe('2027-03-30');
   });
 
   it('writes empty weeks while automatic generation is paused', () => {
@@ -46,7 +46,7 @@ describe('ensureTurni', () => {
     T.setAuto(db, false);
     T.ensureTurni(db, TODAY, rnd);
     const rows = db.prepare('SELECT turnista1_id a, turnista2_id b FROM turni').all();
-    expect(rows).toHaveLength(24);
+    expect(rows).toHaveLength(26);
     expect(rows.every(r => r.a === null && r.b === null)).toBe(true);
     T.setAuto(db, true);
     expect(T.isAuto(db)).toBe(true);
@@ -99,7 +99,7 @@ describe('ensureTurni', () => {
   it('fills weeks with empty slots when nobody is in turn', () => {
     T.ensureTurni(db, TODAY, rnd);
     const rows = db.prepare('SELECT turnista1_id, turnista2_id FROM turni').all();
-    expect(rows).toHaveLength(24);
+    expect(rows).toHaveLength(26);
     expect(rows.every(r => r.turnista1_id === null && r.turnista2_id === null)).toBe(true);
   });
 

@@ -27,16 +27,14 @@ beforeEach(async () => {
 // Own-slot actions and the auto switch; a separate file because the login limiter
 // (10 per window) is shared by all tests in one file
 describe('own turno and automatic generation', () => {
-  it('lets a user leave or move only their own turno', async () => {
-    const me = db.prepare("SELECT id FROM users WHERE username = 'user1'").get().id;
-    const [b, c] = ['lb', 'lc'].map(u => createUser(db, { username: u }));
-    const x = createTurno(db, { settimana: '2099-04-07', t1: me, t2: b });
+  it('lets a user leave or move anyone\'s turno', async () => {
+    const [a, b, c] = ['la', 'lb', 'lc'].map(u => createUser(db, { username: u }));
+    const x = createTurno(db, { settimana: '2099-04-07', t1: a, t2: b });
     const y = createTurno(db, { settimana: '2099-04-14', t1: c });
-    expect((await userAgent.post('/api/turni/lascia').send({ a: { id: x, slot: 2 } })).status).toBe(403);
     expect((await userAgent.post('/api/turni/sposta').send({ a: { id: x, slot: 1 }, to: y })).status).toBe(200);
-    expect(db.prepare('SELECT turnista2_id t FROM turni WHERE id = ?').get(y).t).toBe(me);
-    expect((await userAgent.post('/api/turni/lascia').send({ a: { id: y, slot: 2 } })).status).toBe(200);
-    expect(db.prepare('SELECT turnista2_id t FROM turni WHERE id = ?').get(y).t).toBeNull();
+    expect(db.prepare('SELECT turnista2_id t FROM turni WHERE id = ?').get(y).t).toBe(a);
+    expect((await userAgent.post('/api/turni/lascia').send({ a: { id: x, slot: 2 } })).status).toBe(200);
+    expect(db.prepare('SELECT turnista2_id t FROM turni WHERE id = ?').get(x).t).toBeNull();
     expect(db.prepare("SELECT COUNT(*) n FROM activity_logs WHERE event_type = 'turno_modificato'").get().n).toBe(2);
   });
 
@@ -54,10 +52,17 @@ describe('own turno and automatic generation', () => {
     expect((await userAgent.get('/api/turni')).body.note).toBe('Dicembre: Anna affianca Luca');
     expect((await adminAgent.put('/api/turni/note').send({ note: 'a'.repeat(5001) })).status).toBe(400);
   });
-  it('shows past weeks to admins who ask for them', async () => {
+  it('shows the last 3 months to anyone who asks for past weeks', async () => {
+    const { toLocalDateString } = require('../../server/services/calculations');
+    const { addDays, tuesdayOf } = require('../../server/services/turni-schedule');
+    const recent = tuesdayOf(addDays(toLocalDateString(), -60));
     createTurno(db, { settimana: '2020-01-07' });
-    expect((await adminAgent.get('/api/turni')).body.turni.some(t => t.settimana === '2020-01-07')).toBe(false);
-    expect((await adminAgent.get('/api/turni?passati=1')).body.turni[0].settimana).toBe('2020-01-07');
-    expect((await userAgent.get('/api/turni?passati=1')).body.turni.some(t => t.settimana === '2020-01-07')).toBe(false);
+    createTurno(db, { settimana: recent });
+    const has = (body, s) => body.turni.some(t => t.settimana === s);
+    const plain = (await userAgent.get('/api/turni')).body;
+    expect(has(plain, recent)).toBe(false);
+    const passati = (await userAgent.get('/api/turni?passati=1')).body;
+    expect(has(passati, recent)).toBe(true);
+    expect(has(passati, '2020-01-07')).toBe(false);
   });
 });

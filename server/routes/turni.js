@@ -1,5 +1,6 @@
 /**
- * Turni API: everyone reads the next 24 weeks and swaps, leaves or moves their own turni; admins edit.
+ * Turni API: everyone reads the next 6 months (and the last 3 on request) and edits names and days;
+ * pauses, automatic generation and notes are admin-only.
  */
 
 const express = require('express');
@@ -22,7 +23,7 @@ router.get('/', (req, res) => {
   try {
     const oggi = toLocalDateString();
     T.ensureTurni(db, oggi);
-    res.json({ success: true, oggi, auto: T.isAuto(db), note: T.getNote(db), turni: T.listTurni(db, oggi, { passati: !!req.query.passati && !!req.session.isAdmin }), pause: T.listPause(db, oggi) });
+    res.json({ success: true, oggi, auto: T.isAuto(db), note: T.getNote(db), turni: T.listTurni(db, oggi, { passati: !!req.query.passati }), pause: T.listPause(db, oggi) });
   } catch (error) {
     console.error('[TURNI] Error loading turni:', error);
     res.status(500).json({ success: false, error: 'Errore nel caricamento dei turni' });
@@ -45,28 +46,21 @@ router.put('/auto', requireAdmin, (req, res) => {
   res.json({ success: true });
 });
 
-router.put('/:id', requireAdmin, (req, res) => {
+router.put('/:id', (req, res) => {
   const audit = auditOf(req);
-  const row = db.prepare('SELECT settimana FROM turni WHERE id = ?').get(req.params.id);
+  const row = db.prepare('SELECT settimana, data FROM turni WHERE id = ?').get(req.params.id);
   if (!row) return res.status(404).json({ success: false, error: 'Turno non trovato' });
+  if (row.data < toLocalDateString()) return res.status(400).json({ success: false, error: 'Le consegne passate non si modificano' });
   const result = T.updateTurno(db, Number(req.params.id), req.body, audit);
   if (result.error) return res.status(400).json({ success: false, error: result.error });
   if (result.changes.length > 0) log(req, audit, 'turno_modificato', `turno ${row.settimana}: ${result.changes.join(', ')}`);
   res.json({ success: true });
 });
 
-// Non-admins may act only on their own slot
-function ownsSlot(req, a) {
-  if (req.session.isAdmin) return true;
-  const row = db.prepare('SELECT turnista1_id, turnista2_id FROM turni WHERE id = ?').get(a.id);
-  return !!row && row[Number(a.slot) === 1 ? 'turnista1_id' : 'turnista2_id'] === req.session.userId;
-}
-
 router.post('/scambio', (req, res) => {
   const audit = auditOf(req);
   const { a, userId } = req.body || {};
   if (!a || !userId) return res.status(400).json({ success: false, error: 'Scambio non valido' });
-  if (!ownsSlot(req, a)) return res.status(403).json({ success: false, error: 'Puoi scambiare solo i tuoi turni' });
   const result = T.swapWithNext(db, a, Number(userId), toLocalDateString(), audit);
   if (result.error) return res.status(400).json({ success: false, error: result.error });
   log(req, audit, 'turno_scambio', `scambio ${result.changes.join(', ')}`);
@@ -77,7 +71,6 @@ router.post('/lascia', (req, res) => {
   const audit = auditOf(req);
   const { a } = req.body || {};
   if (!a) return res.status(400).json({ success: false, error: 'Turno non valido' });
-  if (!ownsSlot(req, a)) return res.status(403).json({ success: false, error: 'Puoi lasciare solo i tuoi turni' });
   const result = T.leaveTurno(db, a, toLocalDateString(), audit);
   if (result.error) return res.status(400).json({ success: false, error: result.error });
   log(req, audit, 'turno_modificato', result.changes.join(', '));
@@ -88,7 +81,6 @@ router.post('/sposta', (req, res) => {
   const audit = auditOf(req);
   const { a, to } = req.body || {};
   if (!a || !to) return res.status(400).json({ success: false, error: 'Spostamento non valido' });
-  if (!ownsSlot(req, a)) return res.status(403).json({ success: false, error: 'Puoi spostare solo i tuoi turni' });
   const result = T.moveTurno(db, a, Number(to), toLocalDateString(), audit);
   if (result.error) return res.status(400).json({ success: false, error: result.error });
   log(req, audit, 'turno_modificato', `sposta ${result.changes.join(', ')}`);

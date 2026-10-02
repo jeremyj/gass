@@ -650,6 +650,7 @@ b.th { color: var(--teatro); }
 .turni-ag > li { display: grid; grid-template-columns: 52px 1fr auto; gap: 0 12px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--riga); }
 .turni-ag > li:last-child { border-bottom: 0; }
 .turni-ag > li.cur { background: var(--s-tint); box-shadow: inset 4px 0 0 var(--s-acc); }
+.turni-ag > li.past { color: var(--salvia); background: #f7f8f6; }
 .turno-dd { text-align: center; line-height: 1; }
 .turno-dd b { display: block; font-family: var(--serif); font-size: 28px; }
 .turno-dd small { font-size: 16px; font-weight: 700; color: var(--salvia); text-transform: uppercase; }
@@ -669,11 +670,6 @@ b.th { color: var(--teatro); }
 .turni-t tr.cur td { background: var(--s-tint); }
 .turni-t tr.cur td:first-child { box-shadow: inset 4px 0 0 var(--s-acc); }
 .turni-t tr.off td { opacity: .7; }
-.turni-readonly .admin-col { display: none; }
-.name-btn { font: inherit; font-weight: 700; background: none; border: 0; padding: 2px 4px; margin: -2px -4px; border-radius: 4px; cursor: pointer; color: inherit; text-align: left; }
-.name-btn:hover { background: var(--s-tint); }
-.name-btn.picked { outline: 2px dashed var(--s-acc); outline-offset: 2px; }
-.pick-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; background: #FFF6E5; border: 1.5px solid var(--s-acc); border-radius: 10px; padding: 10px 16px; margin: 0 0 12px; }
 .pause-box { max-width: 820px; margin-top: 24px; }
 .pause-list { list-style: none; background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; margin: 8px 0 12px; }
 .pause-list li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--riga); }
@@ -685,9 +681,7 @@ b.th { color: var(--teatro); }
 .pause-form .btn { height: 50px; white-space: nowrap; }
 .date-field { cursor: pointer; }
 .date-field-popup { top: auto; z-index: 1200; margin-top: 6px; }
-.pick-banner.initially-hidden { display: none; }
 .turni-t td.nm { text-align: left; }
-.pick-banner select { width: auto; min-width: 240px; }
 .auto-switch { display: flex; align-items: center; gap: 8px; justify-content: flex-end; margin: 0 0 12px; font-size: 16px; color: var(--salvia); cursor: pointer; }
 .auto-switch.initially-hidden { display: none; }
 .turni-switches { display: flex; justify-content: flex-end; gap: 24px; }
@@ -700,5 +694,6 @@ b.th { color: var(--teatro); }
 .turni-note textarea { width: 100%; font: inherit; padding: 8px 10px; border: 1.5px solid var(--riga); border-radius: 8px; background: var(--carta); resize: vertical; }
 .turni-note .btn { margin-top: 8px; }
 .turni-note .btn.initially-hidden { display: none; }
+.nm-row { display: flex; align-items: center; gap: 8px; }
 .name-sel { width: 100%; padding: 5px 8px; font-size: 17px; font-weight: 700; }
 .name-sel.empty { color: var(--debito); border-color: var(--debito); border-style: dashed; }

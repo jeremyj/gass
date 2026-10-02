@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Turni</title>
-    <link rel="stylesheet" href="style.css?v=74">
+    <link rel="stylesheet" href="style.css?v=75">
 </head>
 <body>
     <header class="stag">
         <div class="stag-art" aria-hidden="true"><svg class="stag-ill"><use href="#ill-zucca"/></svg></div>
         <div class="stag-top">
-            <span class="stag-when">Prossime 24 settimane</span>
+            <span class="stag-when">Prossimi 6 mesi</span>
             <div class="header-actions">
                 <span id="user-display" class="user-name"></span>
                 <button type="button" onclick="handleLogout()" class="icon-btn" title="Esci" aria-label="Esci"><svg aria-hidden="true"><use href="#i-esci"/></svg></button>
@@ -26,6 +26,7 @@
             <h2>Note</h2>
             <p id="turni-note-view" class="turni-note-text"></p>
         </section>
+        <label class="auto-switch"><input type="checkbox" id="turni-passati" onchange="loadTurni()"> Mostra turni passati</label>
         <div id="turni-list"></div>
     </main>
 
@@ -40,12 +41,12 @@
         <span id="app-version"></span>
     </footer>
 
-    <script src="js/shared/utils.js?v=38"></script>
+    <script src="js/shared/utils.js?v=39"></script>
     <script src="js/shared/season.js?v=33"></script>
     <script src="js/shared/api-client.js"></script>
     <script src="js/shared/auth.js?v=33"></script>
     <script src="js/shared/version.js"></script>
     <script src="js/shared/turni-common.js?v=3"></script>
-    <script src="js/turni.js?v=7"></script>
+    <script src="js/turni.js?v=8"></script>
 </body>
 </html>

@@ -7,7 +7,8 @@
 
 const { addDays, tuesdayOf, nextTuesday, inPause, isDateString, pickPair } = require('./turni-schedule');
 
-const HORIZON_DAYS = 168; // always 24 weeks ahead
+const HORIZON_DAYS = 182; // always 26 weeks (6 months) ahead
+const PAST_DAYS = 91; // "turni passati": the last 13 weeks (3 months)
 
 const pairKey = (a, b) => (a < b ? `${a}-${b}` : `${b}-${a}`);
 
@@ -78,7 +79,7 @@ function ensureTurni(db, today, rnd = Math.random) {
   })();
 }
 
-// The next weeks from today; with passati, every week written so far as well
+// The next weeks from today; with passati, the last PAST_DAYS as well
 function listTurni(db, today, { passati = false } = {}) {
   return db.prepare(`
     SELECT t.*, u1.display_name AS nome1, u2.display_name AS nome2
@@ -87,7 +88,7 @@ function listTurni(db, today, { passati = false } = {}) {
     LEFT JOIN users u2 ON u2.id = t.turnista2_id
     WHERE t.data >= ? AND t.settimana < ?
     ORDER BY t.settimana
-  `).all(passati ? '' : today, addDays(today, HORIZON_DAYS)).map(r => ({
+  `).all(passati ? addDays(today, -PAST_DAYS) : today, addDays(today, HORIZON_DAYS)).map(r => ({
     id: r.id,
     settimana: r.settimana,
     data: r.data,

@@ -29,25 +29,33 @@ describe('GET /api/turni', () => {
     expect((await request(app).get('/api/turni')).status).toBe(401);
   });
 
-  it('generates and returns 24 weeks for any user', async () => {
+  it('generates and returns 26 weeks for any user', async () => {
     const res = await userAgent.get('/api/turni');
     expect(res.status).toBe(200);
     expect(res.body.auto).toBe(true);
-    expect(res.body.turni).toHaveLength(24);
+    expect(res.body.turni).toHaveLength(26);
     expect(res.body.turni[0].turnisti).toHaveLength(2);
     expect(res.body.oggi).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 });
 
-describe('admin edits', () => {
+describe('edits', () => {
   async function firstTurno() {
     return (await adminAgent.get('/api/turni')).body.turni[0];
   }
 
-  it('non-admins get 403', async () => {
+  it('lets any user edit names and the day, but only admins add pauses', async () => {
     const t = await firstTurno();
-    expect((await userAgent.put(`/api/turni/${t.id}`).send({ nota: 'x' })).status).toBe(403);
+    const other = createUser(db, { username: 'other', displayName: 'Other' });
+    expect((await userAgent.put(`/api/turni/${t.id}`).send({ nota: 'x', turnista1Id: other })).status).toBe(200);
+    expect(db.prepare('SELECT turnista1_id t, nota FROM turni WHERE id = ?').get(t.id)).toEqual({ t: other, nota: 'x' });
     expect((await userAgent.post('/api/turni/pause').send({ dal: '2027-08-01', al: '2027-08-31' })).status).toBe(403);
+  });
+
+  it('refuses edits to past consegne', async () => {
+    const x = createTurno(db, { settimana: '2020-01-07' });
+    expect((await adminAgent.put(`/api/turni/${x}`).send({ nota: 'x' })).status).toBe(400);
+    expect((await userAgent.put(`/api/turni/${x}`).send({ nota: 'x' })).status).toBe(400);
   });
 
   it('moves a consegna within its week and logs it', async () => {
@@ -83,15 +91,13 @@ describe('admin edits', () => {
     expect((await adminAgent.post('/api/turni/scambio').send({ a: { id: x, slot: 1 } })).status).toBe(400);
   });
 
-  it('lets a user swap only their own turno', async () => {
-    const me = db.prepare("SELECT id FROM users WHERE username = 'user1'").get().id;
-    const [b, c, d] = ['ub', 'uc', 'ud'].map(u => createUser(db, { username: u }));
-    const x = createTurno(db, { settimana: '2099-03-03', t1: me, t2: b });
+  it('lets a user swap anyone\'s turno', async () => {
+    const [a, b, c, d] = ['ua', 'ub', 'uc', 'ud'].map(u => createUser(db, { username: u }));
+    const x = createTurno(db, { settimana: '2099-03-03', t1: a, t2: b });
     const y = createTurno(db, { settimana: '2099-03-10', t1: c, t2: d });
-    expect((await userAgent.post('/api/turni/scambio').send({ a: { id: x, slot: 2 }, userId: c })).status).toBe(403);
-    expect((await userAgent.post('/api/turni/scambio').send({ a: { id: x, slot: 1 }, userId: c })).status).toBe(200);
-    expect(db.prepare('SELECT turnista1_id t FROM turni WHERE id = ?').get(x).t).toBe(c);
-    expect(db.prepare('SELECT turnista1_id t FROM turni WHERE id = ?').get(y).t).toBe(me);
+    expect((await userAgent.post('/api/turni/scambio').send({ a: { id: x, slot: 2 }, userId: c })).status).toBe(200);
+    expect(db.prepare('SELECT turnista2_id t FROM turni WHERE id = ?').get(x).t).toBe(c);
+    expect(db.prepare('SELECT turnista1_id t FROM turni WHERE id = ?').get(y).t).toBe(b);
   });
 
   it('adds and deletes a pause', async () => {

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Turni</title>
-    <link rel="stylesheet" href="style.css?v=74">
+    <link rel="stylesheet" href="style.css?v=75">
 </head>
 <body>
     <nav class="nav-menu">
@@ -24,7 +24,7 @@
     </nav>
     <header class="stag">
         <div class="stag-art" aria-hidden="true"><svg class="stag-ill"><use href="#ill-zucca"/></svg></div>
-        <div class="stag-when">Prossime 24 settimane</div>
+        <div class="stag-when">Prossimi 6 mesi</div>
         <h1>Turni</h1>
         <div id="mio-turno" class="stag-sub"></div>
     </header>
@@ -32,7 +32,7 @@
     <main class="container">
         <div id="status" class="status" role="status"></div>
         <div class="turni-switches">
-        <label id="passati-wrap" class="auto-switch initially-hidden"><input type="checkbox" id="turni-passati" onchange="loadTurni()"> Mostra turni passati</label>
+        <label id="passati-wrap" class="auto-switch"><input type="checkbox" id="turni-passati" onchange="loadTurni()"> Mostra turni passati</label>
         <label id="auto-wrap" class="auto-switch initially-hidden"><input type="checkbox" id="turni-auto" onchange="toggleAuto(this)"> Generazione automatica dei turni</label>
         </div>
         <section id="turni-note-box" class="turni-note initially-hidden" aria-label="Note sui turni">
@@ -41,12 +41,11 @@
             <textarea id="turni-note-edit" class="initially-hidden" rows="3" placeholder="Note sui turni: affiancamenti, chi non può, accordi…" oninput="document.getElementById('turni-note-save').classList.remove('initially-hidden')"></textarea>
             <button type="button" id="turni-note-save" class="btn btn-go initially-hidden" onclick="saveNote()">Salva note</button>
         </section>
-        <div id="pick-banner" class="pick-banner initially-hidden"></div>
         <table class="t turni-t">
-            <thead><tr><th class="left">Consegna</th><th class="left">Turnista</th><th class="left">Turnista</th><th class="left">Note</th><th class="admin-col"></th></tr></thead>
+            <thead><tr><th class="left">Consegna</th><th class="left">Turnista</th><th class="left">Turnista</th><th class="left">Note</th><th></th></tr></thead>
             <tbody id="turni-body"></tbody>
         </table>
-        <p id="turni-hint" class="hint initially-hidden">Scegli i due nomi di ogni consegna dai menu; sostituire o togliere un nome chiede conferma. “Giorno”: sposta o salta la consegna, segna la riunione. Con la generazione automatica in pausa le settimane nuove arrivano da coprire. Ogni modifica finisce in Attività.</p>
+        <p id="turni-hint" class="hint">Scegli i due nomi di ogni consegna dai menu; sostituire o togliere un nome chiede conferma. Per uno scambio cambia i nomi in tutte e due le date. “Giorno”: sposta o salta la consegna, segna la riunione. Ogni modifica finisce in Attività.</p>
 
         <section id="pause-section" class="pause-box initially-hidden">
             <h2>Pause</h2>
@@ -85,13 +84,13 @@
         <span id="app-version"></span>
     </footer>
 
-    <script src="js/shared/utils.js?v=38"></script>
+    <script src="js/shared/utils.js?v=39"></script>
     <script src="js/shared/season.js?v=33"></script>
     <script src="js/shared/calendar.js?v=36"></script>
     <script src="js/shared/api-client.js"></script>
     <script src="js/shared/auth.js?v=33"></script>
     <script src="js/shared/version.js"></script>
     <script src="js/shared/turni-common.js?v=3"></script>
-    <script src="js/turni-desktop.js?v=12"></script>
+    <script src="js/turni-desktop.js?v=13"></script>
 </body>
 </html>
