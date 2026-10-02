@@ -132,6 +132,7 @@ app.set('trust proxy', 1)  // server.js
 - `trovato_in_cassa` = previous day's `lasciato_in_cassa`
 - `pagato_produttore` = `Σ conto_produttore` for all movements
 - `lasciato_in_cassa` = `trovato + incassato - pagato`
+- These are **stored** and only recomputed by `POST /api/consegna` when movimenti are saved (`routes/consegna.js`, after the movimenti loop); the page shows the stored values. A cash removal with no movimento has no field: the 29/9/2026 consegna holds lasciato 465 by hand (555 counted − 90 € taken to the teatro, notebook photo), while its movimenti give 553,70. Any movimento save on 29/9 overwrites it and shifts every later trovato. An "uscite di cassa" field was proposed to the user 2026-10-02, not decided
 
 ### Saldo Ledger (v2.7)
 Saldo = replay from 0 of the participant's movimenti (via `applySaldoChanges`) + rettifiche (`saldo += importo`), ordered by date then `created_at`. All reads go through `server/services/saldi.js`:
