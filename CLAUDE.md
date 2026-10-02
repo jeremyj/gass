@@ -23,7 +23,7 @@
   - `turni.js` - Turni API (`GET` any user, `?passati=1` adds the last 91 days; `PUT /:id` (names + Giorno), `POST /scambio`, `/lascia`, `/sposta` any user on any slot, past consegne refused; pauses, `PUT /auto`, `PUT /note` admin-only; both are declared before `/:id`)
 - **Services**: `server/services/calculations.js` - Pure business logic; `server/services/saldi.js` - saldo ledger (DB-backed); `server/services/validation.js` - `POST /api/consegna` payload validation; `server/services/activity.js` - `logActivity()`, the only writer of `activity_logs` rows; `server/services/apertura.js` - `apertura(db, today)`: date the Consegna page opens on (last non-saltata turno ≤ today while it has no consegna or an open one, else today) + all open consegne
 - **Turni services**: `server/services/turni-schedule.js` (pure date/queue helpers, `pickPair`) and `server/services/turni.js` (`ensureTurni`, `listTurni`, `updateTurno`, `swapWithNext` (→ `swapTurnisti`), `leaveTurno`, `moveTurno`, `isAuto`/`setAuto`, pauses, `freeFutureTurni`, `importTurni`)
-- **Teatro services**: `server/services/teatro-calc.js` (pure: semesters, FIFO `allocate`) and `server/services/teatro.js` (`ensureSemestre`, `statoTeatro`, `residui`, `registraPagamento`, `setDovuto`, `setQuota`, `addCassa`, `riepilogo`, `importFoglio`)
+- **Teatro services**: `server/services/teatro-calc.js` (pure: semesters, FIFO `allocate`) and `server/services/teatro.js` (`ensureSemestre`, `syncDovutoCorrente` (current semester follows `setStato`: attivo adds the full quota, leaving attivo removes it if full and unpaid; user decision 2026-10-02), `statoTeatro`, `residui`, `registraPagamento`, `setDovuto`, `setQuota`, `addCassa`, `riepilogo`, `importFoglio`)
 - **CLI**: `manage-users.js`, `manage-turni.js` (`import <csv>` / `list`), `manage-teatro.js` (`import <csv>` / `list`)
 - **Middleware**: `server/middleware/` - auth.js, userAgent.js
 
@@ -261,7 +261,7 @@ Auto-calculated fields (credito_lasciato, debito_lasciato, usa_credito, debito_s
 **Stack**: Vitest + supertest, `pool: forks` (each test file = isolated Node process)
 
 ```bash
-npm test                    # all 290 tests
+npm test                    # all 291 tests
 npm run test:unit           # pure function tests (no DB/HTTP)
 npm run test:integration    # API tests with in-memory SQLite
 npm run test:coverage       # with coverage report

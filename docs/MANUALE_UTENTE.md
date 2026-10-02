@@ -274,7 +274,7 @@ In **Saldi** ogni partecipante ha la sua situazione: su mobile, sotto il nome, *
 
 - In alto: quanto c'è **nel bussolotto** (cassa teatro), le quote del semestre in corso, le quote mancanti
 - La **griglia** gassisti × semestri (gli ultimi due; **Mostra semestri precedenti** per vedere quelli più vecchi): righe in ordine alfabetico, i disattivati in fondo; in ogni casella **✓** verde = pagato, **✗** rosso = manca qualcosa (versato/dovuto al passaggio del mouse), grigio **–** = non dovuto o non era nel GASS. Clic su una casella per cambiare quanto deve: una quota ridotta (ad esempio chi entra a metà semestre), **Non dovuto** o **Non era nel GASS**
-- Clic sull'intestazione di un semestre per cambiarne la **quota**: vale per chi ha la quota piena, le ridotte restano. Un semestre nuovo parte dalla quota dell'ultimo e la devono tutti gli attivi; i "no turni" no
+- Clic sull'intestazione di un semestre per cambiarne la **quota**: vale per chi ha la quota piena, le ridotte restano. Un semestre nuovo parte dalla quota dell'ultimo e la devono tutti gli attivi; i "no turni" no. Nel semestre in corso la quota segue lo stato: chi torna **Attivo** la deve, chi passa a No turni o Disattivato non la deve più, se non ha già pagato e non ha una quota impostata a mano. I semestri passati non cambiano
 - **Note** per persona, come nel vecchio foglio
 - **Registro cassa teatro**: le quote pagate (con la × per eliminare un pagamento sbagliato) e le voci aggiunte a mano, ad esempio l'affitto versato (uscita) con chi l'ha portato
 
@@ -365,7 +365,10 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.24.1
+Sistema GASS Pagamenti - Versione 2.24.2
+- Quota teatro: nel semestre in corso segue lo stato dell'utente (chi diventa attivo la deve, chi smette di esserlo no, se non ha pagato)
+
+Versione 2.24.1
 - Teatro: nella griglia ✗ = da pagare, – = non dovuto; in Saldi (desktop) – per chi non ha quota questo semestre
 - Storico: tolti i link **Dettaglio** e **Riapri consegna** dalle righe; si apre la consegna toccandola, e lì c'è **Riapri consegna**
 
