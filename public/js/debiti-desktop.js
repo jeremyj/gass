@@ -33,7 +33,6 @@ function renderParticipants() {
     const row = createParticipantRow(p);
     tbody.appendChild(row);
   });
-
 }
 
 function createParticipantRow(p) {

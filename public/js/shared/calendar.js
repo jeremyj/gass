@@ -47,16 +47,9 @@ function pickerHtml(year, month, selectedStr, { onDay, onNav, footer = '' }) {
 
 function setDateDisplay(dateStr) {
   const dataInput = document.getElementById('data');
-  const dataDisplayInput = document.getElementById('data-display');
   const headerDateDisplay = document.getElementById('header-date-display');
 
   if (!dateStr) return;
-
-  const [year, month, day] = dateStr.split('-');
-
-  if (dataDisplayInput) {
-    dataDisplayInput.value = `${day}-${month}-${year}`;
-  }
 
   if (dataInput) {
     dataInput.value = dateStr;

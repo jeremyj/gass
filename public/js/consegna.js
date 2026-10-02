@@ -334,7 +334,6 @@ async function saveWithParticipant(currentId) {
     // Reload consegna data to get updated movements
     await checkDateData();
 
-
     // Close participant card after save
     const container = document.getElementById('selected-participants');
     container.innerHTML = '';

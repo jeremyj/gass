@@ -149,7 +149,7 @@ function confirmDialog({ title, message = '', details = [], confirmText = 'Confe
 
 // ===== STORICO → CONSEGNA =====
 
-// Open the consegna page on a given date (the page restores it from sessionStorage)
+// Open the consegna page on a given date
 function openConsegnaOn(dateStr) {
   window.location.href = `/consegna?data=${dateStr}`;
 }
