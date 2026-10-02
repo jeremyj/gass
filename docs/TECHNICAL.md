@@ -34,14 +34,14 @@ GET    /api/storico                   - All deliveries newest first, with trovat
 PUT    /api/participants/:id          - Set participant balance (stored as a rettifica, admin)
 POST   /api/participants              - Create new participant
 DELETE /api/participants/:id          - Delete participant (admin; 400 if the user has movimenti, rettifiche or quota teatro payments)
-GET    /api/turni                     - Next 24 weeks (writes missing ones), pause list, `auto` (any authenticated user)
-PUT    /api/turni/:id                 - Edit a week: turnisti, day, saltata, riunione, nota (admin)
-POST   /api/turni/scambio             - {a: {id, slot}, userId}: userId takes slot a, a's person takes userId's first turno from today (any user for their own slot, admin for any)
-POST   /api/turni/lascia              - {a: {id, slot}}: the slot becomes da coprire (own slot, admin any)
-POST   /api/turni/sposta              - {a: {id, slot}, to}: the person moves to a free slot of consegna `to` (own slot, admin any)
+GET    /api/turni                     - Next 26 weeks (writes missing ones), pause list, `auto` (any authenticated user)
+PUT    /api/turni/:id                 - Edit a week: turnisti, day, saltata, riunione, nota (any user; 400 on a past consegna)
+POST   /api/turni/scambio             - {a: {id, slot}, userId}: userId takes slot a, a's person takes userId's first turno from today (any user, any slot)
+POST   /api/turni/lascia              - {a: {id, slot}}: the slot becomes da coprire (any user)
+POST   /api/turni/sposta              - {a: {id, slot}, to}: the person moves to a free slot of consegna `to` (any user)
 PUT    /api/turni/auto                - {auto}: pause/resume automatic generation (admin)
 PUT    /api/turni/note                - {note}: free-text notes shown above the turni, max 5000 chars (admin; GET returns `note`)
-GET    /api/turni?passati=1           - Same, with every past week too (admins only; ignored for others)
+GET    /api/turni?passati=1           - Same, plus the last 91 days (`PAST_DAYS`, 3 months; any user)
 GET    /api/teatro/utente/:id         - A person's quota teatro: per-semester {dovuto, pagato}, residuo, anticipo (any user)
 GET    /api/teatro/consegna/:id       - Quotas paid in that consegna, shown next to its cassa (any user)
 POST   /api/teatro/pagamenti          - {userId, importo, consegnaId}: record a payment in an open consegna, dated on it (any user; 400 without one)
@@ -55,7 +55,7 @@ GET    /api/version                   - Get application version from package.jso
 
 **User deletion:** `movimenti` and `rettifiche_saldo` reference `users` with `ON DELETE CASCADE`, so deleting a user with either would erase their history from past consegne; the route refuses it with 400. For any other user, every non-cascading reference to `users` (`activity_logs.target_user_id`/`actor_user_id`, the `*_by` audit columns) is set to NULL in the same transaction as the delete, so log rows stay. The rule lives in `server/services/users.js` (`deleteUser(db, id)`), shared by the route and `manage-users.js delete`. An admin can't delete their own account (400): the `user_deleted` log row would reference a deleted actor.
 
-**User stato** (`users.stato`, replaced `attivo`): `attivo` (default), `sospeso` (logs in, sees saldi, listed in the consegna "Aggiungi partecipante" select, gets no turni) or `disattivato` (the way to remove someone who has history: local login returns 403, OIDC redirects to `/login?error=user_disabled`, `requireAuth` also checks it so an open session ends on its next API call). Set by `PUT /api/users/:id` with `{ stato }` (logged as `user_edited` `stato: a → b`; an admin can't suspend or disable themselves) or `manage-users.js stato <username> <attivo|sospeso|disattivato>`. Leaving `attivo` empties the user's future turni (`freeFutureTurni`: they become "da coprire"); returning to `attivo` sets `turni_dal` to that day, so the turni wait restarts from it (setting `attivo` on an already-attivo user changes nothing). `GET /api/participants` returns everyone (with `stato`), so past consegne and saldi resolve; the pages hide disattivati: the consegna select lists only non-disattivati users (a disattivato user's saved movimento still opens from the day's list), the Saldi list hides them unless an admin ticks **Mostra disattivati** (desktop). The Saldi totals include everyone's saldi.
+**User stato** (`users.stato`, replaced `attivo`): `attivo` (default), `sospeso` (shown as "no turni" in the UI: logs in, orders, listed in the consegna "Aggiungi partecipante" select, gets no turni and owes no new teatro semester; not greyed, sorted with attivi) or `disattivato` (the way to remove someone who has history: local login returns 403, OIDC redirects to `/login?error=user_disabled`, `requireAuth` also checks it so an open session ends on its next API call). Set by `PUT /api/users/:id` with `{ stato }` (logged as `user_edited` `stato: a → b`; an admin can't suspend or disable themselves) or `manage-users.js stato <username> <attivo|sospeso|disattivato>`. Leaving `attivo` empties the user's future turni (`freeFutureTurni`: they become "da coprire"); returning to `attivo` sets `turni_dal` to that day, so the turni wait restarts from it (setting `attivo` on an already-attivo user changes nothing). `GET /api/participants` returns everyone (with `stato`), so past consegne and saldi resolve; the pages hide disattivati: the consegna select lists only non-disattivati users (a disattivato user's saved movimento still opens from the day's list), the Saldi list hides them unless an admin ticks **Mostra disattivati** (desktop). The Saldi totals include everyone's saldi.
 
 `GET /comefunziona` serves `public/comefunziona.html`, the first-access video (`public/video/gass-primo-accesso.mp4`); `GET /v2.17` serves `public/v2.17.html`, the turni video (`public/video/gass-turni.mp4`); `GET /admin-video` serves `public/admin-video.html`, the desktop admin video (`public/video/gass-admin.mp4`, not linked from other pages). All public, no auth. The one-page guide `/inbreve` was removed in 2.17.3.
 
@@ -262,7 +262,7 @@ function parseDecimal(value) {
 
 Pure date/queue logic in `server/services/turni-schedule.js` (`addDays`, `tuesdayOf`, `nextTuesday`, `inPause`, `isDateString`, `pickPair`); DB-backed in `server/services/turni.js`.
 
-**Generation is lazy.** Each `GET /api/turni` runs `ensureTurni`, which fills every missing non-pause Tuesday in `[nextTuesday(today), today + HORIZON_DAYS)` (`HORIZON_DAYS = 168`, 24 weeks). Weeks already written are never recomputed. While automatic generation is paused (`settings.turni_auto = '0'`, `isAuto`/`setAuto`, `PUT /api/turni/auto`), new weeks are written with both slots empty for an admin to fill; resuming affects only weeks not yet written. Adding a pause turns the weeks already written inside it into `saltata` and frees their people; deleting it lets the missing weeks regenerate on the next GET, while weeks already `saltata` stay so (restored from "Giorno").
+**Generation is lazy.** Each `GET /api/turni` runs `ensureTurni`, which fills every missing non-pause Tuesday in `[nextTuesday(today), today + HORIZON_DAYS)` (`HORIZON_DAYS = 182`, 26 weeks). Weeks already written are never recomputed. While automatic generation is paused (`settings.turni_auto = '0'`, `isAuto`/`setAuto`, `PUT /api/turni/auto`), new weeks are written with both slots empty for an admin to fill; resuming affects only weeks not yet written. Adding a pause turns the weeks already written inside it into `saltata` and frees their people; deleting it lets the missing weeks regenerate on the next GET, while weeks already `saltata` stay so (restored from "Giorno").
 
 **Pair rule** (`pickPair`): only `attivo` users; the first is the one waiting longest since their last turno (or `turni_dal`); the partner is, among the next `PARTNER_WINDOW = 3` in the queue, the one they have done fewest turni with, ties at random. A `saltata` week frees its pair, who are first in line again.
 
@@ -270,7 +270,7 @@ Pure date/queue logic in `server/services/turni-schedule.js` (`addDays`, `tuesda
 
 **Import:** `manage-turni.js import <file.csv>`, lines `yyyy-mm-dd;username1;username2;nota` (blank lines, `#` comments and a `data` header are skipped; a nota containing "riunione" sets `riunione`). It replaces every week from the first imported date. `manage-turni.js list` prints the next 24 weeks.
 
-Activity events: `turno_modificato`, `turno_scambio`, `pausa_aggiunta`, `pausa_eliminata`. `leaveTurno`/`moveTurno` log as `turno_modificato`. Pages: `turni.html` (mobile agenda; own turno: swap, move, leave) and `turni-desktop.html` (same for users; admins pick every name from a menu). Shared client logic: `public/js/shared/turni-common.js`.
+Activity events: `turno_modificato`, `turno_scambio`, `pausa_aggiunta`, `pausa_eliminata`. `leaveTurno`/`moveTurno` log as `turno_modificato`. Pages: `turni.html` (mobile agenda; own turno: swap, move, leave) and `turni-desktop.html` (everyone picks every name from a menu and edits the day; pauses, auto and notes admin-only). Shared client logic: `public/js/shared/turni-common.js`.
 
 ## Quota teatro
 

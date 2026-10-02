@@ -72,11 +72,11 @@ Indice delle consegne dalla più recente, in una tabella con Consegna, Stato, Pe
 
 # Turni
 
-Le prossime 24 settimane con i due turnisti di ogni consegna (martedì). La tua riga è segnata **TU**; **da coprire** = manca un turnista; **riunione** = riunione GASS.
+I prossimi 6 mesi con i due turnisti di ogni consegna (martedì). La tua riga è segnata **TU**; **da coprire** = manca un turnista; **riunione** = riunione GASS. **Mostra turni passati** aggiunge gli ultimi 3 mesi.
 
-Sul tuo turno clicca il tuo nome: **scambia con…** (prima mettiti d'accordo con qualcuno: prende il tuo turno e tu il suo primo turno da oggi), **sposta al…** (una data con un posto libero) o **Non posso** (il posto resta da coprire). Ogni azione chiede conferma.
+Tutti scelgono i nomi di ogni consegna futura dai menu della tabella (sostituire o togliere un nome chiede conferma; per uno scambio cambia i nomi in tutte e due le date). **Giorno** sposta la consegna, la segna **niente consegna** o **riunione GASS**, aggiunge una nota.
 
-Gli amministratori scelgono i nomi dai menu della tabella e mettono in pausa la **Generazione automatica dei turni**: in pausa, le settimane nuove arrivano da coprire. Il riquadro **Note** sopra la tabella è per appunti liberi: lo scrivono gli amministratori, lo leggono tutti. **Giorno** sposta la consegna, la segna **niente consegna** o **riunione GASS**, aggiunge una nota. In fondo, **Pause** per i periodi senza consegne.
+Gli amministratori mettono in pausa la **Generazione automatica dei turni** (in pausa, le settimane nuove arrivano da coprire), scrivono il riquadro **Note** sopra la tabella (lo leggono tutti) e gestiscono le **Pause** in fondo.
 
 ---
 
@@ -93,11 +93,10 @@ Ogni semestre (gennaio–giugno, luglio–dicembre) si paga una quota per l'affi
 | Riaprire consegna chiusa | Storico → **Riapri consegna** (sulla riga della consegna) |
 | Eliminare una consegna salvata | Consegna → **Annulla consegna** |
 | Quote teatro: griglia, quote ridotte, cassa teatro | **Teatro** (menu in alto) |
-| Vedere i turni passati | Turni → **Mostra turni passati** |
 | Modificare un saldo | Saldi → **Modifica saldo** |
 | Aggiungere partecipanti | Saldi → **+ Aggiungi partecipante** |
 | Modificare utenti | Saldi → **Modifica utente** |
 | Eliminare un utente | Saldi → **Modifica utente** → **Elimina utente** (solo se non ha movimenti né rettifiche di saldo) |
-| Sospendere / disattivare / riattivare un utente | Saldi → **Modifica utente** → Stato (**Attivo**, **Sospeso**, **Disattivato**); per vedere i disattivati spuntare **Mostra disattivati** |
-| Modificare i turni | Turni → clicca un nome, **Giorno**, **Pause** |
+| Togliere dai turni / disattivare / riattivare un utente | Saldi → **Modifica utente** → Stato (**Attivo**, **No turni**, **Disattivato**); per vedere i disattivati spuntare **Mostra disattivati** |
+| Pause e generazione automatica dei turni, note | Turni → **Generazione automatica**, **Note**, **Pause** |
 | Log attività | Menu → **Attività** |

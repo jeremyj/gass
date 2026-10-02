@@ -224,22 +224,22 @@ Solo un amministratore può eliminare una consegna già salvata, con **Annulla c
 Solo amministratori, da desktop: Saldi → **Modifica utente**.
 
 - **Elimina utente**: solo per chi non ha mai avuto movimenti né rettifiche di saldo
-- **Stato** (tre schede): **Attivo** accede, ordina e fa i turni; **Sospeso** accede e vede il saldo, compare in "Aggiungi partecipante" ma non fa turni (per chi non ordina il fresco); in Saldi, su mobile e desktop, è in grigio con l'etichetta **sospeso**; **Disattivato** è per chi lascia il gruppo: non accede, non compare più in Saldi né in "Aggiungi partecipante". I movimenti passati restano nello Storico e nelle consegne. Se ha ancora un credito o un debito, la conferma lo mostra; i totali di Saldi continuano a contarlo
-- Sospendendo o disattivando, i turni futuri dell'utente restano **da coprire**
+- **Stato** (tre schede): **Attivo** accede, ordina e fa i turni; **No turni** partecipa al GASS (accede, ordina, compare in "Aggiungi partecipante") ma non fa i turni e non deve la quota teatro dei semestri nuovi; in Saldi, su mobile e desktop, ha l'etichetta **no turni** accanto al nome; **Disattivato** è per chi lascia il gruppo: non accede, non compare più in Saldi né in "Aggiungi partecipante". I movimenti passati restano nello Storico e nelle consegne. Se ha ancora un credito o un debito, la conferma lo mostra; i totali di Saldi continuano a contarlo
+- Passando a No turni o disattivando, i turni futuri dell'utente restano **da coprire**
 - Tornando ad **Attivo** l'attesa per il turno riparte da quel giorno
 - Per rivedere i disattivati spuntare **Mostra disattivati** in Saldi (compaiono in grigio)
 
 ### 5. Turni
 
-Le consegne sono di martedì. **Turni** elenca le prossime 24 settimane con i due turnisti di ciascuna; la tua riga è segnata **TU**. Etichette: **riunione** (riunione GASS), un giorno diverso dal martedì se la consegna è stata spostata, **niente consegna**, **da coprire** (turnista mancante). Sui tuoi turni puoi scambiare, spostare o lasciare il posto (sotto); le altre modifiche le fanno gli amministratori, da desktop.
+Le consegne sono di martedì. **Turni** elenca i prossimi 6 mesi con i due turnisti di ciascuna consegna; la tua riga è segnata **TU**. Etichette: **riunione** (riunione GASS), un giorno diverso dal martedì se la consegna è stata spostata, **niente consegna**, **da coprire** (turnista mancante). **Mostra turni passati** (su desktop e mobile) aggiunge gli ultimi 3 mesi, in grigio e in sola lettura. Da desktop tutti modificano tutti i turni (sotto); da mobile si cambiano solo i propri.
 
 #### Chi decide le coppie
 
 Con la **generazione automatica** attiva, le settimane nuove si riempiono da sole: tocca a chi aspetta da più tempo dall'ultimo turno e il compagno è, tra i 3 successivi in attesa, quello con cui ha fatto meno turni (a sorte in caso di parità). Se una consegna salta, la coppia è la prima in coda per la volta successiva. Con la generazione automatica **in pausa**, le settimane nuove arrivano vuote (**da coprire**) e i nomi li sceglie un amministratore. In entrambi i casi le settimane già visibili non cambiano da sole.
 
-#### I tuoi turni (tutti)
+#### I tuoi turni (mobile)
 
-Su desktop clicca il tuo nome, su mobile tocca **cambia** sulla tua riga. Poi:
+Tocca **cambia** sulla tua riga. Poi:
 
 - **scambia con…**: mettiti prima d'accordo con qualcuno, poi sceglilo: prende il tuo turno e tu prendi il suo primo turno da oggi. L'elenco mostra solo chi ha un turno da oggi in poi e non è già in quella consegna
 - **sposta al…**: passi a un'altra data che ha un posto libero; il tuo posto resta da coprire
@@ -247,14 +247,18 @@ Su desktop clicca il tuo nome, su mobile tocca **cambia** sulla tua riga. Poi:
 
 Ogni azione chiede conferma e resta nel registro Attività.
 
-#### Modifiche (amministratori, desktop)
+#### Modifiche (tutti, desktop)
 
-- **Nomi**: ogni nome è un menu; scegli la persona o **da coprire**. Riempire un posto libero è immediato, sostituire o togliere un nome chiede conferma
+- **Nomi**: ogni nome è un menu; scegli la persona o **da coprire**. Riempire un posto libero è immediato, sostituire o togliere un nome chiede conferma. Per uno scambio cambia i nomi in tutte e due le date
+- **Giorno**: sposta la consegna in un altro giorno della settimana, segna **niente consegna**, **riunione GASS** o aggiunge una nota. Con niente consegna la coppia torna libera ed è la prima in coda
+
+Ogni modifica resta nel registro Attività. Le consegne passate non si modificano.
+
+#### Solo amministratori (desktop)
+
 - **Generazione automatica dei turni**: la casella sopra la tabella la mette in pausa o la riattiva (chiede conferma). In pausa, "niente consegna" toglie solo i due nomi da quella data, senza toccare la coda
 - **Note**: il riquadro sopra la tabella, per appunti liberi (affiancamenti, chi non può…). Lo scrivono gli amministratori da desktop, lo leggono tutti su desktop e mobile
-- **Giorno**: sposta la consegna in un altro giorno della settimana, segna **niente consegna**, **riunione GASS** o aggiunge una nota. Con niente consegna la coppia torna libera ed è la prima in coda
 - **Pause**: un periodo senza consegne (ad esempio le feste). Le settimane già scritte nel periodo diventano niente consegna; eliminando la pausa le settimane mancanti si rigenerano, quelle già segnate niente consegna restano tali e si ripristinano da **Giorno**
-- **Mostra turni passati**: la casella sopra la tabella mostra anche le settimane già fatte, in grigio e in sola lettura
 
 ### 6. Quota teatro
 
@@ -269,8 +273,8 @@ In **Saldi** ogni partecipante ha la sua situazione: su mobile, sotto il nome, *
 #### Pagina Teatro (amministratori, desktop)
 
 - In alto: quanto c'è **nel bussolotto** (cassa teatro), le quote del semestre in corso, le quote mancanti
-- La **griglia** gassisti × semestri (gli ultimi due; **Mostra semestri precedenti** per vedere quelli più vecchi): righe in ordine: attivi, poi sospesi, poi disattivati; in ogni casella **✓** verde = pagato, **–** rosso = manca qualcosa (versato/dovuto al passaggio del mouse), grigio **0** = non dovuto, grigio **–** = non era nel GASS. Clic su una casella per cambiare quanto deve: una quota ridotta (ad esempio chi entra a metà semestre), **Non dovuto** o **Non era nel GASS**
-- Clic sull'intestazione di un semestre per cambiarne la **quota**: vale per chi ha la quota piena, le ridotte restano. Un semestre nuovo parte dalla quota dell'ultimo e la devono tutti gli attivi; i sospesi no
+- La **griglia** gassisti × semestri (gli ultimi due; **Mostra semestri precedenti** per vedere quelli più vecchi): righe in ordine alfabetico, i disattivati in fondo; in ogni casella **✓** verde = pagato, **–** rosso = manca qualcosa (versato/dovuto al passaggio del mouse), grigio **0** = non dovuto, grigio **–** = non era nel GASS. Clic su una casella per cambiare quanto deve: una quota ridotta (ad esempio chi entra a metà semestre), **Non dovuto** o **Non era nel GASS**
+- Clic sull'intestazione di un semestre per cambiarne la **quota**: vale per chi ha la quota piena, le ridotte restano. Un semestre nuovo parte dalla quota dell'ultimo e la devono tutti gli attivi; i "no turni" no
 - **Note** per persona, come nel vecchio foglio
 - **Registro cassa teatro**: le quote pagate (con la × per eliminare un pagamento sbagliato) e le voci aggiunte a mano, ad esempio l'affitto versato (uscita) con chi l'ha portato
 
@@ -361,7 +365,12 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.23.1
+Sistema GASS Pagamenti - Versione 2.24.0
+- **Turni**: da desktop tutti modificano tutti i turni (nomi e **Giorno**); pause, generazione automatica e note restano agli amministratori
+- Turni: prossimi 6 mesi; **Mostra turni passati** (ultimi 3 mesi) per tutti, anche su mobile
+- Lo stato **Sospeso** si chiama **No turni**: in Saldi e Teatro non è più in grigio, solo un'etichetta accanto al nome
+
+Versione 2.23.1
 - Storico: **Dettaglio** su ogni riga (si apre anche da tastiera o in una nuova scheda); tolto **Completa consegna**, che apriva la stessa pagina; cassa negativa in rosso
 - Il riquadro delle consegne aperte è una frase sola
 
