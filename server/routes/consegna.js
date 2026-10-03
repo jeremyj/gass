@@ -7,7 +7,7 @@ const { validateConsegnaPayload } = require('../services/validation');
 const { logActivity } = require('../services/activity');
 const { quotePerPersona } = require('../services/teatro');
 const { apertura } = require('../services/apertura');
-const { notifyClosed, telegramConfigured } = require('../services/report');
+const { notifyClosed, canaliAttivi } = require('../services/report');
 
 const router = express.Router();
 
@@ -17,6 +17,11 @@ router.use(requireAuth);
 // Date the Consegna page opens on, and the open consegne to warn about (declared before /:date)
 router.get('/apertura', (req, res) => {
   res.json({ success: true, ...apertura(db, toLocalDateString()) });
+});
+
+// Report channels configured on this server, offered in the close confirmation (declared before /:date)
+router.get('/report-canali', (req, res) => {
+  res.json({ success: true, canali: canaliAttivi() });
 });
 
 // Get consegna data for a specific date
@@ -371,11 +376,12 @@ router.post('/:id/close', (req, res) => {
     console.log(`[CONSEGNA] ${timestamp} - Consegna ${id} closed by user ${req.session.username}`);
     res.json({ success: true });
 
-    // Report to the Telegram group after responding: a Telegram failure never blocks the close
-    if (telegramConfigured()) {
-      notifyClosed(db, id, `${req.protocol}://${req.get('host')}`)
-        .catch(err => console.error(`[CONSEGNA] ${timestamp} - Telegram report for consegna ${id} failed:`, err.message));
-    }
+    // Reports on the channels confirmed in the close dialog, after responding: a send failure never blocks the close
+    const richiesti = Array.isArray(req.body?.report) ? req.body.report : [];
+    canaliAttivi().filter(canale => richiesti.includes(canale)).forEach(canale => {
+      notifyClosed(db, id, `${req.protocol}://${req.get('host')}`, canale)
+        .catch(err => console.error(`[CONSEGNA] ${timestamp} - ${canale} report for consegna ${id} failed:`, err.message));
+    });
   } catch (error) {
     console.error(`[CONSEGNA] ${timestamp} - Error closing consegna ${id}:`, error);
     res.status(500).json({ success: false, error: 'Errore durante la chiusura' });

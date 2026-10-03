@@ -1,4 +1,5 @@
-// Consegna report sent to a Telegram group/channel on close, laid out like the old turno report emails
+// Consegna report sent on close to a Telegram group/channel and/or by email, laid out like the old turno report emails
+const nodemailer = require('nodemailer');
 const { roundToCents, calculateTrovatoInCassa } = require('./calculations');
 
 // Same as formatNumber in public/js/shared/utils.js: 11,50 / 8
@@ -7,9 +8,9 @@ function num(value) {
   return n % 1 === 0 ? n.toString() : n.toFixed(2).replace('.', ',');
 }
 
-const escape = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const escapeHtml = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-// Body without the title: what is compared to decide whether a reclose resends
+// Plain-text body without the title: what is compared to decide whether a reclose resends
 function reportBody(db, consegnaId, baseUrl) {
   const c = db.prepare('SELECT * FROM consegne WHERE id = ?').get(consegnaId);
   const prev = db.prepare('SELECT lasciato_in_cassa FROM consegne WHERE data < ? ORDER BY data DESC LIMIT 1').get(c.data);
@@ -40,7 +41,7 @@ function reportBody(db, consegnaId, baseUrl) {
   ].filter(([, items]) => items.length).map(([label, items]) => `${label}: ${items.join(', ')}`);
 
   const turnisti = turno && [turno.t1, turno.t2].filter(Boolean);
-  const lines = [
+  return [
     ...(turnisti?.length ? [`In turno: ${turnisti.join(' + ')}`] : []),
     '',
     `Trovato in cassa: ${num(calculateTrovatoInCassa(c, prev?.lasciato_in_cassa))} €`,
@@ -49,21 +50,16 @@ function reportBody(db, consegnaId, baseUrl) {
     '',
     `Lasciato in cassa: ${num(c.lasciato_in_cassa)} €`,
     `${baseUrl}/consegna?data=${c.data}`
-  ];
-  return escape(lines.join('\n'));
+  ].join('\n');
 }
 
-function title(date, corretto) {
+function reportTitle(date, corretto) {
   const [y, m, d] = date.split('-');
-  return `<b>Report turno ${d}/${m}/${y}${corretto ? ' (corretto)' : ''}</b>`;
+  return `Report turno ${d}/${m}/${y}${corretto ? ' (corretto)' : ''}`;
 }
 
-function buildReport(db, consegnaId, baseUrl) {
-  const { data } = db.prepare('SELECT data FROM consegne WHERE id = ?').get(consegnaId);
-  return `${title(data, false)}\n${reportBody(db, consegnaId, baseUrl)}`;
-}
-
-async function sendTelegram(text) {
+async function sendTelegram(title, body) {
+  const text = `<b>${title}</b>\n${escapeHtml(body)}`;
   const res = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -72,15 +68,33 @@ async function sendTelegram(text) {
   if (!res.ok) throw new Error(`Telegram ${res.status}: ${await res.text()}`);
 }
 
-// Send the report unless the same one was already sent; a reclose that changed it is marked (corretto)
-async function notifyClosed(db, consegnaId, baseUrl, send = sendTelegram) {
-  const c = db.prepare('SELECT data, report_inviato FROM consegne WHERE id = ?').get(consegnaId);
-  const body = reportBody(db, consegnaId, baseUrl);
-  if (body === c.report_inviato) return;
-  await send(`${title(c.data, c.report_inviato != null)}\n${body}`);
-  db.prepare('UPDATE consegne SET report_inviato = ? WHERE id = ?').run(body, consegnaId);
+async function sendEmail(title, body) {
+  const env = process.env;
+  const transport = nodemailer.createTransport({
+    host: env.SMTP_HOST,
+    port: Number(env.SMTP_PORT || 587),
+    secure: Number(env.SMTP_PORT) === 465,
+    auth: env.SMTP_USER ? { user: env.SMTP_USER, pass: env.SMTP_PASS } : undefined
+  });
+  await transport.sendMail({ from: env.REPORT_EMAIL_FROM || env.SMTP_USER, to: env.REPORT_EMAIL_TO, subject: title, text: body });
 }
 
-const telegramConfigured = () => Boolean(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID);
+// Channel → env vars that enable it, sender, column holding the last body sent
+const CANALI = {
+  telegram: { vars: ['TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID'], send: sendTelegram, column: 'report_telegram' },
+  email: { vars: ['SMTP_HOST', 'REPORT_EMAIL_TO'], send: sendEmail, column: 'report_email' }
+};
 
-module.exports = { buildReport, notifyClosed, telegramConfigured };
+const canaliAttivi = () => Object.keys(CANALI).filter(k => CANALI[k].vars.every(v => process.env[v]));
+
+// Send the report on one channel unless the same one was already sent there; a changed resend is marked (corretto)
+async function notifyClosed(db, consegnaId, baseUrl, canale, send = CANALI[canale].send) {
+  const { column } = CANALI[canale];
+  const c = db.prepare(`SELECT data, ${column} AS inviato FROM consegne WHERE id = ?`).get(consegnaId);
+  const body = reportBody(db, consegnaId, baseUrl);
+  if (body === c.inviato) return;
+  await send(reportTitle(c.data, c.inviato != null), body);
+  db.prepare(`UPDATE consegne SET ${column} = ? WHERE id = ?`).run(body, consegnaId);
+}
+
+module.exports = { reportBody, reportTitle, notifyClosed, canaliAttivi };

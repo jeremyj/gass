@@ -194,16 +194,18 @@ async function toggleConsegnaStatus() {
       showStatus('Consegna riaperta', 'success');
     } else {
       const negativa = parseAmount(document.getElementById('lasciatoInCassa').value) < 0;
+      const { canali } = await API.get('/api/consegna/report-canali').catch(() => ({ canali: [] }));
       const ok = await confirmDialog({
         title: 'Chiudere la consegna?',
         message: (negativa ? '⚠️ La cassa è negativa. ' : '') +
           'Dopo la chiusura i dati non potranno essere modificati (solo un admin può riaprirla).',
         details: consegnaSummaryDetails(),
+        checks: canali.map(c => [c, c === 'telegram' ? 'Invia il report su Telegram' : 'Invia il report per email']),
         confirmText: 'Chiudi consegna',
         danger: true
       });
       if (!ok) return;
-      await API.post(`/api/consegna/${currentConsegnaId}/close`, {});
+      await API.post(`/api/consegna/${currentConsegnaId}/close`, { report: Array.isArray(ok) ? ok : [] });
       showStatus('Consegna chiusa', 'success');
     }
     await checkDateData();

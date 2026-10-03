@@ -536,6 +536,9 @@ b.th { color: var(--teatro); }
 .confirm-message { margin-bottom: 12px; }
 .confirm-detail { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--riga); color: var(--salvia); }
 .confirm-detail strong { color: var(--inchiostro); }
+.modal-content .confirm-check { display: flex; align-items: center; gap: 10px; margin: 0; padding: 10px 0 0; font-size: 18px; font-weight: 400; color: var(--inchiostro); cursor: pointer; }
+.modal-content .confirm-check:first-of-type { padding-top: 16px; }
+.confirm-check input { width: 20px; height: 20px; margin: 0; }
 .error-message { margin-top: 8px; padding: 8px 12px; border-radius: 8px; background: var(--debito-t); color: var(--debito); font-size: 17px; }
 
 /* ===== LOGIN ===== */

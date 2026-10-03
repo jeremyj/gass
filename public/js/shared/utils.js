@@ -121,18 +121,23 @@ function debitoNuovo(m) {
 
 // In-page replacement for confirm(): resolves true/false.
 // details: [[label, value], ...] shown as a list; danger: red confirm button.
-function confirmDialog({ title, message = '', details = [], confirmText = 'Conferma', danger = false }) {
+// checks: [[name, label], ...] ticked checkboxes; then it resolves false or the names left ticked.
+function confirmDialog({ title, message = '', details = [], checks = [], confirmText = 'Conferma', danger = false }) {
   return new Promise(resolve => {
     const modal = document.createElement('div');
     modal.className = 'modal confirm-modal';
     const rows = details.map(([label, value]) =>
       `<div class="confirm-detail"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`
     ).join('');
+    const boxes = checks.map(([name, label]) =>
+      `<label class="confirm-check"><input type="checkbox" name="${escapeHtml(name)}" checked> ${escapeHtml(label)}</label>`
+    ).join('');
     modal.innerHTML = `
       <div class="modal-content" role="alertdialog" aria-modal="true">
         <h3>${escapeHtml(title)}</h3>
         ${message ? `<p class="confirm-message">${escapeHtml(message)}</p>` : ''}
         ${rows}
+        ${boxes}
         <div class="modal-buttons">
           <button type="button" data-answer="no">Annulla</button>
           <button type="button" data-answer="yes" class="${danger ? 'btn-danger' : 'btn-save'}">${escapeHtml(confirmText)}</button>
@@ -141,9 +146,10 @@ function confirmDialog({ title, message = '', details = [], confirmText = 'Confe
     `;
 
     const close = answer => {
+      const ticked = [...modal.querySelectorAll('.confirm-check input:checked')].map(i => i.name);
       document.removeEventListener('keydown', onKey);
       modal.remove();
-      resolve(answer);
+      resolve(answer && checks.length ? ticked : answer);
     };
     const onKey = e => { if (e.key === 'Escape') close(false); };
 

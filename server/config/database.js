@@ -145,8 +145,9 @@ function createDatabase(dbPath) {
 
   tryAddColumn('consegne', 'riaperta_by', 'INTEGER REFERENCES users(id)');
   tryAddColumn('consegne', 'riaperta_at', 'DATETIME');
-  // Last report sent to Telegram, to resend only when a reclose changed it (v2.25)
-  tryAddColumn('consegne', 'report_inviato', 'TEXT');
+  // Last report sent per channel, to resend only when a reclose changed it (v2.25)
+  tryAddColumn('consegne', 'report_telegram', 'TEXT');
+  tryAddColumn('consegne', 'report_email', 'TEXT');
 
   log('\n--- Activity logs table (v2.1) ---');
 

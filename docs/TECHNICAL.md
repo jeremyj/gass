@@ -471,13 +471,20 @@ Environment variables:
 - `PORT`: Server port (default: 3000)
 - `DB_PATH`: Database file path (default: `./gass.db`)
 - OIDC/Authentik variables — see [Authentication](#authentication-oidc--authentik) below
-- `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` — consegna report on close, see [Telegram report](#telegram-report)
+- `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `SMTP_*`, `REPORT_EMAIL_*` — consegna report on close, see [Consegna report](#consegna-report)
 
-### Telegram report
+### Consegna report
 
-When both variables are set, closing a consegna (`POST /api/consegna/:id/close`) sends a report to the Telegram group or channel `TELEGRAM_CHAT_ID` through the bot (`server/services/report.js`), laid out like the turno report emails: turnisti, trovato, pagato al produttore, debiti saldati/lasciati, crediti lasciati/usati, quota teatro, lasciato in cassa and the link to the consegna (built from the request host). The text sent is stored in `consegne.report_inviato`: closing again after a reopen sends a new report titled "(corretto)" only if the text changed. The send runs after the response; a Telegram error is only logged (`Telegram report for consegna … failed`) and retried at the next close.
+Closing a consegna can send a report to a Telegram group/channel and by email (`server/services/report.js`), laid out like the turno report emails: turnisti, trovato, pagato al produttore, debiti saldati/lasciati, crediti lasciati/usati, quota teatro, lasciato in cassa and the link to the consegna (built from the request host). Each channel is on only when its variables are set:
 
-Setup: create the bot with @BotFather, add it to the group (or as admin to the channel), and take the chat id from `https://api.telegram.org/bot<token>/getUpdates` after posting a message there (channels: `@channelname` also works).
+| Channel | Required | Optional |
+|---|---|---|
+| Telegram | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | |
+| Email | `SMTP_HOST`, `REPORT_EMAIL_TO` | `SMTP_PORT` (default 587, 465 = implicit TLS), `SMTP_USER`, `SMTP_PASS`, `REPORT_EMAIL_FROM` (default `SMTP_USER`) |
+
+`GET /api/consegna/report-canali` lists the active channels; the close confirmation shows one checkbox per channel (ticked) and `POST /api/consegna/:id/close` sends only the ones in its `report` array. The text sent is stored per channel (`consegne.report_telegram`, `report_email`): closing again after a reopen sends a new report titled "(corretto)" only if the text changed. Sends run after the response; an error is only logged (`<canale> report for consegna … failed`) and retried at the next close.
+
+Telegram setup: create the bot with @BotFather, add it to the group (or as admin to the channel), and take the chat id from `https://api.telegram.org/bot<token>/getUpdates` after posting a message there (a public channel also takes `@channelname`). For a mailing list, the sender address must be allowed to post, or the message waits for moderation.
 
 ## Authentication (OIDC / Authentik)
 
