@@ -304,3 +304,4 @@ docker buildx build --platform linux/amd64,linux/arm64 -t jeremyjrossi/gass:<ver
 docker buildx build --platform linux/amd64,linux/arm64 -t jeremyjrossi/gass:latest --push .
 ```
 - don't update container images after docker builds
+- Docker Hub images are public: before a build, `git status --short` and make sure `.dockerignore` excludes any new untracked folder (2026-10-03: `storico-consegne-cassa/` leaked into 2.24.0–2.24.2); after it, `docker run --rm --entrypoint ls <image> /app`

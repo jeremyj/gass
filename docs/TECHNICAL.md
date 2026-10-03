@@ -503,11 +503,12 @@ npm start
 
 ### Docker
 ```bash
-docker build -t gass-pagamenti .
-docker run -p 3000:3000 -v $(pwd)/data:/app/data gass-pagamenti
+docker buildx build --platform linux/amd64,linux/arm64 -t jeremyjrossi/gass:<version> -t jeremyjrossi/gass:latest --push .
 ```
 
 Database persisted in `/app/data/gass.db` volume.
+
+The images on Docker Hub are public. The build context is the whole working copy, so `.dockerignore` must exclude every local folder that is not app code (members' data, videos, handoff notes). Before a build, check `git status --short` for new untracked paths and add them to `.dockerignore`; after it, check the image with `docker run --rm --entrypoint ls jeremyjrossi/gass:<version> /app`. On 2026-10-03 `storico-consegne-cassa/` was found in the public images 2.24.0–2.24.2 (verified via `ls /app` in the pulled images 2026-10-03); it is excluded since 16b55a2 and those tags were deleted from Docker Hub.
 
 Back up `gass.db` before upgrading to 2.17.0: its migration drops `users.attivo`, so rolling back to 2.16.x without restoring the copy would re-enable every disattivato user.
 
