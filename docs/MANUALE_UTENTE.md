@@ -365,7 +365,10 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.24.2
+Sistema GASS Pagamenti - Versione 2.24.3
+- Consegna: all'apertura la cassa mostra – finché i dati non sono caricati, e non compare più per un attimo **Chiudi consegna**
+
+Versione 2.24.2
 - Quota teatro: nel semestre in corso segue lo stato dell'utente (chi diventa attivo la deve, chi smette di esserlo no, se non ha pagato)
 
 Versione 2.24.1
