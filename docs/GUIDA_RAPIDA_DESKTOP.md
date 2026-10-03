@@ -31,7 +31,7 @@ La colonna a sinistra mostra la cassa come una somma, calcolata automaticamente 
 - **− Uscite di cassa** — solo se ci sono: soldi presi dalla cassa per altro (es. quote portate al teatro)
 - **= Lasciato in cassa** — trovato + incassato - pagato - uscite
 
-Sotto, le **Note della giornata** e le **Uscite di cassa** (importo e motivo), con **Salva** quando cambiano. Lo stato (*Consegna aperta* / *chiusa*) e i pulsanti Chiudi / Riapri / Annulla consegna sono nell'intestazione.
+Sotto, le **Note della giornata** e le **Uscite di cassa** (importo e motivo; **+** per aggiungerne un'altra), con **Salva** quando cambiano. Lo stato (*Consegna aperta* / *chiusa*) e i pulsanti Chiudi / Riapri / Annulla consegna sono nell'intestazione.
 
 ## Registrare un Movimento
 

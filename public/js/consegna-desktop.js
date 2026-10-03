@@ -54,7 +54,7 @@ function loadExistingConsegna(result) {
   updateIncassato();
   updateCassaWarning();
 
-  originalNoteGiornata = fillGiornata(result.consegna);
+  originalNoteGiornata = fillGiornata(result.consegna, result.uscite);
   noteGiornataModified = false;
 
   renderMovimentiGiorno();

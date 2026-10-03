@@ -165,19 +165,20 @@ describe('POST /api/consegna/ — saldo calculation', () => {
   it('subtracts the uscite di cassa, and keeps them when a save does not send them', async () => {
     const userId = db.prepare('SELECT id FROM users WHERE username = ?').get('admin').id;
     const movimento = { partecipante_id: userId, importoSaldato: 50, contoProduttore: 30 };
+    const uscite = [{ importo: 45, motivo: 'teatro' }, { importo: 20, motivo: 'tofu' }];
 
-    await adminAgent.post('/api/consegna/').send({
-      data: '2026-02-19', trovatoInCassa: 100, usciteCassa: 90, usciteMotivo: 'quote al teatro', partecipanti: [movimento]
-    }).expect(200);
-    const read = () => db.prepare("SELECT lasciato_in_cassa, uscite_cassa, uscite_motivo FROM consegne WHERE data = '2026-02-19'").get();
-    expect(read()).toEqual({ lasciato_in_cassa: 30, uscite_cassa: 90, uscite_motivo: 'quote al teatro' });
+    await adminAgent.post('/api/consegna/').send({ data: '2026-02-19', trovatoInCassa: 100, uscite, partecipanti: [movimento] }).expect(200);
+    const lasciato = () => db.prepare("SELECT lasciato_in_cassa FROM consegne WHERE data = '2026-02-19'").get().lasciato_in_cassa;
+    expect(lasciato()).toBe(55);
+    expect((await adminAgent.get('/api/consegna/2026-02-19')).body.uscite).toEqual(uscite);
 
     // A client that predates the field (cached page) must not wipe them
     await adminAgent.post('/api/consegna/').send({ data: '2026-02-19', trovatoInCassa: 100, partecipanti: [] }).expect(200);
-    expect(read()).toEqual({ lasciato_in_cassa: 30, uscite_cassa: 90, uscite_motivo: 'quote al teatro' });
+    expect(lasciato()).toBe(55);
 
-    await adminAgent.post('/api/consegna/').send({ data: '2026-02-19', trovatoInCassa: 100, usciteCassa: 0, usciteMotivo: '', partecipanti: [] }).expect(200);
-    expect(read()).toEqual({ lasciato_in_cassa: 120, uscite_cassa: 0, uscite_motivo: '' });
+    await adminAgent.post('/api/consegna/').send({ data: '2026-02-19', trovatoInCassa: 100, uscite: [], partecipanti: [] }).expect(200);
+    expect(lasciato()).toBe(120);
+    expect((await adminAgent.get('/api/consegna/2026-02-19')).body.uscite).toEqual([]);
   });
 
   it('returns 403 when non-admin tries to save to a closed consegna', async () => {

@@ -148,9 +148,6 @@ function createDatabase(dbPath) {
   // Last report sent per channel, to resend only when a reclose changed it (v2.25)
   tryAddColumn('consegne', 'report_telegram', 'TEXT');
   tryAddColumn('consegne', 'report_email', 'TEXT');
-  // Cash taken out of the cassa (e.g. quote teatro carried to the theatre), with its reason (v2.26)
-  tryAddColumn('consegne', 'uscite_cassa', 'REAL DEFAULT 0');
-  tryAddColumn('consegne', 'uscite_motivo', 'TEXT');
 
   log('\n--- Activity logs table (v2.1) ---');
 
@@ -353,6 +350,21 @@ function createDatabase(dbPath) {
     );
   `);
   tryAddColumn('users', 'teatro_nota', 'TEXT');
+
+  log('\n--- Uscite di cassa (v2.26) ---');
+
+  // Cash taken out of a consegna's cassa (e.g. quote teatro carried to the theatre), with its reason
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS uscite_cassa (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      consegna_id INTEGER NOT NULL REFERENCES consegne(id) ON DELETE CASCADE,
+      importo REAL NOT NULL,
+      motivo TEXT NOT NULL,
+      created_by INTEGER REFERENCES users(id),
+      created_at DATETIME
+    );
+    CREATE INDEX IF NOT EXISTS idx_uscite_cassa_consegna ON uscite_cassa(consegna_id);
+  `);
 
   log('\n--- Data initialization ---');
 

@@ -8,6 +8,7 @@ const { logActivity } = require('../services/activity');
 const { quotePerPersona } = require('../services/teatro');
 const { apertura } = require('../services/apertura');
 const { notifyClosed, canaliAttivi } = require('../services/report');
+const { listUscite, totaleUscite, sostituisciUscite } = require('../services/uscite');
 
 const router = express.Router();
 
@@ -84,6 +85,7 @@ router.get('/:date', (req, res) => {
         chiusa: consegna.chiusa === 1
       },
       movimenti,
+      uscite: listUscite(db, consegna.id),
       teatroExtra,
       saldiBefore,
       lasciatoPrecedente: previousConsegna?.lasciato_in_cassa ?? null
@@ -98,7 +100,7 @@ router.get('/:date', (req, res) => {
 router.post('/', (req, res) => {
   const timestamp = new Date().toISOString();
   const { data, trovatoInCassa, pagatoProduttore, lasciatoInCassa,
-          noteGiornata, usciteCassa, usciteMotivo, partecipanti } = req.body;
+          noteGiornata, uscite, partecipanti } = req.body;
 
   console.log(`[CONSEGNA] ${timestamp} - POST request for date: ${data}`);
   console.log(`[CONSEGNA] ${timestamp} - Saving ${partecipanti?.length || 0} participant movements`);
@@ -124,11 +126,8 @@ router.post('/', (req, res) => {
     const transaction = db.transaction(() => {
       let consegna = existingConsegna;
 
-      // A save without the uscite fields (page cached before they existed) keeps the stored ones
-      const uscite = usciteCassa ?? consegna?.uscite_cassa ?? 0;
-      const motivo = usciteCassa == null ? (consegna?.uscite_motivo ?? '') : (usciteMotivo || '').trim();
       const consegnaData = [
-        trovatoInCassa, pagatoProduttore, lasciatoInCassa, noteGiornata || '', roundToCents(uscite), motivo
+        trovatoInCassa, pagatoProduttore, lasciatoInCassa, noteGiornata || ''
       ];
 
       if (consegna) {
@@ -137,15 +136,15 @@ router.post('/', (req, res) => {
         db.prepare(`
           UPDATE consegne
           SET trovato_in_cassa = ?, pagato_produttore = ?, lasciato_in_cassa = ?, note = ?,
-              uscite_cassa = ?, uscite_motivo = ?, updated_by = ?, updated_at = ?
+              updated_by = ?, updated_at = ?
           WHERE id = ?
         `).run(...consegnaData, updateAudit.updated_by, updateAudit.updated_at, consegna.id);
       } else {
         const createAudit = getAuditFields(req, 'create');
         const result = db.prepare(`
           INSERT INTO consegne (data, trovato_in_cassa, pagato_produttore, lasciato_in_cassa, note,
-                                uscite_cassa, uscite_motivo, created_by, created_at, updated_by, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                created_by, created_at, updated_by, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).run(data, ...consegnaData, createAudit.created_by, createAudit.created_at,
                createAudit.updated_by, createAudit.updated_at);
         consegna = { id: result.lastInsertRowid };
@@ -239,6 +238,9 @@ router.post('/', (req, res) => {
 
       console.log(`[CONSEGNA] ${timestamp} - Movimenti: ${movimentiCreated} created, ${movimentiUpdated} updated`);
 
+      // A save without uscite (page cached before they existed) keeps the stored ones
+      if (Array.isArray(uscite)) sostituisciUscite(db, consegna.id, uscite, getAuditFields(req, 'create'));
+
       // Recalculate pagato_produttore and lasciato_in_cassa from movements
       const movimenti = db.prepare('SELECT conto_produttore, importo_saldato FROM movimenti WHERE consegna_id = ?').all(consegna.id);
       let totalPagato = 0;
@@ -251,9 +253,8 @@ router.post('/', (req, res) => {
       incassato = roundToCents(incassato);
 
       // Use trovato_in_cassa as SQLite stored it, not the raw body value
-      const { trovato_in_cassa: trovato, uscite_cassa: usciteSalvate } =
-        db.prepare('SELECT trovato_in_cassa, uscite_cassa FROM consegne WHERE id = ?').get(consegna.id);
-      const lasciato = roundToCents(trovato + incassato - totalPagato - usciteSalvate);
+      const { trovato_in_cassa: trovato } = db.prepare('SELECT trovato_in_cassa FROM consegne WHERE id = ?').get(consegna.id);
+      const lasciato = roundToCents(trovato + incassato - totalPagato - totaleUscite(listUscite(db, consegna.id)));
       const cassaAudit = getAuditFields(req, 'update');
       db.prepare('UPDATE consegne SET pagato_produttore = ?, lasciato_in_cassa = ?, updated_by = ?, updated_at = ? WHERE id = ?')
         .run(totalPagato, lasciato, cassaAudit.updated_by, cassaAudit.updated_at, consegna.id);

@@ -20,9 +20,14 @@ function validateConsegnaPayload(body, saldoBefore) {
   for (const field of CASSA_AMOUNTS) {
     if (!isOptionalNumber(body[field])) return `Importo non valido: ${field}`;
   }
-  if (!isOptionalAmount(body.usciteCassa)) return 'Importo non valido: usciteCassa';
-  if (body.usciteCassa > 0 && !String(body.usciteMotivo || '').trim()) {
-    return 'Indica il motivo delle uscite di cassa';
+  if (body.uscite != null) {
+    if (!Array.isArray(body.uscite)) return 'Elenco uscite non valido';
+    for (const u of body.uscite) {
+      if (!u || !(typeof u.importo === 'number' && Number.isFinite(u.importo) && u.importo > 0)) {
+        return 'Indica l\'importo di ogni uscita di cassa';
+      }
+      if (typeof u.motivo !== 'string' || !u.motivo.trim()) return 'Indica il motivo delle uscite di cassa';
+    }
   }
   if (!Array.isArray(body.partecipanti)) return 'Elenco partecipanti non valido';
 

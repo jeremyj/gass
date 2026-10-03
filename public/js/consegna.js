@@ -59,7 +59,7 @@ function loadExistingConsegna(result) {
   trovatoField.value = formatNumber(result.consegna.trovato_in_cassa || 0);
 
   // Note and uscite, with their original values for change detection
-  originalNoteGiornata = fillGiornata(result.consegna);
+  originalNoteGiornata = fillGiornata(result.consegna, result.uscite);
   noteGiornataModified = false;
 
   // Calculate and display pagato and lasciato

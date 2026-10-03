@@ -105,8 +105,6 @@ trovato_in_cassa      REAL
 pagato_produttore     REAL
 lasciato_in_cassa     REAL
 note                  TEXT
-uscite_cassa          REAL DEFAULT 0   -- cash taken out for other uses
-uscite_motivo         TEXT
 chiusa                INTEGER DEFAULT 0
 chiusa_by             TEXT, chiusa_at DATETIME
 riaperta_by           TEXT, riaperta_at DATETIME
@@ -234,8 +232,8 @@ trovato = previous_lasciato_in_cassa || 0;
 // Simplified to just sum of conto_produttore values
 pagato = SUM(conto_produttore);
 
-// Lasciato in cassa (cash left); uscite = cash taken out for other uses, entered by hand with a motivo
-lasciato = trovato + incassato - pagato - uscite_cassa;
+// Lasciato in cassa (cash left); uscite = rows of uscite_cassa (cash taken out by hand, each with a motivo)
+lasciato = trovato + incassato - pagato - SUM(uscite_cassa.importo);
 ```
 
 Where `incassato` (cash collected) is:
@@ -299,8 +297,7 @@ Cash fields are **always readonly** - no manual override capability in mobile or
 **Fields:**
 - `trovato_in_cassa`: Cash found (from previous delivery's lasciato)
 - `pagato_produttore`: Total paid to producer (sum of all conto_produttore values)
-- `uscite_cassa`, `uscite_motivo`: Cash taken out of the cassa for other uses, with its reason (required when > 0)
-- `lasciato_in_cassa`: Cash left (trovato + incassato - pagato - uscite)
+- `lasciato_in_cassa`: Cash left (trovato + incassato - pagato - uscite); uscite are rows of table `uscite_cassa` (`consegna_id` CASCADE, `importo` > 0, `motivo` required)
 
 **Implementation:**
 - **Mobile** (`consegna.js`, `consegna.html`):
@@ -316,9 +313,9 @@ Cash fields are **always readonly** - no manual override capability in mobile or
 **Calculation Logic:**
 - `trovato_in_cassa`: Previous delivery's `lasciato_in_cassa` value (or 0 if first)
 - `pagato_produttore`: `Σ conto_produttore` from all movements
-- `lasciato_in_cassa`: `trovato + incassato - pagato - uscite_cassa`
+- `lasciato_in_cassa`: `trovato + incassato - pagato - Σ uscite_cassa.importo`
   - `incassato = Σ importo_saldato` from all movements
-  - `POST /api/consegna` takes `usciteCassa` / `usciteMotivo`; a payload without `usciteCassa` keeps the stored values
+  - `POST /api/consegna` takes `uscite: [{importo, motivo}]` and replaces the consegna's rows (`server/services/uscite.js`); a payload without `uscite` keeps them. `GET /api/consegna/:date` returns `uscite`
 
 **Display Formatting:**
 - Italian format since 2.11.0: `formatNumber()` gives `11,50` and hides `,00` on whole numbers (`42`); it rounds to cents first, so float drift like `20.000000000000004` shows as `20`. `formatEuro()` adds ` €`, `formatSigned()` gives `+6 €` / `−1,50 €` for credit/debt

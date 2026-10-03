@@ -73,7 +73,7 @@ La cassa è una somma calcolata automaticamente dal sistema, non si scrive nulla
 
 **− Uscite di cassa** (compare solo se ci sono)
 - Soldi presi dalla cassa per altro, per esempio le quote teatro portate al teatro
-- Si scrivono sotto le note: importo e motivo (il motivo è obbligatorio), poi **Salva**
+- Si scrivono sotto le note: importo e motivo (il motivo è obbligatorio), poi **Salva**. Il **+** accanto all'ultima riga aggiunge un'altra uscita (es. 45 teatro e 20 tofu); per toglierne una basta svuotarla
 
 **= In cassa** (desktop: "Lasciato in cassa")
 - Denaro rimasto in cassa alla fine della giornata
@@ -370,7 +370,7 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 ## Note Sulla Versione
 
 Sistema GASS Pagamenti - Versione 2.26.0
-- Uscite di cassa: importo e motivo dei soldi presi dalla cassa (es. quote portate al teatro), tolti da In cassa
+- Uscite di cassa: importo e motivo dei soldi presi dalla cassa (es. quote portate al teatro), anche più di una con **+**, tolte da In cassa
 
 Versione 2.25.0
 - Chiudi consegna può mandare il report del turno su Telegram e per email

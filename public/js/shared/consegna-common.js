@@ -89,27 +89,55 @@ function calculateLasciatoInCassa() {
 
 // ===== NOTE AND USCITE DI CASSA (saved together by the page's Salva button) =====
 
-const GIORNATA_FIELDS = ['noteGiornata', 'usciteCassa', 'usciteMotivo'];
-
-function usciteCassaValue() {
-  return roundToCents(parseAmount(document.getElementById('usciteCassa').value));
+// Uscite rows of the form; rows left empty are dropped (that is how an uscita is removed)
+function readUscite() {
+  return [...document.querySelectorAll('#uscite-edit .uscita')].map(row => ({
+    importo: roundToCents(parseAmount(row.querySelector('.uscita-importo').value)),
+    motivo: row.querySelector('.uscita-motivo').value.trim()
+  })).filter(u => u.importo || u.motivo);
 }
 
-// Fill the fields from a saved consegna (null = new); returns the snapshot to detect changes against
-function fillGiornata(consegna) {
+function usciteCassaValue() {
+  return roundToCents(readUscite().reduce((sum, u) => sum + u.importo, 0));
+}
+
+function usciteRowHtml(u = {}) {
+  return `
+    <div class="uscita">
+      <input type="text" inputmode="decimal" class="input-field uscita-importo" placeholder="0" aria-label="Importo uscita"
+             value="${u.importo ? formatNumber(u.importo) : ''}" oninput="normalizeInputField(this); onNoteGiornataChange()">
+      <input type="text" class="input-field uscita-motivo" placeholder="Motivo, es. quote al teatro" aria-label="Motivo uscita"
+             value="${escapeHtml(u.motivo || '')}" oninput="onNoteGiornataChange()">
+      <button type="button" class="uscita-add" aria-label="Aggiungi un'altra uscita" onclick="addUscitaRow()">+</button>
+    </div>`;
+}
+
+function addUscitaRow() {
+  const list = document.getElementById('uscite-edit');
+  list.insertAdjacentHTML('beforeend', usciteRowHtml());
+  list.lastElementChild.querySelector('.uscita-importo').focus();
+}
+
+// Fill note and uscite from a saved consegna (null = new); returns the snapshot to detect changes against
+function fillGiornata(consegna, uscite = []) {
   document.getElementById('noteGiornata').value = consegna?.note || '';
-  document.getElementById('usciteCassa').value = consegna?.uscite_cassa ? formatNumber(consegna.uscite_cassa) : '';
-  document.getElementById('usciteMotivo').value = consegna?.uscite_motivo || '';
+  document.getElementById('uscite-edit').innerHTML = (uscite.length ? uscite : [{}]).map(usciteRowHtml).join('');
   updateUsciteView();
   return giornataSnapshot();
 }
 
 function giornataSnapshot() {
-  return JSON.stringify(GIORNATA_FIELDS.map(id => document.getElementById(id).value));
+  return JSON.stringify([document.getElementById('noteGiornata').value, readUscite()]);
 }
 
 function setGiornataDisabled(disabled) {
-  GIORNATA_FIELDS.forEach(id => { document.getElementById(id).disabled = disabled; });
+  document.querySelectorAll('#noteGiornata, #uscite-edit input, #uscite-edit button')
+    .forEach(el => { el.disabled = disabled; });
+}
+
+// "teatro 45, tofu 20"; a single uscita shows only its motivo (the total is next to it)
+function descrizioneUscite(uscite) {
+  return uscite.length === 1 ? uscite[0].motivo : uscite.map(u => `${u.motivo} ${formatNumber(u.importo)}`).join(', ');
 }
 
 // The uscite line of the cassa, shown only when there are uscite
@@ -118,7 +146,7 @@ function updateUsciteView() {
   const uscite = usciteCassaValue();
   view.classList.toggle('initially-hidden', !(uscite > 0));
   view.querySelector('output').value = formatNumber(uscite);
-  view.querySelector('.uscite-motivo').textContent = document.getElementById('usciteMotivo').value;
+  view.querySelector('.uscite-motivo').textContent = descrizioneUscite(readUscite());
 }
 
 // Incassato is display-only (the cassa row shows the whole sum trovato + incassato − pagato)
@@ -776,8 +804,7 @@ function postConsegna(partecipanti) {
     pagatoProduttore: amount('pagatoProduttore'),
     lasciatoInCassa: amount('lasciatoInCassa'),
     noteGiornata: document.getElementById('noteGiornata').value || '',
-    usciteCassa: usciteCassaValue(),
-    usciteMotivo: document.getElementById('usciteMotivo').value,
+    uscite: readUscite(),
     partecipanti,
   });
 }

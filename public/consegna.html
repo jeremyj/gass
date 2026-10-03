@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Consegna</title>
-    <link rel="stylesheet" href="style.css?v=80">
+    <link rel="stylesheet" href="style.css?v=81">
 </head>
 <body>
     <header class="stag">
@@ -63,11 +63,8 @@
         <div id="note-giornata-group" class="form-group note-giornata initially-hidden">
             <label for="noteGiornata">Note della giornata</label>
             <input type="text" id="noteGiornata" class="input-field" placeholder="Aggiungi una nota" oninput="onNoteGiornataChange()">
-            <label for="usciteCassa">Uscite di cassa</label>
-            <div class="uscite-edit">
-                <input type="text" inputmode="decimal" id="usciteCassa" class="input-field" placeholder="0" oninput="normalizeInputField(this); onNoteGiornataChange()">
-                <input type="text" id="usciteMotivo" class="input-field" placeholder="Motivo, es. quote al teatro" aria-label="Motivo delle uscite" oninput="onNoteGiornataChange()">
-            </div>
+            <label>Uscite di cassa</label>
+            <div id="uscite-edit" class="uscite-edit"></div>
             <button id="save-note-btn" class="btn btn-go initially-hidden" onclick="saveNoteOnly()">Salva</button>
         </div>
 
@@ -101,9 +98,9 @@
     <script src="js/shared/season.js?v=33"></script>
     <script src="js/shared/calendar.js?v=36"></script>
     <script src="js/shared/api-client.js"></script>
-    <script src="js/shared/consegna-common.js?v=43"></script>
+    <script src="js/shared/consegna-common.js?v=44"></script>
     <script src="js/shared/auth.js?v=33"></script>
     <script src="js/shared/version.js"></script>
-    <script src="js/consegna.js?v=36"></script>
+    <script src="js/consegna.js?v=37"></script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 // Consegna report sent on close to a Telegram group/channel and/or by email, laid out like the old turno report emails
 const nodemailer = require('nodemailer');
 const { roundToCents, calculateTrovatoInCassa } = require('./calculations');
+const { listUscite, totaleUscite } = require('./uscite');
 
 // Same as formatNumber in public/js/shared/utils.js: 11,50 / 8
 function num(value) {
@@ -22,6 +23,7 @@ function reportBody(db, consegnaId, baseUrl) {
     SELECT u.display_name AS nome, p.importo FROM teatro_pagamenti p JOIN users u ON u.id = p.user_id
     WHERE p.consegna_id = ? ORDER BY p.id
   `).all(consegnaId);
+  const uscite = listUscite(db, consegnaId);
   const turno = db.prepare(`
     SELECT u1.display_name AS t1, u2.display_name AS t2 FROM turni t
     LEFT JOIN users u1 ON u1.id = t.turnista1_id LEFT JOIN users u2 ON u2.id = t.turnista2_id
@@ -46,13 +48,16 @@ function reportBody(db, consegnaId, baseUrl) {
     '',
     `Trovato in cassa: ${num(calculateTrovatoInCassa(c, prev?.lasciato_in_cassa))} €`,
     `Pagato al produttore: ${num(c.pagato_produttore)} €`,
-    ...(c.uscite_cassa > 0 ? [`Uscite di cassa: ${num(c.uscite_cassa)} € (${c.uscite_motivo})`] : []),
+    ...(uscite.length ? [`Uscite di cassa: ${num(totaleUscite(uscite))} € (${descrizione(uscite)})`] : []),
     ...(sections.length ? ['', ...sections] : []),
     '',
     `Lasciato in cassa: ${num(c.lasciato_in_cassa)} €`,
     `${baseUrl}/consegna?data=${c.data}`
   ].join('\n');
 }
+
+// Same as descrizioneUscite in consegna-common.js: one uscita shows only its motivo
+const descrizione = uscite => uscite.length === 1 ? uscite[0].motivo : uscite.map(u => `${u.motivo} ${num(u.importo)}`).join(', ');
 
 function reportTitle(date, corretto) {
   const [y, m, d] = date.split('-');

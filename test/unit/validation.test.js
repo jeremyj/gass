@@ -16,11 +16,13 @@ describe('validateConsegnaPayload', () => {
     expect(validateConsegnaPayload(payload(), saldo(0))).toBeNull();
   });
 
-  it('requires uscite di cassa to be a non-negative amount with a motivo', () => {
-    expect(validateConsegnaPayload(payload({ usciteCassa: 90, usciteMotivo: 'teatro' }), saldo(0))).toBeNull();
-    expect(validateConsegnaPayload(payload({ usciteCassa: 0, usciteMotivo: '' }), saldo(0))).toBeNull();
-    expect(validateConsegnaPayload(payload({ usciteCassa: -1, usciteMotivo: 'x' }), saldo(0))).toMatch(/usciteCassa/);
-    expect(validateConsegnaPayload(payload({ usciteCassa: 90, usciteMotivo: '  ' }), saldo(0))).toMatch(/motivo/);
+  it('requires each uscita di cassa to be a positive amount with a motivo', () => {
+    const uscite = list => payload({ uscite: list });
+    expect(validateConsegnaPayload(uscite([{ importo: 45, motivo: 'teatro' }, { importo: 20, motivo: 'tofu' }]), saldo(0))).toBeNull();
+    expect(validateConsegnaPayload(uscite([]), saldo(0))).toBeNull();
+    expect(validateConsegnaPayload(uscite([{ importo: 0, motivo: 'x' }]), saldo(0))).toMatch(/importo/);
+    expect(validateConsegnaPayload(uscite([{ importo: 5, motivo: ' ' }]), saldo(0))).toMatch(/motivo/);
+    expect(validateConsegnaPayload(payload({ uscite: 'x' }), saldo(0))).toMatch(/uscite/);
   });
 
   it('accepts a cassa-only save and a negative trovato', () => {

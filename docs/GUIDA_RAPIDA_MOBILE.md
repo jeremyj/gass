@@ -21,7 +21,7 @@ Per cambiare la password in seguito vai su **https://auth.x86.it**, nelle impost
 
 La pagina si apre da sola sull'ultimo giorno di turno fino a oggi, se non ha ancora una consegna o ce l'ha aperta; altrimenti su oggi. Se non esiste ancora una consegna, appare il pulsante **Nuova consegna**. In cima un riquadro avvisa delle altre consegne ancora aperte ("Sono ancora aperte le consegne di …", con le date come link). Le consegne passate si aprono da **Storico**.
 
-In cima la riga della cassa mostra i totali della giornata come una somma: Trovato, + Incassato, − Pagato, = In cassa — tutti calcolati automaticamente, non si inserisce nulla. Se qualcuno ha preso soldi dalla cassa per altro (es. quote portate al teatro), li scrive in *Uscite di cassa* sotto le note, con il motivo: compaiono sotto la riga e sono già tolti da In cassa. Sotto, lo stato (*Consegna aperta* / *Consegna chiusa*) e le *Note della giornata*.
+In cima la riga della cassa mostra i totali della giornata come una somma: Trovato, + Incassato, − Pagato, = In cassa — tutti calcolati automaticamente, non si inserisce nulla. Se qualcuno ha preso soldi dalla cassa per altro (es. quote portate al teatro), li scrive in *Uscite di cassa* sotto le note, con il motivo (**+** per aggiungerne un'altra): compaiono sotto la riga e sono già tolti da In cassa. Sotto, lo stato (*Consegna aperta* / *Consegna chiusa*) e le *Note della giornata*.
 
 ![](screenshots/m02-consegna.png){ width=45% }
 

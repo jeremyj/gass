@@ -24,7 +24,7 @@ function setup() {
   }
   createConsegna(db, { data: '2026-09-22', lasciatoInCassa: 589 });
   const id = createConsegna(db, { data: '2026-09-29', trovatoInCassa: 589, pagatoProduttore: 357.2, lasciatoInCassa: 553.7, chiusa: true });
-  db.prepare("UPDATE consegne SET uscite_cassa = 90, uscite_motivo = 'quote teatro al teatro' WHERE id = ?").run(id);
+  db.prepare("INSERT INTO uscite_cassa (consegna_id, importo, motivo) VALUES (?, 45, 'teatro'), (?, 20, 'tofu')").run(id, id);
   createMovimento(db, { consegnaId: id, partecipanteId: ids.f, debitoSaldato: 50, saldaDebitoTotale: 1 });
   createMovimento(db, { consegnaId: id, partecipanteId: ids.k, debitoSaldato: 30.85, debitoLasciato: 0.85 });
   createMovimento(db, { consegnaId: id, partecipanteId: ids.j, debitoLasciato: 8.99 });
@@ -45,7 +45,7 @@ describe('reportBody', () => {
       '',
       'Trovato in cassa: 589 €',
       'Pagato al produttore: 357,20 €',
-      'Uscite di cassa: 90 € (quote teatro al teatro)',
+      'Uscite di cassa: 65 € (teatro 45, tofu 20)',
       '',
       'Debiti saldati: Fernanda 50, Franky 30 (resta debito 0,85)',
       'Debiti lasciati: Jeremy 8,99',
