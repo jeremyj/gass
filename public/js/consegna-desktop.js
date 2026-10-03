@@ -17,9 +17,8 @@ async function checkDateData() {
   if (!dateValue) return;
 
   try {
-    await loadData(dateValue);
-
-    const result = await API.get(`/api/consegna/${dateValue}`);
+    // Independent requests: run them together
+    const [, result] = await Promise.all([loadData(), API.get(`/api/consegna/${dateValue}`)]);
 
     if (result.found) {
       loadExistingConsegna(result);
@@ -324,7 +323,7 @@ async function saveWithParticipant(currentId) {
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Ensure user data is loaded before rendering consegna status
-  await sessionReady;
-  setDateDisplay(await dataIniziale());
+  const [, date] = await Promise.all([sessionReady, dataIniziale()]);
+  setDateDisplay(date);
   checkDateData();
 });

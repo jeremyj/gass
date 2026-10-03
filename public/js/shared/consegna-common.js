@@ -136,17 +136,9 @@ function consegnaSummaryDetails() {
 
 // ===== DATA LOADING =====
 
-async function loadData(date = null) {
+async function loadData() {
   try {
-    let url = '/api/participants';
-    if (date) {
-      const today = toLocalDateString();
-      if (date !== today) {
-        url += `?date=${date}`;
-      }
-    }
-
-    const result = await API.get(url);
+    const result = await API.get('/api/participants');
     participants = result.participants;
     renderParticipantSelect();
   } catch (error) {
