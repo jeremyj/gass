@@ -148,6 +148,9 @@ function createDatabase(dbPath) {
   // Last report sent per channel, to resend only when a reclose changed it (v2.25)
   tryAddColumn('consegne', 'report_telegram', 'TEXT');
   tryAddColumn('consegne', 'report_email', 'TEXT');
+  // Cash taken out of the cassa (e.g. quote teatro carried to the theatre), with its reason (v2.26)
+  tryAddColumn('consegne', 'uscite_cassa', 'REAL DEFAULT 0');
+  tryAddColumn('consegne', 'uscite_motivo', 'TEXT');
 
   log('\n--- Activity logs table (v2.1) ---');
 

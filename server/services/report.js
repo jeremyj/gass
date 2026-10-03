@@ -46,6 +46,7 @@ function reportBody(db, consegnaId, baseUrl) {
     '',
     `Trovato in cassa: ${num(calculateTrovatoInCassa(c, prev?.lasciato_in_cassa))} €`,
     `Pagato al produttore: ${num(c.pagato_produttore)} €`,
+    ...(c.uscite_cassa > 0 ? [`Uscite di cassa: ${num(c.uscite_cassa)} € (${c.uscite_motivo})`] : []),
     ...(sections.length ? ['', ...sections] : []),
     '',
     `Lasciato in cassa: ${num(c.lasciato_in_cassa)} €`,

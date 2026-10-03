@@ -71,14 +71,18 @@ La cassa è una somma calcolata automaticamente dal sistema, non si scrive nulla
 - Calcolato sommando tutti i "Conto produttore" dei partecipanti
 - Si aggiorna in tempo reale quando si inseriscono i movimenti
 
+**− Uscite di cassa** (compare solo se ci sono)
+- Soldi presi dalla cassa per altro, per esempio le quote teatro portate al teatro
+- Si scrivono sotto le note: importo e motivo (il motivo è obbligatorio), poi **Salva**
+
 **= In cassa** (desktop: "Lasciato in cassa")
 - Denaro rimasto in cassa alla fine della giornata
-- Calcolato come: `Trovato + Incassato - Pagato`
+- Calcolato come: `Trovato + Incassato - Pagato - Uscite`
 - Se il valore è negativo viene evidenziato con l'avviso "Cassa negativa"
 
 **Note della giornata**
 - Campo opzionale per annotazioni sulla consegna
-- Su desktop può essere salvato indipendentemente dai movimenti tramite il pulsante "Salva note", che appare quando le note cambiano
+- Note e uscite di cassa si salvano indipendentemente dai movimenti con il pulsante **Salva**, che appare quando cambiano
 
 **Mobile**: la cassa è la riga in cima alla pagina; sotto ci sono lo stato ("Consegna aperta" / "Consegna chiusa") con i link **Chiudi consegna** / **Riapri consegna** (e **Annulla consegna** per gli amministratori) e le Note della giornata.
 
@@ -158,7 +162,7 @@ Anche a consegna chiusa l'elenco mostra la quota teatro di ciascuno e il totale 
 
 - **Pulsante "Salva movimento"**: Salva il movimento del partecipante corrente
 - **Pulsante "Annulla"**: Chiude il modulo senza salvare
-- **Pulsante "Salva note"** (desktop): Appare quando si modificano le note della giornata, permette di salvare solo le note senza dover salvare movimenti
+- **Pulsante "Salva"** (sotto note e uscite di cassa): Appare quando si modificano, salva note e uscite senza dover salvare movimenti
 
 ### 2. Saldi - Panoramica Bilanci
 
@@ -365,7 +369,10 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.25.0
+Sistema GASS Pagamenti - Versione 2.26.0
+- Uscite di cassa: importo e motivo dei soldi presi dalla cassa (es. quote portate al teatro), tolti da In cassa
+
+Versione 2.25.0
 - Chiudi consegna può mandare il report del turno su Telegram e per email
 
 Versione 2.24.3

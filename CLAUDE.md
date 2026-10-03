@@ -138,8 +138,9 @@ app.set('trust proxy', 1)  // server/app.js
 ### Cassa Fields (readonly, auto-calculated)
 - `trovato_in_cassa` = previous day's `lasciato_in_cassa`
 - `pagato_produttore` = `Σ conto_produttore` for all movements
-- `lasciato_in_cassa` = `trovato + incassato - pagato`
-- These are **stored** and only recomputed by `POST /api/consegna` when movimenti are saved (`routes/consegna.js`, after the movimenti loop); the page shows the stored values. A cash removal with no movimento has no field: the 29/9/2026 consegna holds lasciato 465 by hand (555 counted − 90 € taken to the teatro, notebook photo), while its movimenti give 553,70. Any movimento save on 29/9 overwrites it and shifts every later trovato. An "uscite di cassa" field was proposed to the user 2026-10-02, not decided
+- `uscite_cassa` (+ `uscite_motivo`, required when > 0) = cash taken out by hand (2.26.0, e.g. quote teatro carried to the theatre); edited with the note and saved by the same Salva button (`fillGiornata`/`giornataSnapshot` in `consegna-common.js`); a `POST /api/consegna` without `usciteCassa` keeps the stored ones (pages cached before the field)
+- `lasciato_in_cassa` = `trovato + incassato - pagato - uscite_cassa`
+- These are **stored** and recomputed by every `POST /api/consegna` (movimento, note or uscite save; `routes/consegna.js`, after the movimenti loop). Desktop shows the stored lasciato on load; mobile (`loadExistingConsegna` in `consegna.js`) recomputes it client-side, so a hand-set lasciato shows differently on the two. The 29/9/2026 consegna holds lasciato 465 by hand (555 counted − 90 € taken to the teatro, notebook photo) with uscite 0, while its movimenti give 553,70: the user chose (2026-10-03) not to touch it when the uscite field arrived. Mobile shows 553,70 for it; any save on 29/9 writes 553,70 and shifts every later trovato
 
 ### Saldo Ledger (v2.7)
 Saldo = replay from 0 of the participant's movimenti (via `applySaldoChanges`) + rettifiche (`saldo += importo`), ordered by date then `created_at`. All reads go through `server/services/saldi.js`:
@@ -183,7 +184,7 @@ On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_
 - Bump `?v=` on changed CSS/JS: static files are cached 7 days
 
 ### Mobile
-- Cassa is one row (`.conto`): Trovato + Incassato − Pagato = In cassa. All four cassa values (mobile and desktop) are display-only `<output>`s, read and written through `.value` like inputs; `#incassatoCassa` is filled by `updateIncassato()`
+- Cassa is one row (`.conto`): Trovato + Incassato − Pagato = In cassa; uscite di cassa > 0 show as a full-width `.uscite-cell` under it (already subtracted). All four cassa values (mobile and desktop) are display-only `<output>`s, read and written through `.value` like inputs; `#incassatoCassa` is filled by `updateIncassato()`
 - The day's movimenti are listed ("Chi ha ritirato"); tapping a row opens it
 - The participant card becomes a full-screen entry at ≤ 768px (pure CSS on `.participant-card-flow`); `#status` is a fixed toast above it
 - Saldi card (mobile) opens on Transazioni; the admin saldo form is behind a "Modifica saldo" button (`showSaldoEdit`/`hideSaldoEdit` in `debiti.js`). The user disliked the form opening (and the keyboard popping up) on every tap of a name

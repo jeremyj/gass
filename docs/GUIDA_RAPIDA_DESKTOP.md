@@ -28,9 +28,10 @@ La colonna a sinistra mostra la cassa come una somma, calcolata automaticamente 
 - **Trovato in cassa** — il lasciato della consegna precedente
 - **+ Incassato** — somma degli importi saldati
 - **− Pagato al produttore** — somma dei conti produttore di tutti i movimenti del giorno
-- **= Lasciato in cassa** — trovato + incassato - pagato
+- **− Uscite di cassa** — solo se ci sono: soldi presi dalla cassa per altro (es. quote portate al teatro)
+- **= Lasciato in cassa** — trovato + incassato - pagato - uscite
 
-Sotto, le **Note della giornata** (con **Salva note** quando cambiano). Lo stato (*Consegna aperta* / *chiusa*) e i pulsanti Chiudi / Riapri / Annulla consegna sono nell'intestazione.
+Sotto, le **Note della giornata** e le **Uscite di cassa** (importo e motivo), con **Salva** quando cambiano. Lo stato (*Consegna aperta* / *chiusa*) e i pulsanti Chiudi / Riapri / Annulla consegna sono nell'intestazione.
 
 ## Registrare un Movimento
 

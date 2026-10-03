@@ -20,6 +20,10 @@ function validateConsegnaPayload(body, saldoBefore) {
   for (const field of CASSA_AMOUNTS) {
     if (!isOptionalNumber(body[field])) return `Importo non valido: ${field}`;
   }
+  if (!isOptionalAmount(body.usciteCassa)) return 'Importo non valido: usciteCassa';
+  if (body.usciteCassa > 0 && !String(body.usciteMotivo || '').trim()) {
+    return 'Indica il motivo delle uscite di cassa';
+  }
   if (!Array.isArray(body.partecipanti)) return 'Elenco partecipanti non valido';
 
   for (const p of body.partecipanti) {

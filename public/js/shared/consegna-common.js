@@ -84,7 +84,41 @@ function calculateIncassato() {
 function calculateLasciatoInCassa() {
   const trovatoInCassa = parseAmount(document.getElementById('trovatoInCassa').value);
   const pagatoProduttore = parseAmount(document.getElementById('pagatoProduttore').value);
-  return roundToCents(trovatoInCassa + calculateIncassato() - pagatoProduttore);
+  return roundToCents(trovatoInCassa + calculateIncassato() - pagatoProduttore - usciteCassaValue());
+}
+
+// ===== NOTE AND USCITE DI CASSA (saved together by the page's Salva button) =====
+
+const GIORNATA_FIELDS = ['noteGiornata', 'usciteCassa', 'usciteMotivo'];
+
+function usciteCassaValue() {
+  return roundToCents(parseAmount(document.getElementById('usciteCassa').value));
+}
+
+// Fill the fields from a saved consegna (null = new); returns the snapshot to detect changes against
+function fillGiornata(consegna) {
+  document.getElementById('noteGiornata').value = consegna?.note || '';
+  document.getElementById('usciteCassa').value = consegna?.uscite_cassa ? formatNumber(consegna.uscite_cassa) : '';
+  document.getElementById('usciteMotivo').value = consegna?.uscite_motivo || '';
+  updateUsciteView();
+  return giornataSnapshot();
+}
+
+function giornataSnapshot() {
+  return JSON.stringify(GIORNATA_FIELDS.map(id => document.getElementById(id).value));
+}
+
+function setGiornataDisabled(disabled) {
+  GIORNATA_FIELDS.forEach(id => { document.getElementById(id).disabled = disabled; });
+}
+
+// The uscite line of the cassa, shown only when there are uscite
+function updateUsciteView() {
+  const view = document.getElementById('uscite-view');
+  const uscite = usciteCassaValue();
+  view.classList.toggle('initially-hidden', !(uscite > 0));
+  view.querySelector('output').value = formatNumber(uscite);
+  view.querySelector('.uscite-motivo').textContent = document.getElementById('usciteMotivo').value;
 }
 
 // Incassato is display-only (the cassa row shows the whole sum trovato + incassato − pagato)
@@ -104,6 +138,7 @@ function updateLasciatoInCassa() {
   const value = calculateLasciatoInCassa();
   lasciatoField.value = formatNumber(value);
   updateIncassato();
+  updateUsciteView();
   updateCassaWarning();
 }
 
@@ -130,6 +165,7 @@ function consegnaSummaryDetails() {
     ['Movimenti', String((existingConsegnaMovimenti || []).length)],
     ['Incassato', formatEuro(calculateIncassato())],
     ['Pagato produttore', amount('pagatoProduttore')],
+    ...(usciteCassaValue() > 0 ? [['Uscite di cassa', formatEuro(usciteCassaValue())]] : []),
     ['Lasciato in cassa', amount('lasciatoInCassa')]
   ];
 }
@@ -740,6 +776,8 @@ function postConsegna(partecipanti) {
     pagatoProduttore: amount('pagatoProduttore'),
     lasciatoInCassa: amount('lasciatoInCassa'),
     noteGiornata: document.getElementById('noteGiornata').value || '',
+    usciteCassa: usciteCassaValue(),
+    usciteMotivo: document.getElementById('usciteMotivo').value,
     partecipanti,
   });
 }

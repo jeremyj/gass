@@ -49,7 +49,6 @@ async function checkDateData() {
 
 function loadExistingConsegna(result) {
   const trovatoField = document.getElementById('trovatoInCassa');
-  const noteField = document.getElementById('noteGiornata');
 
   // Load movements first (needed for calculations)
   existingConsegnaMovimenti = result.movimenti || [];
@@ -59,9 +58,8 @@ function loadExistingConsegna(result) {
   // Set trovato from stored value, formatted
   trovatoField.value = formatNumber(result.consegna.trovato_in_cassa || 0);
 
-  // Store original note value for change detection
-  originalNoteGiornata = result.consegna.note || '';
-  noteField.value = originalNoteGiornata;
+  // Note and uscite, with their original values for change detection
+  originalNoteGiornata = fillGiornata(result.consegna);
   noteGiornataModified = false;
 
   // Calculate and display pagato and lasciato
@@ -81,7 +79,6 @@ function loadExistingConsegna(result) {
 
 function loadNewConsegna(result) {
   const trovatoField = document.getElementById('trovatoInCassa');
-  const noteField = document.getElementById('noteGiornata');
 
   // Clear movements
   existingConsegnaMovimenti = null;
@@ -91,9 +88,8 @@ function loadNewConsegna(result) {
   // Set trovato from previous lasciato, formatted
   trovatoField.value = formatNumber(result.lasciatoPrecedente ?? 0);
 
-  // Reset note tracking
-  originalNoteGiornata = '';
-  noteField.value = '';
+  // Reset note and uscite tracking
+  originalNoteGiornata = fillGiornata(null);
   noteGiornataModified = false;
 
   // Calculate and display pagato and lasciato
@@ -114,8 +110,8 @@ function loadNewConsegna(result) {
 // ===== NOTE MANAGEMENT =====
 
 function onNoteGiornataChange() {
-  const currentNote = document.getElementById('noteGiornata').value || '';
-  noteGiornataModified = (currentNote !== originalNoteGiornata);
+  noteGiornataModified = giornataSnapshot() !== originalNoteGiornata;
+  updateLasciatoInCassa();
   updateNoteButtonVisibility();
 }
 
@@ -173,8 +169,7 @@ function updateConsegnaStatusUI(consegna) {
 
 // A closed consegna keeps its list of movimenti visible, read-only (.consegna-closed hides the add select)
 function disableConsegnaInputs() {
-  const noteField = document.getElementById('noteGiornata');
-  if (noteField) noteField.disabled = true;
+  setGiornataDisabled(true);
 
   const select = document.getElementById('participant-select');
   if (select) select.disabled = true;
@@ -186,8 +181,7 @@ function disableConsegnaInputs() {
 }
 
 function enableConsegnaInputs() {
-  const noteField = document.getElementById('noteGiornata');
-  if (noteField) noteField.disabled = false;
+  setGiornataDisabled(false);
 
   const select = document.getElementById('participant-select');
   if (select) select.disabled = false;
@@ -196,21 +190,18 @@ function enableConsegnaInputs() {
 }
 
 async function saveNoteOnly() {
-  const noteGiornata = document.getElementById('noteGiornata').value || '';
-
   if (!getSelectedDate()) {
     showStatus('Errore: data non valida', 'error');
     return;
   }
 
-  showStatus('Salvataggio note in corso...', 'success');
+  showStatus('Salvataggio in corso...', 'success');
 
   try {
     await postConsegna([]);
 
-    showStatus('Note salvate con successo!', 'success');
-    // Reset note modified flag
-    originalNoteGiornata = noteGiornata;
+    showStatus('Salvato', 'success');
+    originalNoteGiornata = giornataSnapshot();
     noteGiornataModified = false;
     updateNoteButtonVisibility();
     // Reload to get fresh data

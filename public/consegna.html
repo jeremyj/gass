@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Consegna</title>
-    <link rel="stylesheet" href="style.css?v=79">
+    <link rel="stylesheet" href="style.css?v=80">
 </head>
 <body>
     <header class="stag">
@@ -42,6 +42,10 @@
                 <label for="lasciatoInCassa">In cassa</label>
                 <span class="conto-val"><i>=</i><output id="lasciatoInCassa">–</output></span>
             </div>
+            <div id="uscite-view" class="uscite-cell initially-hidden">
+                <label>Uscite di cassa, già tolte: <span class="uscite-motivo"></span></label>
+                <span class="conto-val"><i>−</i><output>0</output></span>
+            </div>
             <div id="quote-teatro-oggi" class="teatro-cell initially-hidden">
                 <label>Quote teatro di questa consegna, a parte dalla cassa</label>
                 <output>0</output>
@@ -59,7 +63,12 @@
         <div id="note-giornata-group" class="form-group note-giornata initially-hidden">
             <label for="noteGiornata">Note della giornata</label>
             <input type="text" id="noteGiornata" class="input-field" placeholder="Aggiungi una nota" oninput="onNoteGiornataChange()">
-            <button id="save-note-btn" class="btn btn-go initially-hidden" onclick="saveNoteOnly()">Salva note</button>
+            <label for="usciteCassa">Uscite di cassa</label>
+            <div class="uscite-edit">
+                <input type="text" inputmode="decimal" id="usciteCassa" class="input-field" placeholder="0" oninput="normalizeInputField(this); onNoteGiornataChange()">
+                <input type="text" id="usciteMotivo" class="input-field" placeholder="Motivo, es. quote al teatro" aria-label="Motivo delle uscite" oninput="onNoteGiornataChange()">
+            </div>
+            <button id="save-note-btn" class="btn btn-go initially-hidden" onclick="saveNoteOnly()">Salva</button>
         </div>
 
         <button id="btn-nuova-consegna" class="btn btn-go btn-block initially-hidden" onclick="startNuovaConsegna()">Nuova consegna</button>
@@ -92,9 +101,9 @@
     <script src="js/shared/season.js?v=33"></script>
     <script src="js/shared/calendar.js?v=36"></script>
     <script src="js/shared/api-client.js"></script>
-    <script src="js/shared/consegna-common.js?v=42"></script>
+    <script src="js/shared/consegna-common.js?v=43"></script>
     <script src="js/shared/auth.js?v=33"></script>
     <script src="js/shared/version.js"></script>
-    <script src="js/consegna.js?v=35"></script>
+    <script src="js/consegna.js?v=36"></script>
 </body>
 </html>

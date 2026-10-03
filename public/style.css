@@ -298,6 +298,16 @@ body:has(.bottom-nav) { padding-bottom: 72px; }
 .conto .teatro-cell { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: baseline; margin: 0 -16px -14px; padding: 8px 16px; background: var(--teatro-t); border-top: 1px solid var(--riga); color: var(--teatro); }
 .conto .teatro-cell output { font-size: 20px; }
 .conto .teatro-cell.initially-hidden { display: none; }
+/* Uscite di cassa: already subtracted from In cassa, shown under the row */
+.conto:has(.uscite-cell:not(.initially-hidden)) .tot { margin-bottom: -8px; }
+.conto .uscite-cell { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: baseline; gap: 10px; margin: 0 -16px; padding: 8px 16px 0; border-top: 1px solid var(--riga); }
+.conto .uscite-cell output { font-size: 20px; }
+.conto .uscite-cell.initially-hidden { display: none; }
+.cassa-v > p.initially-hidden { display: none; }
+.uscite-motivo { font-weight: 400; color: var(--salvia); }
+.cassa-v .uscite-motivo { display: block; font-size: 16px; }
+.uscite-edit { display: grid; grid-template-columns: 8ch 1fr; gap: 8px; }
+.note-giornata .uscite-edit + .btn, .note-giornata input + label { margin-top: 10px; }
 
 .input-cassa-negativa { color: var(--debito) !important; }
 .cassa-warning { margin: 10px 0 0; padding: 8px 12px; border-radius: 8px; background: var(--debito-t); color: var(--debito); font-weight: 700; font-size: 17px; }

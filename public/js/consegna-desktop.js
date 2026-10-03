@@ -54,8 +54,7 @@ function loadExistingConsegna(result) {
   updateIncassato();
   updateCassaWarning();
 
-  originalNoteGiornata = result.consegna.note || '';
-  document.getElementById('noteGiornata').value = originalNoteGiornata;
+  originalNoteGiornata = fillGiornata(result.consegna);
   noteGiornataModified = false;
 
   renderMovimentiGiorno();
@@ -83,8 +82,7 @@ function loadNewConsegna(result) {
   updateIncassato();
   updateCassaWarning();
 
-  originalNoteGiornata = '';
-  document.getElementById('noteGiornata').value = '';
+  originalNoteGiornata = fillGiornata(null);
   noteGiornataModified = false;
 
   renderMovimentiGiorno();
@@ -195,8 +193,8 @@ function showParticipantForm() {
 // ===== BUTTON VISIBILITY =====
 
 function onNoteGiornataChange() {
-  const currentNote = document.getElementById('noteGiornata').value || '';
-  noteGiornataModified = (currentNote !== originalNoteGiornata);
+  noteGiornataModified = giornataSnapshot() !== originalNoteGiornata;
+  updateLasciatoInCassa();
   updateSaveButtonVisibility();
 }
 
@@ -251,8 +249,7 @@ function updateConsegnaStatusUI(consegna) {
 }
 
 function disableConsegnaInputs() {
-  const noteField = document.getElementById('noteGiornata');
-  if (noteField) noteField.disabled = true;
+  setGiornataDisabled(true);
 
   const select = document.getElementById('participant-select');
   if (select) select.disabled = true;
@@ -264,8 +261,7 @@ function disableConsegnaInputs() {
 }
 
 function enableConsegnaInputs() {
-  const noteField = document.getElementById('noteGiornata');
-  if (noteField) noteField.disabled = false;
+  setGiornataDisabled(false);
 
   const select = document.getElementById('participant-select');
   if (select) select.disabled = false;
@@ -293,7 +289,7 @@ async function saveCassaOnly() {
     await postConsegna([]);
 
     showStatus('Dati cassa salvati con successo!', 'success');
-    originalNoteGiornata = document.getElementById('noteGiornata').value || '';
+    originalNoteGiornata = giornataSnapshot();
     noteGiornataModified = false;
     setTimeout(() => checkDateData(), 1000);
   } catch (error) {
