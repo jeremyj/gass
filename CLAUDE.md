@@ -12,11 +12,12 @@
 - **App Factory**: `server/app.js` - Express setup, middleware, route mounting
 - **Database**: `server/config/database.js` - exports `createDatabase(dbPath)` factory + production singleton
 - **Routes**: `server/routes/`
-  - `pages.js` - HTML routing with mobile/desktop detection; `/login`, `/comefunziona` (first-access video) `/v2.17` (turni video, "what's new" page named after the version) and `/admin-video` (desktop admin video, unlinked, shared with admins) — videos in `public/video/`, recorded in `~/.cache/gass-video/rec/`: `record-turni.js`, `record-admin.js` (desktop, demo `admin`), and `record-full3.js` for everything after login, spliced after the 2026-09-30 login part at 47.0s; see the video memory) and `/api/version` are public
+  - `pages.js` - HTML routing with mobile/desktop detection; `/login`, `/comefunziona` (first-access video) `/v2.17` (turni video, "what's new" page named after the version) and `/admin-video` (desktop admin video, unlinked, shared with admins) and `/api/version` are public; videos in `public/video/` (how they are recorded: see the video memory)
   - `auth.js` - Authentication endpoints (login, logout, password change)
-  - `consegna.js` - Delivery API (`GET /apertura` declared before `GET /:date`, POST, DELETE/:id); `GET /:date` adds `movimenti[].teatro` and `teatroExtra` (quota-only payers)
+  - `oidc.js` - Authentik SSO (mounted at `/auth/oidc` only when `OIDC_ISSUER` is set)
+  - `consegna.js` - Delivery API (`GET /apertura` declared before `GET /:date`, POST, DELETE/:id admin, `POST /:id/close`, `POST /:id/reopen` admin); `GET /:date` adds `movimenti[].teatro` and `teatroExtra` (quota-only payers)
   - `participants.js` - Participant API (CRUD, saldo management, `GET /:id/transactions` — any authenticated user)
-  - `users.js` - User management API (admin-only, edit profile/password/admin status)
+  - `users.js` - User management API (admin-only: display name, password, `stato`; admin status is not editable here)
   - `storico.js` - History API: `GET /` only (index summary: `num_movimenti`, `incassato`, `teatro`, chained `trovato_in_cassa`); `/dettaglio` was removed in 2.23.0
   - `logs.js` - Activity log API (admin-only)
   - `teatro.js` - Quota teatro API (`GET /utente/:id`, `/consegna/:id`, `POST /pagamenti` any user, only inside an open consegna; grid, dovuti, quotas, notes, payment deletion, cassa admin-only)
@@ -24,6 +25,7 @@
 - **Services**: `server/services/calculations.js` - Pure business logic; `server/services/saldi.js` - saldo ledger (DB-backed); `server/services/validation.js` - `POST /api/consegna` payload validation; `server/services/activity.js` - `logActivity()`, the only writer of `activity_logs` rows; `server/services/apertura.js` - `apertura(db, today)`: date the Consegna page opens on (last non-saltata turno ≤ today while it has no consegna or an open one, else today) + all open consegne
 - **Turni services**: `server/services/turni-schedule.js` (pure date/queue helpers, `pickPair`) and `server/services/turni.js` (`ensureTurni`, `listTurni`, `updateTurno`, `swapWithNext` (→ `swapTurnisti`), `leaveTurno`, `moveTurno`, `isAuto`/`setAuto`, pauses, `freeFutureTurni`, `importTurni`)
 - **Teatro services**: `server/services/teatro-calc.js` (pure: semesters, FIFO `allocate`) and `server/services/teatro.js` (`ensureSemestre`, `syncDovutoCorrente` (current semester follows `setStato`: attivo adds the full quota, leaving attivo removes it if full and unpaid; user decision 2026-10-02), `statoTeatro`, `residui`, `registraPagamento`, `setDovuto`, `setQuota`, `addCassa`, `riepilogo`, `importFoglio`)
+- **Users service**: `server/services/users.js` (`deleteUser`, `setStato`: frees future turni and syncs the current teatro dovuto)
 - **CLI**: `manage-users.js`, `manage-turni.js` (`import <csv>` / `list`), `manage-teatro.js` (`import <csv>` / `list`)
 - **Middleware**: `server/middleware/` - auth.js, userAgent.js
 
@@ -35,7 +37,7 @@
   - `calendar.js` - `setDateDisplay(date)` (header date + season, no callback) and `getSelectedDate()`; no page date picker since 2.23.0; `pickerHtml()` draws the month grid of the date fields (`initDateField(id)` / `setDateField` / `dateFieldValue`: a readonly text input showing dd/mm/yyyy, popup on `<body>` so modals don't clip it). Use date fields instead of `<input type="date">`, whose calendar follows the browser language
   - `consegna-common.js` - Shared consegna business logic (mobile + desktop): participant card (`renderParticipant(id, buttonsHtml)`, `populateExistingMovimento`), save path (`saveParticipant`, `postConsegna`), `openMovimento(id)` (click a row of the day's list), `esitoMovimento(m)`; page scripts keep only their button row, `closeParticipant` and post-save handling
   - `debiti-common.js` - Shared debiti loading and helpers (mobile + desktop)
-  - `turni-common.js` - Swap ("scambia con…") candidates, confirm modal and API call, used by `turni.js` and `turni-desktop.js`
+  - `turni-common.js` - Own-turno "cambia" actions (swap "scambia con…", move, leave) and their API calls, used by `turni.js`; `turni-desktop.html` still loads it but calls none of it since 2.24.0
   - `auth.js` - Session/logout handling; `await sessionReady` before rendering anything that depends on `isAdmin()` (else admin-only controls stay hidden when the session response arrives after the page data — this hid "Riapri consegna" on mobile until 2.12.0)
   - `version.js` - Dynamic version footer
   - `utils.js` also holds the Storico → Consegna links: `openConsegnaOn(date)` (goes to `/consegna?data=<date>`), `consegnaHref(date)`, `storicoDateLink` (the row's date is a real link, the row onclick only a pointer shortcut), `storicoHint` (instruction on top; 2.24.1: the user removed the per-row "Dettaglio" and "Riapri consegna" links — the row opens the consegna, which has the detail and the Riapri button), `formatCassa` (negative cassa with typographic minus; Storico adds the `db` class)
@@ -47,17 +49,19 @@
 ```html
 <script src="js/shared/utils.js"></script>
 <script src="js/shared/season.js"></script>   <!-- every page, login included -->
-<script src="js/shared/calendar.js"></script>
+<script src="js/shared/calendar.js"></script> <!-- only pages with a date header/fields -->
 <script src="js/shared/api-client.js"></script>
 <script src="js/shared/consegna-common.js"></script>  <!-- or debiti-common.js -->
 <script src="js/shared/auth.js"></script>
 <script src="js/shared/version.js"></script>
+<script src="js/shared/turni-common.js"></script>  <!-- turni pages only -->
 <script src="js/[page-name].js"></script>
 ```
+`login.html` and `change-password-oidc.html` load only `utils.js`, `season.js` and their page script.
 
 ### Development Conventions
 - **Business Logic**: Place in `server/services/`, not routes
-- **New Routes**: Create in `server/routes/`, mount in `server.js`
+- **New Routes**: Create in `server/routes/`, mount in `server/app.js` (API routers before the pages router)
 - **Shared Client Code**: Place in `public/js/shared/`
 - **Path Imports**: Use relative paths from current file location
 
@@ -74,6 +78,8 @@
 - `consegne` - Daily delivery records (`chiusa`, `chiusa_by`, `chiusa_at` for locking, `riaperta_by`, `riaperta_at` for reopen tracking)
 - `movimenti` - Individual transactions with `conto_produttore`, FK `partecipante_id` → `users(id)`
 - `rettifiche_saldo` - Admin manual saldo edits as dated signed corrections (`importo`)
+- `turni`, `turni_pause`, `settings` (`turni_auto`, `turni_note`) - see Turni
+- `teatro_semestri`, `teatro_dovuti`, `teatro_pagamenti`, `teatro_cassa` - see Quota teatro
 
 ### User/Participant Model (v2.0)
 Every user is a participant with a saldo. The `partecipanti` table was merged into `users`:
@@ -100,11 +106,12 @@ Every user is a participant with a saldo. The `partecipanti` table was merged in
 
 ### OIDC / Authentik
 - `server/routes/oidc.js` matches Authentik's `preferred_username` claim **verbatim, no normalization** against local `users.username`. Authentik's account usernames must exactly equal GASS's (no domain suffix, no case difference).
-- 2026-09-14 incident: a 2026-07-15 Authentik-side bulk rename to `<name>@gass.local` (via `authentik-shell`, undocumented in GASS, only recorded in the personal llm-wiki) silently broke all OIDC logins for ~2 months — local admin login still worked, masking it. Fixed by renaming the 30 Authentik accounts back to bare usernames via the Admin API; GASS code was not changed. See `docs/TECHNICAL.md#authentication-oidc--authentik` for the full write-up and the log-grep to diagnose a recurrence.
-- `AUTHENTIK_API_TOKEN` (used only by the first-login password-change flow) has no monitoring/alerting — it silently expired once already (found invalid 2026-09-14, replaced with non-expiring `gass-api-token-v2`). No code fix applied; just a rotated token in Authentik + redeployed env var.
+- A mismatch fails silently (local admin login keeps working): an Authentik bulk rename to `<name>@gass.local` broke all OIDC logins from 2026-07-15 to 2026-09-14. Diagnosis and log-grep: `docs/TECHNICAL.md#authentication-oidc--authentik`.
+- `AUTHENTIK_API_TOKEN` (first-login password-change flow only) is unmonitored; it expired once (2026-09-14, replaced with non-expiring `gass-api-token-v2`).
+- `is_admin` is re-synced from the `OIDC_ADMIN_GROUP` claim (default `gass-admin`) on every OIDC login (`oidc.js`), so for OIDC users the Authentik group is the source of truth.
 
 ### Admin Role System
-- `is_admin` column in users table (first user auto-promoted)
+- `is_admin` column in users table (lowest-id user auto-promoted at startup)
 - `isAdmin()` helper in `auth.js` for frontend checks
 - `req.session.isAdmin` for backend checks
 - Manage users: `node manage-users.js admin <username> <on|off>`
@@ -114,14 +121,14 @@ Every user is a participant with a saldo. The `partecipanti` table was merged in
 - **Admin user management**: Admins can edit any user via debiti-desktop page
   - Edit display name
   - Reset password (no current password required)
-  - Toggle admin status
   - Username is immutable
+  - Admin status is not editable in the UI/API: `manage-users.js admin` or the Authentik group
 - API: `POST /api/auth/change-password` (self), `PUT /api/users/:id` (admin)
 
 ### Production: Trust Proxy
 Required for deployment behind nginx-proxy:
 ```javascript
-app.set('trust proxy', 1)  // server.js
+app.set('trust proxy', 1)  // server/app.js
 ```
 
 ---
@@ -144,7 +151,7 @@ Saldo = replay from 0 of the participant's movimenti (via `applySaldoChanges`) +
 - Deleting a consegna recalculates only participants that had a movimento in it
 - Don't reintroduce flat SQL sums of movimenti for saldi: they ignore the `debito_saldato` clamp and rettifiche
 - `POST /api/consegna` rejects (400) non-numeric/negative amounts, `usaCredito` above credit and `debitoSaldato` above debt, measured with `saldoBeforeConsegna` — so a stale `users.saldo` cache (e.g. the local dev DB) makes client-computed payoffs fail validation; the ledger is what counts
-- Movimento amounts are stored rounded to cents. Rounding is `Math.round(x*100)/100` (`roundToCents`, same name server and client); `formatNumber` rounds before deciding whether to hide `,00`. Consegne saved before a34ea39 still hold float drift in the cassa columns; no cleanup planned (decided 2026-10-01: the planned data reset removes those rows)
+- Movimento amounts are stored rounded to cents. Rounding is `Math.round(x*100)/100` (`roundToCents`, same name server and client); `formatNumber` rounds before deciding whether to hide `,00`. Consegne saved before a34ea39 held float drift in the cassa columns; the 2026-10-01 production reset removed them (an old local dev DB may still have them)
 - `salda_tutto` was removed in v2.7 (no UI since 2025-10, 0 rows set in production); the legacy FK-fix migration in `database.js` still names it because it runs before the column drop
 
 ### Credit/Debt Auto-Compensation
@@ -194,7 +201,7 @@ On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_
 `syncDebitoCreditoVisibility(id)` in `consegna-common.js` shows the computed partial lines (`debitoSaldato_`, `usaCredito_`) only when part of the debt/credit is used, the result line `credito_`/`debito_` only when > 0 (else `pari_`), and hides the `passi_` box when empty. Computed amounts are disabled inputs styled as text lines (`.computed`): their values are what `readMovimentoForm` submits, so keep them as inputs. A full payoff shows only as a note (`remainingDebt_`: "Debito saldato per intero" / `remainingCredit_`: "Credito usato per intero") and is flagged with `dataset.full` on the field, which `readMovimentoForm` sends as `saldaDebitoTotale`. The "Salda intero debito" / "Usa intero credito" checkboxes were removed in 2.9.0: the auto-compensation unchecked them on every recalculation, so they only repeated the title.
 
 ### CSS .initially-hidden pattern
-`.initially-hidden { display: none }` (no `!important`) — JS `element.style.display = 'block/flex'` must be able to override it. Setting `style.display = ''` does NOT show an element that still has the class: set an explicit value or toggle the class (the admin "Attività" nav item uses `classList.toggle('initially-hidden')`). Use CSS specificity for modals (`.modal.initially-hidden` 0-2-0 beats `.modal` 0-1-0) rather than `!important`, since `!important` would also block inline style overrides.
+`.initially-hidden { display: none }` (no `!important`) — JS `element.style.display = 'block/flex'` must be able to override it. Setting `style.display = ''` does NOT show an element that still has the class: set an explicit value or toggle the class (the admin "Attività" nav item uses `classList.toggle('initially-hidden')`). `.initially-hidden` is declared early in `style.css`, so any later rule of equal specificity that sets `display` (e.g. `.stato { display: flex }`, `.modal`) wins: for such a class add `.<class>.initially-hidden { display: none; }` (0-2-0, as for `.modal`, `.teatro-oggi`, `.auto-switch`) rather than `!important`, which would also block inline style overrides.
 
 ### Consegna Locking
 - "Chiudi Consegna" button in Cassa section (any user can close)
@@ -238,6 +245,8 @@ Italian format: `formatNumber()` → `11,50` / `8` (hides `,00`); `formatEuro()`
 - `consegna_created` - New consegna created (with `consegna_id`)
 - `movimento_changed` - Manual field changes (conto_produttore, importo_saldato only)
 - `saldo_updated` - Direct saldo modifications by admin
+- `consegna_deleted` - Consegna deleted by an admin; its movimenti are first written as stored `movimento_created` rows so their history survives
+- `teatro_modifica` - Admin teatro corrections (dovuti, quotas, notes, payment deletion) and payments removed with a deleted consegna
 - `user_created`, `user_edited`, `user_deleted` - User management events
 - `password_changed` - Password resets
 
@@ -264,7 +273,7 @@ Auto-calculated fields (credito_lasciato, debito_lasciato, usa_credito, debito_s
 **Stack**: Vitest + supertest, `pool: forks` (each test file = isolated Node process)
 
 ```bash
-npm test                    # all 291 tests
+npm test                    # all tests
 npm run test:unit           # pure function tests (no DB/HTTP)
 npm run test:integration    # API tests with in-memory SQLite
 npm run test:coverage       # with coverage report
