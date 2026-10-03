@@ -7,6 +7,7 @@ const { validateConsegnaPayload } = require('../services/validation');
 const { logActivity } = require('../services/activity');
 const { quotePerPersona } = require('../services/teatro');
 const { apertura } = require('../services/apertura');
+const { notifyClosed, telegramConfigured } = require('../services/report');
 
 const router = express.Router();
 
@@ -369,6 +370,12 @@ router.post('/:id/close', (req, res) => {
 
     console.log(`[CONSEGNA] ${timestamp} - Consegna ${id} closed by user ${req.session.username}`);
     res.json({ success: true });
+
+    // Report to the Telegram group after responding: a Telegram failure never blocks the close
+    if (telegramConfigured()) {
+      notifyClosed(db, id, `${req.protocol}://${req.get('host')}`)
+        .catch(err => console.error(`[CONSEGNA] ${timestamp} - Telegram report for consegna ${id} failed:`, err.message));
+    }
   } catch (error) {
     console.error(`[CONSEGNA] ${timestamp} - Error closing consegna ${id}:`, error);
     res.status(500).json({ success: false, error: 'Errore durante la chiusura' });

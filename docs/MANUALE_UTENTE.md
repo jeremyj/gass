@@ -149,7 +149,7 @@ Nelle tabelle dei movimenti (Consegna, Storico, Saldi) la colonna **Salda Debito
 
 Dopo aver registrato tutti i movimenti, è possibile chiudere la consegna:
 
-- **Chiudi consegna**: Blocca tutte le modifiche per la giornata. Qualsiasi utente può chiudere una consegna. Prima di chiudere viene mostrato un riepilogo (movimenti, incassato, pagato, lasciato in cassa) da confermare.
+- **Chiudi consegna**: Blocca tutte le modifiche per la giornata. Qualsiasi utente può chiudere una consegna. Prima di chiudere viene mostrato un riepilogo (movimenti, incassato, pagato, lasciato in cassa) da confermare. Alla chiusura il report del turno arriva in automatico nel gruppo Telegram dei report; se un amministratore riapre e richiude la consegna dopo averla modificata, arriva un nuovo report segnato "(corretto)".
 - **Riapri consegna** (solo amministratori): Sblocca la consegna per permettere modifiche successive. Per una consegna passata: aprirla da **Storico** e usare **Riapri consegna** nell'intestazione.
 
 Anche a consegna chiusa l'elenco mostra la quota teatro di ciascuno e il totale "Quote teatro … a parte" della cassa. Quando una consegna è chiusa, lo stato diventa "Consegna chiusa" e non è più possibile modificarla: su mobile l'elenco resta visibile in sola lettura, senza il controllo per aggiungere partecipanti.
@@ -365,7 +365,10 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.24.3
+Sistema GASS Pagamenti - Versione 2.25.0
+- Chiudi consegna manda il report del turno nel gruppo Telegram
+
+Versione 2.24.3
 - Consegna: all'apertura la cassa mostra – finché i dati non sono caricati, e non compare più per un attimo **Chiudi consegna**
 
 Versione 2.24.2

@@ -471,6 +471,13 @@ Environment variables:
 - `PORT`: Server port (default: 3000)
 - `DB_PATH`: Database file path (default: `./gass.db`)
 - OIDC/Authentik variables — see [Authentication](#authentication-oidc--authentik) below
+- `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` — consegna report on close, see [Telegram report](#telegram-report)
+
+### Telegram report
+
+When both variables are set, closing a consegna (`POST /api/consegna/:id/close`) sends a report to the Telegram group or channel `TELEGRAM_CHAT_ID` through the bot (`server/services/report.js`), laid out like the turno report emails: turnisti, trovato, pagato al produttore, debiti saldati/lasciati, crediti lasciati/usati, quota teatro, lasciato in cassa and the link to the consegna (built from the request host). The text sent is stored in `consegne.report_inviato`: closing again after a reopen sends a new report titled "(corretto)" only if the text changed. The send runs after the response; a Telegram error is only logged (`Telegram report for consegna … failed`) and retried at the next close.
+
+Setup: create the bot with @BotFather, add it to the group (or as admin to the channel), and take the chat id from `https://api.telegram.org/bot<token>/getUpdates` after posting a message there (channels: `@channelname` also works).
 
 ## Authentication (OIDC / Authentik)
 
