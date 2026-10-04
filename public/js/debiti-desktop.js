@@ -66,7 +66,7 @@ function createParticipantRow(p) {
       ${canEdit ? `
         <button type="button" class="link-btn" onclick="editSaldo(${p.id})" id="edit-btn-${p.id}">Modifica saldo</button>
         <button type="button" class="link-btn initially-hidden" onclick="saveSaldo(${p.id})" id="save-btn-${p.id}">Salva</button>
-        <button type="button" class="link-btn initially-hidden" onclick="cancelEdit(${p.id})" id="cancel-btn-${p.id}">Annulla</button>
+        <button type="button" class="link-btn initially-hidden" onclick="cancelEdit(${p.id})" id="cancel-btn-${p.id}">Annulla</button><span class="initially-hidden" id="saldo-tip-${p.id}" data-tip="modifica_saldo"></span>
       ` : ''}
     </td>
   `;
@@ -84,6 +84,7 @@ function editSaldo(id) {
   document.getElementById(`edit-btn-${id}`).style.display = 'none';
   document.getElementById(`save-btn-${id}`).style.display = 'inline-block';
   document.getElementById(`cancel-btn-${id}`).style.display = 'inline-block';
+  document.getElementById(`saldo-tip-${id}`).style.display = 'inline';
 
   handleInputFocus(inputField);
   inputField.focus();
@@ -98,6 +99,7 @@ function cancelEdit(id) {
   document.getElementById(`edit-btn-${id}`).style.display = 'inline-block';
   document.getElementById(`save-btn-${id}`).style.display = 'none';
   document.getElementById(`cancel-btn-${id}`).style.display = 'none';
+  document.getElementById(`saldo-tip-${id}`).style.display = 'none';
 }
 
 async function saveSaldo(id) {

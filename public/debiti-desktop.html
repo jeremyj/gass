@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Saldi</title>
-    <link rel="stylesheet" href="style.css?v=81">
+    <link rel="stylesheet" href="style.css?v=82">
 </head>
 <body>
     <nav class="nav-menu">
@@ -102,7 +102,7 @@
                     <input type="password" id="edit-user-password" placeholder="Lascia vuoto per non modificare" minlength="8">
                 </div>
                 <div class="form-group">
-                    <label>Stato</label>
+                    <label data-tip="stato">Stato</label>
                     <div class="stato-opts">
                         <label class="stato-opt"><input type="radio" name="edit-user-stato" value="attivo"><span><b>Attivo</b><small>Accede, ordina, fa i turni</small></span></label>
                         <label class="stato-opt"><input type="radio" name="edit-user-stato" value="sospeso"><span><b>No turni</b><small>Partecipa al GASS ma non fa i turni</small></span></label>
@@ -124,12 +124,13 @@
     </footer>
 
     <script src="js/shared/utils.js?v=41"></script>
+    <script src="js/shared/tips.js?v=1"></script>
     <script src="js/shared/season.js?v=33"></script>
     <script src="js/shared/calendar.js?v=36"></script>
     <script src="js/shared/api-client.js"></script>
     <script src="js/shared/debiti-common.js?v=41"></script>
     <script src="js/shared/auth.js?v=33"></script>
     <script src="js/shared/version.js"></script>
-    <script src="js/debiti-desktop.js?v=44"></script>
+    <script src="js/debiti-desktop.js?v=46"></script>
 </body>
 </html>

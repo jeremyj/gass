@@ -40,6 +40,7 @@
   - `turni-common.js` - Own-turno "cambia" actions (swap "scambia con…", move, leave) and their API calls, used by `turni.js`; `turni-desktop.html` still loads it but calls none of it since 2.24.0
   - `auth.js` - Session/logout handling; `await sessionReady` before rendering anything that depends on `isAdmin()` (else admin-only controls stay hidden when the session response arrives after the page data — this hid "Riapri consegna" on mobile until 2.12.0)
   - `version.js` - Dynamic version footer
+  - `tips.js` - help tips: `data-tip="<key>"` on any element (static or rendered later, a MutationObserver catches it) appends an (i) button opening a bubble with `TIPS[key]` (texts live only there); tap/click, closes on outside click/Esc; capture-phase click so it never triggers the row/label it sits in. Loaded only on consegna, debiti and teatro pages (2.27.0, the user picked 7 places: uscite, quote teatro of the consegna, Importo versato, Modifica saldo (desktop: only while editing), Stato, teatro grid, Quanto deve). Never put `data-tip` inside a `<button>`
   - `utils.js` also holds the Storico → Consegna links: `openConsegnaOn(date)` (goes to `/consegna?data=<date>`), `consegnaHref(date)`, `storicoDateLink` (the row's date is a real link, the row onclick only a pointer shortcut), `storicoHint` (instruction on top; 2.24.1: the user removed the per-row "Dettaglio" and "Riapri consegna" links — the row opens the consegna, which has the detail and the Riapri button), `formatCassa` (negative cassa with typographic minus; Storico adds the `db` class)
 - **Page-Specific**: `public/js/`
   - Mobile: `consegna.js`, `debiti.js`, `storico.js`, `turni.js` (`turni.html`, agenda + self swap)
@@ -54,6 +55,7 @@
 <script src="js/shared/consegna-common.js"></script>  <!-- or debiti-common.js -->
 <script src="js/shared/auth.js"></script>
 <script src="js/shared/version.js"></script>
+<script src="js/shared/tips.js"></script>      <!-- pages with data-tip (any position after body content) -->
 <script src="js/shared/turni-common.js"></script>  <!-- turni pages only -->
 <script src="js/[page-name].js"></script>
 ```

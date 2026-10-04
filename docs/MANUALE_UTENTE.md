@@ -369,7 +369,10 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.26.0
+Sistema GASS Pagamenti - Versione 2.27.0
+- Spiegazioni ⓘ accanto ad alcune voci (uscite di cassa, quote teatro, modifica saldo, stato utente, griglia del teatro): toccala o cliccala per leggerla, tocca altrove per chiuderla
+
+Versione 2.26.0
 - Uscite di cassa: importo e motivo dei soldi presi dalla cassa (es. quote portate al teatro), anche più di una con **+**, tolte da In cassa
 
 Versione 2.25.0

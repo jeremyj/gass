@@ -26,7 +26,7 @@ function renderGrid() {
   document.getElementById('show-old-wrap').classList.toggle('initially-hidden', dati.semestri.length <= RECENT_SEMESTRI);
   const semestri = showOld ? dati.semestri : dati.semestri.slice(-RECENT_SEMESTRI);
   const persone = [...dati.persone].sort((a, b) => STATO_ORDER[a.stato] - STATO_ORDER[b.stato] || a.nome.localeCompare(b.nome, 'it'));
-  document.getElementById('teatro-head').innerHTML = `<tr><th class="left">Gassista</th>${semestri.map(s =>
+  document.getElementById('teatro-head').innerHTML = `<tr><th class="left" data-tip="teatro_griglia">Gassista</th>${semestri.map(s =>
     `<th class="c"><button type="button" class="link-btn" onclick="editQuota('${s.semestre}')" title="Cambia la quota">${escapeHtml(s.label)}<br><small>${formatEuro(s.quota)}</small></button></th>`).join('')}<th class="left">Note</th></tr>`;
   document.getElementById('teatro-body').innerHTML = persone.map(p => `
     <tr class="${p.stato === 'disattivato' ? 'off' : ''}">

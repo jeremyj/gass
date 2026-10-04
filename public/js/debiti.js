@@ -57,7 +57,7 @@ function createParticipantCard(p) {
     editSectionHtml = `
       <button type="button" class="btn btn-line btn-block" id="saldo-edit-btn-${p.id}" onclick="showSaldoEdit(${p.id})">Modifica saldo</button>
       <div class="saldo-edit-section initially-hidden" id="saldo-edit-${p.id}">
-        <h3>Modifica saldo</h3>
+        <h3 data-tip="modifica_saldo">Modifica saldo</h3>
         <div class="input-row">
           <div class="form-group">
             <label for="credito-input-${p.id}">Nuovo credito</label>

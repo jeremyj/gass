@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Teatro</title>
-    <link rel="stylesheet" href="style.css?v=81">
+    <link rel="stylesheet" href="style.css?v=82">
 </head>
 <body>
     <nav class="nav-menu">
@@ -64,7 +64,7 @@
             <h3 id="dovuto-title">Quota</h3>
             <form onsubmit="event.preventDefault(); submitModal();">
                 <div class="form-group">
-                    <label for="dovuto-importo">Quanto deve (€)</label>
+                    <label for="dovuto-importo" data-tip="quanto_deve">Quanto deve (€)</label>
                     <input type="text" inputmode="decimal" id="dovuto-importo" oninput="normalizeInputField(this)">
                     <small class="hint" id="dovuto-hint"></small>
                 </div>
@@ -83,11 +83,12 @@
     </footer>
 
     <script src="js/shared/utils.js?v=41"></script>
+    <script src="js/shared/tips.js?v=1"></script>
     <script src="js/shared/season.js?v=33"></script>
     <script src="js/shared/calendar.js?v=36"></script>
     <script src="js/shared/api-client.js"></script>
     <script src="js/shared/auth.js?v=33"></script>
     <script src="js/shared/version.js"></script>
-    <script src="js/teatro-desktop.js?v=6"></script>
+    <script src="js/teatro-desktop.js?v=7"></script>
 </body>
 </html>

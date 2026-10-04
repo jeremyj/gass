@@ -691,7 +691,7 @@ async function openTeatro(id) {
       <h4><span>Quota teatro</span><span>dovuti ${formatEuro(stato.residuo)}</span></h4>
       <div id="teatroRighe_${id}"></div>
       <div class="form-group fld teatro-importo">
-        <label for="teatroImporto_${id}">Importo versato</label>
+        <label for="teatroImporto_${id}" data-tip="teatro_versato">Importo versato</label>
         <span class="fld-in"><input type="text" inputmode="decimal" id="teatroImporto_${id}" placeholder="0"
               oninput="normalizeInputField(this); renderTeatro(${id})" onfocus="handleInputFocus(this)"><span class="unit">€</span></span>
       </div>
