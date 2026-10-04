@@ -65,11 +65,14 @@ function reportTitle(date, corretto) {
 }
 
 async function sendTelegram(title, body) {
+  const env = process.env;
   const text = `<b>${title}</b>\n${escapeHtml(body)}`;
-  const res = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+  // TELEGRAM_THREAD_ID: topic of a forum group (optional; without it the General topic)
+  const thread = env.TELEGRAM_THREAD_ID ? { message_thread_id: Number(env.TELEGRAM_THREAD_ID) } : {};
+  const res = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: process.env.TELEGRAM_CHAT_ID, text, parse_mode: 'HTML', link_preview_options: { is_disabled: true } })
+    body: JSON.stringify({ chat_id: env.TELEGRAM_CHAT_ID, ...thread, text, parse_mode: 'HTML', link_preview_options: { is_disabled: true } })
   });
   if (!res.ok) throw new Error(`Telegram ${res.status}: ${await res.text()}`);
 }

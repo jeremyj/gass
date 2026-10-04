@@ -126,6 +126,7 @@ describe('close route', () => {
   it('lists the configured channels and sends only the ones confirmed in the dialog', async () => {
     vi.stubEnv('TELEGRAM_BOT_TOKEN', 't');
     vi.stubEnv('TELEGRAM_CHAT_ID', '@gass');
+    vi.stubEnv('TELEGRAM_THREAD_ID', '2456');
     vi.stubEnv('SMTP_HOST', '');
     const fetch = vi.fn(async () => ({ ok: true }));
     vi.stubGlobal('fetch', fetch);
@@ -138,6 +139,8 @@ describe('close route', () => {
     await agent.post(`/api/consegna/${id}/close`).send({ report: ['telegram', 'email'] }).expect(200);
     await vi.waitFor(() => expect(db.prepare('SELECT report_telegram FROM consegne WHERE id = ?').get(id).report_telegram).toBeTruthy());
     expect(fetch).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(fetch.mock.calls[0][1].body).chat_id).toBe('@gass');
+    const sent = JSON.parse(fetch.mock.calls[0][1].body);
+    expect(sent.chat_id).toBe('@gass');
+    expect(sent.message_thread_id).toBe(2456);
   });
 });

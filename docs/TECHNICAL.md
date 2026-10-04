@@ -472,7 +472,7 @@ Environment variables:
 - `PORT`: Server port (default: 3000)
 - `DB_PATH`: Database file path (default: `./gass.db`)
 - OIDC/Authentik variables — see [Authentication](#authentication-oidc--authentik) below
-- `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `SMTP_*`, `REPORT_EMAIL_*` — consegna report on close, see [Consegna report](#consegna-report)
+- `TELEGRAM_*`, `SMTP_*`, `REPORT_EMAIL_*` — consegna report on close, see [Consegna report](#consegna-report)
 
 ### Consegna report
 
@@ -480,12 +480,12 @@ Closing a consegna can send a report to a Telegram group/channel and by email (`
 
 | Channel | Required | Optional |
 |---|---|---|
-| Telegram | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | |
+| Telegram | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | `TELEGRAM_THREAD_ID` (topic of a forum group; without it the report goes to General) |
 | Email | `SMTP_HOST`, `REPORT_EMAIL_TO` | `SMTP_PORT` (default 587, 465 = implicit TLS), `SMTP_USER`, `SMTP_PASS`, `REPORT_EMAIL_FROM` (default `SMTP_USER`) |
 
 `GET /api/consegna/report-canali` lists the active channels; the close confirmation shows one checkbox per channel (ticked) and `POST /api/consegna/:id/close` sends only the ones in its `report` array. The text sent is stored per channel (`consegne.report_telegram`, `report_email`): closing again after a reopen sends a new report titled "(corretto)" only if the text changed. Sends run after the response; an error is only logged (`<canale> report for consegna … failed`) and retried at the next close.
 
-Telegram setup: create the bot with @BotFather, add it to the group (or as admin to the channel), and take the chat id from `https://api.telegram.org/bot<token>/getUpdates` after posting a message there (a public channel also takes `@channelname`). For a mailing list, the sender address must be allowed to post, or the message waits for moderation.
+Telegram setup: create the bot with @BotFather, add it to the group (or as admin to the channel), and take the chat id from `https://api.telegram.org/bot<token>/getUpdates` after posting a message there (a public channel also takes `@channelname`). In a group the bot must be addressed (`/start@<bot>`) while its privacy mode is on, or the message never reaches it; for a topic, `message_thread_id` of that update is `TELEGRAM_THREAD_ID`. For a mailing list, the sender address must be allowed to post, or the message waits for moderation.
 
 ## Authentication (OIDC / Authentik)
 

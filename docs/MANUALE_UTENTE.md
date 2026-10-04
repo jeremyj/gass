@@ -369,7 +369,7 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.27.0
+Sistema GASS Pagamenti - Versione 2.27.1
 - Spiegazioni ⓘ accanto ad alcune voci (uscite di cassa, quote teatro, modifica saldo, stato utente, griglia del teatro): toccala o cliccala per leggerla, tocca altrove per chiuderla
 
 Versione 2.26.0
