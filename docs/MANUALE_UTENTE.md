@@ -369,7 +369,11 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.27.1
+Sistema GASS Pagamenti - Versione 2.27.2
+- Video aggiornati alla versione attuale: il video del primo accesso mostra anche quota teatro, uscite di cassa e come scambiare un turno; la pagina /v2.17 non c'è più
+- La spiegazione ⓘ delle uscite di cassa compare una volta sola
+
+Versione 2.27.1
 - Il report del turno su Telegram arriva nell'argomento **App** del gruppo Gass
 
 Versione 2.27.0
