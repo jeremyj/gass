@@ -15,10 +15,20 @@
   p { margin: 0 0 16px; }
   .sub { color: var(--muted); }
   /* Phone-shaped video (390×844): as wide as the column, never taller than 85% of the visible screen */
-  video { display: block; aspect-ratio: 390 / 844; height: auto; margin: 24px auto;
-          width: min(100%, calc(85vh * 390 / 844)); width: min(100%, calc(85svh * 390 / 844)); border-radius: 12px; background: #000;
-          box-shadow: 0 6px 24px rgba(0,0,0,.15); }
+  .player { margin: 24px auto; width: min(100%, calc(85vh * 390 / 844)); width: min(100%, calc(85svh * 390 / 844)); }
+  .player video { display: block; width: 100%; aspect-ratio: 390 / 844; height: auto; border-radius: 12px; background: #000;
+                  box-shadow: 0 6px 24px rgba(0,0,0,.15); }
   a { color: var(--accent); font-weight: 600; }
+  /* Chapter markers under the video: one segment per chapter, proportional to its length */
+  .marcatori { display: flex; gap: 3px; margin: 8px 0 0; }
+  .marcatori button { height: 14px; min-width: 6px; padding: 0; border: 0; border-radius: 4px; background: #DDD9D1; cursor: pointer; }
+  .marcatori button.on, .marcatori button:hover { background: var(--accent); }
+  h2 { font-size: 20px; margin: 0 0 8px; }
+  .capitoli { list-style: none; margin: 0 0 24px; padding: 0; }
+  .capitoli a { display: flex; gap: 12px; padding: 8px 10px; border-radius: 8px; font-weight: 400; color: var(--ink); text-decoration: none; }
+  .capitoli a:hover { background: #EFECE6; }
+  .capitoli a.on { background: #E3EEEA; }
+  .capitoli .tm { min-width: 3em; color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
 </style>
 </head>
 <body>
@@ -26,11 +36,29 @@
   <h1>GASS: primo accesso</h1>
   <p class="sub">In quattro minuti: il primo accesso con la password provvisoria, una consegna con quota teatro e uscite di cassa, i saldi, lo storico, i turni e come scambiarne uno.</p>
 
-  <video controls playsinline preload="metadata" poster="/video/gass-primo-accesso.jpg?v=2.27.2">
-    <source src="/video/gass-primo-accesso.mp4?v=2.27.2" type="video/mp4">
-  </video>
+  <div class="player">
+    <video controls playsinline preload="metadata" poster="/video/gass-primo-accesso.jpg?v=2.27.3">
+      <source src="/video/gass-primo-accesso.mp4?v=2.27.3" type="video/mp4">
+    </video>
+    <div class="marcatori"></div>
+  </div>
+
+  <h2>Capitoli</h2>
+  <ol class="capitoli">
+    <li><a href="#t=0:00" data-t="0"><span class="tm">0:00</span><span class="nome">Primo accesso e nuova password</span></a></li>
+    <li><a href="#t=0:52" data-t="52"><span class="tm">0:52</span><span class="nome">Aprire una consegna</span></a></li>
+    <li><a href="#t=1:01" data-t="61"><span class="tm">1:01</span><span class="nome">Registrare un pagamento</span></a></li>
+    <li><a href="#t=1:33" data-t="93"><span class="tm">1:33</span><span class="nome">Quota teatro</span></a></li>
+    <li><a href="#t=2:02" data-t="122"><span class="tm">2:02</span><span class="nome">Uscite di cassa</span></a></li>
+    <li><a href="#t=2:29" data-t="149"><span class="tm">2:29</span><span class="nome">Chiudere la consegna</span></a></li>
+    <li><a href="#t=2:42" data-t="162"><span class="tm">2:42</span><span class="nome">Saldi</span></a></li>
+    <li><a href="#t=2:58" data-t="178"><span class="tm">2:58</span><span class="nome">Storico</span></a></li>
+    <li><a href="#t=3:15" data-t="195"><span class="tm">3:15</span><span class="nome">Turni</span></a></li>
+    <li><a href="#t=3:24" data-t="204"><span class="tm">3:24</span><span class="nome">Scambiare un turno</span></a></li>
+  </ol>
 
   <p>Per entrare: <a href="/">gass.x86.it</a>.</p>
 </main>
+<script src="/js/shared/capitoli.js?v=1"></script>
 </body>
 </html>

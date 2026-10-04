@@ -15,9 +15,20 @@
   p { margin: 0 0 16px; }
   .sub { color: var(--muted); }
   /* Desktop video (1280×800) */
-  video { display: block; aspect-ratio: 1280 / 800; width: 100%; height: auto; margin: 24px auto; border-radius: 12px; background: #000;
-          box-shadow: 0 6px 24px rgba(0,0,0,.15); }
+  .player { margin: 24px auto; }
+  .player video { display: block; width: 100%; aspect-ratio: 1280 / 800; height: auto; border-radius: 12px; background: #000;
+                  box-shadow: 0 6px 24px rgba(0,0,0,.15); }
   a { color: var(--accent); font-weight: 600; }
+  /* Chapter markers under the video: one segment per chapter, proportional to its length */
+  .marcatori { display: flex; gap: 3px; margin: 8px 0 0; }
+  .marcatori button { height: 14px; min-width: 6px; padding: 0; border: 0; border-radius: 4px; background: #DDD9D1; cursor: pointer; }
+  .marcatori button.on, .marcatori button:hover { background: var(--accent); }
+  h2 { font-size: 20px; margin: 0 0 8px; }
+  .capitoli { list-style: none; margin: 0 0 24px; padding: 0; }
+  .capitoli a { display: flex; gap: 12px; padding: 8px 10px; border-radius: 8px; font-weight: 400; color: var(--ink); text-decoration: none; }
+  .capitoli a:hover { background: #EFECE6; }
+  .capitoli a.on { background: #E3EEEA; }
+  .capitoli .tm { min-width: 3em; color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
 </style>
 </head>
 <body>
@@ -25,11 +36,29 @@
   <h1>GASS: funzioni per gli amministratori</h1>
   <p class="sub">In tre minuti, da computer: stato degli utenti, correzione di un saldo, riaprire una consegna, modificare i turni, le pause, la quota teatro e il registro Attività.</p>
 
-  <video controls playsinline preload="metadata" poster="/video/gass-admin.jpg?v=2.27">
-    <source src="/video/gass-admin.mp4?v=2.27" type="video/mp4">
-  </video>
+  <div class="player">
+    <video controls playsinline preload="metadata" poster="/video/gass-admin.jpg?v=2.27.3">
+      <source src="/video/gass-admin.mp4?v=2.27.3" type="video/mp4">
+    </video>
+    <div class="marcatori"></div>
+  </div>
+
+  <h2>Capitoli</h2>
+  <ol class="capitoli">
+    <li><a href="#t=0:00" data-t="0"><span class="tm">0:00</span><span class="nome">Stato degli utenti</span></a></li>
+    <li><a href="#t=0:28" data-t="28"><span class="tm">0:28</span><span class="nome">Correggere un saldo</span></a></li>
+    <li><a href="#t=0:40" data-t="40"><span class="tm">0:40</span><span class="nome">Riaprire una consegna</span></a></li>
+    <li><a href="#t=0:52" data-t="52"><span class="tm">0:52</span><span class="nome">Turni: cambiare i nomi</span></a></li>
+    <li><a href="#t=1:11" data-t="71"><span class="tm">1:11</span><span class="nome">Spostare una consegna (Giorno)</span></a></li>
+    <li><a href="#t=1:27" data-t="87"><span class="tm">1:27</span><span class="nome">Generazione automatica e note</span></a></li>
+    <li><a href="#t=1:40" data-t="100"><span class="tm">1:40</span><span class="nome">Pause</span></a></li>
+    <li><a href="#t=2:04" data-t="124"><span class="tm">2:04</span><span class="nome">Quota teatro</span></a></li>
+    <li><a href="#t=2:29" data-t="149"><span class="tm">2:29</span><span class="nome">Registro cassa teatro</span></a></li>
+    <li><a href="#t=2:45" data-t="165"><span class="tm">2:45</span><span class="nome">Attività</span></a></li>
+  </ol>
 
   <p>Per entrare: <a href="/">gass.x86.it</a>.</p>
 </main>
+<script src="/js/shared/capitoli.js?v=1"></script>
 </body>
 </html>

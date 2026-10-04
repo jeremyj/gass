@@ -12,7 +12,7 @@ GASS Pagamenti è un sistema di gestione finanziaria per gruppi di acquisto soli
 
 ### Primo Accesso
 
-Il video del primo accesso, turni compresi, è su https://gass.x86.it/comefunziona (non serve il login). Per gli amministratori, le funzioni in più (da computer) sono in un video su https://gass.x86.it/admin-video.
+Il video del primo accesso, turni compresi, è su https://gass.x86.it/comefunziona (non serve il login). Sotto ogni video c'è l'elenco dei capitoli: tocca un capitolo per saltare a quel punto; il link (es. https://gass.x86.it/comefunziona#t=1:33) si può mandare a chi serve. Per gli amministratori, le funzioni in più (da computer) sono in un video su https://gass.x86.it/admin-video.
 
 1. Aprire https://gass.x86.it e toccare **Accedi**
 2. Nella pagina di Authentik inserire il nome utente e la password provvisoria ricevuti dall'amministratore
