@@ -20,11 +20,6 @@ router.get('/comefunziona', (req, res) => {
   res.sendFile(path.join(PUBLIC, 'comefunziona.html'));
 });
 
-// What's new in 2.17: turni video (public, no auth required)
-router.get('/v2.17', (req, res) => {
-  res.sendFile(path.join(PUBLIC, 'v2.17.html'));
-});
-
 // Admin features video (public, shared only with admins)
 router.get('/admin-video', (req, res) => {
   res.sendFile(path.join(PUBLIC, 'admin-video.html'));

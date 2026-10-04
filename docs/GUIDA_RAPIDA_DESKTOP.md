@@ -7,7 +7,7 @@ date: "Settembre 2026"
 
 Apri il browser e vai su **https://gass.x86.it**. Clicca **Accedi** e inserisci nome utente e password. Al primo accesso usa la password provvisoria ricevuta: GASS ti chiede di sceglierne una nuova (almeno 8 caratteri).
 
-Video del primo accesso: **https://gass.x86.it/comefunziona**. Novità della 2.17 (turni): **https://gass.x86.it/v2.17**.
+Video del primo accesso (con i turni): **https://gass.x86.it/comefunziona**.
 
 Per cambiare la password in seguito vai su **https://auth.x86.it**, nelle impostazioni del tuo utente.
 

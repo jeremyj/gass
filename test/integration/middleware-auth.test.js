@@ -130,10 +130,10 @@ describe('requireAdmin middleware', () => {
 });
 
 describe('public endpoints', () => {
-  it('serves the 2.17 news page without a session', async () => {
-    const res = await request(app).get('/v2.17');
+  it('serves the first-access video page without a session', async () => {
+    const res = await request(app).get('/comefunziona');
     expect(res.status).toBe(200);
-    expect(res.text).toContain('gass-turni.mp4');
+    expect(res.text).toContain('gass-primo-accesso.mp4');
   });
 
   it('serves the admin video page without a session', async () => {
