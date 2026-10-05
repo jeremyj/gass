@@ -295,8 +295,8 @@ body:has(.bottom-nav) { padding-bottom: 72px; }
 .conto .tot output { font-size: 28px; }
 /* Quote teatro of the day: last cell of the cassa row, in its own colour (not part of the cassa) */
 .conto:has(.teatro-cell:not(.initially-hidden)) .tot { margin-bottom: -8px; }
-.conto .teatro-cell { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: baseline; margin: 0 -16px -14px; padding: 8px 16px; background: var(--teatro-t); border-top: 1px solid var(--riga); color: var(--teatro); }
-.conto .teatro-cell output { font-size: 20px; }
+.conto .teatro-cell { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: baseline; gap: 10px; margin: 0 -16px -14px; padding: 8px 16px; background: var(--teatro-t); border-top: 1px solid var(--riga); color: var(--teatro); }
+.conto .teatro-cell output { font-size: 20px; white-space: nowrap; }
 .conto .teatro-cell.initially-hidden { display: none; }
 /* Uscite di cassa: already subtracted from In cassa, shown under the row */
 .conto:has(.uscite-cell:not(.initially-hidden)) .tot { margin-bottom: -8px; }
