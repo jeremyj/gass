@@ -90,7 +90,7 @@ Every user is a participant with a saldo. The `partecipanti` table was merged in
 - `display_name` = participant name shown in UI
 - `saldo` = current credit/debt balance — a **cache** of the ledger (see Saldo Ledger)
 - `ultima_modifica` = date of the last ledger event
-- `stato` = `attivo` | `sospeso` | `disattivato` (replaced `attivo`); `sospeso` is shown as **"no turni"** (2.24.0, user: it only means "doesn't do turni"; DB value kept to avoid rebuilding `users` for the CHECK) — badge via `statoBadge()` (`utils.js`), not greyed, sorted with attivi; `turni_dal` = date the turni wait restarts from (set when returning to `attivo`)
+- `stato` = `attivo` | `sospeso` | `disattivato` (replaced `attivo`); `sospeso` is shown as **"no turni"** (2.24.0, user: it only means "doesn't do turni"; DB value kept to avoid rebuilding `users` for the CHECK) — badge via `statoBadge()` (`utils.js`, labels in `STATO_LABEL`; Attività maps the raw `stato: attivo → sospeso` log text through the same map, so stored log details keep DB values), not greyed, sorted with attivi; `turni_dal` = date the turni wait restarts from (set when returning to `attivo`)
 - API returns `nome` (aliased from `display_name`) for frontend compatibility
 
 ### Audit Columns (all tables)

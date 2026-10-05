@@ -12,10 +12,12 @@ function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 
-// Badge next to a name for users who are not attivo; the stored value "sospeso" is shown as "no turni"
+// User stato as shown in the UI: the stored value "sospeso" is shown as "no turni"
+const STATO_LABEL = { attivo: 'attivo', sospeso: 'no turni', disattivato: 'disattivato' };
+
+// Badge next to a name for users who are not attivo
 function statoBadge(stato) {
-  const label = { sospeso: 'no turni', disattivato: 'disattivato' }[stato];
-  return label ? `<span class="admin-badge">${label}</span>` : '';
+  return stato && stato !== 'attivo' ? `<span class="admin-badge">${STATO_LABEL[stato]}</span>` : '';
 }
 
 // Display status message to user

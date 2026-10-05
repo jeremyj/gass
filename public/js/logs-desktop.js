@@ -116,9 +116,10 @@ function getEventDetails(event) {
     if (debitoPagato(event)) parts.push(`salda debito ${formatEuro(debitoPagato(event))}`);
     return parts.join(', ') || (event.details || '-');
   }
-  // User management events have details field
+  // User management events have details field; stato changes are logged with the DB values
   if (event.details) {
-    return event.details;
+    return event.details.replace(/stato: (\w+) → (\w+)/,
+      (m, from, to) => `stato: ${STATO_LABEL[from] || from} → ${STATO_LABEL[to] || to}`);
   }
   return '';
 }
