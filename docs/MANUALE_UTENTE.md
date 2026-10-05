@@ -369,7 +369,10 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.27.4
+Sistema GASS Pagamenti - Versione 2.27.5
+- Telefono: l'importo delle quote teatro della consegna resta su una riga
+
+Versione 2.27.4
 - Attività mostra i cambi di stato con i nomi dell'app ("no turni" invece di "sospeso")
 
 Versione 2.27.3
