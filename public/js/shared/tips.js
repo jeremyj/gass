@@ -2,7 +2,7 @@
 // Tap on mobile, click on desktop; elements rendered later get their button too (MutationObserver).
 
 const TIPS = {
-  uscite: 'Soldi presi dalla cassa per altro, per esempio le quote portate al teatro. Scrivi importo e motivo; con + ne aggiungi un\'altra, per toglierne una svuota la riga. Sono già tolte da In cassa.',
+  uscite: 'Soldi presi dalla cassa o rimessi dentro. Esce = tolti (es. hai pagato Altobelli 358 invece di 357,20: 0,80), entra = rimessi (hai pagato 357: 0,20). Tocca esce/entra o scrivi − / + davanti all\'importo. Con il pulsante + a destra aggiungi una riga; per toglierne una svuota la riga.',
   teatro_oggi: 'Quote teatro pagate in questa consegna: vanno nella cassa del teatro, non in questa, e non cambiano In cassa.',
   teatro_versato: 'Quanto paga ora per la quota teatro. Copre prima i semestri più vecchi; quello che avanza resta come anticipo.',
   modifica_saldo: 'Scrivi il saldo giusto. L\'app registra la differenza come correzione con la data di oggi: i movimenti passati non cambiano.',

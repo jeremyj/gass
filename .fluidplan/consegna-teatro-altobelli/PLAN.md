@@ -21,59 +21,59 @@ This supersedes the earlier answers given before the mockup (Teatro section open
 
 ## Phase 1 — Cassa: conto produttore + signed uscite (≈ 0.5 d)
 
-### [ ] 1.1 Accept negative uscite in validation · C1
+### [x] 1.1 Accept negative uscite in validation · C1
 
-- Decision: **C1** How the sign is stored — Store the effect on the cassa (− = esce) [critical]
+- Decision: **C1** How the sign is stored — Positive = esce, negative = entra (changed during execution, see DECISIONS.md) [critical]
 - Files: `server/services/validation.js` (modify), `test/unit/validation.test.js` (modify)
 - Do: In `validateConsegnaPayload` (`server/services/validation.js`, the `body.uscite` loop) accept any finite non-zero importo instead of > 0; keep the motivo required. Error text stays 'Indica l'importo di ogni uscita di cassa'.
 - Acceptance criteria:
-  - [ ] `{importo: -0.2, motivo: 'arrotondamento'}` passes
-  - [ ] `{importo: 0, motivo: 'x'}` is refused
-  - [ ] `{importo: -0.2, motivo: ''}` is refused
+  - [x] `{importo: -0.2, motivo: 'arrotondamento'}` passes
+  - [x] `{importo: 0, motivo: 'x'}` is refused
+  - [x] `{importo: -0.2, motivo: ''}` is refused
 - Verify: `npm run test:unit -- validation`
 
-### [ ] 1.2 Cover a negative uscita in the consegna API · C1
+### [x] 1.2 Cover a negative uscita in the consegna API · C1
 
-- Decision: **C1** How the sign is stored — Store the effect on the cassa (− = esce) [critical]
+- Decision: **C1** How the sign is stored — Positive = esce, negative = entra (changed during execution, see DECISIONS.md) [critical]
 - Files: `test/integration/consegna.test.js` (modify)
 - Do: Integration test: POST /api/consegna with uscite `[{90,'teatro'},{0.8,'arrotondamento Altobelli'},{-0.2,'arrotondamento'}]`; GET returns them in order and the stored lasciato equals trovato + incassato − pagato − 90,60.
 - Acceptance criteria:
-  - [ ] lasciato_in_cassa is computed with Σ uscite = 90,60
+  - [x] lasciato_in_cassa is computed with Σ uscite = 90,60
 - Verify: `npm run test:integration -- consegna`
 - After: 1.1
 
-### [ ] 1.3 Add the esce/entra badge to uscita rows · C2
+### [x] 1.3 Add the esce/entra badge to uscita rows · C2
 
 - Decision: **C2** How the sign is entered — Badge + typed sign, − = esce
 - Files: `public/js/shared/consegna-common.js` (modify), `public/style.css` (modify)
 - Do: In `usciteRowHtml` (`public/js/shared/consegna-common.js`) prepend `<button type="button" class="uscita-segno" data-segno="out|in">esce|entra</button>`; click toggles and calls `onNoteGiornataChange()`. On importo input, a leading `-`/`−`/`+` sets `data-segno` and is stripped before `normalizeInputField`. `readUscite` returns `importo` = amount × (in ? −1 : 1). `fillGiornata` renders stored negatives as `entra` with the absolute value. Styles `.uscita-segno` (debito/verde tints as in the mockup) in `public/style.css`; grid of `.uscita` gets the extra column on mobile and desktop.
 - Acceptance criteria:
-  - [ ] Typing '-0,80' shows badge esce and field '0,80'
-  - [ ] Typing '+0,20' shows badge entra
-  - [ ] Tapping the badge flips it and marks the giornata as changed
-  - [ ] A stored −0,20 reloads as entra 0,20
-  - [ ] Works at 390 px and on desktop
+  - [x] Typing '-0,80' shows badge esce and field '0,80'
+  - [x] Typing '+0,20' shows badge entra
+  - [x] Tapping the badge flips it and marks the giornata as changed
+  - [x] A stored −0,20 reloads as entra 0,20
+  - [x] Works at 390 px and on desktop
 - Verify: `npm test`
 - After: 1.1
 
-### [ ] 1.4 Show the sign in uscite descriptions and totals · C3
+### [x] 1.4 Show the sign in uscite descriptions and totals · C3
 
 - Decision: **C3** How signed uscite are shown
 - Files: `public/js/shared/consegna-common.js` (modify), `server/services/report.js` (modify), `test/integration/report.test.js` (modify)
 - Do: Update `descrizioneUscite` and `updateUsciteView` in `public/js/shared/consegna-common.js` and `descrizione` in `server/services/report.js` (keep them identical, as the existing comment requires).
 - Acceptance criteria:
-  - [ ] Report text for uscite 90 / 0,80 / −0,20 reads 'Uscite di cassa: −90,60 € (teatro −90, arrotondamento Altobelli −0,80, arrotondamento +0,20)'
-  - [ ] Mobile .uscite-cell and desktop #uscite-view show the signed net total
+  - [x] Report text for uscite 90 / 0,80 / −0,20 reads 'Uscite di cassa: −90,60 € (teatro −90, arrotondamento Altobelli −0,80, arrotondamento +0,20)'
+  - [x] Mobile .uscite-cell and desktop #uscite-view show the signed net total
 - Verify: `npm run test:integration -- report`
 - After: 1.3
 
-### [ ] 1.5 Write the conto produttore hint and the uscite texts · C4
+### [x] 1.5 Write the conto produttore hint and the uscite texts · C4
 
 - Decision: **C4** Wording of Conto produttore and of the uscite help
 - Files: `public/js/shared/consegna-common.js` (modify), `public/js/shared/tips.js` (modify), `public/consegna.html` (modify), `public/consegna-desktop.html` (modify)
 - Do: Add the hint line in the card template near `<label for="contoProduttore_${id}">` in `public/js/shared/consegna-common.js` (class `.hint`, 16px minimum); change the uscita placeholder; rewrite `TIPS.uscite` in `public/js/shared/tips.js`. Bump `?v=` of the changed JS/CSS in `public/consegna.html` and `public/consegna-desktop.html`.
 - Acceptance criteria:
-  - [ ] The text 'Importo effettivo dal foglio Altobelli' is visible under Conto produttore on mobile and desktop without opening any tip
+  - [x] The text 'Importo effettivo dal foglio Altobelli' is visible under Conto produttore on mobile and desktop without opening any tip
 - Verify: `npm test`
 
 ## Phase 2 — Quota teatro inside the card (A1) (≈ 1.5 d)

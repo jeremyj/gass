@@ -306,8 +306,17 @@ body:has(.bottom-nav) { padding-bottom: 72px; }
 .cassa-v > p.initially-hidden { display: none; }
 .uscite-motivo { font-weight: 400; color: var(--salvia); }
 .cassa-v .uscite-motivo { display: block; font-size: 16px; }
-.uscite-edit { display: grid; gap: 8px; }
-.uscita { display: grid; grid-template-columns: 8ch 1fr 44px; gap: 8px; }
+.uscite-edit { display: grid; gap: 8px; container-type: inline-size; }
+.uscita { display: grid; grid-template-columns: auto 8ch 1fr 44px; gap: 8px; }
+/* Narrow column (desktop cassa aside): the motivo goes on its own line under badge and importo */
+@container (max-width: 340px) {
+  .uscite-edit { gap: 14px; }
+  .uscita { grid-template-columns: auto 1fr 44px; grid-template-areas: "segno importo add" "motivo motivo motivo"; gap: 6px 8px; }
+  .uscita-segno { grid-area: segno; } .uscita-importo { grid-area: importo; } .uscita-motivo { grid-area: motivo; } .uscita-add { grid-area: add; }
+}
+.uscita-segno { width: 7ch; padding: 0; border: 1px solid var(--riga); border-radius: 8px; font: inherit; font-size: 16px; font-weight: 800; cursor: pointer; }
+.uscita-segno[data-segno="esce"] { background: var(--debito-t); color: var(--debito); }
+.uscita-segno[data-segno="entra"] { background: #e3f2df; color: #2d6a2d; }
 .uscita-add { border: 1px solid var(--riga); border-radius: 8px; background: var(--carta); font-size: 22px; font-weight: 700; color: var(--inchiostro); cursor: pointer; }
 .uscita:not(:last-child) .uscita-add { visibility: hidden; }
 .note-giornata .uscite-edit + .btn, .note-giornata input + label { margin-top: 10px; }
@@ -467,6 +476,7 @@ b.th { color: var(--teatro); }
 .entry-body { display: flex; flex-direction: column; gap: 14px; padding: 16px 18px 18px; }
 .entry-fields { display: grid; gap: 12px; }
 .fld label { display: block; margin-bottom: 2px; }
+.fld-hint { display: block; font-size: 16px; color: var(--salvia); margin-bottom: 4px; }
 .fld-in { display: flex; align-items: baseline; background: var(--carta); border: 1.5px solid var(--riga); border-radius: 10px; padding: 2px 16px; }
 .fld-in:focus-within { border-color: var(--s-deep); box-shadow: inset 0 -4px 0 var(--s-acc); }
 .fld-in input { border: 0; padding: 4px 0; font-family: var(--serif); font-weight: 700; font-size: 40px; line-height: 1.1; box-shadow: none; }
@@ -629,7 +639,7 @@ b.th { color: var(--teatro); }
   .saldo-input { width: 8ch; padding: 4px 8px; text-align: right; }
 
   #selected-participants:not(:empty) { margin-top: 18px; }
-  .entry-fields { grid-template-columns: 1fr 1fr; }
+  .entry-fields { grid-template-columns: 1fr 1fr; align-items: end; }
   .entry-actions { max-width: 420px; margin-left: auto; width: 100%; }
 
   .d-head2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }

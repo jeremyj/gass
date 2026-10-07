@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Consegna</title>
-    <link rel="stylesheet" href="style.css?v=83">
+    <link rel="stylesheet" href="style.css?v=87">
 </head>
 <body>
     <header class="stag">
@@ -43,8 +43,8 @@
                 <span class="conto-val"><i>=</i><output id="lasciatoInCassa">–</output></span>
             </div>
             <div id="uscite-view" class="uscite-cell initially-hidden">
-                <label>Uscite di cassa, già tolte: <span class="uscite-motivo"></span></label>
-                <span class="conto-val"><i>−</i><output>0</output></span>
+                <label>Uscite di cassa, già nel conto: <span class="uscite-motivo"></span></label>
+                <span class="conto-val"><output>0</output></span>
             </div>
             <div id="quote-teatro-oggi" class="teatro-cell initially-hidden">
                 <label data-tip="teatro_oggi">Quote teatro di questa consegna, a parte dalla cassa</label>
@@ -94,12 +94,12 @@
         <span id="app-version"></span>
     </footer>
 
-    <script src="js/shared/utils.js?v=42"></script>
-    <script src="js/shared/tips.js?v=1"></script>
+    <script src="js/shared/utils.js?v=43"></script>
+    <script src="js/shared/tips.js?v=2"></script>
     <script src="js/shared/season.js?v=33"></script>
     <script src="js/shared/calendar.js?v=36"></script>
     <script src="js/shared/api-client.js"></script>
-    <script src="js/shared/consegna-common.js?v=45"></script>
+    <script src="js/shared/consegna-common.js?v=46"></script>
     <script src="js/shared/auth.js?v=33"></script>
     <script src="js/shared/version.js"></script>
     <script src="js/consegna.js?v=37"></script>

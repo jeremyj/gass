@@ -48,7 +48,7 @@ function reportBody(db, consegnaId, baseUrl) {
     '',
     `Trovato in cassa: ${num(calculateTrovatoInCassa(c, prev?.lasciato_in_cassa))} €`,
     `Pagato al produttore: ${num(c.pagato_produttore)} €`,
-    ...(uscite.length ? [`Uscite di cassa: ${num(totaleUscite(uscite))} € (${descrizione(uscite)})`] : []),
+    ...(uscite.length ? [`Uscite di cassa: ${effetto(totaleUscite(uscite))} € (${descrizione(uscite)})`] : []),
     ...(sections.length ? ['', ...sections] : []),
     '',
     `Lasciato in cassa: ${num(c.lasciato_in_cassa)} €`,
@@ -56,8 +56,11 @@ function reportBody(db, consegnaId, baseUrl) {
   ].join('\n');
 }
 
+// Same as formatEffettoCassa in utils.js: an uscita (stored positive) is −, an entrata (negative) +
+const effetto = importo => importo === 0 ? '0' : `${importo > 0 ? '−' : '+'}${num(Math.abs(importo))}`;
+
 // Same as descrizioneUscite in consegna-common.js: one uscita shows only its motivo
-const descrizione = uscite => uscite.length === 1 ? uscite[0].motivo : uscite.map(u => `${u.motivo} ${num(u.importo)}`).join(', ');
+const descrizione = uscite => uscite.length === 1 ? uscite[0].motivo : uscite.map(u => `${u.motivo} ${effetto(u.importo)}`).join(', ');
 
 function reportTitle(date, corretto) {
   const [y, m, d] = date.split('-');

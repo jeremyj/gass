@@ -89,12 +89,14 @@ function calculateLasciatoInCassa() {
 
 // ===== NOTE AND USCITE DI CASSA (saved together by the page's Salva button) =====
 
-// Uscite rows of the form; rows left empty are dropped (that is how an uscita is removed)
+// Uscite rows of the form; rows left empty are dropped (that is how an uscita is removed).
+// The badge holds the sign: esce is stored positive, entra negative (subtracted from the cassa either way)
 function readUscite() {
-  return [...document.querySelectorAll('#uscite-edit .uscita')].map(row => ({
-    importo: roundToCents(parseAmount(row.querySelector('.uscita-importo').value)),
-    motivo: row.querySelector('.uscita-motivo').value.trim()
-  })).filter(u => u.importo || u.motivo);
+  return [...document.querySelectorAll('#uscite-edit .uscita')].map(row => {
+    const importo = roundToCents(Math.abs(parseAmount(row.querySelector('.uscita-importo').value)));
+    const entra = row.querySelector('.uscita-segno').dataset.segno === 'entra';
+    return { importo: entra ? -importo : importo, motivo: row.querySelector('.uscita-motivo').value.trim() };
+  }).filter(u => u.importo || u.motivo);
 }
 
 function usciteCassaValue() {
@@ -102,14 +104,34 @@ function usciteCassaValue() {
 }
 
 function usciteRowHtml(u = {}) {
+  const segno = u.importo < 0 ? 'entra' : 'esce';
   return `
     <div class="uscita">
+      <button type="button" class="uscita-segno" data-segno="${segno}" aria-label="Esce o entra dalla cassa"
+              onclick="setSegnoUscita(this, this.dataset.segno === 'esce' ? 'entra' : 'esce')">${segno}</button>
       <input type="text" inputmode="decimal" class="input-field uscita-importo" placeholder="0" aria-label="Importo uscita"
-             value="${u.importo ? formatNumber(u.importo) : ''}" oninput="normalizeInputField(this); onNoteGiornataChange()">
-      <input type="text" class="input-field uscita-motivo" placeholder="Motivo, es. quote al teatro" aria-label="Motivo uscita"
+             value="${u.importo ? formatNumber(Math.abs(u.importo)) : ''}" oninput="onUscitaImportoInput(this)">
+      <input type="text" class="input-field uscita-motivo" placeholder="Motivo, es. arrotondamento Altobelli" aria-label="Motivo uscita"
              value="${escapeHtml(u.motivo || '')}" oninput="onNoteGiornataChange()">
       <button type="button" class="uscita-add" aria-label="Aggiungi un'altra uscita" onclick="addUscitaRow()">+</button>
     </div>`;
+}
+
+function setSegnoUscita(badge, segno) {
+  badge.dataset.segno = segno;
+  badge.textContent = segno;
+  onNoteGiornataChange();
+}
+
+// A typed − or + sets the badge and leaves only the amount in the field
+function onUscitaImportoInput(input) {
+  const { segno, resto } = segnoDigitato(input.value);
+  if (segno) {
+    input.value = resto;
+    setSegnoUscita(input.closest('.uscita').querySelector('.uscita-segno'), segno);
+  }
+  normalizeInputField(input);
+  onNoteGiornataChange();
 }
 
 function addUscitaRow() {
@@ -135,17 +157,17 @@ function setGiornataDisabled(disabled) {
     .forEach(el => { el.disabled = disabled; });
 }
 
-// "teatro 45, tofu 20"; a single uscita shows only its motivo (the total is next to it)
+// "teatro −45, arrotondamento +0,20"; a single uscita shows only its motivo (the total is next to it).
+// Same rule as `descrizione` in server/services/report.js
 function descrizioneUscite(uscite) {
-  return uscite.length === 1 ? uscite[0].motivo : uscite.map(u => `${u.motivo} ${formatNumber(u.importo)}`).join(', ');
+  return uscite.length === 1 ? uscite[0].motivo : uscite.map(u => `${u.motivo} ${formatEffettoCassa(u.importo)}`).join(', ');
 }
 
-// The uscite line of the cassa, shown only when there are uscite
+// The uscite line of the cassa (signed net total), shown only when there are uscite
 function updateUsciteView() {
   const view = document.getElementById('uscite-view');
-  const uscite = usciteCassaValue();
-  view.classList.toggle('initially-hidden', !(uscite > 0));
-  view.querySelector('output').value = formatNumber(uscite);
+  view.classList.toggle('initially-hidden', !readUscite().some(u => u.importo));
+  view.querySelector('output').value = formatEffettoCassa(usciteCassaValue());
   view.querySelector('.uscite-motivo').textContent = descrizioneUscite(readUscite());
 }
 
@@ -193,7 +215,7 @@ function consegnaSummaryDetails() {
     ['Movimenti', String((existingConsegnaMovimenti || []).length)],
     ['Incassato', formatEuro(calculateIncassato())],
     ['Pagato produttore', amount('pagatoProduttore')],
-    ...(usciteCassaValue() > 0 ? [['Uscite di cassa', formatEuro(usciteCassaValue())]] : []),
+    ...(usciteCassaValue() !== 0 ? [['Uscite di cassa', `${formatEffettoCassa(usciteCassaValue())} €`]] : []),
     ['Lasciato in cassa', amount('lasciatoInCassa')]
   ];
 }
@@ -623,7 +645,8 @@ function buildParticipantCardHTML(id, nome, saldo, haCredito, haDebito, buttonsH
       <div class="entry-fields">
         <div class="form-group fld">
           <label for="contoProduttore_${id}">Conto produttore</label>
-          <span class="fld-in"><input type="text" inputmode="decimal" id="contoProduttore_${id}" placeholder="0"
+          <small class="fld-hint" id="contoHint_${id}">Importo effettivo dal foglio Altobelli</small>
+          <span class="fld-in"><input type="text" inputmode="decimal" id="contoProduttore_${id}" placeholder="0" aria-describedby="contoHint_${id}"
                  oninput="normalizeInputField(this); handleContoProduttoreInput(${id}, ${saldo})"
                  onfocus="handleInputFocus(this)"><span class="unit">€</span></span>
         </div>

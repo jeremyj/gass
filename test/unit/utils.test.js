@@ -16,7 +16,8 @@ vm.createContext(sandbox);
 vm.runInContext(code, sandbox);
 
 const { escapeHtml, formatDateItalian, parseAmount, roundToCents, formatNumber, toLocalDateString,
-        debitoPagato, debitoNuovo, formatEuro, formatSigned, weekdayShort, monthName } = sandbox;
+        debitoPagato, debitoNuovo, formatEuro, formatSigned, weekdayShort, monthName,
+        formatEffettoCassa, segnoDigitato } = sandbox;
 
 describe('toLocalDateString', () => {
   it('uses the local calendar date, not the UTC one', () => {
@@ -176,5 +177,23 @@ describe('weekdayShort / monthName', () => {
   it('give the Italian short weekday and month name', () => {
     expect(weekdayShort('2026-12-09')).toBe('mer');
     expect(monthName('2026-12-09')).toBe('dicembre');
+  });
+});
+
+describe('formatEffettoCassa', () => {
+  it('shows an uscita (stored positive) as − and an entrata (stored negative) as +', () => {
+    expect(formatEffettoCassa(90)).toBe('−90');
+    expect(formatEffettoCassa(0.8)).toBe('−0,80');
+    expect(formatEffettoCassa(-0.2)).toBe('+0,20');
+    expect(formatEffettoCassa(0)).toBe('0');
+  });
+});
+
+describe('segnoDigitato', () => {
+  it('reads a leading − or + typed in an uscita amount and strips it', () => {
+    expect(segnoDigitato('-0,80')).toEqual({ segno: 'esce', resto: '0,80' });
+    expect(segnoDigitato('−3')).toEqual({ segno: 'esce', resto: '3' });
+    expect(segnoDigitato('+0,20')).toEqual({ segno: 'entra', resto: '0,20' });
+    expect(segnoDigitato('12')).toEqual({ segno: null, resto: '12' });
   });
 });

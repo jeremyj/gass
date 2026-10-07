@@ -110,6 +110,21 @@ function formatSigned(value) {
   return `${num > 0 ? '+' : '−'}${formatEuro(Math.abs(num))}`;
 }
 
+// Uscite di cassa shown as their effect on the cassa: an uscita (stored positive) is "−0,80",
+// an entrata (stored negative) "+0,20". Same rule as `effetto` in server/services/report.js
+function formatEffettoCassa(importo) {
+  const num = roundToCents(importo || 0);
+  if (num === 0) return '0';
+  return `${num > 0 ? '−' : '+'}${formatNumber(Math.abs(num))}`;
+}
+
+// A leading − or + typed in an uscita amount: − = esce, + = entra (effect on the cassa)
+function segnoDigitato(text) {
+  const m = /^\s*([-−+])/.exec(text);
+  if (!m) return { segno: null, resto: text };
+  return { segno: m[1] === '+' ? 'entra' : 'esce', resto: text.slice(m[0].length) };
+}
+
 // On a partial debt payoff a movimento stores the whole prior debt in debito_saldato and the
 // part still owed in debito_lasciato (so the ledger replay stays right). For display, split it
 // into what was actually paid and what is genuinely new debt.

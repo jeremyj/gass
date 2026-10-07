@@ -20,7 +20,7 @@ This supersedes the earlier answers given before the mockup (Teatro section open
 
 - **Importance:** Critical
 - **Phase:** Phase 1 — Cassa: conto produttore + signed uscite
-- **Choice:** Store the effect on the cassa (− = esce)
+- **Choice:** Store the effect on the cassa (− = esce) — **changed during execution (2026-10-07): Positive = esce, negative = entra.** Asked which option is better for DB consistency and integrity: positive = esce keeps pages cached before the deploy correct (they only send positive uscite, which would read as entrate under the other option), needs no prod migration and leaves the cassa formula unchanged.
 - **Why:** It sets the meaning of every stored row and of the cassa formula `lasciato = trovato + incassato − pagato − Σ uscite`. Getting it backwards would silently flip the 29/9 uscita of 90 € and every lasciato recomputed after it.
 - **Proposal:** Keep the column as is: **importo > 0 = esce** (as today, the 29/9 row of 90 stays valid), **importo < 0 = entra** (e.g. Altobelli paid 357 instead of 357,20 → −0,20). The formula does not change: Σ uscite simply becomes smaller when there is an entrata. 0 is still refused.
 - **Other options:** Positive = esce, negative = entra (con: The stored sign is the opposite of the effect on the cassa (a reader of the DB must know it))

@@ -181,6 +181,13 @@ describe('POST /api/consegna/ — saldo calculation', () => {
     expect((await adminAgent.get('/api/consegna/2026-02-19')).body.uscite).toEqual([]);
   });
 
+  it('counts a negative uscita (entrata, e.g. Altobelli paid rounded down) in the lasciato', async () => {
+    const uscite = [{ importo: 90, motivo: 'teatro' }, { importo: 0.8, motivo: 'arrotondamento Altobelli' }, { importo: -0.2, motivo: 'arrotondamento' }];
+    await adminAgent.post('/api/consegna/').send({ data: '2026-02-19', trovatoInCassa: 200, pagatoProduttore: 0, uscite, partecipanti: [] }).expect(200);
+    expect(db.prepare("SELECT lasciato_in_cassa FROM consegne WHERE data = '2026-02-19'").get().lasciato_in_cassa).toBe(109.4);
+    expect((await adminAgent.get('/api/consegna/2026-02-19')).body.uscite).toEqual(uscite);
+  });
+
   it('returns 403 when non-admin tries to save to a closed consegna', async () => {
     const userId = createUser(db, { username: 'user1', password: 'password1', displayName: 'User1' });
     const consegnaId = createConsegna(db, { data: '2026-02-19', chiusa: true });

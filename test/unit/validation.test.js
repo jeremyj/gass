@@ -16,11 +16,13 @@ describe('validateConsegnaPayload', () => {
     expect(validateConsegnaPayload(payload(), saldo(0))).toBeNull();
   });
 
-  it('requires each uscita di cassa to be a positive amount with a motivo', () => {
+  it('requires each uscita di cassa to be a non-zero amount with a motivo (negative = entrata)', () => {
     const uscite = list => payload({ uscite: list });
     expect(validateConsegnaPayload(uscite([{ importo: 45, motivo: 'teatro' }, { importo: 20, motivo: 'tofu' }]), saldo(0))).toBeNull();
     expect(validateConsegnaPayload(uscite([]), saldo(0))).toBeNull();
     expect(validateConsegnaPayload(uscite([{ importo: 0, motivo: 'x' }]), saldo(0))).toMatch(/importo/);
+    expect(validateConsegnaPayload(uscite([{ importo: -0.2, motivo: 'arrotondamento' }]), saldo(0))).toBeNull();
+    expect(validateConsegnaPayload(uscite([{ importo: -0.2, motivo: '' }]), saldo(0))).toMatch(/motivo/);
     expect(validateConsegnaPayload(uscite([{ importo: 5, motivo: ' ' }]), saldo(0))).toMatch(/motivo/);
     expect(validateConsegnaPayload(payload({ uscite: 'x' }), saldo(0))).toMatch(/uscite/);
   });

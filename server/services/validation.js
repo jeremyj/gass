@@ -23,7 +23,7 @@ function validateConsegnaPayload(body, saldoBefore) {
   if (body.uscite != null) {
     if (!Array.isArray(body.uscite)) return 'Elenco uscite non valido';
     for (const u of body.uscite) {
-      if (!u || !(typeof u.importo === 'number' && Number.isFinite(u.importo) && u.importo > 0)) {
+      if (!u || !(typeof u.importo === 'number' && Number.isFinite(u.importo) && u.importo !== 0)) {
         return 'Indica l\'importo di ogni uscita di cassa';
       }
       if (typeof u.motivo !== 'string' || !u.motivo.trim()) return 'Indica il motivo delle uscite di cassa';
