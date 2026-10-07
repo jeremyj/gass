@@ -168,6 +168,7 @@ diff = importo_saldato - conto_produttore
 if diff > 0 && has_debt: auto-apply to debito_saldato
 if diff < 0 && has_credit: auto-apply to usa_credito
 ```
+It runs when `conto_produttore > 0` or `importo_saldato > 0` (`shouldAutoCompensate`). Until 2.28.1 it needed a payment, so someone with credit who paid 0 got the whole conto as new debt (6/10/2026, Paola Mazza); the saldo was still right (the ledger sums deltas), only the credit/debt split was wrong. Covered by `test/unit/compensazione.test.js` (vm sandbox with a fake DOM).
 
 ### debito_saldato Display
 On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_lasciato` the remainder (the client sends `debitoSaldato` from `dataset.submitValue`; the field shows only the part paid now). Never render the raw columns: tables use `debitoPagato(m)` (= saldato − lasciato) and `debitoNuovo(m)` (0 when a debt was being paid). Build the submitted movimento with `readMovimentoForm(id)` (`consegna-common.js`); the mobile unsaved-changes check compares its JSON so it matches the save exactly.

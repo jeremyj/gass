@@ -377,7 +377,10 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.28.0
+Sistema GASS Pagamenti - Versione 2.28.1
+- Chi ha credito e non paga niente ora usa il credito per il conto (prima il conto diventava un debito nuovo; il saldo era comunque giusto)
+
+Versione 2.28.0
 - Conto produttore: sotto il campo, "Importo effettivo dal foglio Altobelli"
 - Uscite di cassa con il segno: *esce* (soldi tolti) o *entra* (soldi rimessi, es. arrotondamento del pagamento ad Altobelli)
 - Quota teatro nella scheda del partecipante, sotto la spesa, salvata con lo stesso **Salva movimento**; chi paga solo la quota non ha un movimento a zero

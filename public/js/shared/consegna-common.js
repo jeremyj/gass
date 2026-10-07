@@ -316,7 +316,8 @@ function handleContoProduttoreInput(id, saldo) {
     return;
   }
 
-  const shouldAutoCompensate = importoSaldatoValue > 0;
+  // A conto alone must use the credit too: someone who pays nothing and has credit pays with it
+  const shouldAutoCompensate = importoSaldatoValue > 0 || contoProduttoreValue > 0;
   const debitoPreesistente = saldo < 0 ? Math.abs(saldo) : 0;
   const creditoPreesistente = saldo > 0 ? saldo : 0;
 

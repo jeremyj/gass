@@ -625,7 +625,7 @@ Implemented comprehensive auto-compensation system that automatically offsets cr
 - **Debt → Credit compensation**: Transaction creates credit but participant has existing debt
 - **Credit → Debt compensation**: Transaction creates debt but participant has existing credit
 
-**Trigger conditions**: Compensation activates when BOTH `conto_produttore > 0` AND `importo_saldato > 0`
+**Trigger conditions**: Compensation activates when `conto_produttore > 0` OR `importo_saldato > 0` (2.28.1; before, only with a payment, so someone paying 0 with credit got the whole conto as new debt)
 
 **Files Modified**: `consegna.js`, `consegna-desktop.js`
 
