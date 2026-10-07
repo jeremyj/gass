@@ -94,7 +94,7 @@ Ogni semestre (gennaio–giugno, luglio–dicembre) si paga una quota per l'affi
 | Riaprire consegna chiusa | Storico → clicca la consegna → **Riapri consegna** |
 | Eliminare una consegna salvata | Consegna → **Annulla consegna** |
 | Quote teatro: griglia, quote ridotte, cassa teatro | **Teatro** (menu in alto) |
-| Confrontare il foglio Altobelli con i conti (in prova) | **Altobelli (prova)** (menu in alto): scegli la consegna; associa una volta i nomi del foglio alle persone; in *Link del foglio* il foglio dell'anno |
+| Confrontare il foglio Altobelli con i conti | **Altobelli** (menu in alto): scegli la consegna; associa una volta i nomi del foglio alle persone; in *Link del foglio* il foglio dell'anno |
 | Modificare un saldo | Saldi → **Modifica saldo** |
 | Aggiungere partecipanti | Saldi → **+ Aggiungi partecipante** |
 | Modificare utenti | Saldi → **Modifica utente** |

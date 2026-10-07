@@ -381,7 +381,7 @@ Sistema GASS Pagamenti - Versione 2.28.0
 - Conto produttore: sotto il campo, "Importo effettivo dal foglio Altobelli"
 - Uscite di cassa con il segno: *esce* (soldi tolti) o *entra* (soldi rimessi, es. arrotondamento del pagamento ad Altobelli)
 - Quota teatro nella scheda del partecipante, sotto la spesa, salvata con lo stesso **Salva movimento**; chi paga solo la quota non ha un movimento a zero
-- Amministratori (desktop, in prova): pagina **Altobelli (prova)**, che confronta il foglio di Altobelli con i conti in GASS
+- Amministratori (desktop): pagina **Altobelli**, che confronta il foglio di Altobelli con i conti in GASS
 
 Versione 2.27.5
 - Telefono: l'importo delle quote teatro della consegna resta su una riga
