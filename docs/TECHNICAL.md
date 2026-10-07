@@ -296,7 +296,7 @@ Activity events: `teatro_pagamento`, `teatro_modifica`, `teatro_cassa`. Pages: t
 
 ## Altobelli check
 
-Experimental admin page `/altobelli` (desktop; mobile redirects to `/consegna`). `server/services/altobelli.js` reads the producer's Google sheet without credentials (it must stay shared with anyone with the link):
+Admin page `/altobelli` (desktop; mobile redirects to `/consegna`). `server/services/altobelli.js` reads the producer's Google sheet without credentials (it must stay shared with anyone with the link). The link is pasted by an admin on the page and kept only in `settings.altobelli_foglio`: never put it in the code, since anyone with it can read members' names and amounts and this repo and its image are public. Without a link `/confronto` returns 400. How it reads:
 
 1. Tab names → gid from the sheet's `/edit` page bootstrap (`parseSchede`). Not `htmlview`: it lists only visible tabs, and past tabs are hidden.
 2. The tab matching the consegna date (`trovaSchede`), read as `export?format=csv&gid=<gid>` (works on hidden tabs).
