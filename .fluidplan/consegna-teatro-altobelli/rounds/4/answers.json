@@ -1,0 +1,85 @@
+{
+  "C1": {
+    "choice": "signed-effect",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-07T07:27:59.367Z"
+  },
+  "C2": {
+    "choice": "badge-and-sign",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-07T07:28:34.851Z"
+  },
+  "T1": {
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-07T07:30:50.505Z"
+  },
+  "T2": {
+    "choice": "same-tx",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-07T07:31:03.788Z"
+  },
+  "T3": {
+    "choice": "tied",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-07T07:31:26.724Z"
+  },
+  "T4": {
+    "choice": "as-is",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-07T07:31:37.839Z"
+  },
+  "B1": {
+    "choice": "page",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-07T07:31:55.712Z"
+  },
+  "B2": {
+    "choice": "htmlview-csv",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-07T07:33:32.686Z",
+    "comment": ""
+  },
+  "B3": {
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-07T07:32:38.253Z"
+  },
+  "B4": {
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-07T07:33:35.337Z"
+  },
+  "B5": {
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-07T07:33:40.497Z"
+  },
+  "C4": {
+    "status": "ok",
+    "round": 3,
+    "updated_at": "2026-10-07T07:46:42.901Z"
+  },
+  "T5": {
+    "status": "ok",
+    "round": 3,
+    "updated_at": "2026-10-07T07:47:11.409Z"
+  },
+  "R1": {
+    "status": "ok",
+    "round": 3,
+    "updated_at": "2026-10-07T07:47:19.313Z"
+  },
+  "C3": {
+    "status": "ok",
+    "round": 4,
+    "updated_at": "2026-10-07T08:18:00.768Z"
+  }
+}

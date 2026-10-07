@@ -1,0 +1,1011 @@
+{
+  "version": 2,
+  "id": "consegna-teatro-altobelli",
+  "title": "Consegna: quota teatro, uscite with sign, Altobelli check",
+  "subtitle": "GASS 2.28.0 — mockup design/mockups/consegna-teatro-foglio.html",
+  "lang": "en",
+  "accent": "green",
+  "source": {
+    "kind": "request"
+  },
+  "context": "Three changes decided with the mockup `design/mockups/consegna-teatro-foglio.html` (2026-10-07):\n\n1. **Cassa** — the Conto produttore field must say to enter the *importo effettivo* of the Altobelli Google Sheet; rounding of the Altobelli payment goes into the uscite di cassa, which must accept a **sign** (esce / entra), set by tapping a badge or typing +/−. Mockup option **C1**.\n2. **Quota teatro** — the separate box (open, type, \"Registra quota\") is replaced by layout **A1**: in the same card a *Fresco* block and a *Teatro* block, each with its own versato, one Salva, and a summary of where the money goes physically (cassa vs bussolotto).\n3. **Altobelli check** — compare the day's tab of the sheet \"Selvaggio Altobelli 26\" (shared with anyone with the link) with the conti in GASS: sum of the **effettivi** row by row (the sheet's `=SUM` sometimes misses rows: 29/9 showed 319,20 instead of 357,20), handle effettivi not filled in. **Admin only, desktop only, experimental, separate tab.**\n\nThis supersedes the earlier answers given before the mockup (Teatro section open to everyone, only a link in the consegna, payments kept when a consegna is deleted): page 2 asks again where they still apply. App strings stay Italian; this plan is in English because fluidplan supports en/fr only. Every UI change ships on mobile **and** desktop (project rule), except the Altobelli check (desktop by request).",
+  "phases": [
+    {
+      "id": "p1",
+      "title": "Cassa: conto produttore + signed uscite",
+      "short": "Cassa",
+      "estimate": "≈ 0.5 d",
+      "days": 0.5
+    },
+    {
+      "id": "p2",
+      "title": "Quota teatro inside the card (A1)",
+      "short": "Teatro",
+      "estimate": "≈ 1.5 d",
+      "days": 1.5
+    },
+    {
+      "id": "p3",
+      "title": "Altobelli check (experimental)",
+      "short": "Altobelli",
+      "estimate": "≈ 1.5 d",
+      "days": 1.5
+    },
+    {
+      "id": "p4",
+      "title": "Docs and release 2.28.0",
+      "short": "Release",
+      "estimate": "≈ 0.5 d",
+      "days": 0.5
+    }
+  ],
+  "glossary": [
+    {
+      "term": "effettivi",
+      "definition": "Column C of each tab of the Altobelli sheet: the real amount each person owes after weighing. Column B (importo approssimativo) is the estimate made at order time."
+    },
+    {
+      "term": "bussolotto",
+      "definition": "The separate box holding the quote teatro (cassa teatro), never mixed with the consegna cassa."
+    },
+    {
+      "term": "uscite di cassa",
+      "definition": "Cash taken out of the consegna cassa by hand, table `uscite_cassa` (importo, motivo). Today importo must be > 0."
+    },
+    {
+      "term": "gid",
+      "definition": "Numeric id of one tab inside a Google Sheet; `export?format=csv&gid=<gid>` downloads exactly that tab."
+    },
+    {
+      "term": "residuo",
+      "definition": "What a person still owes in quota teatro across all semesters (`statoTeatro` in server/services/teatro.js)."
+    }
+  ],
+  "pages": [
+    {
+      "id": "cassa",
+      "section": "1 · Cassa",
+      "title": "Conto produttore and uscite with a sign",
+      "intro": "Decide how the sign of an uscita is stored, typed and shown.",
+      "decisions": [
+        {
+          "id": "C1",
+          "title": "How the sign is stored",
+          "importance": "critical",
+          "phase": "p1",
+          "why": "It sets the meaning of every stored row and of the cassa formula `lasciato = trovato + incassato − pagato − Σ uscite`. Getting it backwards would silently flip the 29/9 uscita of 90 € and every lasciato recomputed after it.",
+          "proposal": "Keep the column as is: **importo > 0 = esce** (as today, the 29/9 row of 90 stays valid), **importo < 0 = entra** (e.g. Altobelli paid 357 instead of 357,20 → −0,20). The formula does not change: Σ uscite simply becomes smaller when there is an entrata. 0 is still refused.",
+          "facts": [
+            {
+              "label": "Rows in prod",
+              "value": "1 (29/9, 90 €)"
+            },
+            {
+              "label": "DB CHECK on importo",
+              "value": "none (only validation.js)"
+            }
+          ],
+          "control": {
+            "kind": "choice",
+            "options": [
+              {
+                "id": "positive-out",
+                "label": "Positive = esce, negative = entra",
+                "recommended": true,
+                "pros": [
+                  "No migration, existing row unchanged",
+                  "Cassa formula untouched"
+                ],
+                "cons": [
+                  "The stored sign is the opposite of the effect on the cassa (a reader of the DB must know it)"
+                ],
+                "effort": "S"
+              },
+              {
+                "id": "signed-effect",
+                "label": "Store the effect on the cassa (− = esce)",
+                "detail": "Migration negates existing rows; formula becomes `+ Σ movimenti di cassa`.",
+                "pros": [
+                  "The stored sign reads like the cassa"
+                ],
+                "cons": [
+                  "Migration of prod data",
+                  "Every reader (report, storico, mobile recompute) changes"
+                ],
+                "effort": "M"
+              }
+            ]
+          },
+          "tasks": [
+            {
+              "id": "validation",
+              "title": "Accept negative uscite in validation",
+              "do": "In `validateConsegnaPayload` (`server/services/validation.js`, the `body.uscite` loop) accept any finite non-zero importo instead of > 0; keep the motivo required. Error text stays 'Indica l'importo di ogni uscita di cassa'.",
+              "files": [
+                {
+                  "path": "server/services/validation.js",
+                  "op": "modify"
+                },
+                {
+                  "path": "test/unit/validation.test.js",
+                  "op": "modify"
+                }
+              ],
+              "acceptance": [
+                "`{importo: -0.2, motivo: 'arrotondamento'}` passes",
+                "`{importo: 0, motivo: 'x'}` is refused",
+                "`{importo: -0.2, motivo: ''}` is refused"
+              ],
+              "verify": [
+                "npm run test:unit -- validation"
+              ]
+            },
+            {
+              "id": "cassa-test",
+              "title": "Cover a negative uscita in the consegna API",
+              "do": "Integration test: POST /api/consegna with uscite `[{90,'teatro'},{0.8,'arrotondamento Altobelli'},{-0.2,'arrotondamento'}]`; GET returns them in order and the stored lasciato equals trovato + incassato − pagato − 90,60.",
+              "files": [
+                {
+                  "path": "test/integration/consegna.test.js",
+                  "op": "modify"
+                }
+              ],
+              "acceptance": [
+                "lasciato_in_cassa is computed with Σ uscite = 90,60"
+              ],
+              "verify": [
+                "npm run test:integration -- consegna"
+              ],
+              "after": [
+                "validation"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "C2",
+          "title": "How the sign is entered",
+          "phase": "p1",
+          "why": "You asked to be able both to tap the badge and to type the sign. If the two disagree the turnista cannot tell what will be saved.",
+          "proposal": "Each uscita row starts with a **badge button** `esce` / `entra` (tap = toggle). Typing a leading **−** or **+** in the importo sets the badge (**− = esce, + = entra**, i.e. the effect on the cassa, as in the cassa line \"− Uscite\") and the sign is removed from the field, which always shows the amount without sign. A new row starts on `esce`. The badge is the single source of truth: `readUscite` sends `importo` positive for esce, negative for entra.",
+          "learn_more": "Why − means esce: the cassa line reads Trovato + Incassato − Pagato − Uscite, so a minus is money leaving the box. The opposite reading (\"− = less paid to Altobelli\") was considered and rejected because it depends on the motivo. `normalizeInputField` already rewrites the field on input; the sign handling hooks into the same `oninput`.",
+          "control": {
+            "kind": "choice",
+            "options": [
+              {
+                "id": "badge-and-sign",
+                "label": "Badge + typed sign, − = esce",
+                "recommended": true,
+                "pros": [
+                  "Both gestures you asked for",
+                  "The field never shows a sign, so no ambiguity after typing"
+                ],
+                "cons": [
+                  "Typed − meaning esce must be learned (the tip says it)"
+                ],
+                "effort": "S"
+              },
+              {
+                "id": "badge-and-sign-inverse",
+                "label": "Badge + typed sign, − = entra",
+                "pros": [
+                  "Matches the stored value of option C1-recommended"
+                ],
+                "cons": [
+                  "Opposite of the cassa line, easy to get wrong at the consegna"
+                ],
+                "effort": "S"
+              }
+            ]
+          },
+          "tasks": [
+            {
+              "id": "row-ui",
+              "title": "Add the esce/entra badge to uscita rows",
+              "do": "In `usciteRowHtml` (`public/js/shared/consegna-common.js`) prepend `<button type=\"button\" class=\"uscita-segno\" data-segno=\"out|in\">esce|entra</button>`; click toggles and calls `onNoteGiornataChange()`. On importo input, a leading `-`/`−`/`+` sets `data-segno` and is stripped before `normalizeInputField`. `readUscite` returns `importo` = amount × (in ? −1 : 1). `fillGiornata` renders stored negatives as `entra` with the absolute value. Styles `.uscita-segno` (debito/verde tints as in the mockup) in `public/style.css`; grid of `.uscita` gets the extra column on mobile and desktop.",
+              "files": [
+                {
+                  "path": "public/js/shared/consegna-common.js",
+                  "op": "modify"
+                },
+                {
+                  "path": "public/style.css",
+                  "op": "modify"
+                }
+              ],
+              "acceptance": [
+                "Typing '-0,80' shows badge esce and field '0,80'",
+                "Typing '+0,20' shows badge entra",
+                "Tapping the badge flips it and marks the giornata as changed",
+                "A stored −0,20 reloads as entra 0,20",
+                "Works at 390 px and on desktop"
+              ],
+              "verify": [
+                "npm test"
+              ],
+              "after": [
+                "C1/validation"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "C3",
+          "title": "How signed uscite are shown",
+          "importance": "minor",
+          "phase": "p1",
+          "why": "Storico, the cassa line and the Telegram report already describe uscite; an entrata shown without a sign would read as money out.",
+          "proposal": "Descriptions list motivi with the amount; an entrata gets a typographic **+** (\"teatro 90, arrotondamento Altobelli 0,80, arrotondamento +0,20\"); a single uscita keeps showing only its motivo. The total shown is the net Σ (90,60); if the net is negative the label reads \"Entrate di cassa\" with the absolute value. Same rule in `descrizioneUscite` (client) and `descrizione` (report.js).",
+          "tasks": [
+            {
+              "id": "describe",
+              "title": "Show the sign in uscite descriptions and totals",
+              "do": "Update `descrizioneUscite` and `updateUsciteView` in `public/js/shared/consegna-common.js` and `descrizione` in `server/services/report.js` (keep them identical, as the existing comment requires).",
+              "files": [
+                {
+                  "path": "public/js/shared/consegna-common.js",
+                  "op": "modify"
+                },
+                {
+                  "path": "server/services/report.js",
+                  "op": "modify"
+                },
+                {
+                  "path": "test/integration/report.test.js",
+                  "op": "modify"
+                }
+              ],
+              "acceptance": [
+                "Report text for uscite 90 / 0,80 / −0,20 reads 'Uscite di cassa: 90,60 € (teatro 90, arrotondamento Altobelli 0,80, arrotondamento +0,20)'"
+              ],
+              "verify": [
+                "npm run test:integration -- report"
+              ],
+              "after": [
+                "C2/row-ui"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "C4",
+          "title": "Wording of Conto produttore and of the uscite help",
+          "importance": "minor",
+          "phase": "p1",
+          "why": "The point of change 1 and 2 is that turnisti read it at the consegna; hidden text in a tip alone is not enough for the conto.",
+          "proposal": "Under the label **Conto produttore** (card, mobile and desktop) a visible line: *\"Importo effettivo dal foglio Altobelli\"*. Uscite: placeholder *\"Motivo, es. arrotondamento Altobelli\"*; tip `uscite`: *\"Soldi presi dalla cassa o rimessi dentro. Esce = tolti (es. hai pagato Altobelli 358 invece di 357,20: 0,80), entra = rimessi (hai pagato 357: 0,20). Tocca esce/entra o scrivi − / + davanti all'importo. Per toglierne una svuota la riga.\"*",
+          "tasks": [
+            {
+              "id": "texts",
+              "title": "Write the conto produttore hint and the uscite texts",
+              "do": "Add the hint line in the card template near `<label for=\"contoProduttore_${id}\">` in `public/js/shared/consegna-common.js` (class `.hint`, 16px minimum); change the uscita placeholder; rewrite `TIPS.uscite` in `public/js/shared/tips.js`. Bump `?v=` of the changed JS/CSS in `public/consegna.html` and `public/consegna-desktop.html`.",
+              "files": [
+                {
+                  "path": "public/js/shared/consegna-common.js",
+                  "op": "modify"
+                },
+                {
+                  "path": "public/js/shared/tips.js",
+                  "op": "modify"
+                },
+                {
+                  "path": "public/consegna.html",
+                  "op": "modify"
+                },
+                {
+                  "path": "public/consegna-desktop.html",
+                  "op": "modify"
+                }
+              ],
+              "acceptance": [
+                "The text 'Importo effettivo dal foglio Altobelli' is visible under Conto produttore on mobile and desktop without opening any tip"
+              ],
+              "verify": [
+                "npm test"
+              ]
+            }
+          ],
+          "revision": {
+            "round": 3,
+            "note": "Text now reads exactly \"Importo effettivo dal foglio Altobelli\" (\"dal\" instead of \"del\")."
+          }
+        }
+      ]
+    },
+    {
+      "id": "teatro",
+      "section": "2 · Quota teatro",
+      "title": "Quota teatro inside the card (layout A1)",
+      "intro": "A1 is chosen; decide how it is saved, how it stays tied to the consegna, and what happens to the /teatro page.",
+      "decisions": [
+        {
+          "id": "T1",
+          "title": "Layout A1 in the card",
+          "phase": "p2",
+          "why": "Replaces the box that opens, needs its own \"Registra quota\" and warns on Salva when forgotten — the part you found not linear.",
+          "proposal": "The card gets two blocks: **Fresco** (Conto produttore, Importo versato, computed credit/debt lines — unchanged logic) and **Quota teatro** (rows \"lug–dic 2026, da pagare 15 €\", field *Versato per il teatro*, result \"pagata\" / \"restano X\" / \"anticipo X\"). At the bottom a summary *\"Ha dato 46 €: 31 in cassa fresco, 15 nel bussolotto teatro\"*. One **Salva** saves both. The old `openTeatro` / `registraTeatro` box and the \"Quota teatro non registrata\" warning go away. Same on mobile (full-screen card) and desktop (form card).",
+          "tasks": [
+            {
+              "id": "block",
+              "title": "Render the Teatro block and the money summary in the card",
+              "do": "In `public/js/shared/consegna-common.js` replace `teatroButtonHtml` / `openTeatro` / `renderTeatro` / `registraTeatro` with `teatroBlockHtml(id)` rendered by `renderParticipant` (rows from `GET /api/teatro/utente/:id`, FIFO preview with the existing `teatroAllocate`) and `riepilogoSoldi(id)` updated on every input of versato fresco / versato teatro. Remove the unsaved-quota confirm in `saveParticipant`. Keep the `data-tip=\"teatro_versato\"` on the new label. Styles: reuse `.teatro-box` purple tint, add `.fresco` block and `.riepilogo-soldi` in `public/style.css`.",
+              "files": [
+                {
+                  "path": "public/js/shared/consegna-common.js",
+                  "op": "modify"
+                },
+                {
+                  "path": "public/style.css",
+                  "op": "modify"
+                },
+                {
+                  "path": "public/js/consegna.js",
+                  "op": "modify"
+                },
+                {
+                  "path": "public/js/consegna-desktop.js",
+                  "op": "modify"
+                }
+              ],
+              "acceptance": [
+                "No 'Registra quota' button anywhere",
+                "Summary shows cassa and bussolotto amounts and updates live",
+                "Mobile 390 px: no horizontal scroll; desktop form card shows both blocks"
+              ],
+              "verify": [
+                "npm test"
+              ],
+              "after": [
+                "T2/server"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "T2",
+          "title": "How the teatro amount is saved",
+          "importance": "critical",
+          "phase": "p2",
+          "why": "Fresco and teatro are saved by one button: if they go through two requests, a network error halfway leaves a movimento without its quota (or the reverse) with nothing telling the turnista.",
+          "proposal": "Each participant in `POST /api/consegna` gets an optional `teatroVersato`. The server writes it in the **same transaction** as the movimento: it **replaces** that person's teatro payment in this consegna (delete + insert, so reopening and re-saving a movimento never doubles it; 0 removes it). Validation: ≥ 0, cents. `POST /api/teatro/pagamenti` stays for admin use only.",
+          "facts": [
+            {
+              "label": "Today",
+              "value": "2 requests (movimento, then /api/teatro/pagamenti)"
+            }
+          ],
+          "control": {
+            "kind": "choice",
+            "options": [
+              {
+                "id": "same-tx",
+                "label": "Same request, replace per person+consegna",
+                "recommended": true,
+                "pros": [
+                  "Atomic",
+                  "Editing a saved movimento edits its quota too"
+                ],
+                "cons": [
+                  "POST /api/consegna grows one field"
+                ],
+                "effort": "M"
+              },
+              {
+                "id": "two-calls",
+                "label": "Two requests from the client, add-only",
+                "pros": [
+                  "No server change"
+                ],
+                "cons": [
+                  "Partial saves possible",
+                  "Re-saving a movimento adds the quota again"
+                ],
+                "effort": "S"
+              }
+            ]
+          },
+          "tasks": [
+            {
+              "id": "server",
+              "title": "Save teatroVersato inside POST /api/consegna",
+              "do": "In `server/routes/consegna.js` (POST `/`, inside `db.transaction`) for each participant with `teatroVersato != null`: `DELETE FROM teatro_pagamenti WHERE consegna_id = ? AND user_id = ?` then, if > 0, `registraPagamento(db, {userId, importo, data: consegna.data, consegnaId})` from `server/services/teatro.js` (call `ensureSemestre` first). Log `teatro_pagamento` with `logActivity` only when the amount changed. Validate in `server/services/validation.js` (number ≥ 0). Restrict `POST /api/teatro/pagamenti` in `server/routes/teatro.js` to `requireAdmin` (keep its open-consegna rule).",
+              "files": [
+                {
+                  "path": "server/routes/consegna.js",
+                  "op": "modify"
+                },
+                {
+                  "path": "server/services/validation.js",
+                  "op": "modify"
+                },
+                {
+                  "path": "server/routes/teatro.js",
+                  "op": "modify"
+                },
+                {
+                  "path": "test/integration/teatro.test.js",
+                  "op": "modify"
+                },
+                {
+                  "path": "test/integration/consegna.test.js",
+                  "op": "modify"
+                }
+              ],
+              "acceptance": [
+                "Saving a movimento with teatroVersato 15 creates one payment dated the consegna",
+                "Saving it again with 15 leaves one payment, with 0 leaves none",
+                "A validation error rolls back both movimento and payment",
+                "Non-admin POST /api/teatro/pagamenti → 403"
+              ],
+              "verify": [
+                "npm run test:integration"
+              ]
+            },
+            {
+              "id": "client",
+              "title": "Send teatroVersato from the card",
+              "do": "Add `teatroVersato` to `readMovimentoForm(id)` in `public/js/shared/consegna-common.js` (from the Teatro block field; omitted when the block is not rendered). After save, refresh `participants[].teatro_residuo` and the day's list (`addTeatroToList` becomes a reload of `m.teatro`). `populateExistingMovimento` fills the field with `m.teatro`.",
+              "files": [
+                {
+                  "path": "public/js/shared/consegna-common.js",
+                  "op": "modify"
+                }
+              ],
+              "acceptance": [
+                "Reopening a saved movimento shows its quota in the field",
+                "The mobile unsaved-changes check includes the teatro field (it compares readMovimentoForm JSON)"
+              ],
+              "verify": [
+                "npm test"
+              ],
+              "after": [
+                "server",
+                "T1/block"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "T3",
+          "title": "Is the quota still tied to the consegna?",
+          "importance": "critical",
+          "phase": "p2",
+          "depends_on": [
+            "T2"
+          ],
+          "why": "Before the mockup you answered \"pagamenti restano\" and \"solo un link\". With A1 the quota is paid inside the movimento again, so that answer may no longer hold; picking wrong either deletes real teatro payments with a consegna or leaves orphan quotas in the day's list.",
+          "proposal": "Keep it **tied, as today**: payment dated the consegna, shown in the day's list (\"quota teatro 15\"), in \"Quote teatro di questa consegna\" and in the Telegram report; deleting a consegna (admin) deletes its quotas, with the existing warning and `teatro_modifica` log.",
+          "control": {
+            "kind": "choice",
+            "options": [
+              {
+                "id": "tied",
+                "label": "Tied as today",
+                "recommended": true,
+                "pros": [
+                  "Nothing changes in list, report, storico",
+                  "Deleting a wrong consegna removes everything it recorded"
+                ],
+                "cons": [
+                  "Reverses your earlier 'restano' answer"
+                ],
+                "effort": "S"
+              },
+              {
+                "id": "kept",
+                "label": "Tied for display, kept on consegna delete",
+                "pros": [
+                  "A deleted consegna never loses money already in the bussolotto"
+                ],
+                "cons": [
+                  "Orphan payments pointing to a deleted consegna_id",
+                  "Re-entering the consegna would double them"
+                ],
+                "effort": "S",
+                "tasks": [
+                  {
+                    "id": "keep-on-delete",
+                    "title": "Keep teatro payments when a consegna is deleted",
+                    "do": "In `server/routes/consegna.js` DELETE `/:id` replace the `DELETE FROM teatro_pagamenti` block with `UPDATE teatro_pagamenti SET consegna_id = NULL WHERE consegna_id = ?`; update the confirm text in `public/js/shared/consegna-common.js`.",
+                    "files": [
+                      {
+                        "path": "server/routes/consegna.js",
+                        "op": "modify"
+                      },
+                      {
+                        "path": "public/js/shared/consegna-common.js",
+                        "op": "modify"
+                      },
+                      {
+                        "path": "test/integration/teatro.test.js",
+                        "op": "modify"
+                      }
+                    ],
+                    "acceptance": [
+                      "After deleting a consegna its teatro payments still exist with consegna_id NULL"
+                    ],
+                    "verify": [
+                      "npm run test:integration -- teatro"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "T4",
+          "title": "The /teatro page",
+          "phase": "p2",
+          "why": "Earlier you chose a Teatro section open to everyone on mobile and desktop, to move payments out of the consegna. With A1 payments are in the card again, so that section would be a second place to pay.",
+          "proposal": "Leave **/teatro as today**: desktop, admin only (grid, corrections, cassa teatro). No mobile page.",
+          "control": {
+            "kind": "choice",
+            "options": [
+              {
+                "id": "as-is",
+                "label": "As today (admin, desktop)",
+                "recommended": true,
+                "pros": [
+                  "No new page",
+                  "One place to pay: the card"
+                ],
+                "cons": [
+                  "Payment outside a consegna stays impossible for non-admins"
+                ],
+                "effort": "S"
+              },
+              {
+                "id": "open",
+                "label": "Open to everyone, mobile + desktop, read + pay",
+                "pros": [
+                  "Pay without a consegna"
+                ],
+                "cons": [
+                  "New mobile page, opened GET /api/teatro",
+                  "Two ways to pay to explain"
+                ],
+                "effort": "L",
+                "tasks": [
+                  {
+                    "id": "open-page",
+                    "title": "Open the Teatro section to everyone with a mobile page",
+                    "do": "Create `public/teatro.html` + `public/js/teatro.js` (list: name, deve X € / ✓, tap = payment box), route in `server/routes/pages.js` by user agent, 5th item in every mobile `.bottom-nav`, `#nav-teatro` visible to all in `public/js/shared/auth.js`; `GET /api/teatro` without `requireAdmin`; payments outside a consegna (consegnaId optional, date today). Admin-only controls hidden client-side and still enforced server-side.",
+                    "files": [
+                      {
+                        "path": "public/teatro.html",
+                        "op": "create"
+                      },
+                      {
+                        "path": "public/js/teatro.js",
+                        "op": "create"
+                      },
+                      {
+                        "path": "server/routes/pages.js",
+                        "op": "modify"
+                      },
+                      {
+                        "path": "server/routes/teatro.js",
+                        "op": "modify"
+                      },
+                      {
+                        "path": "public/js/shared/auth.js",
+                        "op": "modify"
+                      }
+                    ],
+                    "acceptance": [
+                      "A non-admin can record a payment from /teatro on mobile",
+                      "Non-admin PUT /api/teatro/dovuti → 403"
+                    ],
+                    "verify": [
+                      "npm test"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "T5",
+          "title": "When the Teatro block appears",
+          "importance": "minor",
+          "phase": "p2",
+          "why": "Showing an empty purple block to someone who owes nothing adds noise on every card.",
+          "proposal": "Open when the person owes something (`teatro_residuo > 0`) or already paid a quota in this consegna; otherwise a one-line link *\"+ Quota teatro (anticipo)\"* opens it. Disattivati and people with no teatro row get no block.",
+          "tasks": [
+            {
+              "id": "visibility",
+              "title": "Show the Teatro block only when relevant",
+              "do": "Condition in `teatroBlockHtml(id)` (`public/js/shared/consegna-common.js`) as described: residuo > 0 or `m.teatro > 0` → block; else link; no teatro row → nothing.",
+              "files": [
+                {
+                  "path": "public/js/shared/consegna-common.js",
+                  "op": "modify"
+                }
+              ],
+              "acceptance": [
+                "A person with residuo 0 sees only the anticipo link"
+              ],
+              "verify": [
+                "npm test"
+              ],
+              "after": [
+                "T1/block"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "altobelli",
+      "section": "3 · Altobelli",
+      "title": "Altobelli check (experimental, admin, desktop)",
+      "intro": "Decide where the check lives, how GASS reads the sheet and how sheet names map to people.",
+      "decisions": [
+        {
+          "id": "B1",
+          "title": "Where the check lives",
+          "phase": "p3",
+          "why": "Experimental means it must be easy to ignore or remove without touching the consegna page everyone uses.",
+          "proposal": "A separate desktop page **/altobelli**, nav item *\"Altobelli (prova)\"* shown only to admins (like Attività). A date selector, default the consegna opened by the apertura rule (`GET /api/consegna/apertura`), any past date allowed. Shows the table of the mockup (nome nel foglio, persona, effettivo foglio, conto in app, esito) with \"mostra solo le differenze\", and the KPIs Σ effettivi riga per riga, totale scritto nel foglio, Σ conti in app, pagato ad Altobelli.",
+          "control": {
+            "kind": "choice",
+            "options": [
+              {
+                "id": "page",
+                "label": "Separate page /altobelli",
+                "recommended": true,
+                "pros": [
+                  "Consegna page untouched",
+                  "Removable by deleting files + one nav item"
+                ],
+                "cons": [
+                  "Admin must open another tab during the check"
+                ],
+                "effort": "M"
+              },
+              {
+                "id": "section",
+                "label": "Admin-only section in consegna-desktop",
+                "pros": [
+                  "Next to the movimenti"
+                ],
+                "cons": [
+                  "Experimental code inside the main page"
+                ],
+                "effort": "M"
+              }
+            ]
+          },
+          "tasks": [
+            {
+              "id": "page",
+              "title": "Create the /altobelli desktop page",
+              "do": "Create `public/altobelli-desktop.html` and `public/js/altobelli-desktop.js` (script order of CLAUDE.md, date field via `initDateField`), route `/altobelli` in `server/routes/pages.js` (desktop; mobile redirects to /consegna), nav `<li id=\"nav-altobelli\" class=\"initially-hidden\">` in every desktop page toggled with `#nav-logs` in `public/js/shared/auth.js`. Row states and colours as in `design/mockups/consegna-teatro-foglio.html` section B.",
+              "files": [
+                {
+                  "path": "public/altobelli-desktop.html",
+                  "op": "create"
+                },
+                {
+                  "path": "public/js/altobelli-desktop.js",
+                  "op": "create"
+                },
+                {
+                  "path": "server/routes/pages.js",
+                  "op": "modify"
+                },
+                {
+                  "path": "public/js/shared/auth.js",
+                  "op": "modify"
+                },
+                {
+                  "path": "public/consegna-desktop.html",
+                  "op": "modify"
+                },
+                {
+                  "path": "public/debiti-desktop.html",
+                  "op": "modify"
+                },
+                {
+                  "path": "public/storico-desktop.html",
+                  "op": "modify"
+                },
+                {
+                  "path": "public/turni-desktop.html",
+                  "op": "modify"
+                },
+                {
+                  "path": "public/logs-desktop.html",
+                  "op": "modify"
+                },
+                {
+                  "path": "public/teatro-desktop.html",
+                  "op": "modify"
+                }
+              ],
+              "acceptance": [
+                "Non-admins see no nav item and get 403 from the API",
+                "Table shows the 6 row states of the mockup"
+              ],
+              "verify": [
+                "npm test"
+              ],
+              "after": [
+                "B2/reader",
+                "B3/table"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B2",
+          "title": "How GASS reads the sheet",
+          "importance": "critical",
+          "phase": "p3",
+          "why": "Tested 2026-10-07: the easy endpoint (`gviz/tq?sheet=<name>`) returns **another tab silently** when the name does not match — the check would compare the wrong consegna and look fine. The method must fail loudly.",
+          "proposal": "No credentials, no new dependency: fetch `…/htmlview` to get tab name → gid (regex on `name: \"6 ottobre\" … gid=758064518`), then `…/export?format=csv&gid=<gid>` (exact tab, rows in place). Parse: find the row whose column C is `effettivi`; data rows below until the first row with empty column A; amounts like `€ 37,61` / `23` parsed Italian. Empty C = *effettivo non segnato* (B kept as reference only). Σ effettivi computed row by row; the total row (A empty, C numeric) shown as \"totale scritto nel foglio\" — CSV gives its displayed value (`319,5`, 1 decimal), so compare with 0,05 tolerance. Any fetch/parse failure → clear error on the page, no partial table. Read on page load and on \"aggiorna\", never cached in DB.",
+          "facts": [
+            {
+              "label": "Sheet sharing",
+              "value": "anyone with link (writer)"
+            },
+            {
+              "label": "gviz wrong name",
+              "value": "returns first tab, no error"
+            },
+            {
+              "label": "htmlview + csv gid",
+              "value": "exact, verified on '6 ottobre'"
+            }
+          ],
+          "learn_more": "Rejected: xlsx export (`export?format=xlsx`, 1 MB) would give formulas (the `=SUM(C9:C20)` range) but needs a parser dependency in the image. The htmlview page is undocumented HTML: if Google changes it the regex breaks — the error is then explicit, and the fallback is a manual gid field on the page.",
+          "control": {
+            "kind": "choice",
+            "options": [
+              {
+                "id": "htmlview-csv",
+                "label": "htmlview → gid → CSV",
+                "recommended": true,
+                "pros": [
+                  "No dependency, no credentials",
+                  "Exact tab"
+                ],
+                "cons": [
+                  "htmlview is undocumented"
+                ],
+                "effort": "M"
+              },
+              {
+                "id": "xlsx",
+                "label": "xlsx export + SheetJS",
+                "pros": [
+                  "Formulas visible (can show the wrong SUM range)"
+                ],
+                "cons": [
+                  "New dependency, 1 MB per read"
+                ],
+                "effort": "M"
+              }
+            ]
+          },
+          "tasks": [
+            {
+              "id": "reader",
+              "title": "Write the sheet reader service",
+              "do": "Create `server/services/altobelli.js`: pure `parseTabs(html)` → `[{name, gid}]`, `findTab(tabs, date)` (see B5), `parseFoglio(csv)` → `{righe: [{nome, approssimativo, effettivo|null}], totaleScritto}`, `confronta(righe, movimenti, nomi)` → rows with esito `uguale|diverso|manca_app|manca_foglio|non_segnato|da_associare` + KPIs; and `leggiFoglio(url, date)` using global `fetch` (Node 20) with a 10 s timeout. Unit tests with fixtures cut from the real '29 settembre' and '6 ottobre' CSV (names replaced).",
+              "files": [
+                {
+                  "path": "server/services/altobelli.js",
+                  "op": "create"
+                },
+                {
+                  "path": "test/unit/altobelli.test.js",
+                  "op": "create"
+                }
+              ],
+              "acceptance": [
+                "'29 settembre' fixture: Σ effettivi 357,20 while totaleScritto 319,2",
+                "An empty effettivo yields esito non_segnato and is excluded from Σ",
+                "Unknown tab → error, never another tab"
+              ],
+              "verify": [
+                "npm run test:unit -- altobelli"
+              ]
+            },
+            {
+              "id": "route",
+              "title": "Expose GET /api/altobelli/confronto",
+              "do": "Create `server/routes/altobelli.js` (`requireAuth` + `requireAdmin`): `GET /confronto?data=yyyy-mm-dd` → reader + movimenti of that consegna (conto_produttore, pagato_produttore, uscite); `PUT /foglio {url}`; `PUT /nomi {nome, userId|null}`. Mount in `server/app.js` before the pages router.",
+              "files": [
+                {
+                  "path": "server/routes/altobelli.js",
+                  "op": "create"
+                },
+                {
+                  "path": "server/app.js",
+                  "op": "modify"
+                },
+                {
+                  "path": "test/integration/altobelli.test.js",
+                  "op": "create"
+                }
+              ],
+              "acceptance": [
+                "Non-admin → 403",
+                "fetch failure → 502 with an Italian message"
+              ],
+              "verify": [
+                "npm run test:integration -- altobelli"
+              ],
+              "after": [
+                "reader",
+                "B3/table"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B3",
+          "title": "Mapping sheet names to people",
+          "phase": "p3",
+          "why": "Sheet names are free text (\"Paoletta m\", \"frankkie\", \"S&P\" for a household): without a stored mapping every check would ask again.",
+          "proposal": "New table `altobelli_nomi (nome TEXT PRIMARY KEY, user_id INTEGER REFERENCES users(id) ON DELETE CASCADE)`; `nome` stored lower-case trimmed. Unknown names show a select \"a chi corrisponde?\" on the page; saving it maps for all future tabs. First guess (not saved until confirmed): case-insensitive match on display_name or its first word.",
+          "tasks": [
+            {
+              "id": "table",
+              "title": "Create the altobelli_nomi table",
+              "do": "Add `CREATE TABLE IF NOT EXISTS altobelli_nomi (…)` in `server/config/database.js` next to `settings`. `deleteUser` in `server/services/users.js` is unaffected (CASCADE).",
+              "files": [
+                {
+                  "path": "server/config/database.js",
+                  "op": "modify"
+                }
+              ],
+              "acceptance": [
+                "Fresh and existing DBs get the table at startup"
+              ],
+              "verify": [
+                "npm test"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B4",
+          "title": "Sheet link setting",
+          "importance": "minor",
+          "phase": "p3",
+          "why": "Leonardo opens a new sheet each year (\"25 26\", then \"26\"); a hardcoded id would break silently at the switch.",
+          "proposal": "`settings` key `altobelli_foglio` (full URL), editable by admins in a field at the top of /altobelli; initial value the current sheet \"Selvaggio Altobelli 26\".",
+          "tasks": [
+            {
+              "id": "setting",
+              "title": "Store the sheet URL in settings",
+              "do": "Read/write key `altobelli_foglio` through `server/routes/altobelli.js`; extract the id with `/spreadsheets/d/([\\w-]+)/`. Seed it on first read if missing.",
+              "files": [
+                {
+                  "path": "server/routes/altobelli.js",
+                  "op": "modify"
+                }
+              ],
+              "acceptance": [
+                "An URL without a spreadsheet id is refused (400)"
+              ],
+              "verify": [
+                "npm run test:integration -- altobelli"
+              ],
+              "after": [
+                "B2/route"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B5",
+          "title": "Finding the tab of a consegna",
+          "importance": "minor",
+          "phase": "p3",
+          "why": "Tab names vary: \"6 ottobre\", \"Mercoledì 8 aprile\", \"30  giugno\" (two spaces), and a second order \"23a  giugno\" in the same week.",
+          "proposal": "Normalise (lower-case, collapse spaces) and match tabs containing `<day> <month name>` or `<day>a <month name>`. One match → used; several → a selector on the page; none → \"nessuna scheda per il 6 ottobre nel foglio\".",
+          "tasks": [
+            {
+              "id": "match",
+              "title": "Match tabs by date with a selector for duplicates",
+              "do": "Implement `findTab(tabs, date)` in `server/services/altobelli.js` returning all candidates; the page shows a select when > 1 and passes `gid` back to the API.",
+              "files": [
+                {
+                  "path": "server/services/altobelli.js",
+                  "op": "modify"
+                }
+              ],
+              "acceptance": [
+                "'2026-06-23' returns both '23 giugno' and '23a  giugno'",
+                "'2026-04-08' matches 'Mercoledì 8 aprile'"
+              ],
+              "verify": [
+                "npm run test:unit -- altobelli"
+              ],
+              "after": [
+                "B2/reader"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "release",
+      "section": "4 · Release",
+      "title": "Docs and release",
+      "intro": "Routine closing work.",
+      "decisions": [
+        {
+          "id": "R1",
+          "title": "Docs, tests in the browser, version 2.28.0",
+          "importance": "minor",
+          "phase": "p4",
+          "why": "Project rules: docs/ updated with every user-facing change, both layouts verified, static files cache-busted.",
+          "proposal": "Update the user guides and TECHNICAL.md, verify in the browser at 390 px and desktop, bump to 2.28.0. Docker build and deploy only when you say so.",
+          "tasks": [
+            {
+              "id": "docs",
+              "title": "Update user and technical docs",
+              "do": "MANUALE_UTENTE.md and GUIDA_RAPIDA_MOBILE/DESKTOP.md: conto produttore effettivo, uscite esce/entra with the Altobelli example, quota teatro in the card. TECHNICAL.md: signed uscite, teatroVersato, /api/altobelli and the htmlview/CSV method. CLAUDE.md: same inner workings.",
+              "files": [
+                {
+                  "path": "docs/MANUALE_UTENTE.md",
+                  "op": "modify"
+                },
+                {
+                  "path": "docs/GUIDA_RAPIDA_MOBILE.md",
+                  "op": "modify"
+                },
+                {
+                  "path": "docs/GUIDA_RAPIDA_DESKTOP.md",
+                  "op": "modify"
+                },
+                {
+                  "path": "docs/TECHNICAL.md",
+                  "op": "modify"
+                },
+                {
+                  "path": "CLAUDE.md",
+                  "op": "modify"
+                }
+              ],
+              "acceptance": [
+                "No doc still says the quota teatro is registered with 'Registra quota'"
+              ],
+              "verify": [
+                "grep -rn 'Registra quota' docs public || true"
+              ]
+            },
+            {
+              "id": "browser",
+              "title": "Verify both layouts in the browser and release",
+              "do": "Local server, chrome-devtools: mobile 390 px (force_mobile cookie) and desktop: save a movimento with fresco + teatro, reopen it, uscite with typed − and +, /altobelli on the real sheet for 29/9 and 6/10. Then bump `package.json` to 2.28.0 and commit `chore(release): 2.28.0`.",
+              "files": [
+                {
+                  "path": "package.json",
+                  "op": "modify"
+                }
+              ],
+              "acceptance": [
+                "29/9 on /altobelli shows Σ effettivi 357,20 vs totale scritto 319,2"
+              ],
+              "verify": [
+                "npm test"
+              ],
+              "after": [
+                "docs"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

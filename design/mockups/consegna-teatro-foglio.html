@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GASS teatro e foglio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,500;0,700;1,500&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --calce: #F4F6F2; --carta: #FFFFFF; --inchiostro: #1E2420; --salvia: #5C6760; --riga: #DCE1DA;
+  --credito: #1F57B0; --credito-t: #E6EEFA; --debito: #A3175F; --debito-t: #F8E4EE;
+  --s-deep: #26392F; --s-acc: #E8890F; --s-alt: #6E4128; --s-tint: #FBEEDB; --s-on: #F3E6CF;
+  --teatro: #5B3A8C; --teatro-t: #EFE8F8;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #E3E7E2; color: var(--inchiostro); font-family: "Alegreya Sans", system-ui, sans-serif;
+  font-size: 16px; line-height: 1.45; font-variant-numeric: lining-nums tabular-nums; }
+.board { max-width: 1500px; margin: 0 auto; padding: 36px 16px 80px; }
+h1, h2, h3 { font-family: "Alegreya", Georgia, serif; }
+.board > h1 { font-size: 46px; line-height: 1.05; margin: 0 0 8px; }
+.board > p, .intro { margin: 0 0 22px; color: var(--salvia); max-width: 80ch; font-size: 17px; }
+.section { margin: 48px 0 18px; }
+.section h2 { font-size: 32px; margin: 0 0 4px; }
+.section .tag { display: inline-block; font-size: 14px; font-weight: 800; color: #fff; background: var(--s-deep); border-radius: 6px; padding: 1px 8px; margin-right: 8px; vertical-align: 6px; }
+.section p { margin: 0; color: var(--salvia); max-width: 90ch; }
+.row { display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; margin-top: 22px; }
+.cap { font-size: 15px; color: var(--salvia); margin: 12px 4px 0; max-width: 390px; }
+.cap b { color: var(--inchiostro); }
+.phone { width: 390px; height: 800px; border-radius: 38px; background: var(--calce); border: 10px solid #22262a; overflow: hidden; display: flex; flex-direction: column; }
+.desk { width: 1060px; max-width: 100%; border-radius: 10px; background: var(--calce); border: 1px solid #bcc3bd; overflow: hidden; }
+.stag { background: var(--s-deep); color: #fff; padding: 16px 20px; }
+.stag .when { font-size: 14px; color: var(--s-on); }
+.stag h3 { margin: 0; font-size: 30px; line-height: 1.05; }
+.d-nav { background: var(--s-deep); color: #fff; display: flex; gap: 22px; padding: 12px 24px; font-weight: 700; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,.15); }
+.d-nav b { color: #fff; border-bottom: 3px solid var(--s-acc); padding-bottom: 6px; }
+.d-nav span { color: #dfe5df; }
+.body { padding: 16px; overflow: auto; flex: 1; }
+.card { background: var(--carta); border: 1.5px solid var(--s-deep); border-radius: 12px; overflow: hidden; }
+.card .head { background: var(--s-tint); padding: 12px 16px; border-bottom: 1px solid var(--riga); }
+.card .head .nm { font-family: "Alegreya", serif; font-weight: 700; font-size: 22px; }
+.pill { display: inline-block; font-size: 14px; font-weight: 700; border-radius: 6px; padding: 1px 8px; }
+.pill.db { color: var(--debito); background: var(--debito-t); }
+.pill.cr { color: var(--credito); background: var(--credito-t); }
+.pill.ok { color: #2d6a2d; background: #e3f2df; }
+.pill.th { color: var(--teatro); background: var(--teatro-t); }
+.card .sec { padding: 12px 16px; border-bottom: 1px solid var(--riga); }
+.lbl { font-size: 14px; font-weight: 700; color: var(--salvia); }
+.inp { border: 1.5px solid var(--riga); border-radius: 8px; padding: 9px 12px; font-size: 22px; display: flex; justify-content: space-between; background: #fff; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.teatro { background: var(--teatro-t); border-left: 4px solid var(--teatro); }
+.teatro h4 { margin: 0 0 6px; font-size: 16px; color: var(--teatro); display: flex; justify-content: space-between; }
+.chk { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 17px; }
+.box { width: 22px; height: 22px; border: 2px solid var(--teatro); border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 15px; background: #fff; }
+.box.on { background: var(--teatro); }
+.chk .amt { margin-left: auto; font-weight: 700; }
+.chk small { color: var(--salvia); }
+.tot { display: flex; justify-content: space-between; font-weight: 800; padding-top: 6px; border-top: 1px dashed #c9b8e2; margin-top: 4px; }
+.btns { display: flex; gap: 10px; padding: 12px 16px; }
+.btn { flex: 1; text-align: center; font-weight: 800; border-radius: 9px; padding: 11px; }
+.btn.go { background: var(--s-deep); color: #fff; }
+.btn.line { border: 1.5px solid var(--inchiostro); }
+.btn.th { background: var(--teatro); color: #fff; flex: 0 0 auto; padding: 8px 14px; }
+table.t { width: 100%; border-collapse: collapse; background: var(--carta); border-radius: 10px; overflow: hidden; font-size: 15px; }
+table.t th { text-align: left; font-size: 13px; color: var(--salvia); padding: 8px 10px; border-bottom: 1px solid var(--riga); }
+table.t td { padding: 8px 10px; border-bottom: 1px solid var(--riga); }
+table.t td.c, table.t th.c { text-align: center; }
+.g { display: inline-flex; width: 30px; height: 26px; border-radius: 6px; align-items: center; justify-content: center; font-weight: 800; }
+.g.p { background: #e3f2df; color: #2d6a2d; }
+.g.n { background: var(--debito-t); color: var(--debito); }
+.g.x { color: #b8beb9; }
+.cassa { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 14px; }
+.kpi { background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; padding: 12px 14px; }
+.kpi .v { font-family: "Alegreya", serif; font-size: 28px; font-weight: 700; }
+.kpi.th { border-left: 4px solid var(--teatro); }
+.note { background: #FFF6E5; border: 1.5px solid var(--s-acc); border-radius: 10px; padding: 14px 18px; max-width: 980px; }
+.note ol { margin: 6px 0 0; padding-left: 22px; }
+.note li { margin: 6px 0; }
+.past td { color: var(--salvia); background: #f7f8f6; }
+.toggle { display: flex; justify-content: flex-end; gap: 18px; font-size: 15px; color: var(--salvia); margin-bottom: 10px; }
+.toggle .on { color: var(--inchiostro); font-weight: 700; }
+.mov { background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; }
+.mov div { display: flex; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--riga); }
+.mov div:last-child { border-bottom: 0; }
+.qbtn { display: flex; justify-content: space-between; align-items: center; border: 1.5px dashed var(--teatro); color: var(--teatro); border-radius: 9px; padding: 9px 12px; font-weight: 800; }
+.qrow { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; padding: 5px 0; font-size: 16px; align-items: center; }
+.qrow small { color: var(--salvia); }
+.qrow .ok { color: #2d6a2d; font-weight: 700; }
+.qrow .part { color: var(--debito); font-weight: 700; }
+.qin { border: 1.5px solid var(--teatro); border-radius: 8px; padding: 6px 10px; font-size: 20px; background: #fff; width: 110px; text-align: right; }
+.kv { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 8px 0; }
+.phone { height: auto; min-height: 640px; }
+.phone .body { overflow: visible; }
+.fresco { background: #F1F6EE; border-left: 4px solid var(--s-deep); }
+.fresco h4 { margin: 0 0 6px; font-size: 16px; color: var(--s-deep); display: flex; justify-content: space-between; }
+.hint { font-size: 14px; color: var(--salvia); margin: 2px 0 6px; }
+.hint b { color: var(--inchiostro); }
+.src { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-top: 4px; }
+.src .ok { color: #2d6a2d; font-weight: 700; }
+.src .warn { color: #9a5b00; font-weight: 700; }
+.line { display: flex; justify-content: space-between; font-size: 16px; padding: 3px 0; }
+.line.res { font-weight: 800; border-top: 1px dashed var(--riga); margin-top: 4px; padding-top: 6px; }
+.split { background: #fff; border: 2px solid var(--inchiostro); border-radius: 10px; padding: 10px 12px; margin-top: 8px; }
+.split h5 { margin: 0 0 6px; font-size: 15px; }
+.split .line span:first-child { display: flex; gap: 8px; align-items: center; }
+.dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.dot.f { background: var(--s-deep); } .dot.t { background: var(--teatro); } .dot.r { background: #c9ccc8; }
+.seg { display: flex; border: 1.5px solid var(--s-deep); border-radius: 8px; overflow: hidden; font-weight: 700; font-size: 15px; margin-top: 6px; }
+.seg span { flex: 1; text-align: center; padding: 7px; }
+.seg .on { background: var(--s-deep); color: #fff; }
+.opt { font-size: 14px; font-weight: 800; color: #fff; background: var(--s-acc); border-radius: 6px; padding: 1px 8px; margin-right: 8px; vertical-align: 6px; }
+table.t tr.bad td { background: #FFF6E5; }
+table.t tr.miss td { background: var(--debito-t); }
+.st { font-weight: 800; white-space: nowrap; }
+.st.ok { color: #2d6a2d; } .st.ko { color: var(--debito); } .st.wa { color: #9a5b00; }
+.sel { border: 1.5px solid var(--riga); border-radius: 6px; padding: 3px 8px; background: #fff; }
+.totals { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 12px; }
+.totals .kpi .v { font-size: 22px; }
+.kpi.ko { border-left: 4px solid var(--debito); }
+.banner { display: flex; justify-content: space-between; align-items: center; background: #FFF6E5; border: 1.5px solid var(--s-acc); border-radius: 10px; padding: 10px 14px; font-weight: 700; margin-bottom: 12px; }
+.urow { display: grid; grid-template-columns: 74px 1fr 110px; gap: 8px; align-items: center; margin: 6px 0; }
+.urow .inp { font-size: 18px; padding: 6px 10px; }
+.sg { font-size: 14px; font-weight: 800; text-align: center; border-radius: 6px; padding: 5px 0; }
+.sg.out { background: var(--debito-t); color: var(--debito); } .sg.in { background: #e3f2df; color: #2d6a2d; }
+.conto { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; text-align: center; background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; padding: 10px 6px; font-size: 13px; }
+.conto b { display: block; font-size: 19px; font-family: "Alegreya", serif; }
+</style>
+</head>
+<body>
+<div class="board">
+<h1>Consegna: teatro, foglio Altobelli, arrotondamenti</h1>
+<p>Mockup da discutere (7/10/2026). Nomi e importi inventati. Tre temi: <b>A</b> quota teatro nella stessa scheda ma con soldi separati, <b>B</b> confronto con il foglio Altobelli (somma degli <b>effettivi</b>, riga per riga), <b>C</b> arrotondamenti del pagamento ad Altobelli come uscite, anche negative.</p>
+
+<!-- ============ A ============ -->
+<div class="section">
+  <h2><span class="tag">A</span>Quota teatro nella scheda della persona</h2>
+  <p>Al posto del box "Quota teatro" che si apre e si registra a parte, la scheda ha <b>due blocchi con due importi versati distinti</b>: fresco (va in cassa) e teatro (va nel bussolotto). Un solo "Salva" registra tutti e due. In fondo un riepilogo dice dove vanno fisicamente i soldi.</p>
+</div>
+<div class="row">
+  <div>
+    <div class="phone">
+      <div class="stag"><div class="when">martedì 6 ottobre 2026</div><h3>Consegna</h3></div>
+      <div class="body">
+        <div class="card">
+          <div class="head"><span class="nm">Anna</span> &nbsp;<span class="pill db">−8 € debito</span> <span class="pill th">teatro deve 15 €</span></div>
+          <div class="sec fresco">
+            <h4><span>Fresco</span><span>va in cassa</span></h4>
+            <div class="lbl">Conto produttore</div>
+            <div class="hint">Importo <b>effettivo</b> del foglio Altobelli, centesimi compresi</div>
+            <div class="inp"><span>23,00</span><span>€</span></div>
+            <div class="src"><span>foglio "6 ottobre": 23,00</span><span class="ok">✓ uguale</span></div>
+            <div style="height:8px"></div>
+            <div class="lbl">Versato per il fresco</div>
+            <div class="inp"><span>31</span><span>€</span></div>
+            <div class="line"><span>salda debito</span><span>8 €</span></div>
+            <div class="line res"><span>Risultato</span><span>pari</span></div>
+          </div>
+          <div class="sec teatro">
+            <h4><span>Quota teatro</span><span>va nel bussolotto</span></h4>
+            <div class="line"><span>lug–dic 2026 <small>da pagare</small></span><span>15 €</span></div>
+            <div class="lbl" style="margin-top:6px">Versato per il teatro</div>
+            <div class="inp"><span>15</span><span>€</span></div>
+            <div class="line res"><span>Quota</span><span>pagata</span></div>
+          </div>
+          <div class="sec">
+            <div class="split">
+              <h5>Ha dato 46 €</h5>
+              <div class="line"><span><i class="dot f"></i>in cassa fresco</span><b>31 €</b></div>
+              <div class="line"><span><i class="dot t"></i>nel bussolotto teatro</span><b>15 €</b></div>
+            </div>
+          </div>
+          <div class="btns"><span class="btn line">Annulla</span><span class="btn go">Salva</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="cap"><span class="opt">A1</span><b>Due passi</b> (il tuo flusso): prima il fresco con il suo resto, poi la quota teatro con soldi contati a parte. Il blocco teatro compare solo se la persona deve qualcosa o vuole anticipare; vuoto = nessuna quota.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="stag"><div class="when">martedì 6 ottobre 2026</div><h3>Consegna</h3></div>
+      <div class="body">
+        <div class="card">
+          <div class="head"><span class="nm">Bruno</span> &nbsp;<span class="pill cr">+5 € credito</span> <span class="pill th">teatro deve 15 €</span></div>
+          <div class="sec">
+            <div class="lbl">Ha dato in tutto</div>
+            <div class="inp"><span>50</span><span>€</span></div>
+            <div class="hint">Banconota unica per spesa e teatro: l'app divide</div>
+          </div>
+          <div class="sec teatro">
+            <h4><span>Quota teatro</span><span>15 €</span></h4>
+            <div class="line"><span>lug–dic 2026</span><span>15 €</span></div>
+          </div>
+          <div class="sec fresco">
+            <h4><span>Fresco</span><span>restano 35 €</span></h4>
+            <div class="lbl">Conto produttore <small>(effettivo foglio Altobelli)</small></div>
+            <div class="inp"><span>26,00</span><span>€</span></div>
+            <div class="line"><span>avanzano</span><span>9 €</span></div>
+            <div class="seg"><span class="on">Dai il resto</span><span>Lascia credito</span></div>
+          </div>
+          <div class="sec">
+            <div class="split">
+              <h5>Dalla banconota da 50 €</h5>
+              <div class="line"><span><i class="dot t"></i>nel bussolotto teatro</span><b>15 €</b></div>
+              <div class="line"><span><i class="dot f"></i>in cassa fresco</span><b>26 €</b></div>
+              <div class="line"><span><i class="dot r"></i>resto a Bruno</span><b>9 €</b></div>
+            </div>
+          </div>
+          <div class="btns"><span class="btn line">Annulla</span><span class="btn go">Salva</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="cap"><span class="opt">A2</span><b>Tutto insieme</b>: un solo importo "ha dato in tutto". Qui bastano per tutto: 15 alla quota teatro, il resto al fresco (paga il conto, salda debiti, poi resto o credito). Se non bastano, vedi la nota 2. Il riquadro finale dice cosa mettere dove.</p>
+  </div>
+
+  <div class="note" style="max-width:380px">
+    <b>Da decidere per A</b>
+    <ol>
+      <li><b>A1, A2 o tutti e due</b> (A1 di base, un link "ha dato tutto insieme?" passa ad A2).</li>
+      <li>In A2, se i soldi non bastano per tutto: prima il teatro o prima il fresco? Proposta: prima il fresco (il conto Altobelli va pagato oggi), il teatro prende solo quel che avanza.</li>
+      <li>La quota registrata in consegna resta legata alla consegna (lista del giorno, report Telegram) come oggi, oppure no? Questo riapre la risposta "Restano" di prima.</li>
+      <li>La sezione Teatro (pagamenti fuori consegna, tutti, mobile e desktop) serve ancora oltre a questo?</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ============ B ============ -->
+<div class="section">
+  <h2><span class="tag">B</span>Confronto con il foglio Altobelli</h2>
+  <p>Il foglio "Selvaggio Altobelli 26" è condiviso con chiunque abbia il link: il server può leggere la scheda del giorno (es. "6 ottobre") senza credenziali. Somma sempre la colonna <b>effettivi</b> riga per riga e confronta la cella del totale, perché il <code>=SUM</code> in fondo a volte non prende tutte le righe (il 29/9 dava 319,20 invece di 357,20). I nomi del foglio ("Paoletta m", "frankkie") non sono quelli dell'app: ogni nome si associa una volta a una persona e l'app lo ricorda.</p>
+</div>
+<div class="row">
+  <div>
+    <div class="desk">
+      <div class="d-nav"><b>Consegna</b><span>Saldi</span><span>Storico</span><span>Turni</span><span>Teatro</span></div>
+      <div class="stag"><div class="when">martedì 6 ottobre 2026</div><h3>Consegna</h3></div>
+      <div class="body">
+        <div class="banner"><span>Foglio Altobelli "6 ottobre": 5 righe da controllare</span><span style="color:var(--salvia);font-weight:500">letto alle 19:42 · <u>aggiorna</u></span></div>
+        <table class="t">
+          <thead><tr><th>Nome nel foglio</th><th>Persona in app</th><th class="c">Effettivo foglio</th><th class="c">Conto in app</th><th>Esito</th></tr></thead>
+          <tbody>
+            <tr><td>anna</td><td>Anna</td><td class="c">23,00</td><td class="c">23,00</td><td class="st ok">✓ uguale</td></tr>
+            <tr><td>Bruno</td><td>Bruno</td><td class="c">26,00</td><td class="c">26,00</td><td class="st ok">✓ uguale</td></tr>
+            <tr class="bad"><td>carla</td><td>Carla</td><td class="c">37,61</td><td class="c">37,60</td><td class="st ko">≠ differenza 0,01</td></tr>
+            <tr class="miss"><td>Dario</td><td>Dario</td><td class="c">32,50</td><td class="c">—</td><td class="st ko">manca in app</td></tr>
+            <tr class="miss"><td>—</td><td>Elena</td><td class="c">—</td><td class="c">18,30</td><td class="st ko">manca nel foglio</td></tr>
+            <tr class="bad"><td>Franco</td><td>Franco</td><td class="c"><span style="color:var(--salvia)">vuoto<br><small>approssimativo 24,51</small></span></td><td class="c">24,51</td><td class="st wa">effettivo non segnato nel foglio</td></tr>
+            <tr class="bad"><td>ginetto</td><td><span class="sel">a chi corrisponde? ▾</span></td><td class="c">14,40</td><td class="c">—</td><td class="st wa">nome da associare</td></tr>
+          </tbody>
+        </table>
+        <div class="totals">
+          <div class="kpi"><small>Σ effettivi (riga per riga)</small><div class="v">133,51</div><small>1 effettivo non segnato</small></div>
+          <div class="kpi ko"><small>Totale scritto nel foglio</small><div class="v">86,61</div><small style="color:var(--debito)"><code>=SUM(C9:C11)</code> non prende tutte le righe</small></div>
+          <div class="kpi"><small>Σ conti in app</small><div class="v">129,41</div></div>
+          <div class="kpi"><small>Pagato ad Altobelli</small><div class="v">130</div><small>arrotondamento 0,59, vedi C</small></div>
+        </div>
+      </div>
+    </div>
+    <p class="cap" style="max-width:1000px">Su desktop sotto la tabella dei movimenti. Le righe uguali si possono nascondere ("mostra solo le differenze"). Con "Chiudi consegna" la conferma ricorda le differenze ancora aperte, ma non blocca la chiusura.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="stag"><div class="when">martedì 6 ottobre 2026</div><h3>Consegna</h3></div>
+      <div class="body">
+        <div class="banner"><span>Foglio Altobelli: 5 da controllare</span><span>▸</span></div>
+        <div class="mov">
+          <div><span>Carla</span><span class="st ko">foglio 37,61 · app 37,60</span></div>
+          <div><span>Dario</span><span class="st ko">manca in app (32,50)</span></div>
+          <div><span>Elena</span><span class="st ko">manca nel foglio</span></div>
+          <div><span>Franco</span><span class="st wa">effettivo non segnato</span></div>
+          <div><span>ginetto</span><span class="st wa">nome da associare</span></div>
+        </div>
+        <p class="hint" style="margin-top:10px">Tocca una riga: se è una persona con conto da correggere si apre la sua scheda con l'effettivo del foglio già proposto.</p>
+        <div style="height:10px"></div>
+        <div class="card">
+          <div class="head"><span class="nm">Dario</span></div>
+          <div class="sec fresco">
+            <div class="lbl">Conto produttore</div>
+            <div class="hint">Importo <b>effettivo</b> del foglio Altobelli, centesimi compresi</div>
+            <div class="inp"><span>32,50</span><span>€</span></div>
+            <div class="src"><span>proposto dal foglio</span><span class="ok">32,50</span></div>
+          </div>
+        </div>
+        <div style="height:10px"></div>
+        <div class="card">
+          <div class="head"><span class="nm">Franco</span></div>
+          <div class="sec fresco">
+            <div class="lbl">Conto produttore</div>
+            <div class="inp"><span style="color:#b8beb9">0</span><span>€</span></div>
+            <div class="src"><span>effettivo non segnato nel foglio</span><span class="warn">approssimativo 24,51</span></div>
+            <div class="hint">Pesa, scrivi l'effettivo nel foglio e poi qui.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="cap">Mobile: un riquadro sopra "Chi ha ritirato" con le sole differenze.</p>
+  </div>
+
+  <div class="note" style="max-width:380px">
+    <b>Da decidere per B</b>
+    <ol>
+      <li><b>Proporre l'effettivo nel campo</b> Conto produttore (come Dario) o solo mostrarlo accanto? Proposta: proporlo solo se il campo è vuoto; se l'effettivo non c'è, il campo resta vuoto.</li>
+      <li>Chi associa i nomi del foglio alle persone: tutti o solo admin?</li>
+      <li>Ogni anno Leonardo apre un foglio nuovo ("25 26", "26"): un admin incolla il link nuovo in app. La scheda si trova dalla data ("6 ottobre", ma anche "Mercoledì 8 aprile", "23a giugno").</li>
+      <li>Si confronta anche lo storico (consegne passate) o solo la consegna aperta?</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ============ C ============ -->
+<div class="section">
+  <h2><span class="tag">C</span>Arrotondamento del pagamento ad Altobelli</h2>
+  <p>Esempio: Σ conti 357,20, pagati 358: gli 0,80 in più escono dalla cassa e sono un'uscita. Pagati 357: 0,20 restano in cassa, un'uscita <b>negativa</b> (entrata). Ogni riga ha il segno; il motivo resta obbligatorio.</p>
+</div>
+<div class="row">
+  <div>
+    <div class="phone">
+      <div class="stag"><div class="when">martedì 6 ottobre 2026</div><h3>Consegna</h3></div>
+      <div class="body">
+        <div class="conto"><span>Trovato<b>200</b></span><span>+ Incassato<b>380</b></span><span>− Pagato<b>357,20</b></span><span>= In cassa<b>132,20</b></span></div><p class="hint">già tolte uscite per 90,60 (90 + 0,80 − 0,20)</p>
+        <div style="height:12px"></div>
+        <div class="lbl">Uscite di cassa</div>
+        <div class="hint">Anche gli arrotondamenti ad Altobelli: <b>esce</b> se hai pagato di più, <b>entra</b> se hai pagato di meno.</div>
+        <div class="urow"><span class="sg out">esce</span><div class="inp"><span>teatro gen–giu</span></div><div class="inp"><span>90</span><span>€</span></div></div>
+        <div class="urow"><span class="sg out">esce</span><div class="inp"><span>arrotondamento Altobelli</span></div><div class="inp"><span>0,80</span><span>€</span></div></div>
+        <div class="urow"><span class="sg in">entra</span><div class="inp"><span>arrotondamento</span></div><div class="inp"><span>0,20</span><span>€</span></div></div>
+        <p class="hint">Tocca esce/entra per cambiare il segno.</p>
+      </div>
+    </div>
+    <p class="cap"><span class="opt">C1</span>Solo il segno sulle righe uscite, il resto non cambia. In Storico e nel report: "arrotondamento Altobelli −0,80".</p>
+  </div>
+  <div>
+    <div class="phone">
+      <div class="stag"><div class="when">martedì 6 ottobre 2026</div><h3>Consegna</h3></div>
+      <div class="body">
+        <div class="conto"><span>Trovato<b>200</b></span><span>+ Incassato<b>380</b></span><span>− Pagato<b>357,20</b></span><span>= In cassa<b>132</b></span></div><p class="hint">già tolte uscite per 90,80 (90 + arrotondamento 0,80)</p>
+        <div style="height:12px"></div>
+        <div class="lbl">Pagato davvero ad Altobelli</div>
+        <div class="inp"><span>358</span><span>€</span></div>
+        <div class="src"><span>Σ conti 357,20</span><span class="warn">arrotondamento 0,80 esce</span></div>
+        <div style="height:12px"></div>
+        <div class="lbl">Altre uscite di cassa</div>
+        <div class="urow"><span class="sg out">esce</span><div class="inp"><span>teatro gen–giu</span></div><div class="inp"><span>90</span><span>€</span></div></div>
+      </div>
+    </div>
+    <p class="cap"><span class="opt">C2</span>Un campo "Pagato davvero ad Altobelli": l'app crea da sola la riga "arrotondamento Altobelli" con il segno giusto. Vuoto = pagato esattamente Σ conti.</p>
+  </div>
+</div>
+</div>
+</body>
+</html>
