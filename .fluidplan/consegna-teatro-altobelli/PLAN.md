@@ -190,32 +190,32 @@ This supersedes the earlier answers given before the mockup (Teatro section open
 
 ## Phase 4 — Docs and release 2.28.0 (≈ 0.5 d)
 
-### [ ] 4.1 Update user and technical docs · R1
+### [x] 4.1 Update user and technical docs · R1
 
 - Decision: **R1** Docs, tests in the browser, version 2.28.0
 - Files: `docs/MANUALE_UTENTE.md` (modify), `docs/GUIDA_RAPIDA_MOBILE.md` (modify), `docs/GUIDA_RAPIDA_DESKTOP.md` (modify), `docs/TECHNICAL.md` (modify), `CLAUDE.md` (modify)
 - Do: MANUALE_UTENTE.md and GUIDA_RAPIDA_MOBILE/DESKTOP.md: conto produttore effettivo, uscite esce/entra with the Altobelli example, quota teatro in the card. TECHNICAL.md: signed uscite, teatroVersato, /api/altobelli and the htmlview/CSV method. CLAUDE.md: same inner workings.
 - Acceptance criteria:
-  - [ ] No doc still says the quota teatro is registered with 'Registra quota'
+  - [x] No doc still says the quota teatro is registered with 'Registra quota'
 - Verify: `grep -rn 'Registra quota' docs public || true`
 
-### [ ] 4.2 Verify both layouts in the browser and release · R1
+### [x] 4.2 Verify both layouts in the browser and release · R1
 
 - Decision: **R1** Docs, tests in the browser, version 2.28.0
 - Files: `package.json` (modify)
 - Do: Local server, chrome-devtools: mobile 390 px (force_mobile cookie) and desktop: save a movimento with fresco + teatro, reopen it, uscite with typed − and +, /altobelli on the real sheet for 29/9 and 6/10. Then bump `package.json` to 2.28.0 and commit `chore(release): 2.28.0`.
 - Acceptance criteria:
-  - [ ] 29/9 on /altobelli shows Σ effettivi 357,10 vs totale scritto 319,2 (corrected: was written 357,20)
+  - [x] 29/9 on /altobelli shows Σ effettivi 357,10 vs totale scritto 319,2 (corrected: was written 357,20)
 - Verify: `npm test`
 - After: 4.1
 
 ## Final check
 
-- [ ] `npm run test:unit -- validation`
-- [ ] `npm run test:integration -- consegna`
-- [ ] `npm test`
-- [ ] `npm run test:integration -- report`
-- [ ] `npm run test:integration`
-- [ ] `npm run test:unit -- altobelli`
-- [ ] `npm run test:integration -- altobelli`
-- [ ] `grep -rn 'Registra quota' docs public || true`
+- [x] `npm run test:unit -- validation`
+- [x] `npm run test:integration -- consegna`
+- [x] `npm test`
+- [x] `npm run test:integration -- report`
+- [x] `npm run test:integration`
+- [x] `npm run test:unit -- altobelli`
+- [x] `npm run test:integration -- altobelli`
+- [x] `grep -rn 'Registra quota' docs public || true`

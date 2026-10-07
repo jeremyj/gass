@@ -21,7 +21,7 @@ Per cambiare la password in seguito vai su **https://auth.x86.it**, nelle impost
 
 La pagina si apre da sola sull'ultimo giorno di turno fino a oggi, se non ha ancora una consegna o ce l'ha aperta; altrimenti su oggi. Se non esiste ancora una consegna, appare il pulsante **Nuova consegna**. In cima un riquadro avvisa delle altre consegne ancora aperte ("Sono ancora aperte le consegne di …", con le date come link). Le consegne passate si aprono da **Storico**.
 
-In cima la riga della cassa mostra i totali della giornata come una somma: Trovato, + Incassato, − Pagato, = In cassa — tutti calcolati automaticamente, non si inserisce nulla. Se qualcuno ha preso soldi dalla cassa per altro (es. quote portate al teatro), li scrive in *Uscite di cassa* sotto le note, con il motivo (**+** per aggiungerne un'altra): compaiono sotto la riga e sono già tolti da In cassa. Sotto, lo stato (*Consegna aperta* / *Consegna chiusa*) e le *Note della giornata*.
+In cima la riga della cassa mostra i totali della giornata come una somma: Trovato, + Incassato, − Pagato, = In cassa — tutti calcolati automaticamente, non si inserisce nulla. Se qualcuno ha preso soldi dalla cassa per altro (es. quote portate al teatro) o ne ha rimessi dentro (es. ha pagato Altobelli 357 € invece di 357,20), li scrive in *Uscite di cassa* sotto le note, con il motivo: tocca *esce*/*entra* o scrivi − / + davanti all'importo (**+** a destra per un'altra riga). Compaiono sotto la riga e sono già nel conto di In cassa. Sotto, lo stato (*Consegna aperta* / *Consegna chiusa*) e le *Note della giornata*.
 
 ![](screenshots/m02-consegna.png){ width=45% }
 
@@ -29,8 +29,9 @@ In cima la riga della cassa mostra i totali della giornata come una somma: Trova
 
 1. Nella sezione **Chi ha ritirato** seleziona il **partecipante** da **+ Aggiungi partecipante** (per modificare un movimento già inserito, tocca la sua riga)
 2. Si apre il modulo a tutto schermo — inserisci:
-   - **Conto produttore** (quanto deve al produttore)
+   - **Conto produttore** (l'importo effettivo nel foglio Altobelli)
    - **Importo saldato** (quanto porta oggi)
+   - se c'è, la **Quota teatro** (vedi sotto)
 3. Il sistema calcola automaticamente credito o debito residuo e lo mostra nel riquadro finale (*Lascia credito*, *Lascia debito* o *Esito: saldato*). Nell'elenco *Chi ha ritirato* ogni riga mostra conto e pagato e, quando ci sono, *salda debito*, *usa credito* e *quota teatro*; chi ha pagato solo la quota ha una riga *solo teatro*
 4. Clicca **Salva movimento**
 
@@ -74,7 +75,7 @@ Sul tuo turno tocca **cambia**: **scambia con…** (prima mettiti d'accordo con 
 
 # Quota teatro
 
-Ogni semestre (gennaio–giugno, luglio–dicembre) si paga una quota per l'affitto del teatro, in una cassa separata da quella della consegna. Nella scheda del partecipante, **Quota teatro** mostra i semestri dovuti: scrivi l'importo versato (copre i semestri dal più vecchio; quello che avanza è un anticipo) e **Registra quota**. In **Saldi**, sotto ogni nome, la situazione della quota.
+Ogni semestre (gennaio–giugno, luglio–dicembre) si paga una quota per l'affitto del teatro, in una cassa separata da quella della consegna. Nella scheda del partecipante, sotto i campi della spesa, il riquadro **Quota teatro** (va nel bussolotto) mostra i semestri dovuti: scrivi quanto versa in **Versato per il teatro** (copre i semestri dal più vecchio; quello che avanza è un anticipo). Se non deve nulla c'è il link **+ Quota teatro (anticipo)**. Si salva con lo stesso **Salva movimento**; il riepilogo *Ha dato X €* dice quanto va in cassa fresco e quanto nel bussolotto. In **Saldi**, sotto ogni nome, la situazione della quota.
 
 ---
 

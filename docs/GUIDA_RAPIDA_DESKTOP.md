@@ -28,16 +28,16 @@ La colonna a sinistra mostra la cassa come una somma, calcolata automaticamente 
 - **Trovato in cassa** — il lasciato della consegna precedente
 - **+ Incassato** — somma degli importi saldati
 - **− Pagato al produttore** — somma dei conti produttore di tutti i movimenti del giorno
-- **− Uscite di cassa** — solo se ci sono: soldi presi dalla cassa per altro (es. quote portate al teatro)
-- **= Lasciato in cassa** — trovato + incassato - pagato - uscite
+- **Uscite di cassa** — solo se ci sono: soldi presi dalla cassa (*esce*, es. quote portate al teatro) o rimessi dentro (*entra*, es. Altobelli pagato 357 € invece di 357,20)
+- **= Lasciato in cassa** — trovato + incassato - pagato - uscite + entrate
 
-Sotto, le **Note della giornata** e le **Uscite di cassa** (importo e motivo; **+** per aggiungerne un'altra), con **Salva** quando cambiano. Lo stato (*Consegna aperta* / *chiusa*) e i pulsanti Chiudi / Riapri / Annulla consegna sono nell'intestazione.
+Sotto, le **Note della giornata** e le **Uscite di cassa** (importo e motivo; clic su *esce*/*entra* o − / + davanti all'importo per il segno; **+** per aggiungerne un'altra), con **Salva** quando cambiano. Lo stato (*Consegna aperta* / *chiusa*) e i pulsanti Chiudi / Riapri / Annulla consegna sono nell'intestazione.
 
 ## Registrare un Movimento
 
 1. Nella sezione **Movimenti** seleziona il **partecipante** da **+ Aggiungi partecipante** (per modificare un movimento già inserito, clicca la sua riga nella tabella)
-2. Sotto la tabella si apre il modulo: inserisci il **Conto produttore** (quanto deve al produttore)
-3. Inserisci l'**Importo saldato** (quanto porta oggi)
+2. Sotto la tabella si apre il modulo: inserisci il **Conto produttore** (l'importo effettivo nel foglio Altobelli)
+3. Inserisci l'**Importo saldato** (quanto porta oggi) e, se c'è, la **Quota teatro** (vedi sotto)
 4. Il sistema calcola automaticamente eventuali **Lascia credito** o **Lascia debito** e lo mostra nel riquadro finale
 5. Clicca **Salva movimento**
 
@@ -83,7 +83,7 @@ Gli amministratori mettono in pausa la **Generazione automatica dei turni** (in 
 
 # Quota teatro
 
-Ogni semestre (gennaio–giugno, luglio–dicembre) si paga una quota per l'affitto del teatro, in una cassa separata da quella della consegna. Nella scheda del partecipante, **Quota teatro** mostra i semestri dovuti: scrivi l'importo versato (copre i semestri dal più vecchio; quello che avanza è un anticipo) e **Registra quota**. In **Saldi** la colonna **Quota teatro** ha ✓ per chi ha pagato tutto, ✗ per chi deve ancora qualche semestre e – per chi questo semestre non ha quota.
+Ogni semestre (gennaio–giugno, luglio–dicembre) si paga una quota per l'affitto del teatro, in una cassa separata da quella della consegna. Nella scheda del partecipante, sotto i campi della spesa, il riquadro **Quota teatro** (va nel bussolotto) mostra i semestri dovuti: scrivi quanto versa in **Versato per il teatro** (copre i semestri dal più vecchio; quello che avanza è un anticipo). Se non deve nulla c'è il link **+ Quota teatro (anticipo)**. Si salva con lo stesso **Salva movimento**; il riepilogo *Ha dato X €* dice quanto va in cassa fresco e quanto nel bussolotto. In **Saldi** la colonna **Quota teatro** ha ✓ per chi ha pagato tutto, ✗ per chi deve ancora qualche semestre e – per chi questo semestre non ha quota.
 
 ---
 
@@ -94,6 +94,7 @@ Ogni semestre (gennaio–giugno, luglio–dicembre) si paga una quota per l'affi
 | Riaprire consegna chiusa | Storico → clicca la consegna → **Riapri consegna** |
 | Eliminare una consegna salvata | Consegna → **Annulla consegna** |
 | Quote teatro: griglia, quote ridotte, cassa teatro | **Teatro** (menu in alto) |
+| Confrontare il foglio Altobelli con i conti (in prova) | **Altobelli (prova)** (menu in alto): scegli la consegna; associa una volta i nomi del foglio alle persone; in *Link del foglio* il foglio dell'anno |
 | Modificare un saldo | Saldi → **Modifica saldo** |
 | Aggiungere partecipanti | Saldi → **+ Aggiungi partecipante** |
 | Modificare utenti | Saldi → **Modifica utente** |

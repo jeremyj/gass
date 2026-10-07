@@ -28,7 +28,7 @@ GET    /api/participants              - Retrieve all participants with current b
 GET    /api/participants/:id/transactions - Ledger (movimenti + rettifiche) with running saldo (any authenticated user)
 GET    /api/consegna/apertura         - {data, aperte}: date the Consegna page opens on, all open consegne (declared before /:date)
 GET    /api/consegna/:date            - Delivery data for a date; each movimento has `teatro`, plus `teatroExtra` [{user_id, nome, importo}] for quota-only payers
-POST   /api/consegna                  - Create or update delivery with movements
+POST   /api/consegna                  - Create or update delivery with movements; per participant `teatroVersato` (see Quota teatro)
 DELETE /api/consegna/:id              - Delete delivery and recalculate affected balances (admin)
 GET    /api/storico                   - All deliveries newest first, with trovato_in_cassa, num_movimenti, incassato, teatro (Storico index)
 PUT    /api/participants/:id          - Set participant balance (stored as a rettifica, admin)
@@ -42,14 +42,17 @@ POST   /api/turni/sposta              - {a: {id, slot}, to}: the person moves to
 PUT    /api/turni/auto                - {auto}: pause/resume automatic generation (admin)
 PUT    /api/turni/note                - {note}: free-text notes shown above the turni, max 5000 chars (admin; GET returns `note`)
 GET    /api/turni?passati=1           - Same, plus the last 91 days (`PAST_DAYS`, 3 months; any user)
-GET    /api/teatro/utente/:id         - A person's quota teatro: per-semester {dovuto, pagato}, residuo, anticipo (any user)
+GET    /api/teatro/utente/:id         - A person's quota teatro: per-semester {dovuto, pagato}, residuo, anticipo (any user); `?consegna=<id>` leaves out the quota paid in that consegna, returned as `giaQui`
 GET    /api/teatro/consegna/:id       - Quotas paid in that consegna, shown next to its cassa (any user)
-POST   /api/teatro/pagamenti          - {userId, importo, consegnaId}: record a payment in an open consegna, dated on it (any user; 400 without one)
+POST   /api/teatro/pagamenti          - {userId, importo, consegnaId}: record a payment in an open consegna, dated on it (admin; 400 without one)
 GET    /api/teatro                    - Grid, semesters, payments, cassa log, balance (admin)
 PUT    /api/teatro/dovuti             - {userId, semestre, dovuto}: owed amount, 0 = non dovuto, null = not in the GASS (admin)
 PUT    /api/teatro/semestri/:s        - {quota}: semester quota; people on the old quota follow it (admin)
 PUT    /api/teatro/nota               - {userId, nota} (admin); DELETE /api/teatro/pagamenti/:id (admin); POST /api/teatro/cassa {data, importo ±, descrizione} (admin)
 POST   /api/turni/pause                - Add a pause (admin); DELETE /api/turni/pause/:id removes it
+GET    /api/altobelli/confronto?data=&gid= - The consegna's tab of the Altobelli sheet vs the conti in GASS; `scelte` when several tabs match the date (admin)
+GET|PUT /api/altobelli/foglio         - {url}: the sheet's link, setting `altobelli_foglio` (admin)
+PUT    /api/altobelli/nomi            - {nome, userId|null}: map a sheet name to a person, null removes it (admin)
 GET    /api/version                   - Get application version from package.json (public, no auth)
 ```
 
@@ -177,6 +180,11 @@ teatro_cassa     (id, data, importo ±, descrizione, created_by, created_at)    
 users.teatro_nota TEXT
 ```
 
+#### Table: altobelli_nomi (v2.28)
+```sql
+nome TEXT PK (lower-case name in the sheet), user_id FK CASCADE
+```
+
 #### Indexes
 - `idx_consegne_data` on consegne(data)
 - `idx_movimenti_consegna` on movimenti(consegna_id)
@@ -232,7 +240,7 @@ trovato = previous_lasciato_in_cassa || 0;
 // Simplified to just sum of conto_produttore values
 pagato = SUM(conto_produttore);
 
-// Lasciato in cassa (cash left); uscite = rows of uscite_cassa (cash taken out by hand, each with a motivo)
+// Lasciato in cassa (cash left); uscite = rows of uscite_cassa (each with a motivo): importo > 0 = cash out, < 0 = cash in
 lasciato = trovato + incassato - pagato - SUM(uscite_cassa.importo);
 ```
 
@@ -280,11 +288,22 @@ Pure helpers in `server/services/teatro-calc.js` (`semestreOf`, `semestreLabel`,
 
 **Semesters open lazily.** `ensureSemestre(today)` (on `GET /api/teatro*`, `POST /pagamenti`, `GET /api/participants`) creates the current semester once, with the previous semester's quota (15 € if none), and a dovuto row for every `attivo` user. After that the current semester follows stato changes (`syncDovutoCorrente`, called by `setStato`): becoming `attivo` adds the full quota if missing; leaving `attivo` deletes the row only if it is the full quota and nothing was paid on it (reduced / non dovuto set by hand and paid quotas stay). Past semesters never change.
 
-**Cassa teatro** balance = payments without `fonte` + `teatro_cassa` entries. Payments imported from the old sheet (`manage-teatro.js import`, `fonte = 'foglio'`, dated at the semester's end) are history only. A payment is always recorded in an open consegna and takes its date; the client saves a new consegna (cassa only) before the first quota. `DELETE /api/consegna/:id` deletes that consegna's payments too (logged as `teatro_modifica`). A user with quota payments cannot be deleted (`deleteUser`).
+**Cassa teatro** balance = payments without `fonte` + `teatro_cassa` entries. Payments imported from the old sheet (`manage-teatro.js import`, `fonte = 'foglio'`, dated at the semester's end) are history only. A payment is always recorded in an open consegna and takes its date. The card sends it as `teatroVersato` with the participant in `POST /api/consegna`, written in the same transaction: it **replaces** that person's payment in this consegna (0 removes it, absent keeps it). A participant with only `teatroVersato` (conto and importo 0) gets no movimento; `GET /api/consegna/:date` lists them in `teatroExtra`. `DELETE /api/consegna/:id` deletes that consegna's payments too (logged as `teatro_modifica`). A user with quota payments cannot be deleted (`deleteUser`).
 
 **Import:** `manage-teatro.js import <file.csv>`, header `username;2024-1;2024-2;…;nota`; a number n = owed n and paid n (0 = non dovuto), `-` or empty = no row. Re-importing a person replaces their imported rows. `manage-teatro.js list` prints the grid.
 
-Activity events: `teatro_pagamento`, `teatro_modifica`, `teatro_cassa`. Pages: the box in the consegna card (`consegna-common.js`), Saldi column/line (`teatroLabel` in `debiti-common.js`), `teatro-desktop.html` (admin).
+Activity events: `teatro_pagamento`, `teatro_modifica`, `teatro_cassa`. Pages: the Quota teatro block in the consegna card (`showTeatroBlock`/`renderTeatro` in `consegna-common.js`), Saldi column/line (`teatroLabel` in `debiti-common.js`), `teatro-desktop.html` (admin).
+
+## Altobelli check
+
+Experimental admin page `/altobelli` (desktop; mobile redirects to `/consegna`). `server/services/altobelli.js` reads the producer's Google sheet without credentials (it must stay shared with anyone with the link):
+
+1. Tab names → gid from the sheet's `/edit` page bootstrap (`parseSchede`). Not `htmlview`: it lists only visible tabs, and past tabs are hidden.
+2. The tab matching the consegna date (`trovaSchede`), read as `export?format=csv&gid=<gid>` (works on hidden tabs).
+3. Effettivi (column C) summed row by row (`parseFoglio`): the sheet's own `=SUM` total can miss rows, so the page shows both.
+4. `confronta` matches sheet names to people through `altobelli_nomi` and compares each effettivo with the person's `conto_produttore`.
+
+Never read a tab with `gviz/tq?sheet=<name>`: an unknown name silently returns another tab. Tests stub `global.fetch` with `test/fixtures/altobelli/`.
 
 ## Features
 
@@ -297,7 +316,7 @@ Cash fields are **always readonly** - no manual override capability in mobile or
 **Fields:**
 - `trovato_in_cassa`: Cash found (from previous delivery's lasciato)
 - `pagato_produttore`: Total paid to producer (sum of all conto_produttore values)
-- `lasciato_in_cassa`: Cash left (trovato + incassato - pagato - uscite); uscite are rows of table `uscite_cassa` (`consegna_id` CASCADE, `importo` > 0, `motivo` required)
+- `lasciato_in_cassa`: Cash left (trovato + incassato - pagato - uscite); uscite are rows of table `uscite_cassa` (`consegna_id` CASCADE, `importo` ≠ 0: positive = esce, negative = entra; `motivo` required). Pages show the effect on the cassa (−esce, +entra: `formatEffettoCassa` in `utils.js`, `effetto` in `report.js`). Positive = esce is kept so pages cached before 2.28.0, which send only positive amounts, stay correct
 
 **Implementation:**
 - **Mobile** (`consegna.js`, `consegna.html`):
@@ -450,6 +469,7 @@ transaction();
 - `POST /api/consegna` is checked by `server/services/validation.js` before anything is written; failures return 400 with an Italian message:
   - `data` is `YYYY-MM-DD`, `partecipanti` is an array, `partecipante_id` is an integer
   - movimento amounts are numbers (or null), finite and ≥ 0; cassa amounts are finite (trovato may be negative)
+  - `teatroVersato` ≥ 0; each uscita has `importo` ≠ 0 and a `motivo`
   - not both `creditoLasciato` and `debitoLasciato` > 0
   - `usaCredito` ≤ available credit and `debitoSaldato` ≤ existing debt, both against `saldoBeforeConsegna` (ledger, not the `users.saldo` cache)
 - Stored movimento amounts are rounded to cents

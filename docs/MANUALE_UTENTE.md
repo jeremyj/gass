@@ -71,13 +71,15 @@ La cassa è una somma calcolata automaticamente dal sistema, non si scrive nulla
 - Calcolato sommando tutti i "Conto produttore" dei partecipanti
 - Si aggiorna in tempo reale quando si inseriscono i movimenti
 
-**− Uscite di cassa** (compare solo se ci sono)
-- Soldi presi dalla cassa per altro, per esempio le quote teatro portate al teatro
-- Si scrivono sotto le note: importo e motivo (il motivo è obbligatorio), poi **Salva**. Il **+** accanto all'ultima riga aggiunge un'altra uscita (es. 45 teatro e 20 tofu); per toglierne una basta svuotarla
+**Uscite di cassa** (compare solo se ci sono)
+- Soldi presi dalla cassa (**esce**, es. le quote teatro portate al teatro) o rimessi dentro (**entra**)
+- Esempio: Altobelli va pagato 357,20 €. Se gli dai 358 € scrivi un'uscita *esce* di 0,80; se gli dai 357 € un'uscita *entra* di 0,20 (motivo: arrotondamento Altobelli)
+- Si scrivono sotto le note: importo e motivo (il motivo è obbligatorio), poi **Salva**. Tocca l'etichetta *esce*/*entra* per cambiarla, oppure scrivi − o + davanti all'importo. Il **+** accanto all'ultima riga aggiunge un'altra riga (es. 45 teatro e 20 tofu); per toglierne una basta svuotarla
+- Nella cassa si vedono con il loro effetto: −0,80 se escono, +0,20 se entrano
 
 **= In cassa** (desktop: "Lasciato in cassa")
 - Denaro rimasto in cassa alla fine della giornata
-- Calcolato come: `Trovato + Incassato - Pagato - Uscite`
+- Calcolato come: `Trovato + Incassato - Pagato - uscite + entrate`
 - Se il valore è negativo viene evidenziato con l'avviso "Cassa negativa"
 
 **Note della giornata**
@@ -105,12 +107,14 @@ Per registrare un movimento per un partecipante:
 3. **Compilare i campi principali**:
 
    **Conto produttore** (obbligatorio)
-   - Importo totale dovuto al produttore per la merce ricevuta
+   - Importo totale dovuto al produttore per la merce ricevuta: l'**importo effettivo** della persona nel foglio Altobelli
    - Questo è l'importo della spesa, indipendentemente da quanto viene pagato
 
    **Importo saldato**
    - Denaro effettivamente consegnato dal partecipante
    - Può essere uguale, maggiore o minore del Conto produttore
+
+   **Quota teatro** (sotto, solo se c'è da pagare o se è già stata pagata in questa consegna): vedi [Quota teatro](#6-quota-teatro)
 
 4. **Il sistema calcola automaticamente** il riquadro dell'esito:
 
@@ -270,7 +274,11 @@ Ogni gassista paga una quota a semestre (gennaio–giugno, luglio–dicembre) pe
 
 #### Pagare alla consegna (tutti)
 
-Nella scheda del partecipante, se ha quote da pagare, c'è il tasto **Quota teatro** con il totale dovuto. Toccandolo si vedono i semestri dovuti, dal più vecchio. Scrivi l'**importo versato**: copre i semestri in ordine; se non basta l'ultimo resta parziale, se avanza va in anticipo sui semestri successivi. **Registra quota** chiede conferma. La quota si registra sempre dentro una consegna aperta: se la consegna è appena iniziata e non ancora salvata, viene salvata in quel momento. Il pagamento è indipendente dal movimento: si può pagare la quota senza fare la spesa; se il riquadro è aperto e non hai registrato niente, **Salva movimento** chiede conferma. Con la cassa compare **Quote teatro di questa consegna, a parte dalla cassa**: il totale delle quote registrate in questa consegna, che non entrano nella sua cassa. Annullando la consegna si annullano anche le sue quote.
+Nella scheda del partecipante, sotto Conto produttore e Importo saldato, c'è il riquadro **Quota teatro** (va nel bussolotto) con i semestri dovuti, dal più vecchio. Scrivi in **Versato per il teatro** quanto paga per il teatro: copre i semestri in ordine; se non basta l'ultimo resta parziale ("Resta da pagare"), se avanza va in anticipo sui semestri successivi. Chi non deve niente ha il link **+ Quota teatro (anticipo)**.
+
+Spesa e quota si salvano insieme con **Salva movimento**. Mentre scrivi una quota compare **Ha dato X €**: quanto mettere in cassa fresco e quanto nel bussolotto teatro, che restano separati. Si può pagare solo la quota senza fare la spesa (conto e importo saldato vuoti): nell'elenco la persona ha una riga a parte, che si può riaprire per correggere la quota. Per correggerla riapri la scheda e cambia l'importo (0 la toglie).
+
+La quota si registra sempre dentro una consegna aperta. Con la cassa compare **Quote teatro di questa consegna, a parte dalla cassa**: il totale delle quote di questa consegna, che non entrano nella sua cassa. Annullando la consegna si annullano anche le sue quote.
 
 In **Saldi** ogni partecipante ha la sua situazione: su mobile, sotto il nome, **deve** (con l'importo) o **anticipo**; su desktop, nella colonna **Quota teatro**, ✗ se deve ancora qualche semestre, ✓ se ha pagato tutto e – se questo semestre non ha quota (l'importo al passaggio del mouse). In alto il totale delle quote mancanti.
 
@@ -369,7 +377,13 @@ Per assistenza o segnalazioni di problemi, contattare l'amministratore del siste
 
 ## Note Sulla Versione
 
-Sistema GASS Pagamenti - Versione 2.27.5
+Sistema GASS Pagamenti - Versione 2.28.0
+- Conto produttore: sotto il campo, "Importo effettivo dal foglio Altobelli"
+- Uscite di cassa con il segno: *esce* (soldi tolti) o *entra* (soldi rimessi, es. arrotondamento del pagamento ad Altobelli)
+- Quota teatro nella scheda del partecipante, sotto la spesa, salvata con lo stesso **Salva movimento**; chi paga solo la quota non ha un movimento a zero
+- Amministratori (desktop, in prova): pagina **Altobelli (prova)**, che confronta il foglio di Altobelli con i conti in GASS
+
+Versione 2.27.5
 - Telefono: l'importo delle quote teatro della consegna resta su una riga
 
 Versione 2.27.4
