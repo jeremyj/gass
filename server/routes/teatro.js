@@ -1,6 +1,7 @@
 /**
- * Quota teatro API: anyone sees a person's status and records a payment (at the
- * consegna); the overview, corrections and the cassa log are admin-only.
+ * Quota teatro API: anyone sees a person's status; the quota is paid inside the movimento
+ * (teatroVersato in POST /api/consegna). Direct payments, the overview, corrections and
+ * the cassa log are admin-only.
  */
 
 const express = require('express');
@@ -24,9 +25,13 @@ function act(req, res, eventType, fn) {
   res.json({ success: true });
 }
 
+// ?consegna=<id>: without the quota paid in that consegna, returned apart as giaQui
 router.get('/utente/:id', (req, res) => {
   T.ensureSemestre(db, toLocalDateString());
-  res.json({ success: true, ...T.statoTeatro(db, Number(req.params.id)) });
+  const userId = Number(req.params.id);
+  const consegna = Number(req.query.consegna) || null;
+  const giaQui = consegna ? T.quotePerPersona(db, consegna).find(q => q.user_id === userId)?.importo || 0 : 0;
+  res.json({ success: true, ...T.statoTeatro(db, userId, consegna), giaQui });
 });
 
 // Quotas collected in a consegna, kept apart from its cassa
@@ -34,8 +39,8 @@ router.get('/consegna/:id', (req, res) => {
   res.json({ success: true, totale: T.quoteDellaConsegna(db, Number(req.params.id)) });
 });
 
-// A quota is paid at a consegna: it must exist and be open, and gives the payment its date
-router.post('/pagamenti', (req, res) => {
+// Admin payment at a consegna: it must exist and be open, and gives the payment its date
+router.post('/pagamenti', requireAdmin, (req, res) => {
   const { userId, importo, consegnaId } = req.body || {};
   const consegna = consegnaId && db.prepare('SELECT id, data, chiusa FROM consegne WHERE id = ?').get(consegnaId);
   if (!consegna || consegna.chiusa) {

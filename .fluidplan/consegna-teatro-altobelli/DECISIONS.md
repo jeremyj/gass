@@ -159,3 +159,7 @@ This supersedes the earlier answers given before the mockup (Teatro section open
 - **gid** — Numeric id of one tab inside a Google Sheet; `export?format=csv&gid=<gid>` downloads exactly that tab.
 - **residuo** — What a person still owes in quota teatro across all semesters (`statoTeatro` in server/services/teatro.js).
 - **uscite di cassa** — Cash taken out of the consegna cassa by hand, table `uscite_cassa` (importo, motivo). Today importo must be > 0.
+
+## Decided during execution
+
+- **2026-10-07, phase 2 — someone who pays only the quota teatro** (conto 0, versato 0): the card's Salva saves only the payment, no movimento at zero; the day's list shows them as before ("quota teatro 15", "solo teatro"), now clickable to correct the quota. User choice over "movimento a zero + quota".

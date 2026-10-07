@@ -415,10 +415,21 @@ tr.off td { opacity: .6; }
 /* ===== MOVIMENTO ENTRY (shared card, consegna-common.js) ===== */
 
 /* Quota teatro: its own colour, never mixed with the consegna cassa */
-.teatro-box { margin: 14px 0; }
+.teatro-box:empty { display: none; }
+/* Fresco / Quota teatro titles: only when the card has an open Teatro block */
+.blocco-titolo { display: none; justify-content: space-between; gap: 10px; margin: 0; font-size: 17px; color: var(--s-deep); }
+.blocco-titolo span + span { font-weight: 500; color: var(--salvia); }
+.entry-body:has(.teatro-box h4) > .blocco-titolo, .teatro-box .blocco-titolo { display: flex; }
+.teatro-box .blocco-titolo { color: var(--teatro); margin-bottom: 8px; }
+.riepilogo-soldi { display: grid; gap: 4px; margin: 0; padding: 10px 14px; border: 2px solid var(--inchiostro); border-radius: 10px; background: var(--carta); }
+.riepilogo-soldi.initially-hidden { display: none; }
+.riepilogo-soldi span { display: flex; align-items: center; gap: 8px; }
+.riepilogo-soldi span b { margin-left: auto; }
+.riepilogo-soldi .dot { width: 12px; height: 12px; border-radius: 3px; }
+.riepilogo-soldi .dot-f { background: var(--s-deep); }
+.riepilogo-soldi .dot-t { background: var(--teatro); }
 .teatro-btn { width: 100%; display: flex; justify-content: space-between; gap: 10px; font: inherit; font-weight: 800; color: var(--teatro); background: transparent; border: 1.5px dashed var(--teatro); border-radius: 9px; padding: 10px 12px; cursor: pointer; }
 .teatro-box:has(h4) { background: var(--teatro-t); border-left: 4px solid var(--teatro); border-radius: 8px; padding: 12px 14px; }
-.teatro-box h4 { display: flex; justify-content: space-between; margin: 0 0 8px; color: var(--teatro); font-size: 17px; }
 .teatro-riga { display: flex; justify-content: space-between; gap: 10px; margin: 4px 0; }
 .teatro-riga small { color: var(--salvia); }
 .teatro-riga .ok { color: #2d6a2d; }

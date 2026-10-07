@@ -78,48 +78,48 @@ This supersedes the earlier answers given before the mockup (Teatro section open
 
 ## Phase 2 — Quota teatro inside the card (A1) (≈ 1.5 d)
 
-### [ ] 2.1 Save teatroVersato inside POST /api/consegna · T2
+### [x] 2.1 Save teatroVersato inside POST /api/consegna · T2
 
 - Decision: **T2** How the teatro amount is saved — Same request, replace per person+consegna [critical]
 - Files: `server/routes/consegna.js` (modify), `server/services/validation.js` (modify), `server/routes/teatro.js` (modify), `test/integration/teatro.test.js` (modify), `test/integration/consegna.test.js` (modify)
 - Do: In `server/routes/consegna.js` (POST `/`, inside `db.transaction`) for each participant with `teatroVersato != null`: `DELETE FROM teatro_pagamenti WHERE consegna_id = ? AND user_id = ?` then, if > 0, `registraPagamento(db, {userId, importo, data: consegna.data, consegnaId})` from `server/services/teatro.js` (call `ensureSemestre` first). Log `teatro_pagamento` with `logActivity` only when the amount changed. Validate in `server/services/validation.js` (number ≥ 0). Restrict `POST /api/teatro/pagamenti` in `server/routes/teatro.js` to `requireAdmin` (keep its open-consegna rule).
 - Acceptance criteria:
-  - [ ] Saving a movimento with teatroVersato 15 creates one payment dated the consegna
-  - [ ] Saving it again with 15 leaves one payment, with 0 leaves none
-  - [ ] A validation error rolls back both movimento and payment
-  - [ ] Non-admin POST /api/teatro/pagamenti → 403
+  - [x] Saving a movimento with teatroVersato 15 creates one payment dated the consegna
+  - [x] Saving it again with 15 leaves one payment, with 0 leaves none
+  - [x] A validation error rolls back both movimento and payment
+  - [x] Non-admin POST /api/teatro/pagamenti → 403
 - Verify: `npm run test:integration`
 
-### [ ] 2.2 Render the Teatro block and the money summary in the card · T1
+### [x] 2.2 Render the Teatro block and the money summary in the card · T1
 
 - Decision: **T1** Layout A1 in the card
 - Files: `public/js/shared/consegna-common.js` (modify), `public/style.css` (modify), `public/js/consegna.js` (modify), `public/js/consegna-desktop.js` (modify)
 - Do: In `public/js/shared/consegna-common.js` replace `teatroButtonHtml` / `openTeatro` / `renderTeatro` / `registraTeatro` with `teatroBlockHtml(id)` rendered by `renderParticipant` (rows from `GET /api/teatro/utente/:id`, FIFO preview with the existing `teatroAllocate`) and `riepilogoSoldi(id)` updated on every input of versato fresco / versato teatro. Remove the unsaved-quota confirm in `saveParticipant`. Keep the `data-tip="teatro_versato"` on the new label. Styles: reuse `.teatro-box` purple tint, add `.fresco` block and `.riepilogo-soldi` in `public/style.css`.
 - Acceptance criteria:
-  - [ ] No 'Registra quota' button anywhere
-  - [ ] Summary shows cassa and bussolotto amounts and updates live
-  - [ ] Mobile 390 px: no horizontal scroll; desktop form card shows both blocks
+  - [x] No 'Registra quota' button anywhere
+  - [x] Summary shows cassa and bussolotto amounts and updates live
+  - [x] Mobile 390 px: no horizontal scroll; desktop form card shows both blocks
 - Verify: `npm test`
 - After: 2.1
 
-### [ ] 2.3 Send teatroVersato from the card · T2
+### [x] 2.3 Send teatroVersato from the card · T2
 
 - Decision: **T2** How the teatro amount is saved — Same request, replace per person+consegna [critical]
 - Files: `public/js/shared/consegna-common.js` (modify)
 - Do: Add `teatroVersato` to `readMovimentoForm(id)` in `public/js/shared/consegna-common.js` (from the Teatro block field; omitted when the block is not rendered). After save, refresh `participants[].teatro_residuo` and the day's list (`addTeatroToList` becomes a reload of `m.teatro`). `populateExistingMovimento` fills the field with `m.teatro`.
 - Acceptance criteria:
-  - [ ] Reopening a saved movimento shows its quota in the field
-  - [ ] The mobile unsaved-changes check includes the teatro field (it compares readMovimentoForm JSON)
+  - [x] Reopening a saved movimento shows its quota in the field
+  - [x] The mobile unsaved-changes check includes the teatro field (it compares readMovimentoForm JSON)
 - Verify: `npm test`
 - After: 2.1, 2.2
 
-### [ ] 2.4 Show the Teatro block only when relevant · T5
+### [x] 2.4 Show the Teatro block only when relevant · T5
 
 - Decision: **T5** When the Teatro block appears
 - Files: `public/js/shared/consegna-common.js` (modify)
 - Do: Condition in `teatroBlockHtml(id)` (`public/js/shared/consegna-common.js`) as described: residuo > 0 or `m.teatro > 0` → block; else link; no teatro row → nothing.
 - Acceptance criteria:
-  - [ ] A person with residuo 0 sees only the anticipo link
+  - [x] A person with residuo 0 sees only the anticipo link
 - Verify: `npm test`
 - After: 2.2
 

@@ -124,7 +124,7 @@ function renderMovimentiGiorno() {
         <td class="nt">${escapeHtml(m.note || '')}</td>
       </tr>
     `).join('') + teatroExtra.map(t => `
-      <tr>
+      <tr class="clickable" onclick="openMovimento(${t.user_id})">
         <td class="nm">${escapeHtml(t.nome)}</td>
         ${'<td class="mute">–</td>'.repeat(6)}
         ${cell(t.importo)}

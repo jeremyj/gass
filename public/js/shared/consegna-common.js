@@ -45,16 +45,6 @@ async function renderAvvisoAperte() {
 // People who paid a quota teatro in this consegna but have no movimento
 let teatroExtra = [];
 
-// After a quota is recorded: show it in the list without reloading the page
-function addTeatroToList(id, nome, importo) {
-  const m = (existingConsegnaMovimenti || []).find(x => x.partecipante_id === id);
-  const t = teatroExtra.find(x => x.user_id === id);
-  if (m) m.teatro = roundToCents((m.teatro || 0) + importo);
-  else if (t) t.importo = roundToCents(t.importo + importo);
-  else teatroExtra.push({ user_id: id, nome, importo });
-  renderMovimentiGiorno();
-}
-
 // "conto 15, pagato 25, salda debito 8, quota teatro 15" (mobile list rows)
 function movimentoDetails(m) {
   const details = [`conto <b>${formatNumber(m.conto_produttore || 0)}</b>`, `pagato <b>${formatNumber(m.importo_saldato || 0)}</b>`];
@@ -588,6 +578,7 @@ function renderParticipant(id, buttonsHtml) {
     handleContoProduttoreInput(id, saldo);
   }
   syncDebitoCreditoVisibility(id);
+  loadTeatroBlock(id);
   return true;
 }
 
@@ -642,6 +633,7 @@ function buildParticipantCardHTML(id, nome, saldo, haCredito, haDebito, buttonsH
     </div>
 
     <div class="entry-body">
+      <h4 class="blocco-titolo"><span>Fresco</span><span>va in cassa</span></h4>
       <div class="entry-fields">
         <div class="form-group fld">
           <label for="contoProduttore_${id}">Conto produttore</label>
@@ -653,7 +645,7 @@ function buildParticipantCardHTML(id, nome, saldo, haCredito, haDebito, buttonsH
         <div class="form-group fld">
           <label for="importo_${id}">Importo saldato</label>
           <span class="fld-in"><input type="text" inputmode="decimal" id="importo_${id}" placeholder="0"
-                 oninput="normalizeInputField(this); handleContoProduttoreInput(${id}, ${saldo}); updateLasciatoInCassa()"
+                 oninput="normalizeInputField(this); handleContoProduttoreInput(${id}, ${saldo}); updateLasciatoInCassa(); renderRiepilogoSoldi(${id})"
                  onfocus="handleInputFocus(this)"><span class="unit">€</span></span>
         </div>
       </div>
@@ -676,7 +668,8 @@ function buildParticipantCardHTML(id, nome, saldo, haCredito, haDebito, buttonsH
         <input type="text" id="note_${id}" placeholder="Aggiungi una nota">
       </div>
 
-      ${teatroButtonHtml(id)}
+      <div class="teatro-box" id="teatro_${id}"></div>
+      <p class="riepilogo-soldi initially-hidden" id="soldi_${id}"></p>
 
       ${buttonsHtml}
     </div>
@@ -684,14 +677,42 @@ function buildParticipantCardHTML(id, nome, saldo, haCredito, haDebito, buttonsH
 }
 
 // ===== QUOTA TEATRO =====
-// Paid apart from the movimento: the money goes to the cassa teatro, not the consegna cassa
+// Paid in the same card and saved with the movimento (teatroVersato), but the money goes
+// to the bussolotto (cassa teatro), not to the consegna cassa
 
-function teatroButtonHtml(id) {
-  const residuo = participants.find(p => p.id === id)?.teatro_residuo || 0;
-  if (residuo <= 0) return '';
-  return `<div class="teatro-box" id="teatro_${id}">
-    <button type="button" class="teatro-btn" onclick="openTeatro(${id})"><span>Quota teatro</span><span>dovuti ${formatEuro(residuo)} ▸</span></button>
-  </div>`;
+// Quota teatro this person already paid in the consegna shown (from the day's list)
+function teatroGiaQui(id) {
+  const m = (existingConsegnaMovimenti || []).find(x => x.partecipante_id === id);
+  return m?.teatro || teatroExtra.find(t => t.user_id === id)?.importo || 0;
+}
+
+// The Teatro block: open when something is owed or was paid here, else a link for an
+// advance; nothing for people who were never in the teatro (no semester rows)
+async function loadTeatroBlock(id) {
+  try {
+    const stato = await API.get(`/api/teatro/utente/${id}${currentConsegnaId ? `?consegna=${currentConsegnaId}` : ''}`);
+    const box = document.getElementById(`teatro_${id}`);
+    if (!box || !stato.righe.length) return;
+    box.dataset.righe = JSON.stringify(stato.righe.filter(r => r.dovuto > r.pagato));
+    if (stato.residuo > 0 || teatroGiaQui(id) > 0) showTeatroBlock(id);
+    else box.innerHTML = `<button type="button" class="teatro-btn" onclick="showTeatroBlock(${id})"><span>+ Quota teatro (anticipo)</span></button>`;
+  } catch (error) {
+    showStatus('Errore: ' + error.message, 'error');
+  }
+}
+
+function showTeatroBlock(id) {
+  const gia = teatroGiaQui(id);
+  document.getElementById(`teatro_${id}`).innerHTML = `
+    <h4 class="blocco-titolo"><span>Quota teatro</span><span>va nel bussolotto</span></h4>
+    <div id="teatroRighe_${id}"></div>
+    <div class="form-group fld teatro-importo">
+      <label for="teatroImporto_${id}" data-tip="teatro_versato">Versato per il teatro</label>
+      <span class="fld-in"><input type="text" inputmode="decimal" id="teatroImporto_${id}" placeholder="0" value="${gia ? formatNumber(gia) : ''}"
+            oninput="normalizeInputField(this); renderTeatro(${id})" onfocus="handleInputFocus(this)"><span class="unit">€</span></span>
+    </div>
+    <p class="teatro-resto" id="teatroResto_${id}"></p>`;
+  renderTeatro(id);
 }
 
 // Same rule as the server: the amount covers the owed semesters oldest first
@@ -705,27 +726,6 @@ function teatroAllocate(righe, importo) {
   });
 }
 
-async function openTeatro(id) {
-  const box = document.getElementById(`teatro_${id}`);
-  try {
-    const stato = await API.get(`/api/teatro/utente/${id}`);
-    box.dataset.righe = JSON.stringify(stato.righe.filter(r => r.dovuto > r.pagato));
-    box.innerHTML = `
-      <h4><span>Quota teatro</span><span>dovuti ${formatEuro(stato.residuo)}</span></h4>
-      <div id="teatroRighe_${id}"></div>
-      <div class="form-group fld teatro-importo">
-        <label for="teatroImporto_${id}" data-tip="teatro_versato">Importo versato</label>
-        <span class="fld-in"><input type="text" inputmode="decimal" id="teatroImporto_${id}" placeholder="0"
-              oninput="normalizeInputField(this); renderTeatro(${id})" onfocus="handleInputFocus(this)"><span class="unit">€</span></span>
-      </div>
-      <p class="teatro-resto" id="teatroResto_${id}"></p>
-      <button type="button" class="btn btn-line" onclick="registraTeatro(${id})">Registra quota</button>`;
-    renderTeatro(id);
-  } catch (error) {
-    showStatus('Errore: ' + error.message, 'error');
-  }
-}
-
 function renderTeatro(id) {
   const box = document.getElementById(`teatro_${id}`);
   const importo = parseAmount(document.getElementById(`teatroImporto_${id}`).value) || 0;
@@ -736,38 +736,20 @@ function renderTeatro(id) {
   const dovuto = righe.reduce((s, r) => s + r.resto, 0);
   const resto = roundToCents(dovuto - importo);
   document.getElementById(`teatroResto_${id}`).textContent = !importo ? '' : resto > 0
-    ? `Resta da pagare ${formatEuro(resto)}` : resto < 0 ? `In anticipo ${formatEuro(-resto)} sul prossimo semestre` : 'Tutto pagato';
+    ? `Resta da pagare ${formatEuro(resto)}` : resto < 0 ? `In anticipo ${formatEuro(-resto)} sul prossimo semestre` : 'Quota pagata';
+  renderRiepilogoSoldi(id);
 }
 
-async function registraTeatro(id) {
-  const importo = parseAmount(document.getElementById(`teatroImporto_${id}`).value);
-  if (!(importo > 0)) return showStatus('Scrivi l\'importo versato', 'error');
-  const p = participants.find(x => x.id === id);
-  const ok = await confirmDialog({
-    title: 'Registrare la quota teatro?',
-    message: 'I soldi vanno nella cassa del teatro, non in quella della consegna.',
-    details: [[p.nome, formatEuro(importo)], ['', document.getElementById(`teatroResto_${id}`).textContent]],
-    confirmText: 'Registra quota'
-  });
-  if (!ok) return;
-  try {
-    // A quota is recorded inside a consegna: a new one not saved yet is saved first (cassa only)
-    if (!currentConsegnaId) {
-      await postConsegna([]);
-      const { consegna } = await API.get(`/api/consegna/${document.getElementById('data').value}`);
-      updateConsegnaStatusUI(consegna);
-    }
-    await API.post('/api/teatro/pagamenti', { userId: id, importo, consegnaId: currentConsegnaId });
-    const stato = await API.get(`/api/teatro/utente/${id}`);
-    p.teatro_residuo = roundToCents(stato.residuo - stato.anticipo);
-    const box = document.getElementById(`teatro_${id}`);
-    box.outerHTML = teatroButtonHtml(id) || `<p class="teatro-done">Quota teatro registrata: ${formatEuro(importo)}</p>`;
-    showStatus('Quota teatro registrata', 'success');
-    loadQuoteOggi();
-    addTeatroToList(id, p.nome, importo);
-  } catch (error) {
-    showStatus('Errore: ' + error.message, 'error');
-  }
+// Where the money goes, shown while a quota teatro is being paid
+function renderRiepilogoSoldi(id) {
+  const el = document.getElementById(`soldi_${id}`);
+  if (!el) return;
+  const fresco = roundToCents(parseAmount(document.getElementById(`importo_${id}`).value) || 0);
+  const teatro = roundToCents(parseAmount(document.getElementById(`teatroImporto_${id}`)?.value || '0') || 0);
+  el.classList.toggle('initially-hidden', !(teatro > 0));
+  el.innerHTML = `<b>Ha dato ${formatEuro(roundToCents(fresco + teatro))}</b>
+    <span><i class="dot dot-f"></i>in cassa fresco <b>${formatEuro(fresco)}</b></span>
+    <span><i class="dot dot-t"></i>nel bussolotto teatro <b>${formatEuro(teatro)}</b></span>`;
 }
 
 // Quotas collected in this consegna, shown with the cassa but outside its totals
@@ -814,8 +796,18 @@ function readMovimentoForm(id) {
     creditoLasciato: amount(`credito_${id}`),
     saldaDebitoTotale: debitoSaldatoEl?.dataset.full === 'true',
     debitoSaldato: parseAmount(debitoSaldatoEl?.dataset.submitValue || debitoSaldatoEl?.value || '0'),
-    note: document.getElementById(`note_${id}`)?.value || ''
+    note: document.getElementById(`note_${id}`)?.value || '',
+    teatroVersato: readTeatroVersato(id)
   };
+}
+
+// The quota teatro of the card, or the one already paid here while the block is still loading;
+// left out (undefined) when there is none, so the server keeps whatever it has
+function readTeatroVersato(id) {
+  const field = document.getElementById(`teatroImporto_${id}`);
+  const gia = teatroGiaQui(id);
+  const importo = field ? roundToCents(parseAmount(field.value) || 0) : gia;
+  return importo || gia ? importo : undefined;
 }
 
 // POST the consegna for the selected date with the current cassa fields and note
@@ -850,20 +842,6 @@ async function saveParticipant(id) {
   if (!participants.find(p => p.id === id)) {
     showStatus('Partecipante non trovato', 'error');
     return;
-  }
-
-  // The quota teatro box is open but nothing was registered: ask before saving without it
-  const teatroIn = document.getElementById(`teatroImporto_${id}`);
-  if (teatroIn) {
-    const importo = parseAmount(teatroIn.value) || 0;
-    const ok = await confirmDialog({
-      title: 'Quota teatro non registrata',
-      message: importo > 0
-        ? `Hai scritto ${formatEuro(importo)} di quota teatro ma non hai premuto "Registra quota". Il movimento si salva senza la quota.`
-        : 'Hai aperto la quota teatro ma non hai registrato niente. Il movimento si salva senza la quota.',
-      confirmText: 'Salva senza quota'
-    });
-    if (!ok) return;
   }
 
   await saveWithParticipant(id);

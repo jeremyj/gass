@@ -33,7 +33,7 @@ function validateConsegnaPayload(body, saldoBefore) {
 
   for (const p of body.partecipanti) {
     if (!p || !Number.isInteger(p.partecipante_id)) return 'Partecipante non valido';
-    for (const field of MOVIMENTO_AMOUNTS) {
+    for (const field of [...MOVIMENTO_AMOUNTS, 'teatroVersato']) {
       if (!isOptionalAmount(p[field])) return `Importo non valido: ${field}`;
     }
     if (p.debitoLasciato > 0 && p.creditoLasciato > 0) {

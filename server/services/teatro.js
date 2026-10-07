@@ -3,8 +3,8 @@
  * payments are a running total spread over the owed semesters oldest first
  * (teatro-calc.allocate), an excess being an advance. The cassa teatro is separate
  * from the consegna cassa: payments made in GASS plus manual entries (teatro_cassa).
- * A payment is always recorded inside an open consegna, dated on it; deleting the
- * consegna deletes its payments (routes/consegna.js).
+ * A payment is always recorded inside a consegna, dated on it: with the movimento
+ * (teatroVersato, routes/consegna.js) or by an admin; deleting the consegna deletes its payments.
  * Payments imported from the old sheet (fonte = 'foglio') are not in the cassa.
  * Takes the db handle so the CLI can pass its own connection.
  */
@@ -72,14 +72,16 @@ function setDovuto(db, userId, semestre, dovuto, audit) {
   return { changes: [`${nomeDi(db, userId)}, ${semestreLabel(semestre)}: ${d ? `dovuto ${d} €` : 'non dovuto'}`] };
 }
 
-function totalePagato(db, userId) {
-  return db.prepare('SELECT COALESCE(SUM(importo), 0) AS t FROM teatro_pagamenti WHERE user_id = ?').get(userId).t;
+// escludiConsegna: leave out what was paid in that consegna (the card that edits it)
+function totalePagato(db, userId, escludiConsegna = null) {
+  return db.prepare('SELECT COALESCE(SUM(importo), 0) AS t FROM teatro_pagamenti WHERE user_id = ? AND consegna_id IS NOT ?')
+    .get(userId, escludiConsegna ?? -1).t;
 }
 
 // Per-semester rows { semestre, label, dovuto, pagato }, what is still owed and any advance
-function statoTeatro(db, userId) {
+function statoTeatro(db, userId, escludiConsegna = null) {
   const dovuti = db.prepare('SELECT semestre, dovuto FROM teatro_dovuti WHERE user_id = ?').all(userId);
-  const r = allocate(dovuti, totalePagato(db, userId));
+  const r = allocate(dovuti, totalePagato(db, userId, escludiConsegna));
   return { ...r, righe: r.righe.map(x => ({ ...x, label: semestreLabel(x.semestre) })) };
 }
 

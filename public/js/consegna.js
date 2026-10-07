@@ -232,7 +232,7 @@ function renderMovimentiGiorno() {
       </li>
     `;
   }).join('') + teatroExtra.map(t => `
-      <li class="inert">
+      <li onclick="openMovimento(${t.user_id})">
         <span class="nm">${escapeHtml(t.nome)}</span>
         <span class="sub">quota teatro <b>${formatNumber(t.importo)}</b></span>
         <span class="esito"><b>–</b><small>solo teatro</small></span>

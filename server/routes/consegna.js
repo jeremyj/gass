@@ -5,12 +5,15 @@ const { calculateTrovatoInCassa, roundToCents, toLocalDateString } = require('..
 const { saldoBeforeConsegna, recalculateSaldo } = require('../services/saldi');
 const { validateConsegnaPayload } = require('../services/validation');
 const { logActivity } = require('../services/activity');
-const { quotePerPersona } = require('../services/teatro');
+const { quotePerPersona, registraPagamento, ensureSemestre } = require('../services/teatro');
 const { apertura } = require('../services/apertura');
 const { notifyClosed, canaliAttivi } = require('../services/report');
 const { listUscite, totaleUscite, sostituisciUscite } = require('../services/uscite');
 
 const router = express.Router();
+
+// Amounts of a movimento as sent by the client (all zero = nothing bought)
+const MOVIMENTO_FIELDS = ['contoProduttore', 'importoSaldato', 'usaCredito', 'debitoLasciato', 'creditoLasciato', 'debitoSaldato'];
 
 // Require authentication for all consegna routes
 router.use(requireAuth);
@@ -123,6 +126,9 @@ router.post('/', (req, res) => {
         message: 'Questa consegna è stata chiusa e non può essere modificata'
       });
     }
+    // The semester must exist before a quota teatro is spread over it
+    if (partecipanti.some(p => p.teatroVersato > 0)) ensureSemestre(db, toLocalDateString());
+
     const transaction = db.transaction(() => {
       let consegna = existingConsegna;
 
@@ -178,6 +184,21 @@ router.post('/', (req, res) => {
         WHERE consegna_id = ? AND partecipante_id = ?
       `);
 
+      // The quota teatro paid in the movimento replaces the one already in this consegna; returns the old one
+      const salvaQuotaTeatro = (consegnaId, dataConsegna, userId, importo) => {
+        const prima = quotePerPersona(db, consegnaId).find(q => q.user_id === userId)?.importo || 0;
+        const ora = roundToCents(importo);
+        if (prima === ora) return prima;
+        db.prepare('DELETE FROM teatro_pagamenti WHERE consegna_id = ? AND user_id = ?').run(consegnaId, userId);
+        const audit = { userId: req.session.userId, timestamp };
+        const result = ora > 0
+          ? registraPagamento(db, { userId, importo: ora, data: dataConsegna, consegnaId }, audit)
+          : { changes: [`quota teatro tolta (era ${prima} €)`] };
+        logActivity({ eventType: 'teatro_pagamento', targetUserId: userId, actorUserId: req.session.userId,
+                      details: result.changes.join(', '), consegnaId, createdAt: timestamp });
+        return prima;
+      };
+
       let movimentiCreated = 0;
       let movimentiUpdated = 0;
 
@@ -189,6 +210,12 @@ router.post('/', (req, res) => {
         const existingMovimento = db.prepare(`
           SELECT * FROM movimenti WHERE consegna_id = ? AND partecipante_id = ?
         `).get(consegna.id, partecipante.id);
+
+        const quotaPrima = p.teatroVersato != null ? salvaQuotaTeatro(consegna.id, data, partecipante.id, p.teatroVersato) : 0;
+
+        // Paid (or corrected) only the quota teatro: no movimento at zero (the day's list shows them as teatroExtra)
+        const nothingBought = !existingMovimento && !p.note && !MOVIMENTO_FIELDS.some(f => p[f]);
+        if (nothingBought && (p.teatroVersato > 0 || quotaPrima > 0)) return;
 
         const cents = v => roundToCents(v || 0);
         const contoProduttore = cents(p.contoProduttore);
