@@ -120,6 +120,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     const [{ data }, { url }] = await Promise.all([API.get('/api/consegna/apertura'), API.get('/api/altobelli/foglio')]);
     document.getElementById('alt-url').value = url;
+    if (!url) document.querySelector('.alt-foglio').open = true;
     setDateField('alt-data', data);
     caricaConfronto();
   } catch (error) {

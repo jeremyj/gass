@@ -44,6 +44,12 @@ describe('/api/altobelli', () => {
     expect((await userAgent.put('/api/altobelli/nomi').send({ nome: 'Anna', userId: anna })).status).toBe(403);
   });
 
+  it('refuses the check until a sheet link is set', async () => {
+    const r = await adminAgent.get('/api/altobelli/confronto?data=2026-10-06');
+    expect(r.status).toBe(400);
+    expect((await adminAgent.get('/api/altobelli/foglio')).body.url).toBe('');
+  });
+
   it('stores the sheet link, refusing one without a spreadsheet id', async () => {
     expect((await adminAgent.put('/api/altobelli/foglio').send({ url: 'https://example.com' })).status).toBe(400);
     expect((await adminAgent.put('/api/altobelli/foglio').send({ url: URL_FOGLIO })).status).toBe(200);

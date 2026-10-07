@@ -11,18 +11,19 @@ const A = require('../services/altobelli');
 const router = express.Router();
 router.use(requireAuth, requireAdmin);
 
-// The sheet of the current season; Leonardo opens a new one each year, an admin pastes its link
-const FOGLIO_INIZIALE = 'https://docs.google.com/spreadsheets/d/<redacted>/edit';
+// Leonardo opens a new sheet each year and an admin pastes its link. Never hardcode it: the sheet
+// is open to anyone with the link and holds members' names and amounts, and this repo is public
 const norm = s => String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
 
 function foglioUrl() {
-  return db.prepare("SELECT value FROM settings WHERE key = 'altobelli_foglio'").get()?.value || FOGLIO_INIZIALE;
+  return db.prepare("SELECT value FROM settings WHERE key = 'altobelli_foglio'").get()?.value || '';
 }
 
 router.get('/confronto', async (req, res) => {
   const { data, gid } = req.query;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(data))) return res.status(400).json({ success: false, error: 'Data non valida' });
   const url = foglioUrl();
+  if (!url) return res.status(400).json({ success: false, error: 'Manca il link del foglio: incollalo in "Link del foglio"' });
   let letto;
   try {
     letto = await A.leggiFoglio(url, data, gid || null);
