@@ -312,6 +312,12 @@ function createDatabase(dbPath) {
       key TEXT PRIMARY KEY,
       value TEXT
     );
+
+    -- Altobelli check: a name written in the producer's sheet (lower-case, trimmed) → the person
+    CREATE TABLE IF NOT EXISTS altobelli_nomi (
+      nome TEXT PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE
+    );
   `);
 
   log('\n--- Quota teatro (v2.19) ---');

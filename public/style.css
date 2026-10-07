@@ -740,3 +740,26 @@ b.th { color: var(--teatro); }
 .nm-row { display: flex; align-items: center; gap: 8px; }
 .name-sel { width: 100%; padding: 5px 8px; font-size: 17px; font-weight: 700; }
 .name-sel.empty { color: var(--debito); border-color: var(--debito); border-style: dashed; }
+
+/* ===== Foglio Altobelli (experimental, admin, desktop) ===== */
+.alt-bar { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin-bottom: 16px; }
+.alt-bar label { display: flex; flex-direction: column; gap: 4px; font-size: 16px; color: var(--salvia); }
+.alt-bar input, .alt-bar select { height: 50px; }
+.alt-bar label.initially-hidden { display: none; }
+.alt-bar .alt-solo { flex-direction: row; align-items: center; gap: 6px; margin-left: auto; }
+.alt-bar .alt-solo input { height: auto; }
+.teatro-kpi .kpi.ko { border-left: 4px solid var(--debito); }
+.teatro-kpi .kpi small + small { margin-top: 2px; }
+.alt-table td { vertical-align: middle; }
+.alt-table th:nth-child(2), .alt-table td:nth-child(2) { text-align: left; white-space: nowrap; }
+.alt-table tr.alt-ko td { background: var(--debito-t); }
+.alt-table tr.alt-wa td { background: #FFF6E5; }
+.alt-esito { font-weight: 800; white-space: nowrap; }
+.alt-esito.ok { color: #2d6a2d; }
+.alt-esito.ko { color: var(--debito); }
+.alt-esito.wa { color: #9a5b00; }
+.alt-assoc { height: 40px; margin-right: 6px; }
+.alt-foglio { margin-top: 24px; }
+.alt-foglio summary { cursor: pointer; font-weight: 700; }
+.alt-foglio form { display: flex; gap: 10px; margin-top: 10px; }
+.alt-foglio input { flex: 1; height: 50px; }

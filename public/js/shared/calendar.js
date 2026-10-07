@@ -142,6 +142,7 @@ function moveDateField(id, delta, event) {
 function pickDateField(id, dateStr) {
   setDateField(id, dateStr);
   closeDateField(id);
+  document.getElementById(id).dispatchEvent(new Event('change'));
 }
 
 document.addEventListener('click', function(event) {

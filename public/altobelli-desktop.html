@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GASS Torpignattara - Foglio Altobelli</title>
+    <link rel="stylesheet" href="style.css?v=90">
+</head>
+<body>
+    <nav class="nav-menu">
+        <span class="brand">GASS Torpignattara</span>
+        <ul>
+            <li><a href="/consegna">Consegna</a></li>
+            <li><a href="/debiti">Saldi</a></li>
+            <li><a href="/storico">Storico</a></li>
+            <li><a href="/turni">Turni</a></li>
+            <li id="nav-teatro" class="initially-hidden"><a href="/teatro">Teatro</a></li>
+            <li id="nav-logs" class="initially-hidden"><a href="/logs">Attività</a></li>
+            <li id="nav-altobelli" class="initially-hidden"><a href="/altobelli" class="active">Altobelli (prova)</a></li>
+        </ul>
+        <div class="nav-user">
+            <span id="user-display"></span>
+            <button type="button" class="link-btn" onclick="handleLogout()">Esci</button>
+        </div>
+    </nav>
+    <header class="stag">
+        <div class="stag-art" aria-hidden="true"><svg class="stag-ill"><use href="#ill-zucca"/></svg></div>
+        <div class="stag-when">Prova · solo admin</div>
+        <h1>Foglio Altobelli</h1>
+    </header>
+
+    <main class="container">
+        <div id="status" class="status" role="status"></div>
+        <p class="hint hint-top">Confronta la scheda della consegna nel foglio di Altobelli con i conti scritti in GASS. Gli effettivi si sommano riga per riga: il totale scritto in fondo al foglio a volte non prende tutte le righe.</p>
+
+        <form class="alt-bar" onsubmit="event.preventDefault(); caricaConfronto();">
+            <label>Consegna <input type="text" id="alt-data" placeholder="gg/mm/aaaa"></label>
+            <label id="alt-scheda-wrap" class="initially-hidden">Scheda <select id="alt-scheda" onchange="caricaConfronto()"></select></label>
+            <button type="submit" class="btn btn-line">Aggiorna</button>
+            <label class="alt-solo"><input type="checkbox" id="alt-solo" onchange="renderConfronto()"> Mostra solo le differenze</label>
+        </form>
+
+        <div id="alt-errore" class="cassa-warning initially-hidden" role="alert"></div>
+
+        <div id="alt-risultato" class="initially-hidden">
+            <div class="teatro-kpi alt-kpi">
+                <div class="kpi"><small>Σ effettivi (riga per riga)</small><b id="kpi-effettivi">–</b><small id="kpi-nonsegnati"></small></div>
+                <div class="kpi" id="kpi-scritto-box"><small>Totale scritto nel foglio</small><b id="kpi-scritto">–</b><small id="kpi-scritto-nota"></small></div>
+                <div class="kpi"><small>Σ conti in GASS</small><b id="kpi-conti">–</b><small id="kpi-conti-nota"></small></div>
+            </div>
+            <table class="t alt-table">
+                <thead><tr><th>Nome nel foglio</th><th>Persona in GASS</th><th>Effettivo foglio</th><th>Conto in GASS</th><th>Esito</th></tr></thead>
+                <tbody id="alt-righe"></tbody>
+            </table>
+        </div>
+
+        <details class="alt-foglio">
+            <summary>Link del foglio</summary>
+            <form onsubmit="event.preventDefault(); salvaFoglio();">
+                <input type="text" id="alt-url" aria-label="Link del foglio Altobelli">
+                <button type="submit" class="btn btn-line">Salva link</button>
+            </form>
+            <p class="hint">Ogni anno Leonardo apre un foglio nuovo: incolla qui il suo link. Il foglio deve restare condiviso con chiunque abbia il link.</p>
+        </details>
+    </main>
+
+    <footer class="app-footer">
+        <span id="app-version"></span>
+    </footer>
+
+    <script src="js/shared/utils.js?v=43"></script>
+    <script src="js/shared/season.js?v=33"></script>
+    <script src="js/shared/calendar.js?v=37"></script>
+    <script src="js/shared/api-client.js"></script>
+    <script src="js/shared/auth.js?v=34"></script>
+    <script src="js/shared/version.js"></script>
+    <script src="js/altobelli-desktop.js?v=2"></script>
+</body>
+</html>

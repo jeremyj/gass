@@ -139,8 +139,8 @@ async function checkSession() {
         }
       }
 
-      // Admin-only nav items (Teatro, Attività)
-      document.querySelectorAll('#nav-teatro, #nav-logs').forEach(li => li.classList.toggle('initially-hidden', !data.user.isAdmin));
+      // Admin-only nav items (Teatro, Attività, Altobelli)
+      document.querySelectorAll('#nav-teatro, #nav-logs, #nav-altobelli').forEach(li => li.classList.toggle('initially-hidden', !data.user.isAdmin));
 
       return data.user;
     } else {

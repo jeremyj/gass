@@ -57,6 +57,12 @@ router.get('/teatro', (req, res) => {
   res.sendFile(path.join(PUBLIC, 'teatro-desktop.html'));
 });
 
+// Experimental Altobelli check: desktop only, admin restriction enforced at API level
+router.get('/altobelli', (req, res) => {
+  if (shouldUseMobileView(req)) return res.redirect('/consegna');
+  res.sendFile(path.join(PUBLIC, 'altobelli-desktop.html'));
+});
+
 router.get('/cambia-password', (req, res) => {
   if (!req.session.requirePasswordChange) return res.redirect('/consegna');
   res.sendFile(path.join(PUBLIC, 'change-password-oidc.html'));

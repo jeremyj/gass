@@ -163,3 +163,5 @@ This supersedes the earlier answers given before the mockup (Teatro section open
 ## Decided during execution
 
 - **2026-10-07, phase 2 — someone who pays only the quota teatro** (conto 0, versato 0): the card's Salva saves only the payment, no movimento at zero; the day's list shows them as before ("quota teatro 15", "solo teatro"), now clickable to correct the quota. User choice over "movimento a zero + quota".
+- **2026-10-07, phase 3 — how the sheet's tabs are listed (B2)**: `htmlview` lists only visible tabs and Leonardo hides every past one, so 29/9 and earlier were unreachable. User chose the `/edit` page bootstrap (name → gid, all 26 tabs verified) over the xlsx export and over "visible tab only"; CSV by gid unchanged.
+- **2026-10-07, phase 3 — 29/9 figures**: the real row sum of the 29/9 effettivi is **357,10** (the plan said 357,20, which is the GASS Σ conti): a 0,10 gap between sheet and GASS on 29/9, not traced yet.

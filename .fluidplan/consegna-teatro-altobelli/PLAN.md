@@ -10,7 +10,7 @@ Three changes decided with the mockup `design/mockups/consegna-teatro-foglio.htm
 
 1. **Cassa** — the Conto produttore field must say to enter the *importo effettivo* of the Altobelli Google Sheet; rounding of the Altobelli payment goes into the uscite di cassa, which must accept a **sign** (esce / entra), set by tapping a badge or typing +/−. Mockup option **C1**.
 2. **Quota teatro** — the separate box (open, type, "Registra quota") is replaced by layout **A1**: in the same card a *Fresco* block and a *Teatro* block, each with its own versato, one Salva, and a summary of where the money goes physically (cassa vs bussolotto).
-3. **Altobelli check** — compare the day's tab of the sheet "Selvaggio Altobelli 26" (shared with anyone with the link) with the conti in GASS: sum of the **effettivi** row by row (the sheet's `=SUM` sometimes misses rows: 29/9 showed 319,20 instead of 357,20), handle effettivi not filled in. **Admin only, desktop only, experimental, separate tab.**
+3. **Altobelli check** — compare the day's tab of the sheet "Selvaggio Altobelli 26" (shared with anyone with the link) with the conti in GASS: sum of the **effettivi** row by row (the sheet's `=SUM` sometimes misses rows: 29/9 showed 319,20 instead of 357,10 — corrected during execution: GASS has 357,20), handle effettivi not filled in. **Admin only, desktop only, experimental, separate tab.**
 
 This supersedes the earlier answers given before the mockup (Teatro section open to everyone, only a link in the consegna, payments kept when a consegna is deleted): page 2 asks again where they still apply. App strings stay Italian; this plan is in English because fluidplan supports en/fr only. Every UI change ships on mobile **and** desktop (project rule), except the Altobelli check (desktop by request).
 
@@ -125,66 +125,66 @@ This supersedes the earlier answers given before the mockup (Teatro section open
 
 ## Phase 3 — Altobelli check (experimental) (≈ 1.5 d)
 
-### [ ] 3.1 Write the sheet reader service · B2
+### [x] 3.1 Write the sheet reader service · B2
 
 - Decision: **B2** How GASS reads the sheet — htmlview → gid → CSV [critical]
 - Files: `server/services/altobelli.js` (create), `test/unit/altobelli.test.js` (create)
 - Do: Create `server/services/altobelli.js`: pure `parseTabs(html)` → `[{name, gid}]`, `findTab(tabs, date)` (see B5), `parseFoglio(csv)` → `{righe: [{nome, approssimativo, effettivo|null}], totaleScritto}`, `confronta(righe, movimenti, nomi)` → rows with esito `uguale|diverso|manca_app|manca_foglio|non_segnato|da_associare` + KPIs; and `leggiFoglio(url, date)` using global `fetch` (Node 20) with a 10 s timeout. Unit tests with fixtures cut from the real '29 settembre' and '6 ottobre' CSV (names replaced).
 - Acceptance criteria:
-  - [ ] '29 settembre' fixture: Σ effettivi 357,20 while totaleScritto 319,2
-  - [ ] An empty effettivo yields esito non_segnato and is excluded from Σ
-  - [ ] Unknown tab → error, never another tab
+  - [x] '29 settembre' fixture: Σ effettivi 357,10 while totaleScritto 319,2 (corrected: was written 357,20)
+  - [x] An empty effettivo yields esito non_segnato and is excluded from Σ
+  - [x] Unknown tab → error, never another tab
 - Verify: `npm run test:unit -- altobelli`
 
-### [ ] 3.2 Create the altobelli_nomi table · B3
+### [x] 3.2 Create the altobelli_nomi table · B3
 
 - Decision: **B3** Mapping sheet names to people
 - Files: `server/config/database.js` (modify)
 - Do: Add `CREATE TABLE IF NOT EXISTS altobelli_nomi (…)` in `server/config/database.js` next to `settings`. `deleteUser` in `server/services/users.js` is unaffected (CASCADE).
 - Acceptance criteria:
-  - [ ] Fresh and existing DBs get the table at startup
+  - [x] Fresh and existing DBs get the table at startup
 - Verify: `npm test`
 
-### [ ] 3.3 Create the /altobelli desktop page · B1
+### [x] 3.3 Create the /altobelli desktop page · B1
 
 - Decision: **B1** Where the check lives — Separate page /altobelli
 - Files: `public/altobelli-desktop.html` (create), `public/js/altobelli-desktop.js` (create), `server/routes/pages.js` (modify), `public/js/shared/auth.js` (modify), `public/consegna-desktop.html` (modify), `public/debiti-desktop.html` (modify), `public/storico-desktop.html` (modify), `public/turni-desktop.html` (modify), `public/logs-desktop.html` (modify), `public/teatro-desktop.html` (modify)
 - Do: Create `public/altobelli-desktop.html` and `public/js/altobelli-desktop.js` (script order of CLAUDE.md, date field via `initDateField`), route `/altobelli` in `server/routes/pages.js` (desktop; mobile redirects to /consegna), nav `<li id="nav-altobelli" class="initially-hidden">` in every desktop page toggled with `#nav-logs` in `public/js/shared/auth.js`. Row states and colours as in `design/mockups/consegna-teatro-foglio.html` section B.
 - Acceptance criteria:
-  - [ ] Non-admins see no nav item and get 403 from the API
-  - [ ] Table shows the 6 row states of the mockup
+  - [x] Non-admins see no nav item and get 403 from the API
+  - [x] Table shows the 6 row states of the mockup
 - Verify: `npm test`
 - After: 3.1, 3.2
 
-### [ ] 3.4 Expose GET /api/altobelli/confronto · B2
+### [x] 3.4 Expose GET /api/altobelli/confronto · B2
 
 - Decision: **B2** How GASS reads the sheet — htmlview → gid → CSV [critical]
 - Files: `server/routes/altobelli.js` (create), `server/app.js` (modify), `test/integration/altobelli.test.js` (create)
 - Do: Create `server/routes/altobelli.js` (`requireAuth` + `requireAdmin`): `GET /confronto?data=yyyy-mm-dd` → reader + movimenti of that consegna (conto_produttore, pagato_produttore, uscite); `PUT /foglio {url}`; `PUT /nomi {nome, userId|null}`. Mount in `server/app.js` before the pages router.
 - Acceptance criteria:
-  - [ ] Non-admin → 403
-  - [ ] fetch failure → 502 with an Italian message
+  - [x] Non-admin → 403
+  - [x] fetch failure → 502 with an Italian message
 - Verify: `npm run test:integration -- altobelli`
 - After: 3.1, 3.2
 
-### [ ] 3.5 Store the sheet URL in settings · B4
+### [x] 3.5 Store the sheet URL in settings · B4
 
 - Decision: **B4** Sheet link setting
 - Files: `server/routes/altobelli.js` (modify)
 - Do: Read/write key `altobelli_foglio` through `server/routes/altobelli.js`; extract the id with `/spreadsheets/d/([\w-]+)/`. Seed it on first read if missing.
 - Acceptance criteria:
-  - [ ] An URL without a spreadsheet id is refused (400)
+  - [x] An URL without a spreadsheet id is refused (400)
 - Verify: `npm run test:integration -- altobelli`
 - After: 3.4
 
-### [ ] 3.6 Match tabs by date with a selector for duplicates · B5
+### [x] 3.6 Match tabs by date with a selector for duplicates · B5
 
 - Decision: **B5** Finding the tab of a consegna
 - Files: `server/services/altobelli.js` (modify)
 - Do: Implement `findTab(tabs, date)` in `server/services/altobelli.js` returning all candidates; the page shows a select when > 1 and passes `gid` back to the API.
 - Acceptance criteria:
-  - [ ] '2026-06-23' returns both '23 giugno' and '23a  giugno'
-  - [ ] '2026-04-08' matches 'Mercoledì 8 aprile'
+  - [x] '2026-06-23' returns both '23 giugno' and '23a  giugno'
+  - [x] '2026-04-08' matches 'Mercoledì 8 aprile'
 - Verify: `npm run test:unit -- altobelli`
 - After: 3.1
 
@@ -205,7 +205,7 @@ This supersedes the earlier answers given before the mockup (Teatro section open
 - Files: `package.json` (modify)
 - Do: Local server, chrome-devtools: mobile 390 px (force_mobile cookie) and desktop: save a movimento with fresco + teatro, reopen it, uscite with typed − and +, /altobelli on the real sheet for 29/9 and 6/10. Then bump `package.json` to 2.28.0 and commit `chore(release): 2.28.0`.
 - Acceptance criteria:
-  - [ ] 29/9 on /altobelli shows Σ effettivi 357,20 vs totale scritto 319,2
+  - [ ] 29/9 on /altobelli shows Σ effettivi 357,10 vs totale scritto 319,2 (corrected: was written 357,20)
 - Verify: `npm test`
 - After: 4.1
 
