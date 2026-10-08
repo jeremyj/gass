@@ -47,7 +47,7 @@ const requireAuthForPages = (req, res, next) => {
 router.use(requireAuthForPages);
 
 // Pages with a mobile and a desktop version: <page>.html / <page>-desktop.html
-for (const page of ['consegna', 'storico', 'debiti', 'turni']) {
+for (const page of ['consegna', 'storico', 'debiti', 'turni', 'scontrini']) {
   router.get(`/${page}`, (req, res) => {
     const file = shouldUseMobileView(req) ? `${page}.html` : `${page}-desktop.html`;
     res.sendFile(path.join(PUBLIC, file));

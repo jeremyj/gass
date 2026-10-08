@@ -197,6 +197,12 @@ function storicoDateLink(dateStr, label) {
   return `<a class="row-link" href="${consegnaHref(dateStr)}" onclick="event.stopPropagation()">${label}</a>`;
 }
 
+// Storico: link to the consegna's receipt gallery (a real link, not the row shortcut)
+function galleriaLink(c) {
+  const n = c.num_scontrini;
+  return `<a class="link" href="/scontrini?data=${c.data}" onclick="event.stopPropagation()"><svg class="ico" aria-hidden="true"><use href="#i-foto"/></svg> ${n} scontrin${n === 1 ? 'o' : 'i'}</a>`;
+}
+
 // Storico instruction: the Consegna page has the detail and, for admins, "Riapri consegna"
 function storicoHint(verbo) {
   return `<p class="hint hint-top">${verbo} una consegna per vederne il dettaglio${isAdmin() ? ' o riaprirla' : ''}.</p>`;

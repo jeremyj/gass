@@ -45,6 +45,7 @@ function consegnaRowHtml(c) {
       <span class="nm">${storicoDateLink(c.data, dayLabel(c.data))}</span>
       <span class="sub"><span class="stato-label ${stato}">${stato}</span>, ${persone}${c.teatro ? `, quota teatro <b>${formatNumber(c.teatro)}</b>` : ''}</span>
       <span class="esito${c.lasciato_in_cassa < 0 ? ' db' : ''}"><b>${formatCassa(c.lasciato_in_cassa)} €</b><small>in cassa</small></span>
+      ${c.num_scontrini ? `<span class="sub">${galleriaLink(c)}</span>` : ''}
     </li>
   `;
 }

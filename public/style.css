@@ -593,6 +593,44 @@ b.th { color: var(--teatro); }
 .login-error-message { display: none; margin-bottom: 16px; padding: 10px 12px; border-radius: 8px; background: var(--debito-t); color: var(--debito); font-weight: 700; }
 #oidc-section { margin-bottom: 8px; }
 
+/* ===== SCONTRINI (shared/scontrini.js): photos in the card, list badge, gallery, lightbox ===== */
+
+.scontrini-box { border-radius: 10px; }
+.scontrini-box .blocco-titolo { display: flex; margin-bottom: 8px; }
+.scontrini-box.drag { outline: 2px dashed var(--s-deep); outline-offset: 4px; background: var(--s-tint); }
+.sc-strip { display: flex; flex-wrap: wrap; gap: 10px; }
+.sc-thumb { position: relative; width: 78px; height: 104px; border-radius: 8px; overflow: hidden; border: 1px solid var(--riga); background: var(--carta); }
+.sc-thumb img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; display: block; }
+.sc-thumb.up img { opacity: .45; }
+.sc-up { position: absolute; inset: auto 0 8px; text-align: center; font-size: 16px; font-weight: 700; color: var(--s-deep); z-index: 1; }
+.sc-x { position: absolute; top: 4px; right: 4px; width: 28px; height: 28px; border-radius: 50%; border: 0; background: rgba(30,36,32,.78); color: #fff; font-size: 18px; line-height: 1; cursor: pointer; }
+.sc-add { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 78px; height: 104px; border: 1.5px dashed var(--s-deep); border-radius: 8px; color: var(--s-deep); background: var(--carta); font-size: 16px; font-weight: 700; line-height: 1.1; text-align: center; cursor: pointer; }
+.sc-add input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.sc-add:focus-within { border-style: solid; }
+.sc-add svg { width: 28px; height: 28px; }
+.sc-hint { margin: 6px 0 0; font-size: 16px; color: var(--salvia); }
+.sc-n { display: inline-flex; align-items: center; gap: 3px; margin-left: 8px; padding: 0 6px; border-radius: 6px; background: var(--s-tint); color: var(--s-deep); font-size: 16px; font-weight: 700; vertical-align: 1px; }
+.sc-n svg { width: 16px; height: 16px; }
+.ico { width: 18px; height: 18px; vertical-align: -3px; }
+.scontrini-link { margin: 10px 2px 0; }
+.scontrini-link:empty { display: none; }
+
+.galleria-persona { margin: 0 0 18px; }
+.galleria-persona h2 { display: flex; justify-content: space-between; align-items: baseline; margin: 0 2px 8px; font-family: var(--sans); font-size: 18px; }
+.galleria-persona h2 small { font-weight: 500; color: var(--salvia); font-size: 16px; }
+.galleria-griglia { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+.galleria-griglia button { padding: 0; border: 1px solid var(--riga); border-radius: 8px; overflow: hidden; background: var(--carta); aspect-ratio: 3 / 4; cursor: zoom-in; }
+.galleria-griglia img { width: 100%; height: 100%; object-fit: cover; display: block; }
+@media (min-width: 769px) { .galleria-griglia { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; } }
+
+.lightbox { position: fixed; inset: 0; z-index: 1500; display: flex; flex-direction: column; background: #111512; color: #fff; }
+.lb-top, .lb-nav { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; font-size: 17px; }
+.lb-nav span { color: #dfe5df; text-align: center; }
+.lb-stage { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 0 8px; }
+.lb-stage img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.lb-btn { flex: none; padding: 6px 14px; border: 1.5px solid rgba(255,255,255,.5); border-radius: 8px; background: transparent; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+.lb-btn:disabled { opacity: .3; cursor: default; }
+
 /* ===== MOBILE (≤ 768px): the entry card becomes a full screen ===== */
 
 @media (max-width: 768px) {

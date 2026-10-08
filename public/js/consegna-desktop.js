@@ -18,7 +18,7 @@ async function checkDateData() {
 
   try {
     // Independent requests: run them together
-    const [, result] = await Promise.all([loadData(), API.get(`/api/consegna/${dateValue}`)]);
+    const [, result] = await Promise.all([loadData(), API.get(`/api/consegna/${dateValue}`), loadScontrini(dateValue)]);
 
     if (result.found) {
       loadExistingConsegna(result);
@@ -104,8 +104,10 @@ function cell(value, cls = '') {
 function renderMovimentiGiorno() {
   const container = document.getElementById('movimenti-giorno');
   const movimenti = existingConsegnaMovimenti || [];
+  const soloFoto = soloScontrini(movimenti, teatroExtra);
+  renderScontriniLink();
 
-  if (movimenti.length === 0 && teatroExtra.length === 0) {
+  if (movimenti.length === 0 && teatroExtra.length === 0 && soloFoto.length === 0) {
     container.innerHTML = '';
     return;
   }
@@ -113,7 +115,7 @@ function renderMovimentiGiorno() {
   const sum = fn => roundToCents(movimenti.reduce((acc, m) => acc + (fn(m) || 0), 0));
   const rows = movimenti.map(m => `
       <tr class="clickable" onclick="openMovimento(${m.partecipante_id})">
-        <td class="nm">${escapeHtml(m.nome)}</td>
+        <td class="nm">${escapeHtml(m.nome)}${scontriniBadge(m.partecipante_id)}</td>
         ${cell(m.conto_produttore)}
         ${cell(m.importo_saldato)}
         ${m.credito_lasciato ? `<td class="cr">+${formatNumber(m.credito_lasciato)}</td>` : '<td class="mute">–</td>'}
@@ -125,10 +127,16 @@ function renderMovimentiGiorno() {
       </tr>
     `).join('') + teatroExtra.map(t => `
       <tr class="clickable" onclick="openMovimento(${t.user_id})">
-        <td class="nm">${escapeHtml(t.nome)}</td>
+        <td class="nm">${escapeHtml(t.nome)}${scontriniBadge(t.user_id)}</td>
         ${'<td class="mute">–</td>'.repeat(6)}
         ${cell(t.importo)}
         <td class="nt"></td>
+      </tr>
+    `).join('') + soloFoto.map(p => `
+      <tr class="clickable" onclick="openMovimento(${p.id})">
+        <td class="nm">${escapeHtml(p.nome)}${scontriniBadge(p.id)}</td>
+        ${'<td class="mute">–</td>'.repeat(7)}
+        <td class="nt">solo scontrini</td>
       </tr>
     `).join('');
 

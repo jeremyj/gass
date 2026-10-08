@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GASS Torpignattara - Attività</title>
+    <title>GASS Torpignattara - Scontrini</title>
     <link rel="stylesheet" href="style.css?v=91">
 </head>
 <body>
@@ -12,10 +12,10 @@
         <ul>
             <li><a href="/consegna">Consegna</a></li>
             <li><a href="/debiti">Saldi</a></li>
-            <li><a href="/storico">Storico</a></li>
+            <li><a href="/storico" class="active">Storico</a></li>
             <li><a href="/turni">Turni</a></li>
             <li id="nav-teatro" class="initially-hidden"><a href="/teatro">Teatro</a></li>
-            <li id="nav-logs"><a href="/logs" class="active">Attività</a></li>
+            <li id="nav-logs" class="initially-hidden"><a href="/logs">Attività</a></li>
             <li id="nav-altobelli" class="initially-hidden"><a href="/altobelli">Altobelli</a></li>
         </ul>
         <div class="nav-user">
@@ -25,14 +25,14 @@
     </nav>
     <header class="stag">
         <div class="stag-art" aria-hidden="true"><svg class="stag-ill"><use href="#ill-zucca"/></svg></div>
-        <div class="stag-when">Registro</div>
-        <h1>Attività recenti</h1>
+        <div id="header-when" class="stag-when" data-label="Scontrini della consegna di" data-today="Scontrini della consegna di oggi">Scontrini della consegna</div>
+        <h1 id="header-date-display"></h1>
     </header>
 
     <main class="container">
         <div id="status" class="status" role="status"></div>
-        <div id="logs-container"></div>
-        <div id="pagination" class="pagination"></div>
+        <p id="galleria-meta" class="hint hint-top"></p>
+        <div id="galleria"></div>
     </main>
 
     <footer class="app-footer">
@@ -41,9 +41,11 @@
 
     <script src="js/shared/utils.js?v=44"></script>
     <script src="js/shared/season.js?v=34"></script>
+    <script src="js/shared/calendar.js?v=37"></script>
     <script src="js/shared/api-client.js"></script>
     <script src="js/shared/auth.js?v=34"></script>
     <script src="js/shared/version.js"></script>
-    <script src="js/logs-desktop.js?v=34"></script>
+    <script src="js/shared/scontrini.js?v=1"></script>
+    <script src="js/galleria-scontrini.js?v=1"></script>
 </body>
 </html>

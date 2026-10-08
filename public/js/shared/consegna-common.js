@@ -580,6 +580,7 @@ function renderParticipant(id, buttonsHtml) {
   }
   syncDebitoCreditoVisibility(id);
   loadTeatroBlock(id);
+  renderScontriniBox(id);
   return true;
 }
 
@@ -668,6 +669,8 @@ function buildParticipantCardHTML(id, nome, saldo, haCredito, haDebito, buttonsH
         <label for="note_${id}">Note</label>
         <input type="text" id="note_${id}" placeholder="Aggiungi una nota">
       </div>
+
+      <div class="scontrini-box" id="scontrini_${id}"></div>
 
       <div class="teatro-box" id="teatro_${id}"></div>
       <p class="riepilogo-soldi initially-hidden" id="soldi_${id}"></p>

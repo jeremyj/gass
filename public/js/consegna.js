@@ -23,7 +23,7 @@ async function checkDateData() {
 
   try {
     // Independent requests: run them together
-    const [, result] = await Promise.all([loadData(), API.get(`/api/consegna/${dateValue}`)]);
+    const [, result] = await Promise.all([loadData(), API.get(`/api/consegna/${dateValue}`), loadScontrini(dateValue)]);
 
     if (result.found) {
       loadExistingConsegna(result);
@@ -226,7 +226,7 @@ function renderMovimentiGiorno() {
     return `
       <li onclick="openMovimento(${m.partecipante_id})">
         <span class="nm">${escapeHtml(m.nome)}</span>
-        <span class="sub">${movimentoDetails(m)}</span>
+        <span class="sub">${movimentoDetails(m)}${scontriniBadge(m.partecipante_id)}</span>
         <span class="esito ${esito.cls}"><b>${esito.amount}</b><small>${esito.word}</small></span>
         ${m.note ? `<span class="nota">${escapeHtml(m.note)}</span>` : ''}
       </li>
@@ -234,10 +234,17 @@ function renderMovimentiGiorno() {
   }).join('') + teatroExtra.map(t => `
       <li onclick="openMovimento(${t.user_id})">
         <span class="nm">${escapeHtml(t.nome)}</span>
-        <span class="sub">quota teatro <b>${formatNumber(t.importo)}</b></span>
+        <span class="sub">quota teatro <b>${formatNumber(t.importo)}</b>${scontriniBadge(t.user_id)}</span>
         <span class="esito"><b>–</b><small>solo teatro</small></span>
       </li>
+  `).join('') + soloScontrini(movimenti, teatroExtra).map(p => `
+      <li onclick="openMovimento(${p.id})">
+        <span class="nm">${escapeHtml(p.nome)}</span>
+        <span class="sub">nessun movimento${scontriniBadge(p.id)}</span>
+        <span class="esito"><b>–</b><small>solo scontrini</small></span>
+      </li>
   `).join('');
+  renderScontriniLink();
 }
 
 function participantButtonsHTML(id) {

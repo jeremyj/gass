@@ -32,7 +32,7 @@ function renderStorico(consegne) {
       <thead>
         <tr>
           <th>Consegna</th><th class="left">Stato</th><th>Persone</th><th>Trovato</th><th>Incassato</th>
-          <th>Pagato</th><th>In cassa</th><th>Quota teatro</th>
+          <th>Pagato</th><th>In cassa</th><th>Quota teatro</th><th>Scontrini</th>
         </tr>
       </thead>
       <tbody>${consegne.map(c => `
@@ -45,6 +45,7 @@ function renderStorico(consegne) {
           <td>${formatNumber(c.pagato_produttore)}</td>
           ${cassaCell(c.lasciato_in_cassa, true)}
           ${numCell(c.teatro)}
+          ${c.num_scontrini ? `<td>${galleriaLink(c)}</td>` : '<td class="mute">–</td>'}
         </tr>`).join('')}
       </tbody>
     </table>

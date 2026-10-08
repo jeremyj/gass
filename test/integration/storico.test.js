@@ -68,6 +68,19 @@ describe('GET /api/storico', () => {
     expect(vuota.teatro).toBe(0);
   });
 
+  it('counts the receipt photos per consegna', async () => {
+    const a = createUser(db, { username: 'sa', displayName: 'Sara' });
+    const c = createConsegna(db, { data: '2026-04-07' });
+    createConsegna(db, { data: '2026-04-14' });
+    const foto = db.prepare('INSERT INTO scontrini (consegna_id, partecipante_id, file) VALUES (?, ?, ?)');
+    foto.run(c, a, 'x1');
+    foto.run(c, a, 'x2');
+
+    const [vuota, piena] = (await adminAgent.get('/api/storico')).body.consegne;
+    expect(piena.num_scontrini).toBe(2);
+    expect(vuota.num_scontrini).toBe(0);
+  });
+
   it('no longer serves /dettaglio', async () => {
     const res = await adminAgent.get('/api/storico/dettaglio');
     expect(res.status).toBe(404);

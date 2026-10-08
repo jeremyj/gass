@@ -3,25 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GASS Torpignattara - Storico</title>
+    <title>GASS Torpignattara - Scontrini</title>
     <link rel="stylesheet" href="style.css?v=91">
 </head>
 <body>
     <header class="stag">
         <div class="stag-art" aria-hidden="true"><svg class="stag-ill"><use href="#ill-zucca"/></svg></div>
         <div class="stag-top">
-            <span class="stag-when">Tutte le consegne</span>
+            <span id="header-when" class="stag-when" data-label="Scontrini della consegna di" data-today="Scontrini della consegna di oggi">Scontrini della consegna</span>
             <div class="header-actions">
                 <span id="user-display" class="user-name"></span>
                 <button type="button" onclick="handleLogout()" class="icon-btn" title="Esci" aria-label="Esci"><svg aria-hidden="true"><use href="#i-esci"/></svg></button>
             </div>
         </div>
-        <h1>Storico</h1>
+        <h1 id="header-date-display"></h1>
     </header>
 
     <main class="container">
         <div id="status" class="status" role="status"></div>
-        <div id="storico-list" class="storico-list"></div>
+        <p id="galleria-meta" class="hint hint-top"></p>
+        <div id="galleria"></div>
     </main>
 
     <nav class="bottom-nav">
@@ -37,9 +38,11 @@
 
     <script src="js/shared/utils.js?v=44"></script>
     <script src="js/shared/season.js?v=34"></script>
+    <script src="js/shared/calendar.js?v=37"></script>
     <script src="js/shared/api-client.js"></script>
     <script src="js/shared/auth.js?v=34"></script>
     <script src="js/shared/version.js"></script>
-    <script src="js/storico.js?v=38"></script>
+    <script src="js/shared/scontrini.js?v=1"></script>
+    <script src="js/galleria-scontrini.js?v=1"></script>
 </body>
 </html>
