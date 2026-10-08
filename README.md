@@ -23,6 +23,7 @@ GASS Pagamenti è un'applicazione web completa per la gestione di:
 ## Documentazione
 
 - **[Manuale Utente](docs/MANUALE_UTENTE.md)** - Guida completa per utilizzatori
+- **[Manuale partecipanti](docs/MANUALE_PARTECIPANTI.md)** e **[Manuale amministratori](docs/MANUALE_AMMINISTRATORI.md)** - Versioni brevi in italiano semplificato (ASD-STE100)
 - **[Documentazione Tecnica](docs/TECHNICAL.md)** - Riferimento per sviluppatori
 - **[Guida Deploy](DEPLOYMENT.md)** - Istruzioni per installazione e configurazione
 
