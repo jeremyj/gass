@@ -75,7 +75,7 @@ Per correggere una spesa, premi la riga del partecipante nell'elenco **Chi ha ri
 Nella scheda del partecipante, sotto le **Note**, c'è il riquadro **Scontrini**.
 
 1. Apri la scheda del partecipante.
-2. Premi **Fotografa** (telefono) o **Allega scontrino** (computer). Sul telefono puoi scattare una foto o sceglierne una dalla galleria. Sul computer puoi anche trascinare l'immagine nel riquadro.
+2. Premi **Fotografa** (telefono) o **Allega scontrino** (computer). Sul telefono si apre un menu: scegli **Foto** per scattare una foto, o **File** per scegliere foto che hai già. Sul computer puoi anche trascinare l'immagine nel riquadro.
 3. Aspetta che la scritta "carico…" sparisca.
 
 GASS salva la foto subito, anche se non premi **Salva movimento**. Puoi allegare al massimo 3 foto per partecipante in una consegna. Premi una foto per vederla grande.

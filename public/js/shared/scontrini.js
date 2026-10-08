@@ -49,6 +49,18 @@ async function riduciFoto(file) {
 
 // ----- Block in the participant card -----
 
+// One tile. The PDF in accept is on purpose: with image types only, Android Chrome opens the
+// system photo picker, which has no camera; any other type brings its Foto/File chooser
+// (tested on the user's phone 2026-10-08). Non-image files are skipped in caricaScontrini.
+function addTile(id) {
+  return `
+    <label class="sc-add">
+      <input type="file" accept="image/*,application/pdf" multiple onchange="caricaScontrini(${id}, this)">
+      <svg aria-hidden="true"><use href="#i-foto"/></svg>
+      <span>${conMouse() ? 'Allega scontrino' : 'Fotografa'}</span>
+    </label>`;
+}
+
 function renderScontriniBox(id) {
   const box = document.getElementById(`scontrini_${id}`);
   if (!box) return;
@@ -65,12 +77,7 @@ function renderScontriniBox(id) {
           <img src="${fotoUrl(s, true)}" alt="Scontrino ${i + 1}" onclick="openLightbox(scontriniDi(${id}), ${i})">
           ${!chiusa && mio(s) ? `<button type="button" class="sc-x" aria-label="Togli la foto" onclick="togliScontrino(${s.id}, ${id})">×</button>` : ''}
         </span>`).join('')}
-      ${tile ? `
-        <label class="sc-add">
-          <input type="file" accept="image/*" multiple onchange="caricaScontrini(${id}, this)">
-          <svg aria-hidden="true"><use href="#i-foto"/></svg>
-          <span>${conMouse() ? 'Allega scontrino' : 'Fotografa'}</span>
-        </label>` : ''}
+      ${tile ? addTile(id) : ''}
     </div>
     ${tile && conMouse() ? '<p class="sc-hint">Oppure trascina qui l\'immagine.</p>' : ''}
     ${!tile && !chiusa ? `<p class="sc-hint">Massimo ${scontriniMax} foto per persona.</p>` : ''}
@@ -89,8 +96,10 @@ function renderScontriniBox(id) {
 async function caricaScontrini(id, source) {
   const date = getSelectedDate();
   const liberi = scontriniMax - scontriniDi(id).length;
-  const files = [...(source.files || [])].filter(f => f.type.startsWith('image/')).slice(0, liberi);
-  if (source.files?.length > liberi) showStatus(`Massimo ${scontriniMax} foto per persona: caricate solo ${liberi}`, 'error');
+  const immagini = [...(source.files || [])].filter(f => f.type.startsWith('image/'));
+  const files = immagini.slice(0, liberi);
+  if (immagini.length < (source.files?.length || 0)) showStatus('Solo foto: gli altri file non sono stati caricati', 'error');
+  else if (immagini.length > liberi) showStatus(`Massimo ${scontriniMax} foto per persona: caricate solo ${liberi}`, 'error');
   const strip = document.querySelector(`#scontrini_${id} .sc-strip`);
 
   for (const file of files) {

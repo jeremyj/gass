@@ -219,3 +219,4 @@ Mockup: `design/mockups/scontrini.html` (sections A mobile card, B Storico → g
 
 - 3.1: one gallery script `public/js/galleria-scontrini.js` serves both `scontrini.html` and `scontrini-desktop.html` (no layout logic differs), instead of two scripts.
 - Manual checks done on a scratch copy (fresh DB, port 3100) with Playwright: mobile upload of 2 + 2 photos (limit 3 enforced), 3000×4000 → 1200×1600 / 34 KB, thumbnail 240×320; lightbox, list badge, Storico link, gallery; desktop drop zone, Storico column, lightbox arrows, × with confirmation.
+- 2.29.1 (D7): on the user's Android phone `accept="image/*"` opened only the photo picker, no camera. Tested variants on the phone: only a non-image type in `accept` (`image/*,application/pdf`) or no `accept` brings Chrome's Foto/File menu, where Foto opens the camera. Kept one tile with `image/*,application/pdf`; non-images are skipped.
