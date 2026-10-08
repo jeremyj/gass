@@ -21,9 +21,18 @@ Non puoi dare o togliere il ruolo di amministratore da GASS. Per chi entra con A
 
 Se il resoconto è diverso, GASS lo manda di nuovo con l'indicazione "(corretto)".
 
+### Togliere la foto di uno scontrino
+
+Un amministratore può togliere qualsiasi foto, anche se non l'ha scattata. La consegna deve essere aperta: se è chiusa, riaprila prima.
+
+1. Apri la scheda del partecipante nella consegna.
+2. Premi **×** sulla foto e conferma.
+
+Se la prima foto del giorno arriva prima di ogni **Salva**, GASS crea la consegna. Se è una consegna sbagliata, annullala come sotto.
+
 ### Annullare una consegna
 
-**AVVERTENZA:** L'annullamento cancella la consegna, le sue spese, le sue uscite di cassa e le sue quote teatro. Non puoi recuperare questi dati.
+**AVVERTENZA:** L'annullamento cancella la consegna, le sue spese, le sue uscite di cassa, le sue quote teatro e le foto dei suoi scontrini. Non puoi recuperare questi dati.
 
 1. Apri la consegna.
 2. Premi **Annulla consegna**.

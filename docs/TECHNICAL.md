@@ -186,6 +186,12 @@ users.teatro_nota TEXT
 nome TEXT PK (lower-case name in the sheet), user_id FK CASCADE
 ```
 
+#### Table: scontrini (v2.29)
+```sql
+id, consegna_id FK CASCADE, partecipante_id FK users CASCADE, file TEXT,  -- file = uuid of <file>.jpg / <file>_t.jpg
+larghezza, altezza, byte, created_by, created_at
+```
+
 #### Indexes
 - `idx_consegne_data` on consegne(data)
 - `idx_movimenti_consegna` on movimenti(consegna_id)
@@ -305,6 +311,31 @@ Admin page `/altobelli` (desktop; mobile redirects to `/consegna`). `server/serv
 4. `confronta` matches sheet names to people through `altobelli_nomi` and compares each effettivo with the person's `conto_produttore`.
 
 Never read a tab with `gviz/tq?sheet=<name>`: an unknown name silently returns another tab. Tests stub `global.fetch` with `test/fixtures/altobelli/`.
+
+## Scontrini (receipt photos)
+
+Photos of a person's receipts in a consegna. Files live on the data volume, the table holds only the row.
+
+| What | Where |
+|------|-------|
+| Files (Docker) | `/app/data/scontrini/<consegna_id>/<file>.jpg` + `<file>_t.jpg` (thumbnail); host `/data/gass/scontrini` |
+| Files (local dev) | `./data-scontrini/` (gitignored, dockerignored); `SCONTRINI_DIR` overrides both |
+| Service | `server/services/scontrini.js` (`MAX_FOTO_PERSONA = 3`, 1.5 MB photo, 100 KB thumbnail) |
+| Routes | `server/routes/scontrini.js`, mounted with its own `express.json({ limit: '3mb' })` before the global 100 KB parser |
+| Client | `public/js/shared/scontrini.js` (resize, card block, lightbox), `public/js/galleria-scontrini.js`, `scontrini.html` / `scontrini-desktop.html` |
+
+```
+GET    /api/scontrini?data=yyyy-mm-dd   photos of that consegna (+ consegnaId, chiusa, max)
+POST   /api/scontrini                   { data, partecipanteId, foto, thumb, larghezza, altezza } (base64 JPEG)
+GET    /api/scontrini/:id/foto|thumb    image/jpeg, Cache-Control: private, 7 days
+DELETE /api/scontrini/:id               author or admin, open consegna only
+```
+
+- The browser shrinks the photo (canvas: 1600 px long side, JPEG 0.8; thumbnail 320 px, 0.7), which also drops EXIF/GPS. The server only checks the JPEG signature `FF D8 FF` and the sizes.
+- The first photo of a date with no consegna creates it through `ensureConsegna` (`server/services/consegne.js`, also used by `POST /api/consegna`): trovato = previous lasciato.
+- Closed consegna: 403 on POST and DELETE. Every logged-in user sees every photo; files are served only through the authenticated route.
+- `DELETE /api/consegna/:id` removes the consegna's folder after the transaction; `deleteUser` removes the user's files first. Rows go by CASCADE.
+- Activity events: `scontrino_aggiunto`, `scontrino_rimosso`. `GET /api/storico` returns `num_scontrini`.
 
 ## Features
 
@@ -542,7 +573,11 @@ npm start
 docker buildx build --platform linux/amd64,linux/arm64 -t jeremyjrossi/gass:<version> -t jeremyjrossi/gass:latest --push .
 ```
 
-Database persisted in `/app/data/gass.db` volume.
+Database persisted in `/app/data/gass.db` volume, receipt photos in `/app/data/scontrini/`. The deploy DB backup (`gass.db.bak-*`) does not include the photos; copy the folder too:
+
+```bash
+ssh business "cd /data/gass && [ -d scontrini ] && tar czf scontrini.bak-\$(date +%Y%m%d-%H%M%S).tgz scontrini"
+```
 
 The images on Docker Hub are public. The build context is the whole working copy, so `.dockerignore` must exclude every local folder that is not app code (members' data, videos, handoff notes). Before a build, check `git status --short` for new untracked paths and add them to `.dockerignore`; after it, check the image with `docker run --rm --entrypoint ls jeremyjrossi/gass:<version> /app`. On 2026-10-03 `storico-consegne-cassa/` was found in the public images 2.24.0–2.24.2 (verified via `ls /app` in the pulled images 2026-10-03); it is excluded since 16b55a2 and those tags were deleted from Docker Hub.
 

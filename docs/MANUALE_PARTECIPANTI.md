@@ -70,6 +70,20 @@ Esempio: Giovanni ha 10 € di credito. Il conto è 18 €. Giovanni paga 5 €.
 
 Per correggere una spesa, premi la riga del partecipante nell'elenco **Chi ha ritirato** (telefono) o **Movimenti** (computer). Cambia i valori. Premi **Salva movimento**.
 
+### Fotografare gli scontrini
+
+Nella scheda del partecipante, sotto le **Note**, c'è il riquadro **Scontrini**.
+
+1. Apri la scheda del partecipante.
+2. Premi **Fotografa** (telefono) o **Allega scontrino** (computer). Sul telefono puoi scattare una foto o sceglierne una dalla galleria. Sul computer puoi anche trascinare l'immagine nel riquadro.
+3. Aspetta che la scritta "carico…" sparisca.
+
+GASS salva la foto subito, anche se non premi **Salva movimento**. Puoi allegare al massimo 3 foto per partecipante in una consegna. Premi una foto per vederla grande.
+
+Per togliere una foto, premi **×** sulla foto e conferma. Solo chi ha scattato la foto o un amministratore può toglierla. Quando la consegna è chiusa, non puoi aggiungere o togliere foto.
+
+Nell'elenco del giorno, il numero accanto all'icona della fotocamera dice quante foto ha il partecipante. Premi **Vedi i N scontrini** sotto l'elenco per aprire la galleria della consegna.
+
 ### Registrare la quota teatro
 
 La scheda del partecipante mostra il riquadro **Quota teatro** quando il partecipante deve una quota.
@@ -158,6 +172,8 @@ Lo Storico mostra una riga per ogni consegna. Le consegne più recenti sono in a
 2. Premi una riga. GASS apre quella consegna nella pagina Consegna.
 
 Una consegna chiusa si apre solo in lettura.
+
+Se la consegna ha foto di scontrini, la riga mostra il link **N scontrini** (colonna **Scontrini** sul computer). Il link apre la galleria: le foto sono divise per partecipante. Premi una foto per vederla grande. Usa **Prec.** e **Succ.**, oppure scorri con il dito (telefono) o usa le frecce ← → (computer).
 
 ## Turni
 
