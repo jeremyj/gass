@@ -2,7 +2,7 @@
 
 Questo manuale contiene solo le funzioni degli amministratori. Le funzioni di tutti i partecipanti e i termini sono nel [Manuale dei partecipanti](MANUALE_PARTECIPANTI.md).
 
-Video, 4 minuti: [funzioni degli amministratori](https://gass.x86.it/admin-video).
+Video brevi, uno per argomento: [funzioni degli amministratori](https://gass.x86.it/admin-video). Ogni sezione ha il link al suo video.
 
 Quasi tutte le funzioni degli amministratori sono solo sul computer. Sul telefono, un amministratore può riaprire e annullare una consegna e modificare un saldo.
 
@@ -14,6 +14,8 @@ Non puoi dare o togliere il ruolo di amministratore da GASS. Per chi entra con A
 
 ### Riaprire una consegna chiusa
 
+Video: [Riaprire una consegna, 0:13](https://gass.x86.it/admin-video#riaprire).
+
 1. Apri la consegna (dalla pagina Consegna o da **Storico**).
 2. Premi **Riapri consegna**.
 3. Fai le correzioni.
@@ -22,6 +24,8 @@ Non puoi dare o togliere il ruolo di amministratore da GASS. Per chi entra con A
 Se il resoconto è diverso, GASS lo manda di nuovo con l'indicazione "(corretto)".
 
 ### Togliere la foto di uno scontrino
+
+Video: [Togliere uno scontrino, 0:15](https://gass.x86.it/admin-video#scontrini).
 
 Un amministratore può togliere qualsiasi foto, anche se non l'ha scattata. La consegna deve essere aperta: se è chiusa, riaprila prima.
 
@@ -44,6 +48,8 @@ GASS calcola di nuovo il saldo dei partecipanti di quella consegna. Le spese can
 ## Saldi
 
 ### Modificare un saldo
+
+Video: [Correggere un saldo, 0:12](https://gass.x86.it/admin-video#saldo).
 
 Usa questa funzione solo per correggere un errore che non è in una consegna.
 
@@ -78,6 +84,8 @@ Non puoi cambiare lo username.
 
 ### Stato del partecipante
 
+Video: [Stato degli utenti, 0:28](https://gass.x86.it/admin-video#stato).
+
 | Stato | Accede | Fa i turni | Deve la quota teatro | Visibile in Saldi |
 |---|---|---|---|---|
 | Attivo | Sì | Sì | Sì | Sì |
@@ -100,6 +108,8 @@ Puoi eliminare solo un partecipante senza spese, senza rettifiche e senza quote 
 
 ## Turni
 
+Video: [Turni: cambiare i nomi, 0:18](https://gass.x86.it/admin-video#turni), [Spostare una consegna (Giorno), 0:15](https://gass.x86.it/admin-video#giorno), [Generazione automatica e note, 0:13](https://gass.x86.it/admin-video#auto), [Pause, 0:26](https://gass.x86.it/admin-video#pause).
+
 Sul computer, nella pagina **Turni**:
 
 | Funzione | Procedura |
@@ -113,6 +123,8 @@ Le settimane già visibili non cambiano quando cambi la generazione automatica.
 Quando elimini una pausa, GASS crea di nuovo le settimane mancanti. Le settimane segnate **niente consegna** a mano restano così. Per ripristinarle, usa il menu **Giorno**.
 
 ## Teatro
+
+Video: [Quota teatro, 0:24](https://gass.x86.it/admin-video#teatro).
 
 La pagina **Teatro** mostra la cassa del teatro e la griglia partecipanti × semestri.
 
@@ -142,6 +154,8 @@ La quota nuova vale per i partecipanti con la quota piena. Le quote ridotte non 
 
 ### Registro cassa teatro
 
+Video: [Registro cassa teatro, 0:17](https://gass.x86.it/admin-video#cassa-teatro).
+
 Il registro mostra le quote pagate e le voci scritte a mano.
 
 1. Scegli il **Tipo**: **Uscita (es. affitto versato)** o **Entrata**.
@@ -151,6 +165,8 @@ Il registro mostra le quote pagate e le voci scritte a mano.
 Per cancellare un pagamento sbagliato, premi **×** sulla riga del pagamento.
 
 ## Altobelli
+
+Video: [Foglio Altobelli, 0:50](https://gass.x86.it/admin-video#altobelli).
 
 La pagina **Altobelli** compara il foglio di Altobelli con i conti produttore in GASS.
 
@@ -181,5 +197,7 @@ Quando GASS non trova il partecipante di un nome del foglio:
 GASS usa l'associazione anche nelle consegne successive.
 
 ## Attività
+
+Video: [Attività, 0:08](https://gass.x86.it/admin-video#attivita).
 
 La pagina **Attività** mostra il registro delle operazioni: consegne create, chiuse, riaperte e annullate, spese, cambi di saldo, partecipanti, turni e quote teatro. Usa il registro per trovare chi ha fatto una modifica e quando.

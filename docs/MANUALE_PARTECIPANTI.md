@@ -1,6 +1,6 @@
 # GASS - Manuale dei partecipanti
 
-Video, 4 minuti: [primo accesso, consegna, saldi e turni](https://gass.x86.it/comefunziona).
+Video brevi, uno per argomento: [primo accesso, consegna, scontrini, saldi e turni](https://gass.x86.it/comefunziona). Ogni sezione ha il link al suo video.
 
 Funzioni degli amministratori: [Manuale degli amministratori](MANUALE_AMMINISTRATORI.md).
 
@@ -20,6 +20,8 @@ Funzioni degli amministratori: [Manuale degli amministratori](MANUALE_AMMINISTRA
 | Bussolotto | La cassa del teatro. È separata dalla cassa della consegna. |
 
 ## Accesso
+
+Video: [Primo accesso e nuova password, 0:52](https://gass.x86.it/comefunziona#primo-accesso).
 
 1. Apri https://gass.x86.it.
 2. Premi **Accedi**.
@@ -44,6 +46,8 @@ Il simbolo ⓘ accanto ad alcune voci apre una spiegazione. Tocca in un altro pu
 
 ### Aprire la consegna
 
+Video: [Aprire una consegna, 0:08](https://gass.x86.it/comefunziona#consegna).
+
 La pagina Consegna si apre sulla consegna giusta: l'ultimo turno fino a oggi, se è ancora aperto. Se l'ultima consegna è chiusa, la pagina si apre su oggi.
 
 1. Apri **Consegna**.
@@ -52,6 +56,8 @@ La pagina Consegna si apre sulla consegna giusta: l'ultimo turno fino a oggi, se
 Un riquadro in alto mostra le altre consegne ancora aperte. Premi una data per aprire quella consegna.
 
 ### Registrare la spesa di un partecipante
+
+Video: [Registrare un pagamento, 0:28](https://gass.x86.it/comefunziona#pagamento).
 
 1. Premi **+ Aggiungi partecipante**.
 2. Scegli il partecipante.
@@ -72,6 +78,8 @@ Per correggere una spesa, premi la riga del partecipante nell'elenco **Chi ha ri
 
 ### Fotografare gli scontrini
 
+Video: [Fotografare uno scontrino, 0:33](https://gass.x86.it/comefunziona#scontrini).
+
 Nella scheda del partecipante, sotto le **Note**, c'è il riquadro **Scontrini**.
 
 1. Apri la scheda del partecipante.
@@ -85,6 +93,8 @@ Per togliere una foto, premi **×** sulla foto e conferma. Solo chi ha scattato 
 Nell'elenco del giorno, il numero accanto all'icona della fotocamera dice quante foto ha il partecipante. Premi **Vedi i N scontrini** sotto l'elenco per aprire la galleria della consegna.
 
 ### Registrare la quota teatro
+
+Video: [Quota teatro, 0:21](https://gass.x86.it/comefunziona#teatro).
 
 La scheda del partecipante mostra il riquadro **Quota teatro** quando il partecipante deve una quota.
 
@@ -103,6 +113,8 @@ Se il partecipante non deve quote, premi **+ Quota teatro (anticipo)** per regis
 Per togliere una quota sbagliata, scrivi 0 e premi **Salva movimento**.
 
 ### Registrare un'uscita di cassa
+
+Video: [Uscite di cassa, 0:46](https://gass.x86.it/comefunziona#uscite).
 
 Usa un'uscita di cassa quando togli soldi dalla cassa o metti soldi nella cassa per un motivo diverso dalla spesa.
 
@@ -137,6 +149,8 @@ Se **In cassa** è negativo, GASS mostra l'avviso "Cassa negativa".
 
 ### Chiudere la consegna
 
+Video: [Chiudere la consegna, 0:14](https://gass.x86.it/comefunziona#chiudere).
+
 **AVVERTENZA:** Dopo la chiusura, non puoi cambiare la consegna. Solo un amministratore può riaprirla.
 
 1. Controlla che tutte le spese siano registrate.
@@ -146,6 +160,8 @@ Se **In cassa** è negativo, GASS mostra l'avviso "Cassa negativa".
 5. Conferma.
 
 ## Saldi
+
+Video: [Saldi, 0:16](https://gass.x86.it/comefunziona#saldi).
 
 La pagina Saldi mostra la situazione di oggi.
 
@@ -166,6 +182,8 @@ Sul telefono, sotto il nome, GASS mostra "deve X €" o "anticipo".
 
 ## Storico
 
+Video: [Storico e galleria degli scontrini, 0:30](https://gass.x86.it/comefunziona#storico).
+
 Lo Storico mostra una riga per ogni consegna. Le consegne più recenti sono in alto.
 
 1. Apri **Storico**.
@@ -176,6 +194,8 @@ Una consegna chiusa si apre solo in lettura.
 Se la consegna ha foto di scontrini, la riga mostra il link **N scontrini** (colonna **Scontrini** sul computer). Il link apre la galleria: le foto sono divise per partecipante. Premi una foto per vederla grande. Usa **Prec.** e **Succ.**, oppure scorri con il dito (telefono) o usa le frecce ← → (computer).
 
 ## Turni
+
+Video: [Turni, 0:09](https://gass.x86.it/comefunziona#turni).
 
 La pagina Turni mostra i prossimi 6 mesi. La tua riga ha l'etichetta **TU**.
 
@@ -188,6 +208,8 @@ La pagina Turni mostra i prossimi 6 mesi. La tua riga ha l'etichetta **TU**.
 Per vedere gli ultimi 3 mesi, premi **Mostra turni passati**.
 
 ### Cambiare il tuo turno (telefono)
+
+Video: [Scambiare un turno, 0:31](https://gass.x86.it/comefunziona#scambio).
 
 1. Premi **cambia** sulla tua riga.
 2. Scegli un'azione:
