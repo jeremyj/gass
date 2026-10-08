@@ -30,7 +30,9 @@ const STYLE = `
   /* Wide tables scroll sideways on a phone instead of widening the page */
   table { display: block; overflow-x: auto; border-collapse: collapse; margin: 0 0 20px; font-size: 16px; }
   th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
-  th { background: #EFECE6; }`;
+  th { background: #EFECE6; }
+  /* Desktop: a wider column, so the tables fit without scrolling */
+  @media (min-width: 900px) { main { max-width: 1100px; padding: 40px 32px 64px; } table { display: table; } }`;
 
 const cache = {};
 

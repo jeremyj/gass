@@ -1,6 +1,8 @@
 # GASS - Manuale dei partecipanti
 
-Lingua: italiano semplificato, regole ASD-STE100 (frasi brevi, un'azione per passo, gli stessi termini sempre). Funzioni degli amministratori: [Manuale degli amministratori](MANUALE_AMMINISTRATORI.md).
+Video, 4 minuti: [primo accesso, consegna, saldi e turni](https://gass.x86.it/comefunziona).
+
+Funzioni degli amministratori: [Manuale degli amministratori](MANUALE_AMMINISTRATORI.md).
 
 ## Termini
 
@@ -18,8 +20,6 @@ Lingua: italiano semplificato, regole ASD-STE100 (frasi brevi, un'azione per pas
 | Bussolotto | La cassa del teatro. È separata dalla cassa della consegna. |
 
 ## Accesso
-
-Video del primo accesso: https://gass.x86.it/comefunziona (non serve l'accesso).
 
 1. Apri https://gass.x86.it.
 2. Premi **Accedi**.

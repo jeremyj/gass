@@ -29,6 +29,13 @@
   .capitoli a:hover { background: #EFECE6; }
   .capitoli a.on { background: #E3EEEA; }
   .capitoli .tm { min-width: 3em; color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
+  /* Desktop: chapter list beside the video */
+  @media (min-width: 900px) {
+    main { max-width: 920px; }
+    .video-layout { display: grid; grid-template-columns: auto 1fr; gap: 32px; align-items: start; }
+    .video-layout .player { margin: 0; width: min(420px, calc(85vh * 390 / 844)); width: min(420px, calc(85svh * 390 / 844)); }
+    .indice { position: sticky; top: 16px; }
+  }
 </style>
 </head>
 <body>
@@ -36,6 +43,7 @@
   <h1>GASS: primo accesso</h1>
   <p class="sub">In quattro minuti: il primo accesso con la password provvisoria, una consegna con quota teatro e uscite di cassa, i saldi, lo storico, i turni e come scambiarne uno.</p>
 
+  <div class="video-layout">
   <div class="player">
     <video controls playsinline preload="metadata" poster="/video/gass-primo-accesso.jpg?v=2.27.3">
       <source src="/video/gass-primo-accesso.mp4?v=2.28.2" type="video/mp4">
@@ -43,6 +51,7 @@
     <div class="marcatori"></div>
   </div>
 
+  <nav class="indice">
   <h2>Capitoli</h2>
   <ol class="capitoli">
     <li><a href="#t=0:00" data-t="0"><span class="tm">0:00</span><span class="nome">Primo accesso e nuova password</span></a></li>
@@ -56,6 +65,8 @@
     <li><a href="#t=3:22" data-t="202"><span class="tm">3:22</span><span class="nome">Turni</span></a></li>
     <li><a href="#t=3:31" data-t="211"><span class="tm">3:31</span><span class="nome">Scambiare un turno</span></a></li>
   </ol>
+  </nav>
+  </div>
 
   <p>Il manuale, passo per passo: <a href="/manuale">gass.x86.it/manuale</a>.</p>
   <p>Per entrare: <a href="/">gass.x86.it</a>.</p>

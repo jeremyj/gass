@@ -1,8 +1,8 @@
 # GASS - Manuale degli amministratori
 
-Lingua: italiano semplificato, regole ASD-STE100 (frasi brevi, un'azione per passo, gli stessi termini sempre). Questo manuale contiene solo le funzioni degli amministratori. Le funzioni di tutti i partecipanti e i termini sono nel [Manuale dei partecipanti](MANUALE_PARTECIPANTI.md).
+Questo manuale contiene solo le funzioni degli amministratori. Le funzioni di tutti i partecipanti e i termini sono nel [Manuale dei partecipanti](MANUALE_PARTECIPANTI.md).
 
-Video delle funzioni degli amministratori: https://gass.x86.it/admin-video.
+Video, 4 minuti: [funzioni degli amministratori](https://gass.x86.it/admin-video).
 
 Quasi tutte le funzioni degli amministratori sono solo sul computer. Sul telefono, un amministratore può riaprire e annullare una consegna e modificare un saldo.
 
