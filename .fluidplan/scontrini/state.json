@@ -1,0 +1,22 @@
+{
+  "round": 1,
+  "status": "exported",
+  "opened_at": null,
+  "submitted_at": "2026-10-08T10:51:51.307Z",
+  "history": [
+    {
+      "round": 1,
+      "submitted_at": "2026-10-08T10:51:51.307Z",
+      "counts": {
+        "ok": 15,
+        "modify": 0,
+        "mixed": 0,
+        "explain": 0,
+        "ko": 0,
+        "pending": 0,
+        "all": 15
+      }
+    }
+  ],
+  "exported_at": "2026-10-08T10:51:58.970Z"
+}

@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GASS foto scontrini</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,500;0,700;1,500&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --calce: #F4F6F2; --carta: #FFFFFF; --inchiostro: #1E2420; --salvia: #5C6760; --riga: #DCE1DA;
+  --credito: #1F57B0; --credito-t: #E6EEFA; --debito: #A3175F; --debito-t: #F8E4EE;
+  --s-deep: #26392F; --s-acc: #E8890F; --s-alt: #6E4128; --s-tint: #FBEEDB; --s-on: #F3E6CF;
+  --teatro: #5B3A8C; --teatro-t: #EFE8F8;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #E3E7E2; color: var(--inchiostro); font-family: "Alegreya Sans", system-ui, sans-serif;
+  font-size: 16px; line-height: 1.45; font-variant-numeric: lining-nums tabular-nums; }
+.board { max-width: 1500px; margin: 0 auto; padding: 36px 16px 80px; }
+h1, h2, h3, h4 { font-family: "Alegreya", Georgia, serif; }
+.board > h1 { font-size: 46px; line-height: 1.05; margin: 0 0 8px; }
+.board > p { margin: 0 0 22px; color: var(--salvia); max-width: 80ch; font-size: 17px; }
+.section { margin: 48px 0 18px; }
+.section h2 { font-size: 32px; margin: 0 0 4px; }
+.section .tag { display: inline-block; font-family: "Alegreya Sans", sans-serif; font-size: 14px; font-weight: 800; color: #fff; background: var(--s-deep); border-radius: 6px; padding: 1px 8px; margin-right: 8px; vertical-align: 6px; }
+.section p { margin: 0; color: var(--salvia); max-width: 90ch; }
+.row { display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; margin-top: 22px; }
+.cap { font-size: 15px; color: var(--salvia); margin: 12px 4px 0; max-width: 390px; }
+.cap b { color: var(--inchiostro); }
+
+.phone { width: 390px; max-width: 100%; height: 800px; border-radius: 38px; background: var(--calce); border: 10px solid #22262a; overflow: hidden; display: flex; flex-direction: column; position: relative; }
+.desk { width: 1060px; max-width: 100%; border-radius: 10px; background: var(--calce); border: 1px solid #bcc3bd; overflow: hidden; }
+.stag { background: var(--s-deep); color: #fff; padding: 16px 20px; }
+.stag .when { font-size: 14px; color: var(--s-on); }
+.stag h3 { margin: 0; font-size: 30px; line-height: 1.05; }
+.body { padding: 16px; overflow: auto; flex: 1; }
+.bnav { display: flex; justify-content: space-around; background: var(--carta); border-top: 1px solid var(--riga); padding: 10px 0 14px; font-size: 13px; color: var(--salvia); font-weight: 700; }
+.bnav .on { color: var(--s-deep); border-top: 3px solid var(--s-acc); margin-top: -10px; padding-top: 7px; }
+.d-nav { background: var(--s-deep); color: #fff; display: flex; gap: 22px; padding: 12px 24px; font-weight: 700; font-size: 15px; }
+.d-nav b { color: #fff; border-bottom: 3px solid var(--s-acc); padding-bottom: 6px; }
+.d-nav span { color: #dfe5df; }
+.pill { display: inline-block; font-size: 14px; font-weight: 700; border-radius: 6px; padding: 1px 8px; }
+.pill.chiusa { color: var(--salvia); background: #E8ECE7; }
+.pill.aperta { color: #8a4a00; background: var(--s-tint); }
+.pill.cr { color: var(--credito); background: var(--credito-t); }
+.pill.sc { color: var(--s-deep); background: #E4ECE6; }
+.link { color: var(--s-deep); font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
+.ico { width: 18px; height: 18px; vertical-align: -3px; fill: none; stroke: currentColor; stroke-width: 2; }
+
+/* participant card (full-screen entry on mobile) */
+.entry-head { display: flex; gap: 10px; align-items: center; background: var(--carta); border-bottom: 1px solid var(--riga); padding: 14px 16px; }
+.entry-head .back { font-size: 26px; color: var(--s-deep); }
+.entry-head h4 { margin: 0; font-size: 24px; }
+.blk { font-family: "Alegreya Sans", sans-serif; font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--salvia); display: flex; justify-content: space-between; margin: 16px 2px 6px; }
+.fld { background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; padding: 8px 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+.fld label { font-weight: 700; }
+.fld b { font-size: 20px; }
+.sc-strip { display: flex; gap: 8px; flex-wrap: wrap; }
+.thumb { width: 74px; height: 96px; border-radius: 8px; border: 1px solid var(--riga); background: #fff; position: relative; overflow: hidden; }
+.thumb .x { position: absolute; top: 3px; right: 3px; width: 22px; height: 22px; border-radius: 50%; background: rgba(30,36,32,.75); color: #fff; font-size: 14px; display: grid; place-items: center; font-weight: 800; }
+.thumb.up::after { content: ""; position: absolute; left: 0; bottom: 0; height: 5px; width: 60%; background: var(--s-acc); }
+.thumb.up .lbl { position: absolute; inset: auto 0 8px 0; text-align: center; font-size: 12px; font-weight: 800; color: var(--s-deep); }
+.add-sc { width: 74px; height: 96px; border-radius: 8px; border: 1.5px dashed var(--s-deep); color: var(--s-deep); display: grid; place-items: center; text-align: center; font-weight: 800; font-size: 13px; line-height: 1.15; background: var(--carta); }
+.add-sc svg { width: 26px; height: 26px; display: block; margin: 0 auto 4px; }
+.sc-hint { color: var(--salvia); font-size: 15px; margin: 6px 2px 0; }
+.btns { display: flex; gap: 10px; margin-top: 18px; }
+.btn { flex: 1; display: block; text-align: center; font-weight: 800; border-radius: 9px; padding: 12px; border: 1.5px solid var(--s-deep); color: var(--s-deep); background: var(--carta); }
+.btn.go { background: var(--s-deep); color: #fff; }
+
+/* a drawn receipt */
+.rc { position: absolute; inset: 6px 8px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.18); transform: rotate(-2deg);
+  background-image: repeating-linear-gradient(#fff 0 6px, #e7e9e5 6px 7px); }
+.rc::before { content: "ALTOBELLI"; display: block; font: 800 8px/1 monospace; letter-spacing: .05em; color: #555; padding: 5px 0 0 5px; background: #fff; }
+.rc.b { transform: rotate(1.5deg); background-image: repeating-linear-gradient(#fff 0 5px, #e2e4df 5px 6px); }
+.rc.b::before { content: "FORNO 3"; }
+.rc.c { transform: rotate(-.5deg); }
+.rc.c::before { content: "TOFU"; }
+
+/* list rows */
+.mov, .idx { list-style: none; margin: 0; padding: 0; background: var(--carta); border: 1px solid var(--riga); border-radius: 12px; overflow: hidden; }
+.mov li, .idx li { display: grid; grid-template-columns: 1fr auto; gap: 0 10px; padding: 10px 14px; border-bottom: 1px solid var(--riga); }
+.mov li:last-child, .idx li:last-child { border-bottom: 0; }
+.mov .nm { font-weight: 800; font-size: 17px; }
+.mov .sub, .idx .sub { color: var(--salvia); font-size: 16px; grid-column: 1; }
+.mov .esito, .idx .cassa { grid-column: 2; grid-row: 1 / span 2; text-align: right; align-self: center; }
+.mov .esito b, .idx .cassa b { display: block; }
+.mov .esito small, .idx .cassa small { color: var(--salvia); font-size: 14px; }
+.mov .cr b { color: var(--credito); }
+.idx .dt { font-family: "Alegreya", serif; font-weight: 700; font-size: 20px; }
+.idx .gal { grid-column: 1 / -1; margin-top: 4px; }
+.sect { display: flex; justify-content: space-between; align-items: baseline; margin: 14px 2px 6px; }
+.sect h4 { margin: 0; font-size: 20px; }
+.sect span { color: var(--salvia); font-size: 15px; }
+.month { font-size: 14px; font-weight: 800; color: var(--salvia); text-transform: uppercase; letter-spacing: .06em; margin: 14px 4px 6px; }
+.month:first-child { margin-top: 0; }
+.hint { color: var(--salvia); font-size: 16px; margin: 0 4px 10px; }
+.new { background: #FFF6E5; border-radius: 4px; padding: 0 3px; }
+
+/* gallery */
+.g-person { margin: 0 2px 14px; }
+.g-person h5 { font-family: "Alegreya Sans", sans-serif; font-size: 17px; margin: 0 0 6px; display: flex; justify-content: space-between; }
+.g-person h5 small { color: var(--salvia); font-weight: 500; font-size: 15px; }
+.g-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.g-grid .thumb { width: auto; height: auto; aspect-ratio: 3 / 4; }
+.d-gal { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+.d-gal figure { margin: 0; }
+.d-gal .thumb { width: 100%; height: auto; aspect-ratio: 3 / 4; }
+.d-gal figcaption { font-size: 15px; margin-top: 4px; }
+.d-gal figcaption small { color: var(--salvia); display: block; font-size: 14px; }
+
+/* viewer */
+.viewer { background: #111512; color: #fff; display: flex; flex-direction: column; height: 100%; }
+.viewer .top { display: flex; justify-content: space-between; align-items: center; padding: 16px; font-size: 16px; }
+.viewer .top b { font-size: 18px; }
+.viewer .stage { flex: 1; position: relative; margin: 0 18px; }
+.viewer .stage .rc { inset: 10px 20px; }
+.viewer .stage .rc::before { font-size: 16px; padding: 12px; }
+.viewer .nav { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px 22px; color: #dfe5df; font-weight: 700; }
+.viewer .nav span.btnv { border: 1.5px solid rgba(255,255,255,.5); border-radius: 8px; padding: 6px 14px; }
+
+/* desktop */
+table.t { width: 100%; border-collapse: collapse; background: var(--carta); border-radius: 10px; overflow: hidden; font-size: 15px; }
+table.t th { text-align: left; font-size: 13px; color: var(--salvia); padding: 8px 10px; border-bottom: 1px solid var(--riga); }
+table.t td { padding: 9px 10px; border-bottom: 1px solid var(--riga); }
+table.t td.n, table.t th.n { text-align: right; }
+table.t .new-col { background: #FFF6E5; }
+.d-card { background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; padding: 14px 16px; margin-top: 14px; }
+.d-card h4 { margin: 0 0 10px; font-size: 22px; }
+.d-row { display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: 16px; align-items: start; }
+.d-fld label { display: block; font-size: 14px; color: var(--salvia); font-weight: 700; }
+.d-fld .in { border: 1.5px solid var(--riga); border-radius: 8px; padding: 6px 10px; font-size: 17px; }
+.drop { border: 1.5px dashed var(--s-deep); border-radius: 10px; padding: 10px; display: flex; gap: 10px; align-items: center; background: #FAFBF9; }
+.drop .thumb { width: 60px; height: 78px; }
+.drop p { margin: 0; font-size: 15px; color: var(--salvia); }
+.drop p b { color: var(--s-deep); }
+
+.cmp { width: 100%; max-width: 1060px; border-collapse: collapse; background: var(--carta); border-radius: 10px; overflow: hidden; margin-top: 18px; }
+.cmp th, .cmp td { padding: 9px 12px; border-bottom: 1px solid var(--riga); text-align: left; vertical-align: top; }
+.cmp th { font-size: 14px; color: var(--salvia); }
+.note { background: #FFF6E5; border: 1.5px solid var(--s-acc); border-radius: 10px; padding: 14px 18px; max-width: 980px; margin-top: 48px; }
+.note ol { margin: 6px 0 0; padding-left: 22px; }
+.note li { margin: 6px 0; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="i-cam" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+  <symbol id="i-img" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 17l-5-5-9 8"/></symbol>
+</svg>
+
+<div class="board">
+  <h1>Foto degli scontrini</h1>
+  <p>Chi fa il turno fotografa con il cellulare lo scontrino (o più scontrini) di un partecipante, dentro la sua scheda della consegna. Lo Storico apre una galleria con tutti gli scontrini della consegna, raggruppati per persona. Le righe evidenziate in giallo sono nuove.</p>
+
+  <!-- A -->
+  <div class="section">
+    <h2><span class="tag">A</span>Mobile: la scheda del partecipante</h2>
+    <p>Un blocco <b>Scontrini</b> sotto le Note. Il riquadro tratteggiato apre la fotocamera (o la galleria del telefono, a scelta). Ogni foto si carica subito, ridotta sul telefono, e appare come miniatura con la ×.</p>
+  </div>
+  <div class="row">
+    <div>
+      <div class="phone">
+        <div class="entry-head"><span class="back">‹</span><div><h4>Paola Mazza</h4><span class="pill cr">prima di oggi: +12 € credito</span></div></div>
+        <div class="body">
+          <div class="blk"><span>Fresco</span><span>va in cassa</span></div>
+          <div class="fld"><label>Conto produttore</label><b>50,20 €</b></div>
+          <div class="fld"><label>Importo saldato</label><b>40 €</b></div>
+          <div class="fld"><label>Note</label><span style="color:var(--salvia)">Aggiungi una nota</span></div>
+          <div class="blk new"><span>Scontrini</span><span>2 foto</span></div>
+          <div class="sc-strip new" style="padding:4px">
+            <div class="thumb"><div class="rc"></div><span class="x">×</span></div>
+            <div class="thumb"><div class="rc b"></div><span class="x">×</span></div>
+            <div class="thumb up"><div class="rc c" style="opacity:.45"></div><span class="lbl">carico…</span></div>
+            <div class="add-sc"><span><svg class="ico"><use href="#i-cam"/></svg>Fotografa</span></div>
+          </div>
+          <p class="sc-hint new">Tocca una foto per ingrandirla.</p>
+          <div class="btns"><span class="btn">Annulla</span><span class="btn go">Salva</span></div>
+        </div>
+      </div>
+      <p class="cap"><b>Caricamento immediato:</b> la foto è salvata appena scattata, anche se poi non si preme Salva. Se la persona non ha ancora un movimento, la foto resta legata a lei e alla consegna.</p>
+    </div>
+
+    <div>
+      <div class="phone" style="height:560px">
+        <div class="stag"><div class="when">Consegna di oggi</div><h3>martedì 13 ottobre</h3></div>
+        <div class="body">
+          <div class="sect"><h4>Chi ha ritirato</h4><span>3 persone</span></div>
+          <ul class="mov">
+            <li><span class="nm">Paola Mazza</span><span class="esito cr"><b>+1,80 €</b><small>credito</small></span><span class="sub">conto <b>50,20</b>, dato <b>40</b> <span class="pill sc new"><svg class="ico"><use href="#i-cam"/></svg> 3</span></span></li>
+            <li><span class="nm">Marco Binotto</span><span class="esito"><b>–</b><small>saldato</small></span><span class="sub">conto <b>22,40</b>, dato <b>22,40</b> <span class="pill sc new"><svg class="ico"><use href="#i-cam"/></svg> 1</span></span></li>
+            <li><span class="nm">Silke</span><span class="esito"><b>–</b><small>saldato</small></span><span class="sub">conto <b>18</b>, dato <b>18</b></span></li>
+          </ul>
+          <p class="hint new" style="margin-top:12px"><span class="link">Vedi i 4 scontrini ›</span></p>
+        </div>
+        <div class="bnav"><span class="on">Consegna</span><span>Saldi</span><span>Storico</span><span>Turni</span></div>
+      </div>
+      <p class="cap">Nella lista del giorno un segno con il numero di foto, così si vede chi manca. Sotto la lista il link alla galleria della consegna.</p>
+    </div>
+  </div>
+
+  <!-- B -->
+  <div class="section">
+    <h2><span class="tag">B</span>Mobile: dallo Storico alla galleria</h2>
+    <p>Nella riga dello Storico il numero di scontrini è un link alla galleria; il resto della riga apre la consegna come oggi. La galleria raggruppa per persona; una foto si apre a tutto schermo e si scorre alla successiva.</p>
+  </div>
+  <div class="row">
+    <div>
+      <div class="phone">
+        <div class="stag"><div class="when">GASS Torpignattara</div><h3>Storico</h3></div>
+        <div class="body">
+          <p class="hint">Tocca una consegna per aprirla.</p>
+          <div class="month">ottobre 2026</div>
+          <ul class="idx">
+            <li><span class="dt">martedì 13 ottobre</span><span class="cassa"><b>212,50 €</b><small>in cassa</small></span>
+              <span class="sub"><span class="pill aperta">aperta</span>, 3 persone</span>
+              <span class="gal new"><span class="link"><svg class="ico"><use href="#i-img"/></svg> 4 scontrini</span></span></li>
+            <li><span class="dt">martedì 6 ottobre</span><span class="cassa"><b>187 €</b><small>in cassa</small></span>
+              <span class="sub"><span class="pill chiusa">chiusa</span>, 11 persone</span>
+              <span class="gal new"><span class="link"><svg class="ico"><use href="#i-img"/></svg> 14 scontrini</span></span></li>
+          </ul>
+          <div class="month">settembre 2026</div>
+          <ul class="idx">
+            <li><span class="dt">martedì 29 settembre</span><span class="cassa"><b>463,70 €</b><small>in cassa</small></span>
+              <span class="sub"><span class="pill chiusa">chiusa</span>, 11 persone</span></li>
+          </ul>
+        </div>
+        <div class="bnav"><span>Consegna</span><span>Saldi</span><span class="on">Storico</span><span>Turni</span></div>
+      </div>
+      <p class="cap">Nessun link sulle consegne senza foto (tutte quelle prima della funzione).</p>
+    </div>
+
+    <div>
+      <div class="phone">
+        <div class="stag"><div class="when">Scontrini della consegna</div><h3>martedì 6 ottobre</h3></div>
+        <div class="body">
+          <p class="hint"><span class="link">‹ Apri la consegna</span> · 14 foto, 9 persone</p>
+          <div class="g-person"><h5>Paola Mazza <small>3 foto</small></h5>
+            <div class="g-grid"><div class="thumb"><div class="rc"></div></div><div class="thumb"><div class="rc b"></div></div><div class="thumb"><div class="rc c"></div></div></div></div>
+          <div class="g-person"><h5>Marco Binotto <small>1 foto</small></h5>
+            <div class="g-grid"><div class="thumb"><div class="rc"></div></div></div></div>
+          <div class="g-person"><h5>Fernanda <small>2 foto</small></h5>
+            <div class="g-grid"><div class="thumb"><div class="rc b"></div></div><div class="thumb"><div class="rc"></div></div></div></div>
+        </div>
+        <div class="bnav"><span>Consegna</span><span>Saldi</span><span class="on">Storico</span><span>Turni</span></div>
+      </div>
+      <p class="cap">Pagina <b>/scontrini?data=2026-10-06</b>. Le miniature sono piccole (circa 20 KB l'una) così la galleria si apre veloce anche in 4G.</p>
+    </div>
+
+    <div>
+      <div class="phone">
+        <div class="viewer">
+          <div class="top"><span>‹ Galleria</span><span><b>Paola Mazza</b> · 2 di 3</span></div>
+          <div class="stage"><div class="rc b"></div></div>
+          <div class="nav"><span class="btnv">‹ Prec.</span><span>scattata alle 18:42 da Ilaria</span><span class="btnv">Succ. ›</span></div>
+        </div>
+      </div>
+      <p class="cap">Vista a tutto schermo: scorri o tocca Prec./Succ.; si allarga con due dita (zoom del browser). Chi l'ha scattata e quando.</p>
+    </div>
+  </div>
+
+  <!-- C -->
+  <div class="section">
+    <h2><span class="tag">C</span>Desktop</h2>
+    <p>Stesse funzioni (regola del progetto: mobile e desktop). Sul computer non c'è fotocamera: "Allega scontrino" apre la scelta del file, o si trascina l'immagine. Lo Storico ha una colonna Scontrini.</p>
+  </div>
+  <div class="row">
+    <div class="desk">
+      <div class="d-nav"><b>Consegna</b><span>Saldi</span><span>Storico</span><span>Turni</span><span>Teatro</span></div>
+      <div style="padding:16px">
+        <div class="d-card">
+          <h4>Paola Mazza <span class="pill cr" style="font-family:'Alegreya Sans'">prima di oggi: +12 € credito</span></h4>
+          <div class="d-row">
+            <div class="d-fld"><label>Conto produttore</label><div class="in">50,20</div></div>
+            <div class="d-fld"><label>Importo saldato</label><div class="in">40</div></div>
+            <div class="d-fld new"><label>Scontrini</label>
+              <div class="drop"><div class="thumb"><div class="rc"></div><span class="x">×</span></div><div class="thumb"><div class="rc b"></div><span class="x">×</span></div>
+                <p><b>Allega scontrino</b><br>o trascina qui l'immagine</p></div></div>
+          </div>
+        </div>
+        <h4 style="margin:20px 0 8px;font-size:22px">Storico</h4>
+        <table class="t">
+          <thead><tr><th>Data</th><th>Stato</th><th class="n">Persone</th><th class="n">Incassato</th><th class="n">In cassa</th><th class="new-col">Scontrini</th></tr></thead>
+          <tbody>
+            <tr><td><span class="link">martedì 13 ottobre</span></td><td><span class="pill aperta">aperta</span></td><td class="n">3</td><td class="n">80,40</td><td class="n">212,50</td><td class="new-col"><span class="link">4 foto</span></td></tr>
+            <tr><td><span class="link">martedì 6 ottobre</span></td><td><span class="pill chiusa">chiusa</span></td><td class="n">11</td><td class="n">402,10</td><td class="n">187</td><td class="new-col"><span class="link">14 foto</span></td></tr>
+            <tr><td><span class="link">martedì 29 settembre</span></td><td><span class="pill chiusa">chiusa</span></td><td class="n">11</td><td class="n">357,20</td><td class="n">463,70</td><td class="new-col" style="color:#b8beb9">–</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="desk">
+      <div class="d-nav"><span>Consegna</span><span>Saldi</span><b>Storico</b><span>Turni</span><span>Teatro</span></div>
+      <div style="padding:16px">
+        <h4 style="margin:0 0 4px;font-size:26px">Scontrini di martedì 6 ottobre</h4>
+        <p class="hint" style="margin-left:0"><span class="link">Apri la consegna ›</span> · 14 foto, 9 persone · clic su una foto per ingrandirla, frecce ← → per scorrere</p>
+        <div class="d-gal">
+          <figure><div class="thumb"><div class="rc"></div></div><figcaption>Paola Mazza<small>1 di 3</small></figcaption></figure>
+          <figure><div class="thumb"><div class="rc b"></div></div><figcaption>Paola Mazza<small>2 di 3</small></figcaption></figure>
+          <figure><div class="thumb"><div class="rc c"></div></div><figcaption>Paola Mazza<small>3 di 3</small></figcaption></figure>
+          <figure><div class="thumb"><div class="rc"></div></div><figcaption>Marco Binotto</figcaption></figure>
+          <figure><div class="thumb"><div class="rc b"></div></div><figcaption>Fernanda<small>1 di 2</small></figcaption></figure>
+          <figure><div class="thumb"><div class="rc"></div></div><figcaption>Fernanda<small>2 di 2</small></figcaption></figure>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- D -->
+  <div class="section">
+    <h2><span class="tag">D</span>Alternative da decidere nel piano</h2>
+  </div>
+  <table class="cmp">
+    <thead><tr><th>Tema</th><th>Proposta</th><th>Alternativa</th></tr></thead>
+    <tbody>
+      <tr><td>Quando si carica</td><td>Subito, appena scattata (non si perde se si dimentica Salva)</td><td>In coda, caricata con Salva (una sola azione, ma si perde chiudendo la scheda)</td></tr>
+      <tr><td>Dove sta la galleria</td><td>Pagina propria /scontrini?data=, link da Storico e dalla consegna</td><td>Sezione in fondo alla pagina Consegna (niente pagina nuova, ma pagina più lunga)</td></tr>
+      <tr><td>Chi vede le foto</td><td>Tutti gli utenti collegati</td><td>Solo admin e chi le ha scattate</td></tr>
+      <tr><td>Dove si salvano</td><td>File JPEG nel volume /app/data/scontrini/</td><td>Dentro il database SQLite (un solo file da copiare, ma il DB cresce)</td></tr>
+      <tr><td>Consegna chiusa</td><td>Foto bloccate come il resto (si riapre per aggiungerne)</td><td>Foto aggiungibili anche a consegna chiusa</td></tr>
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

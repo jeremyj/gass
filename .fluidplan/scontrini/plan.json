@@ -1,0 +1,550 @@
+{
+  "version": 2,
+  "id": "scontrini",
+  "title": "Receipt photos per participant, with a gallery",
+  "subtitle": "GASS 2.29.0 — mockup design/mockups/scontrini.html",
+  "lang": "en",
+  "accent": "green",
+  "source": { "kind": "request" },
+  "context": "Request (2026-10-08): from the phone, photograph the receipt (or receipts) of a participant and attach them to their consegna; from the Storico, open a gallery to see them all.\n\nWhat exists: the participant card (`buildParticipantCardHTML` in `public/js/shared/consegna-common.js`, full-screen on mobile), the Storico index (`public/js/storico.js`, `storico-desktop.js`, `GET /api/storico`), data on the volume `/data/gass:/app/data` on `business` (48 GB free, data today 6.5 MB). No upload code yet, no image library, helmet CSP allows `img-src 'self' data:`. A consegna row is created only by the first `POST /api/consegna` (the \"Nuova consegna\" button only shows the form).\n\nMockup: `design/mockups/scontrini.html` (sections A mobile card, B Storico → gallery → viewer, C desktop, D alternatives). App strings stay Italian; this plan is in English because fluidplan supports en/fr only. Every UI change ships on mobile **and** desktop (project rule).",
+  "phases": [
+    { "id": "p1", "title": "Storage, table and API", "short": "API", "estimate": "≈ 1 d", "days": 1 },
+    { "id": "p2", "title": "Taking photos in the card (mobile + desktop)", "short": "Capture", "estimate": "≈ 1 d", "days": 1 },
+    { "id": "p3", "title": "Gallery and viewer", "short": "Gallery", "estimate": "≈ 1 d", "days": 1 },
+    { "id": "p4", "title": "Docs and release 2.29.0", "short": "Release", "estimate": "≈ 0.5 d", "days": 0.5 }
+  ],
+  "glossary": [
+    { "term": "EXIF", "definition": "Hidden data inside a photo file: camera model, date, sometimes the GPS position where it was taken." },
+    { "term": "thumbnail", "aliases": ["thumbnails", "miniatura"], "definition": "A small copy of the photo (about 320 px wide) shown in lists and grids, so the page loads fast." },
+    { "term": "CASCADE", "definition": "A database rule: when a consegna is deleted, the rows that point to it are deleted too." },
+    { "term": "volume", "definition": "The host folder `/data/gass` mounted in the container as `/app/data`; it survives image updates. The database already lives there." },
+    { "term": "canvas", "definition": "A browser drawing surface; it can redraw a photo smaller and save it again as JPEG, without any server library." },
+    { "term": "lightbox", "definition": "A full-screen overlay that shows one photo large, with previous/next." }
+  ],
+  "pages": [
+    {
+      "id": "storage",
+      "section": "1 · Data",
+      "title": "Where the photos live and what they belong to",
+      "intro": "The structural choices: hard to change once photos exist in production.",
+      "visual": {
+        "kind": "diagram",
+        "caption": "Path of one photo",
+        "nodes": [
+          { "id": "phone", "label": "Phone", "sub": "camera or gallery", "col": 0, "row": 0, "tone": "muted" },
+          { "id": "canvas", "label": "Resize in browser", "sub": "1600 px + 320 px thumb", "col": 1, "row": 0, "tone": "success" },
+          { "id": "api", "label": "POST /api/scontrini", "sub": "checks JPEG, size, rights", "col": 2, "row": 0, "tone": "primary" },
+          { "id": "files", "label": "/app/data/scontrini", "sub": "<consegna>/<id>.jpg", "col": 2, "row": 1, "tone": "success" },
+          { "id": "db", "label": "table scontrini", "sub": "consegna, person, who, when", "col": 1, "row": 1, "tone": "success" }
+        ],
+        "edges": [
+          { "from": "phone", "to": "canvas" },
+          { "from": "canvas", "to": "api", "label": "JSON base64" },
+          { "from": "api", "to": "files" },
+          { "from": "api", "to": "db" }
+        ]
+      },
+      "decisions": [
+        {
+          "id": "D1",
+          "title": "Where the image files are stored",
+          "importance": "critical",
+          "phase": "p1",
+          "why": "Photos are 100 times bigger than all the data GASS has today (6.5 MB). Where they live decides how backups, deploys and deletions work; moving them later means a migration script on production.",
+          "proposal": "JPEG files on the volume, in `/app/data/scontrini/<consegna_id>/<id>.jpg` plus `<id>_t.jpg` for the thumbnail. The database keeps only the row (who, which consegna, which person, file name).",
+          "facts": [
+            { "label": "Free disk on business", "value": "48 GB" },
+            { "label": "One photo (1600 px JPEG 0.8)", "value": "≈ 250–400 KB" },
+            { "label": "Estimate per year (≈ 15 photos × 45 consegne)", "value": "≈ 250 MB" }
+          ],
+          "learn_more": "Files are served only through an authenticated route (`GET /api/scontrini/:id/foto` and `/thumb`), never through `express.static`, so a link copied out of GASS does not open without a session. The deploy backup (`gass.db.bak-*` via `.backup()`) covers the database only: the folder needs its own copy (see D5).",
+          "control": {
+            "kind": "choice",
+            "options": [
+              {
+                "id": "fs", "label": "Files on the volume", "recommended": true,
+                "pros": ["The database stays small and fast to back up", "Files are served with plain `res.sendFile`", "Easy to inspect or copy by hand"],
+                "cons": ["Two things to back up (DB + folder)", "A deleted row must also delete its files"],
+                "effort": "S"
+              },
+              {
+                "id": "blob", "label": "Inside SQLite (BLOB column)",
+                "pros": ["One file holds everything", "Deleting a row deletes the image, nothing orphaned"],
+                "cons": ["gass.db grows from 6.5 MB to hundreds of MB", "Every deploy backup copies all photos again"],
+                "effort": "S"
+              }
+            ]
+          },
+          "tasks": [
+            {
+              "id": "dir",
+              "title": "Add the photo folder helper",
+              "do": "In a new `server/services/scontrini.js`: `scontriniDir()` = `/app/data/scontrini` when `/app/data` exists, else `./data-scontrini` locally, and `SCONTRINI_DIR` env override (tests use a temp dir). Create folders on demand (`fs.mkdirSync(..., { recursive: true })`). `.gitignore` and `.dockerignore` exclude `data-scontrini/`.",
+              "files": [
+                { "path": "server/services/scontrini.js", "op": "create" },
+                { "path": ".gitignore", "op": "modify" },
+                { "path": ".dockerignore", "op": "modify" }
+              ],
+              "acceptance": ["No photo is ever written inside the app folder in Docker", "`git status` shows no photo after a local test"],
+              "verify": ["npm test"]
+            }
+          ]
+        },
+        {
+          "id": "D2",
+          "title": "What a photo is attached to",
+          "importance": "critical",
+          "phase": "p1",
+          "why": "This is the table's foreign key: it decides what deletes a photo and whether someone who only paid the quota teatro (no movimento) can have one. Changing it later means rewriting existing rows.",
+          "proposal": "Table `scontrini (id, consegna_id → consegne ON DELETE CASCADE, partecipante_id → users ON DELETE CASCADE, file, larghezza, altezza, byte, created_by, created_at)`. A photo belongs to *a person in a consegna*, not to the movimento row.",
+          "learn_more": "Movimenti are deleted and re-inserted by some saves, so pointing at `movimenti.id` would lose photos. Deleting a consegna (admin) must also remove the folder `scontrini/<consegna_id>/`: the CASCADE removes rows only. `deleteUser` already refuses users with movimenti; for a user with photos but no movimenti it deletes their files before the row.",
+          "control": {
+            "kind": "choice",
+            "options": [
+              {
+                "id": "person", "label": "Consegna + person", "recommended": true,
+                "pros": ["Works before the movimento is saved", "Survives movimento re-saves"],
+                "cons": ["A photo can exist for someone with no movimento (shown in the gallery anyway)"],
+                "effort": "S"
+              },
+              {
+                "id": "movimento", "label": "The movimento row",
+                "pros": ["Photo appears only with a real purchase"],
+                "cons": ["Needs a saved movimento first", "Lost if the movimento row is recreated"],
+                "effort": "M"
+              }
+            ]
+          },
+          "tasks": [
+            {
+              "id": "table",
+              "title": "Create the scontrini table",
+              "do": "In `server/config/database.js`, next to `uscite_cassa`: `CREATE TABLE IF NOT EXISTS scontrini (...)` as in the proposal + `idx_scontrini_consegna`. Audit columns `created_by`, `created_at` only (photos are never edited).",
+              "files": [{ "path": "server/config/database.js", "op": "modify" }],
+              "acceptance": ["A fresh DB and the production DB both get the table on start", "Deleting a consegna removes its rows"],
+              "verify": ["npm run test:integration"]
+            },
+            {
+              "id": "cleanup",
+              "title": "Delete files with their consegna or user",
+              "do": "`DELETE /api/consegna/:id` calls `rimuoviScontriniConsegna(id)` after the transaction commits (`fs.rmSync(dir, { recursive: true, force: true })`); `deleteUser` (`server/services/users.js`) deletes that user's files first.",
+              "files": [
+                { "path": "server/routes/consegna.js", "op": "modify" },
+                { "path": "server/services/users.js", "op": "modify" },
+                { "path": "server/services/scontrini.js", "op": "modify" }
+              ],
+              "acceptance": ["After deleting a consegna with 2 photos the folder no longer exists"],
+              "verify": ["npm run test:integration -- scontrini"],
+              "after": ["table", "D1/dir"]
+            }
+          ]
+        },
+        {
+          "id": "D3",
+          "title": "Who shrinks the photo",
+          "importance": "important",
+          "phase": "p2",
+          "why": "A phone photo is 3–6 MB: uploading it as is on 4G at the bancarella takes long and fills the disk 15 times faster. Someone has to make it smaller and make the thumbnail.",
+          "proposal": "The browser does it: draw the photo on a canvas at 1600 px on the long side, JPEG quality 0.8, plus a 320 px thumbnail; send both. The server only checks they are JPEG (first bytes `FF D8 FF`) and under 1.5 MB / 100 KB.",
+          "learn_more": "Redrawing on a canvas also drops the EXIF data, GPS position included. `createImageBitmap(file, { imageOrientation: 'from-image' })` keeps portrait photos upright. iPhones convert HEIC to JPEG when a web page picks the file. The upload is JSON with base64 (≈ 33% bigger, but no multipart parser): the scontrini router gets its own `express.json({ limit: '3mb' })` mounted **before** the global 100 KB parser in `server/app.js` (body-parser skips a body already parsed). Previews use `data:` URLs, already allowed by the CSP.",
+          "control": {
+            "kind": "choice",
+            "options": [
+              {
+                "id": "browser", "label": "In the browser (canvas)", "recommended": true,
+                "pros": ["No new dependency", "Less data on 4G", "GPS position removed before upload"],
+                "cons": ["Quality depends on the phone browser", "≈ 40 lines of client code"],
+                "effort": "S"
+              },
+              {
+                "id": "sharp", "label": "On the server (sharp)",
+                "pros": ["Same result for every phone"],
+                "cons": ["Native module to build on Alpine for amd64 + arm64", "Full-size photo travels on 4G"],
+                "effort": "M"
+              }
+            ]
+          },
+          "tasks": [
+            {
+              "id": "resize",
+              "title": "Add the shared resize helper",
+              "do": "New `public/js/shared/scontrini.js`: `riduciFoto(file)` → `{ foto, thumb, larghezza, altezza }` (base64 JPEG strings), with `createImageBitmap` + canvas, 1600 / 320 px, quality 0.8 / 0.7.",
+              "files": [{ "path": "public/js/shared/scontrini.js", "op": "create" }],
+              "acceptance": ["A 4000×3000 photo becomes 1600×1200 under 500 KB", "A portrait photo stays portrait"],
+              "verify": ["manual: upload a phone photo in the dev server, check size in the network tab"]
+            }
+          ]
+        },
+        {
+          "id": "D4",
+          "title": "How long photos are kept",
+          "importance": "important",
+          "phase": "p1",
+          "why": "Receipts are useful to check a conto in the following weeks; after that they only take space. At ≈ 250 MB per year the disk is not a problem for many years, so this is about tidiness, not cost.",
+          "proposal": "Keep them forever, like the consegne. Deleting a consegna deletes its photos.",
+          "control": {
+            "kind": "choice",
+            "options": [
+              { "id": "forever", "label": "Forever", "recommended": true, "pros": ["Nothing to build", "Old conti stay checkable"], "cons": ["The folder only grows"], "effort": "S" },
+              {
+                "id": "months", "label": "Delete after 12 months",
+                "pros": ["Folder stays small"],
+                "cons": ["A daily cleanup job to write and test", "Old disputes cannot be checked"],
+                "effort": "M",
+                "tasks": [{
+                  "id": "purge", "title": "Delete photos older than 12 months at startup and daily",
+                  "do": "`purgaScontrini(db, today)` in `server/services/scontrini.js`, called at startup and every 24 h with `setInterval`.",
+                  "files": [{ "path": "server/services/scontrini.js", "op": "modify" }, { "path": "server.js", "op": "modify" }],
+                  "acceptance": ["A photo of a consegna 13 months old is gone after start"],
+                  "verify": ["npm run test:integration -- scontrini"],
+                  "after": ["D1/dir"]
+                }]
+              }
+            ]
+          }
+        },
+        {
+          "id": "D5",
+          "title": "Back up the photo folder at deploy",
+          "importance": "minor",
+          "phase": "p4",
+          "why": "The deploy routine backs up only gass.db; without this, a mistake on the volume loses the photos.",
+          "proposal": "The deploy routine adds `tar czf /data/gass/scontrini.bak-<version>.tgz -C /data/gass scontrini` next to the DB backup. Documented in `docs/TECHNICAL.md`.",
+          "tasks": [{
+            "id": "doc",
+            "title": "Document the photo folder in the deploy and backup notes",
+            "files": [{ "path": "docs/TECHNICAL.md", "op": "modify" }],
+            "acceptance": ["TECHNICAL.md names the folder and the backup command"]
+          }]
+        }
+      ]
+    },
+    {
+      "id": "capture",
+      "section": "2 · Taking photos",
+      "title": "Photos in the participant card",
+      "intro": "How the turnista adds receipts, on the phone and on the computer.",
+      "visual": { "kind": "image", "src": "assets/a-card.png", "alt": "Mobile mockup: participant card with a Scontrini block, and the day's list with a photo count", "caption": "Mockup section A" },
+      "decisions": [
+        {
+          "id": "D6",
+          "title": "When the photo is uploaded",
+          "importance": "critical",
+          "phase": "p2",
+          "why": "At the bancarella people are in a hurry: a photo lost because the card was closed without Salva means asking the person again, or never. But today the consegna row exists only after the first Salva of the day, and a photo needs it.",
+          "proposal": "Upload right after the shot, with a \"carico…\" bar on the thumbnail. If the consegna of that date does not exist yet, the upload creates it (same row the first Salva would create, trovato = previous lasciato).",
+          "learn_more": "Creating the consegna is moved from `POST /api/consegna` into `ensureConsegna(db, data, audit)` (new, `server/services/consegne.js`), used by both routes, so the two paths cannot drift. An empty consegna created this way is like one after \"Nuova consegna\" + a note save: \"Annulla consegna\" (admin) deletes it, photos included.",
+          "control": {
+            "kind": "choice",
+            "options": [
+              {
+                "id": "now", "label": "Immediately, creating the consegna if needed", "recommended": true,
+                "pros": ["Never lost", "Works for the first person of the day"],
+                "cons": ["Consegna creation moves into a shared service (refactor of `POST /api/consegna`)"],
+                "effort": "M"
+              },
+              {
+                "id": "nowafter", "label": "Immediately, but only once the consegna exists",
+                "pros": ["No change to consegna creation"],
+                "cons": ["First person of the day: button disabled with \"Salva prima\" until a Salva"],
+                "effort": "S"
+              },
+              {
+                "id": "salva", "label": "Queued, uploaded by Salva",
+                "pros": ["One action saves everything"],
+                "cons": ["Photos lost if the card is closed", "Salva gets slow on 4G with 3 photos"],
+                "effort": "M"
+              }
+            ]
+          },
+          "tasks": [
+            {
+              "id": "api",
+              "title": "Add the scontrini API",
+              "do": "New `server/routes/scontrini.js`, mounted at `/api/scontrini` with `requireAuth` and its own `express.json({ limit: '3mb' })` before the global parser:\n\n```\nGET    /api/scontrini?data=yyyy-mm-dd   list of the consegna: id, partecipante_id, nome, created_by name, created_at, larghezza, altezza\nPOST   /api/scontrini                   { data, partecipanteId, foto, thumb } → { id, consegnaId }\nGET    /api/scontrini/:id/foto          image/jpeg, Cache-Control: private, max-age=604800\nGET    /api/scontrini/:id/thumb         same, thumbnail\nDELETE /api/scontrini/:id               rules of D8\n```\n\nPOST checks JPEG magic bytes, sizes (1.5 MB / 100 KB), that the user exists and the D9 limit; writes files first, then the row; on a DB error removes the files.",
+              "files": [
+                { "path": "server/routes/scontrini.js", "op": "create" },
+                { "path": "server/app.js", "op": "modify" },
+                { "path": "server/services/scontrini.js", "op": "modify" }
+              ],
+              "acceptance": ["Unauthenticated calls get 401", "A PNG or a 2 MB body gets 400/413", "GET foto of a missing id gets 404"],
+              "verify": ["npm run test:integration -- scontrini"],
+              "after": ["D2/table", "D1/dir"]
+            },
+            {
+              "id": "tests",
+              "title": "Integration tests for the scontrini API",
+              "do": "`test/integration/scontrini.test.js` with a temp `SCONTRINI_DIR`; tiny valid JPEG fixture built in the test (base64 constant).",
+              "files": [{ "path": "test/integration/scontrini.test.js", "op": "create" }],
+              "acceptance": ["Covers create, list, serve, delete, closed consegna, limit, consegna delete removes files"],
+              "verify": ["npm test"],
+              "after": ["api"]
+            }
+          ],
+          "depends_on": ["D2"]
+        },
+        {
+          "id": "D7",
+          "title": "Camera or phone gallery",
+          "importance": "important",
+          "phase": "p2",
+          "why": "The HTML attribute `capture` decides whether the button opens the camera directly. With it, Android does not allow choosing an existing photo: a receipt photographed earlier cannot be attached.",
+          "proposal": "`<input type=\"file\" accept=\"image/*\" multiple>` without `capture`: the phone asks \"Fotocamera / Galleria\", several photos can be picked at once. Button label \"Fotografa\".",
+          "control": {
+            "kind": "choice",
+            "options": [
+              { "id": "choose", "label": "Phone asks camera or gallery", "recommended": true, "pros": ["Earlier photos can be attached", "Several at once"], "cons": ["One extra tap to reach the camera"], "effort": "S" },
+              { "id": "camera", "label": "Straight to the camera (`capture=\"environment\"`)", "pros": ["One tap less"], "cons": ["No gallery on Android", "One photo per tap"], "effort": "S" }
+            ]
+          },
+          "tasks": [
+            {
+              "id": "card",
+              "title": "Add the Scontrini block to the participant card",
+              "do": "In `buildParticipantCardHTML` (`consegna-common.js`), under Note: `<div class=\"scontrini-box\" id=\"scontrini_${id}\">` with the thumbnails of that person (from `GET /api/scontrini?data=`), the dashed \"Fotografa\" tile wrapping the hidden file input, and × on each thumb. On change: `riduciFoto` for each file, POST, show the thumb with the \"carico…\" bar until the response. Tap a thumb → the lightbox of D12. Desktop (`consegna-desktop.js`, `consegna-desktop.html`): the same block shows as a drop zone \"Allega scontrino / o trascina qui l'immagine\" (dragover/drop). Styles in `public/style.css`; bump `?v=`.",
+              "files": [
+                { "path": "public/js/shared/consegna-common.js", "op": "modify" },
+                { "path": "public/js/consegna.js", "op": "modify" },
+                { "path": "public/js/consegna-desktop.js", "op": "modify" },
+                { "path": "public/consegna.html", "op": "modify" },
+                { "path": "public/consegna-desktop.html", "op": "modify" },
+                { "path": "public/style.css", "op": "modify" }
+              ],
+              "acceptance": ["On a phone, two photos picked at once both appear and survive a page reload", "On desktop, dropping a JPEG uploads it", "Closed consegna: no tile, no ×, thumbnails still visible"],
+              "verify": ["manual: dev server, force_mobile=true cookie, then desktop"],
+              "after": ["D3/resize", "D6/api"]
+            },
+            {
+              "id": "badge",
+              "title": "Show the photo count in the day's list",
+              "do": "Mobile list (`Chi ha ritirato`) and desktop table: a small camera badge with the number of photos of that person; under the list \"Vedi i N scontrini ›\" linking to the gallery (D10). Rows of people with photos but no movimento appear like `teatroExtra` rows.",
+              "files": [
+                { "path": "public/js/consegna.js", "op": "modify" },
+                { "path": "public/js/consegna-desktop.js", "op": "modify" }
+              ],
+              "acceptance": ["The count updates after an upload without reloading"],
+              "after": ["card"]
+            }
+          ]
+        },
+        {
+          "id": "D8",
+          "title": "Who can add and remove photos",
+          "importance": "important",
+          "phase": "p2",
+          "why": "Any turnista fills the consegna today; but a closed consegna is locked so the conti cannot change after the report is sent.",
+          "proposal": "Any logged-in user adds photos while the consegna is open. Removing: whoever took the photo, or an admin, and only while open. Closed consegna: photos visible, nothing added or removed (an admin reopens it, as for the conti).",
+          "control": {
+            "kind": "choice",
+            "options": [
+              { "id": "locked", "label": "Locked with the consegna", "recommended": true, "pros": ["Same rule as everything else", "The report matches what is stored"], "cons": ["A receipt found the day after needs an admin to reopen"], "effort": "S" },
+              { "id": "always", "label": "Adding always allowed, removing only while open", "pros": ["A late receipt can be added by anyone"], "cons": ["Exception to the closed-consegna rule to explain in the manual"], "effort": "S" }
+            ]
+          },
+          "tasks": [{
+            "id": "rules",
+            "title": "Enforce add/remove rights on the server",
+            "do": "In `server/routes/scontrini.js`: POST and DELETE return 403 \"Consegna chiusa\" when `chiusa = 1` (per the chosen option: {{choice.label}}); DELETE also 403 unless `created_by = session user` or admin.",
+            "files": [{ "path": "server/routes/scontrini.js", "op": "modify" }],
+            "acceptance": ["A non-admin cannot delete someone else's photo", "Closed consegna refuses as chosen"],
+            "verify": ["npm run test:integration -- scontrini"],
+            "after": ["D6/api"]
+          }]
+        },
+        {
+          "id": "D9",
+          "title": "Maximum photos per person per consegna",
+          "importance": "minor",
+          "phase": "p1",
+          "why": "Stops a stuck finger or a wrong pick of 40 gallery photos from filling the folder.",
+          "proposal": "At most 6 photos per person in one consegna; the 7th gets \"Massimo 6 foto\".",
+          "control": { "kind": "number", "min": 2, "max": 20, "step": 1, "default": 6, "unit": "photos" },
+          "tasks": [{
+            "id": "limit",
+            "title": "Limit to {{value}} photos per person per consegna",
+            "do": "Constant `MAX_FOTO_PERSONA = {{value}}` in `server/services/scontrini.js`, checked in POST (400 with message) and used by the card to hide the tile.",
+            "files": [{ "path": "server/services/scontrini.js", "op": "modify" }],
+            "acceptance": ["Upload number {{value}} + 1 is refused"],
+            "after": ["D6/api"]
+          }]
+        },
+        {
+          "id": "D13",
+          "title": "Log photo additions and removals in Attività",
+          "importance": "minor",
+          "phase": "p2",
+          "why": "Removals are otherwise invisible; Attività already records every other change.",
+          "proposal": "Two event types via `logActivity`: `scontrino_aggiunto`, `scontrino_rimosso` (with `consegna_id` and the person), with icons in the Attività page.",
+          "tasks": [{
+            "id": "log",
+            "title": "Log scontrino_aggiunto and scontrino_rimosso",
+            "files": [
+              { "path": "server/routes/scontrini.js", "op": "modify" },
+              { "path": "public/js/logs-desktop.js", "op": "modify" }
+            ],
+            "acceptance": ["Both events show in Attività with date and person"],
+            "after": ["D6/api"]
+          }]
+        }
+      ]
+    },
+    {
+      "id": "gallery",
+      "section": "3 · Gallery",
+      "title": "Seeing all the receipts of a consegna",
+      "intro": "Where the gallery lives, who sees it, how a photo opens.",
+      "visual": { "kind": "image", "src": "assets/b-gallery.png", "alt": "Mobile mockup: Storico rows with a scontrini link, gallery grouped by person, full-screen viewer", "caption": "Mockup section B; desktop in section C" },
+      "decisions": [
+        {
+          "id": "D10",
+          "title": "Where the gallery lives",
+          "importance": "important",
+          "phase": "p3",
+          "why": "The Storico rows already open the consegna; the gallery needs its own entry point without breaking that habit.",
+          "proposal": "A page `/scontrini?data=yyyy-mm-dd` (mobile `scontrini.html`, desktop `scontrini-desktop.html`), grouped by person, newest consegna first. Reached from the Storico (link \"N scontrini\" in the row, desktop column Scontrini) and from the consegna (\"Vedi i N scontrini ›\").",
+          "control": {
+            "kind": "choice",
+            "options": [
+              { "id": "page", "label": "Own page /scontrini?data=", "recommended": true, "pros": ["Consegna page stays as it is", "A link can be shared in the Telegram group"], "cons": ["Two new HTML pages (mobile + desktop)"], "effort": "M" },
+              { "id": "section", "label": "Section at the bottom of the Consegna page", "pros": ["No new page"], "cons": ["Consegna page longer and slower (thumbnails)", "Storico link must scroll to an anchor"], "effort": "S" }
+            ]
+          },
+          "tasks": [
+            {
+              "id": "pages",
+              "title": "Add the gallery pages",
+              "do": "`server/routes/pages.js`: `/scontrini` (auth, mobile/desktop detection as the other pages). Pages load `utils.js`, `season.js`, `calendar.js` (header date), `api-client.js`, `auth.js`, `version.js`, `shared/scontrini.js`, then `scontrini.js` / `scontrini-desktop.js`: `GET /api/scontrini?data=`, group by `partecipante_id`, `<img loading=\"lazy\">` of the thumbs; \"‹ Apri la consegna\" uses `consegnaHref(date)`. `?data=` must match `yyyy-mm-dd`, else back to Storico.",
+              "files": [
+                { "path": "server/routes/pages.js", "op": "modify" },
+                { "path": "public/scontrini.html", "op": "create" },
+                { "path": "public/scontrini-desktop.html", "op": "create" },
+                { "path": "public/js/scontrini.js", "op": "create" },
+                { "path": "public/js/scontrini-desktop.js", "op": "create" }
+              ],
+              "acceptance": ["Opening /scontrini?data=2026-10-06 lists the thumbnails grouped by person", "A consegna without photos shows \"Nessuno scontrino\""],
+              "verify": ["manual: dev server, mobile and desktop"],
+              "after": ["D6/api"]
+            },
+            {
+              "id": "storico",
+              "title": "Link the gallery from the Storico",
+              "do": "`GET /api/storico` adds `num_scontrini` per consegna (COUNT subquery). Mobile `consegnaRowHtml` adds \"N scontrini\" as a real link (`stopPropagation` so the row onclick does not fire); desktop adds a Scontrini column (\"–\" when 0).",
+              "files": [
+                { "path": "server/routes/storico.js", "op": "modify" },
+                { "path": "public/js/storico.js", "op": "modify" },
+                { "path": "public/js/storico-desktop.js", "op": "modify" },
+                { "path": "public/storico-desktop.html", "op": "modify" },
+                { "path": "test/integration/storico.test.js", "op": "modify" }
+              ],
+              "acceptance": ["Tapping the link opens the gallery, tapping the rest of the row still opens the consegna", "Consegne before the feature show no link"],
+              "verify": ["npm run test:integration -- storico"],
+              "after": ["pages"]
+            }
+          ]
+        },
+        {
+          "id": "D11",
+          "title": "Who can see the photos",
+          "importance": "critical",
+          "phase": "p3",
+          "why": "Receipts carry names and what each person bought. The conti are already visible to every logged-in user on the Consegna page, so the photos add little; but once in the gallery, restricting them later means people already saw them.",
+          "proposal": "Every logged-in user, like the conti on the Consegna page. Never public: files only through the authenticated route.",
+          "control": {
+            "kind": "choice",
+            "options": [
+              { "id": "all", "label": "All logged-in users", "recommended": true, "pros": ["Same as the conti today", "Anyone can check their own receipt"], "cons": ["Everyone sees what others bought"], "effort": "S" },
+              {
+                "id": "restricted", "label": "Admins, the uploader and the person in the photo",
+                "pros": ["More private"],
+                "cons": ["Gallery differs per user; Storico count must be per user", "Turnisti cannot check a colleague's photo"],
+                "effort": "M",
+                "tasks": [{
+                  "id": "filter", "title": "Filter photos per viewer",
+                  "do": "In `GET /api/scontrini` and the foto/thumb routes: non-admins get only rows with `created_by` or `partecipante_id` = session user; `num_scontrini` in Storico counted the same way.",
+                  "files": [{ "path": "server/routes/scontrini.js", "op": "modify" }, { "path": "server/routes/storico.js", "op": "modify" }],
+                  "acceptance": ["A user sees nothing of photos about others they did not take"],
+                  "verify": ["npm run test:integration -- scontrini"],
+                  "after": ["D6/api"]
+                }]
+              }
+            ]
+          }
+        },
+        {
+          "id": "D12",
+          "title": "How a photo opens large",
+          "importance": "important",
+          "phase": "p3",
+          "why": "Receipts are read, not just glanced at: the person must be able to zoom and go to the next one quickly.",
+          "proposal": "A small lightbox of our own (`openLightbox(list, index)` in `shared/scontrini.js`): black full screen, name + \"2 di 3\", who took it and when, Prec./Succ., swipe on mobile, ← → and Esc on desktop. Zoom with the browser's pinch. Used by the gallery and by the card thumbnails.",
+          "control": {
+            "kind": "choice",
+            "options": [
+              { "id": "own", "label": "Own lightbox", "recommended": true, "pros": ["Next/previous without going back", "Looks like the rest of GASS"], "cons": ["≈ 80 lines JS + CSS"], "effort": "S" },
+              { "id": "tab", "label": "Open the image in a new tab", "pros": ["Nothing to build", "Native zoom"], "cons": ["Back and forth for every photo", "No name or author shown"], "effort": "S" }
+            ]
+          },
+          "tasks": [{
+            "id": "viewer",
+            "title": "Viewer for one photo: {{choice.label}}",
+            "do": "Implement in `public/js/shared/scontrini.js`, styles in `public/style.css` (classes `.lightbox*`, `.initially-hidden` pattern for the overlay).",
+            "files": [
+              { "path": "public/js/shared/scontrini.js", "op": "modify" },
+              { "path": "public/style.css", "op": "modify" }
+            ],
+            "acceptance": ["From the gallery, next/previous goes through all photos of the consegna", "Esc or ‹ closes it"],
+            "after": ["D10/pages", "D3/resize"]
+          }]
+        }
+      ]
+    },
+    {
+      "id": "release",
+      "section": "4 · Release",
+      "title": "Order of the work and release",
+      "intro": "Phases and what ships with 2.29.0.",
+      "visual": { "kind": "image", "src": "assets/c-desktop.png", "alt": "Desktop mockup: drop zone in the participant card, Storico Scontrini column, gallery grid", "caption": "Mockup section C (desktop)" },
+      "decisions": [
+        {
+          "id": "D14",
+          "title": "Order of the phases",
+          "importance": "minor",
+          "why": "Each phase is usable on its own; capture before gallery means photos accumulate even if the gallery comes a day later.",
+          "proposal": "API → capture → gallery → docs and release.",
+          "control": { "kind": "order", "source": "phases" }
+        },
+        {
+          "id": "D15",
+          "title": "Docs, manuals and release",
+          "importance": "minor",
+          "phase": "p4",
+          "why": "Project rule: user manuals and TECHNICAL.md are updated with every feature; images are public, so `.dockerignore` must be checked.",
+          "proposal": "Update the two manuals (Partecipanti: how to attach a receipt and open the gallery; Amministratori: removing photos, closed consegne), `docs/TECHNICAL.md` (table, routes, folder, backup), CLAUDE.md, help tip on the Scontrini block. Release 2.29.0; build after `git status` + `.dockerignore` check. Videos are not re-recorded for this.",
+          "tasks": [
+            {
+              "id": "docs",
+              "title": "Update manuals, TECHNICAL.md and CLAUDE.md",
+              "files": [
+                { "path": "docs/MANUALE_PARTECIPANTI.md", "op": "modify" },
+                { "path": "docs/MANUALE_AMMINISTRATORI.md", "op": "modify" },
+                { "path": "docs/TECHNICAL.md", "op": "modify" },
+                { "path": "CLAUDE.md", "op": "modify" },
+                { "path": "public/js/shared/tips.js", "op": "modify" }
+              ],
+              "acceptance": ["/manuale explains how to attach a receipt", "CLAUDE.md lists the scontrini route, service and folder"]
+            },
+            {
+              "id": "release",
+              "title": "Release 2.29.0",
+              "do": "Bump `package.json`, commit, tag `v2.29.0`, buildx multi-platform push; `docker run --rm --entrypoint ls jeremyjrossi/gass:2.29.0 /app` shows no `data-scontrini`. Deploy only on explicit request.",
+              "files": [{ "path": "package.json", "op": "modify" }],
+              "acceptance": ["npm test green", "Image contains no photo folder"],
+              "verify": ["npm test"],
+              "after": ["docs"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

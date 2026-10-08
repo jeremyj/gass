@@ -1,0 +1,88 @@
+{
+  "D1": {
+    "choice": "fs",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-08T10:47:41.692Z"
+  },
+  "D2": {
+    "choice": "person",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-08T10:48:25.155Z"
+  },
+  "D3": {
+    "choice": "browser",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-08T10:48:43.847Z"
+  },
+  "D4": {
+    "choice": "forever",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-08T10:48:57.789Z"
+  },
+  "D5": {
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-08T10:49:07.487Z"
+  },
+  "D6": {
+    "choice": "now",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-08T10:49:48.812Z"
+  },
+  "D7": {
+    "choice": "choose",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-08T10:49:54.700Z"
+  },
+  "D8": {
+    "choice": "locked",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-08T10:50:25.917Z"
+  },
+  "D9": {
+    "value": 3,
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-08T10:50:43.439Z"
+  },
+  "D13": {
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-08T10:50:55.917Z"
+  },
+  "D10": {
+    "choice": "page",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-08T10:51:01.954Z"
+  },
+  "D11": {
+    "choice": "all",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-08T10:51:11.945Z"
+  },
+  "D12": {
+    "choice": "own",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-08T10:51:15.389Z"
+  },
+  "D15": {
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-08T10:51:36.628Z"
+  },
+  "D14": {
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-08T10:51:37.791Z"
+  }
+}
