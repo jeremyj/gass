@@ -319,4 +319,5 @@ docker buildx build --platform linux/amd64,linux/arm64 -t jeremyjrossi/gass:<ver
 docker buildx build --platform linux/amd64,linux/arm64 -t jeremyjrossi/gass:latest --push .
 ```
 - don't update container images after docker builds
+- Deploy backups (since 2.29.1): the receipt photos are files in `/data/gass/scontrini`, not in `gass.db`, so tar that folder next to the `gass.db.bak-*` copy (command in `docs/TECHNICAL.md`, Docker section)
 - Docker Hub images are public: before a build, `git status --short` and make sure `.dockerignore` excludes any new untracked folder (2026-10-03: `storico-consegne-cassa/` leaked into 2.24.0–2.24.2); after it, `docker run --rm --entrypoint ls <image> /app`
