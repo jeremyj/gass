@@ -133,7 +133,7 @@ describe('public endpoints', () => {
   it('serves the first-access video page without a session', async () => {
     const res = await request(app).get('/comefunziona');
     expect(res.status).toBe(200);
-    expect(res.text).toContain('gass-primo-accesso.mp4');
+    expect(res.text).toContain('primo-primo-accesso.mp4');
   });
 
   it('serves the two manuals without a session, linked to each other', async () => {
@@ -149,7 +149,7 @@ describe('public endpoints', () => {
   it('serves the admin video page without a session', async () => {
     const res = await request(app).get('/admin-video');
     expect(res.status).toBe(200);
-    expect(res.text).toContain('gass-admin.mp4');
+    expect(res.text).toContain('admin-stato.mp4');
   });
 
   it('serves /api/version without a session', async () => {

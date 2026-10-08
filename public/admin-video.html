@@ -19,7 +19,7 @@
   .player video { display: block; width: 100%; aspect-ratio: 1280 / 800; height: auto; border-radius: 12px; background: #000;
                   box-shadow: 0 6px 24px rgba(0,0,0,.15); }
   a { color: var(--accent); font-weight: 600; }
-  /* Chapter markers under the video: one segment per chapter, proportional to its length */
+  /* Clip strip under the video: one segment per clip, proportional to its length */
   .marcatori { display: flex; gap: 3px; margin: 8px 0 0; }
   .marcatori button { height: 14px; min-width: 6px; padding: 0; border: 0; border-radius: 4px; background: #DDD9D1; cursor: pointer; }
   .marcatori button.on, .marcatori button:hover { background: var(--accent); }
@@ -28,8 +28,9 @@
   .capitoli a { display: flex; gap: 12px; padding: 8px 10px; border-radius: 8px; font-weight: 400; color: var(--ink); text-decoration: none; }
   .capitoli a:hover { background: #EFECE6; }
   .capitoli a.on { background: #E3EEEA; }
-  .capitoli .tm { min-width: 3em; color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
-  /* Desktop: chapter list beside the video */
+  .capitoli .nome { flex: 1; }
+  .capitoli .tm { min-width: 3em; text-align: right; color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
+  /* Desktop: clip list beside the video */
   @media (min-width: 900px) {
     main { max-width: 1320px; }
     .video-layout { display: grid; grid-template-columns: 1fr 300px; gap: 32px; align-items: start; }
@@ -41,30 +42,29 @@
 <body>
 <main>
   <h1>GASS: funzioni per gli amministratori</h1>
-  <p class="sub">In meno di quattro minuti, da computer: stato degli utenti, correzione di un saldo, riaprire una consegna, modificare i turni, le pause, la quota teatro, il controllo del foglio Altobelli e il registro Attività.</p>
+  <p class="sub">Dodici video brevi, da computer: stato degli utenti, correzione di un saldo, riaprire una consegna, togliere uno scontrino, modificare i turni, le pause, la quota teatro, il controllo del foglio Altobelli e il registro Attività. Partono uno dopo l'altro; clic su un titolo per vedere solo quella parte.</p>
 
   <div class="video-layout">
   <div class="player">
-    <video controls playsinline preload="metadata" poster="/video/gass-admin.jpg?v=2.28.2">
-      <source src="/video/gass-admin.mp4?v=2.28.2" type="video/mp4">
-    </video>
+    <video controls playsinline preload="metadata"></video>
     <div class="marcatori"></div>
   </div>
 
   <nav class="indice">
-  <h2>Capitoli</h2>
-  <ol class="capitoli">
-    <li><a href="#t=0:00" data-t="0"><span class="tm">0:00</span><span class="nome">Stato degli utenti</span></a></li>
-    <li><a href="#t=0:28" data-t="28"><span class="tm">0:28</span><span class="nome">Correggere un saldo</span></a></li>
-    <li><a href="#t=0:40" data-t="40"><span class="tm">0:40</span><span class="nome">Riaprire una consegna</span></a></li>
-    <li><a href="#t=0:52" data-t="52"><span class="tm">0:52</span><span class="nome">Turni: cambiare i nomi</span></a></li>
-    <li><a href="#t=1:11" data-t="71"><span class="tm">1:11</span><span class="nome">Spostare una consegna (Giorno)</span></a></li>
-    <li><a href="#t=1:27" data-t="87"><span class="tm">1:27</span><span class="nome">Generazione automatica e note</span></a></li>
-    <li><a href="#t=1:40" data-t="100"><span class="tm">1:40</span><span class="nome">Pause</span></a></li>
-    <li><a href="#t=2:04" data-t="124"><span class="tm">2:04</span><span class="nome">Quota teatro</span></a></li>
-    <li><a href="#t=2:29" data-t="149"><span class="tm">2:29</span><span class="nome">Registro cassa teatro</span></a></li>
-    <li><a href="#t=2:45" data-t="165"><span class="tm">2:45</span><span class="nome">Foglio Altobelli</span></a></li>
-    <li><a href="#t=3:35" data-t="215"><span class="tm">3:35</span><span class="nome">Attività</span></a></li>
+  <h2>Video</h2>
+  <ol class="capitoli" data-v="2.29.2">
+    <li><a href="#stato" data-src="/video/admin-stato.mp4" data-d="28"><span class="nome">Stato degli utenti</span><span class="tm">0:28</span></a></li>
+    <li><a href="#saldo" data-src="/video/admin-saldo.mp4" data-d="12"><span class="nome">Correggere un saldo</span><span class="tm">0:12</span></a></li>
+    <li><a href="#riaprire" data-src="/video/admin-riaprire.mp4" data-d="13"><span class="nome">Riaprire una consegna</span><span class="tm">0:13</span></a></li>
+    <li><a href="#scontrini" data-src="/video/admin-scontrini.mp4" data-d="15"><span class="nome">Togliere uno scontrino</span><span class="tm">0:15</span></a></li>
+    <li><a href="#turni" data-src="/video/admin-turni.mp4" data-d="18"><span class="nome">Turni: cambiare i nomi</span><span class="tm">0:18</span></a></li>
+    <li><a href="#giorno" data-src="/video/admin-giorno.mp4" data-d="15"><span class="nome">Spostare una consegna (Giorno)</span><span class="tm">0:15</span></a></li>
+    <li><a href="#auto" data-src="/video/admin-auto.mp4" data-d="13"><span class="nome">Generazione automatica e note</span><span class="tm">0:13</span></a></li>
+    <li><a href="#pause" data-src="/video/admin-pause.mp4" data-d="26"><span class="nome">Pause</span><span class="tm">0:26</span></a></li>
+    <li><a href="#teatro" data-src="/video/admin-teatro.mp4" data-d="24"><span class="nome">Quota teatro</span><span class="tm">0:24</span></a></li>
+    <li><a href="#cassa-teatro" data-src="/video/admin-cassa-teatro.mp4" data-d="17"><span class="nome">Registro cassa teatro</span><span class="tm">0:17</span></a></li>
+    <li><a href="#altobelli" data-src="/video/admin-altobelli.mp4" data-d="50"><span class="nome">Foglio Altobelli</span><span class="tm">0:50</span></a></li>
+    <li><a href="#attivita" data-src="/video/admin-attivita.mp4" data-d="8"><span class="nome">Attività</span><span class="tm">0:08</span></a></li>
   </ol>
   </nav>
   </div>
@@ -72,6 +72,6 @@
   <p>Il manuale degli amministratori: <a href="/manuale-admin">gass.x86.it/manuale-admin</a>.</p>
   <p>Per entrare: <a href="/">gass.x86.it</a>.</p>
 </main>
-<script src="/js/shared/capitoli.js?v=1"></script>
+<script src="/js/shared/capitoli.js?v=2"></script>
 </body>
 </html>
