@@ -3,7 +3,8 @@
 ## Documentazione Correlata
 
 - **[README](../README.md)** - Panoramica progetto e quick start
-- **[Manuale Utente](MANUALE_UTENTE.md)** - Guida all'utilizzo dell'applicazione
+- **[Manuale partecipanti](MANUALE_PARTECIPANTI.md)** - Guida per tutti i partecipanti
+- **[Manuale amministratori](MANUALE_AMMINISTRATORI.md)** - Funzioni degli amministratori
 - **[Guida Deploy](../DEPLOYMENT.md)** - Istruzioni per installazione Docker
 
 ## Overview
