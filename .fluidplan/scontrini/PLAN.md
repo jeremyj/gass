@@ -20,58 +20,58 @@ Mockup: `design/mockups/scontrini.html` (sections A mobile card, B Storico → g
 
 ## Phase 1 — Storage, table and API (≈ 1 d)
 
-### [ ] 1.1 Add the photo folder helper · D1
+### [x] 1.1 Add the photo folder helper · D1
 
 - Decision: **D1** Where the image files are stored — Files on the volume [critical]
 - Files: `server/services/scontrini.js` (create), `.gitignore` (modify), `.dockerignore` (modify)
 - Do: In a new `server/services/scontrini.js`: `scontriniDir()` = `/app/data/scontrini` when `/app/data` exists, else `./data-scontrini` locally, and `SCONTRINI_DIR` env override (tests use a temp dir). Create folders on demand (`fs.mkdirSync(..., { recursive: true })`). `.gitignore` and `.dockerignore` exclude `data-scontrini/`.
 - Acceptance criteria:
-  - [ ] No photo is ever written inside the app folder in Docker
-  - [ ] `git status` shows no photo after a local test
+  - [x] No photo is ever written inside the app folder in Docker
+  - [x] `git status` shows no photo after a local test
 - Verify: `npm test`
 
-### [ ] 1.2 Create the scontrini table · D2
+### [x] 1.2 Create the scontrini table · D2
 
 - Decision: **D2** What a photo is attached to — Consegna + person [critical]
 - Files: `server/config/database.js` (modify)
 - Do: In `server/config/database.js`, next to `uscite_cassa`: `CREATE TABLE IF NOT EXISTS scontrini (...)` as in the proposal + `idx_scontrini_consegna`. Audit columns `created_by`, `created_at` only (photos are never edited).
 - Acceptance criteria:
-  - [ ] A fresh DB and the production DB both get the table on start
-  - [ ] Deleting a consegna removes its rows
+  - [x] A fresh DB and the production DB both get the table on start
+  - [x] Deleting a consegna removes its rows
 - Verify: `npm run test:integration`
 
-### [ ] 1.3 Delete files with their consegna or user · D2
+### [x] 1.3 Delete files with their consegna or user · D2
 
 - Decision: **D2** What a photo is attached to — Consegna + person [critical]
 - Files: `server/routes/consegna.js` (modify), `server/services/users.js` (modify), `server/services/scontrini.js` (modify)
 - Do: `DELETE /api/consegna/:id` calls `rimuoviScontriniConsegna(id)` after the transaction commits (`fs.rmSync(dir, { recursive: true, force: true })`); `deleteUser` (`server/services/users.js`) deletes that user's files first.
 - Acceptance criteria:
-  - [ ] After deleting a consegna with 2 photos the folder no longer exists
+  - [x] After deleting a consegna with 2 photos the folder no longer exists
 - Verify: `npm run test:integration -- scontrini`
 - After: 1.2, 1.1
 
-### [ ] 1.4 Limit to 3 photos per person per consegna · D9
+### [x] 1.4 Limit to 3 photos per person per consegna · D9
 
 - Decision: **D9** Maximum photos per person per consegna — 3 photos
 - Files: `server/services/scontrini.js` (modify)
 - Do: Constant `MAX_FOTO_PERSONA = 3` in `server/services/scontrini.js`, checked in POST (400 with message) and used by the card to hide the tile.
 - Acceptance criteria:
-  - [ ] Upload number 3 + 1 is refused
+  - [x] Upload number 3 + 1 is refused
 - After: 2.2
 
 ## Phase 2 — Taking photos in the card (mobile + desktop) (≈ 1 d)
 
-### [ ] 2.1 Add the shared resize helper · D3
+### [x] 2.1 Add the shared resize helper · D3
 
 - Decision: **D3** Who shrinks the photo — In the browser (canvas)
 - Files: `public/js/shared/scontrini.js` (create)
 - Do: New `public/js/shared/scontrini.js`: `riduciFoto(file)` → `{ foto, thumb, larghezza, altezza }` (base64 JPEG strings), with `createImageBitmap` + canvas, 1600 / 320 px, quality 0.8 / 0.7.
 - Acceptance criteria:
-  - [ ] A 4000×3000 photo becomes 1600×1200 under 500 KB
-  - [ ] A portrait photo stays portrait
+  - [x] A 4000×3000 photo becomes 1600×1200 under 500 KB
+  - [x] A portrait photo stays portrait
 - Verify: `manual: upload a phone photo in the dev server, check size in the network tab`
 
-### [ ] 2.2 Add the scontrini API · D6
+### [x] 2.2 Add the scontrini API · D6
 
 - Decision: **D6** When the photo is uploaded — Immediately, creating the consegna if needed [critical]
 - Files: `server/routes/scontrini.js` (create), `server/app.js` (modify), `server/services/scontrini.js` (modify)
@@ -87,130 +87,135 @@ Mockup: `design/mockups/scontrini.html` (sections A mobile card, B Storico → g
 
   POST checks JPEG magic bytes, sizes (1.5 MB / 100 KB), that the user exists and the D9 limit; writes files first, then the row; on a DB error removes the files.
 - Acceptance criteria:
-  - [ ] Unauthenticated calls get 401
-  - [ ] A PNG or a 2 MB body gets 400/413
-  - [ ] GET foto of a missing id gets 404
+  - [x] Unauthenticated calls get 401
+  - [x] A PNG or a 2 MB body gets 400/413
+  - [x] GET foto of a missing id gets 404
 - Verify: `npm run test:integration -- scontrini`
 - After: 1.2, 1.1
 
-### [ ] 2.3 Integration tests for the scontrini API · D6
+### [x] 2.3 Integration tests for the scontrini API · D6
 
 - Decision: **D6** When the photo is uploaded — Immediately, creating the consegna if needed [critical]
 - Files: `test/integration/scontrini.test.js` (create)
 - Do: `test/integration/scontrini.test.js` with a temp `SCONTRINI_DIR`; tiny valid JPEG fixture built in the test (base64 constant).
 - Acceptance criteria:
-  - [ ] Covers create, list, serve, delete, closed consegna, limit, consegna delete removes files
+  - [x] Covers create, list, serve, delete, closed consegna, limit, consegna delete removes files
 - Verify: `npm test`
 - After: 2.2
 
-### [ ] 2.4 Add the Scontrini block to the participant card · D7
+### [x] 2.4 Add the Scontrini block to the participant card · D7
 
 - Decision: **D7** Camera or phone gallery — Phone asks camera or gallery
 - Files: `public/js/shared/consegna-common.js` (modify), `public/js/consegna.js` (modify), `public/js/consegna-desktop.js` (modify), `public/consegna.html` (modify), `public/consegna-desktop.html` (modify), `public/style.css` (modify)
 - Do: In `buildParticipantCardHTML` (`consegna-common.js`), under Note: `<div class="scontrini-box" id="scontrini_${id}">` with the thumbnails of that person (from `GET /api/scontrini?data=`), the dashed "Fotografa" tile wrapping the hidden file input, and × on each thumb. On change: `riduciFoto` for each file, POST, show the thumb with the "carico…" bar until the response. Tap a thumb → the lightbox of D12. Desktop (`consegna-desktop.js`, `consegna-desktop.html`): the same block shows as a drop zone "Allega scontrino / o trascina qui l'immagine" (dragover/drop). Styles in `public/style.css`; bump `?v=`.
 - Acceptance criteria:
-  - [ ] On a phone, two photos picked at once both appear and survive a page reload
-  - [ ] On desktop, dropping a JPEG uploads it
-  - [ ] Closed consegna: no tile, no ×, thumbnails still visible
+  - [x] On a phone, two photos picked at once both appear and survive a page reload
+  - [x] On desktop, dropping a JPEG uploads it
+  - [x] Closed consegna: no tile, no ×, thumbnails still visible
 - Verify: `manual: dev server, force_mobile=true cookie, then desktop`
 - After: 2.1, 2.2
 
-### [ ] 2.5 Show the photo count in the day's list · D7
+### [x] 2.5 Show the photo count in the day's list · D7
 
 - Decision: **D7** Camera or phone gallery — Phone asks camera or gallery
 - Files: `public/js/consegna.js` (modify), `public/js/consegna-desktop.js` (modify)
 - Do: Mobile list (`Chi ha ritirato`) and desktop table: a small camera badge with the number of photos of that person; under the list "Vedi i N scontrini ›" linking to the gallery (D10). Rows of people with photos but no movimento appear like `teatroExtra` rows.
 - Acceptance criteria:
-  - [ ] The count updates after an upload without reloading
+  - [x] The count updates after an upload without reloading
 - After: 2.4
 
-### [ ] 2.6 Enforce add/remove rights on the server · D8
+### [x] 2.6 Enforce add/remove rights on the server · D8
 
 - Decision: **D8** Who can add and remove photos — Locked with the consegna
 - Files: `server/routes/scontrini.js` (modify)
 - Do: In `server/routes/scontrini.js`: POST and DELETE return 403 "Consegna chiusa" when `chiusa = 1` (per the chosen option: Locked with the consegna); DELETE also 403 unless `created_by = session user` or admin.
 - Acceptance criteria:
-  - [ ] A non-admin cannot delete someone else's photo
-  - [ ] Closed consegna refuses as chosen
+  - [x] A non-admin cannot delete someone else's photo
+  - [x] Closed consegna refuses as chosen
 - Verify: `npm run test:integration -- scontrini`
 - After: 2.2
 
-### [ ] 2.7 Log scontrino_aggiunto and scontrino_rimosso · D13
+### [x] 2.7 Log scontrino_aggiunto and scontrino_rimosso · D13
 
 - Decision: **D13** Log photo additions and removals in Attività
 - Files: `server/routes/scontrini.js` (modify), `public/js/logs-desktop.js` (modify)
 - Acceptance criteria:
-  - [ ] Both events show in Attività with date and person
+  - [x] Both events show in Attività with date and person
 - After: 2.2
 
 ## Phase 3 — Gallery and viewer (≈ 1 d)
 
-### [ ] 3.1 Add the gallery pages · D10
+### [x] 3.1 Add the gallery pages · D10
 
 - Decision: **D10** Where the gallery lives — Own page /scontrini?data=
 - Files: `server/routes/pages.js` (modify), `public/scontrini.html` (create), `public/scontrini-desktop.html` (create), `public/js/scontrini.js` (create), `public/js/scontrini-desktop.js` (create)
 - Do: `server/routes/pages.js`: `/scontrini` (auth, mobile/desktop detection as the other pages). Pages load `utils.js`, `season.js`, `calendar.js` (header date), `api-client.js`, `auth.js`, `version.js`, `shared/scontrini.js`, then `scontrini.js` / `scontrini-desktop.js`: `GET /api/scontrini?data=`, group by `partecipante_id`, `<img loading="lazy">` of the thumbs; "‹ Apri la consegna" uses `consegnaHref(date)`. `?data=` must match `yyyy-mm-dd`, else back to Storico.
 - Acceptance criteria:
-  - [ ] Opening /scontrini?data=2026-10-06 lists the thumbnails grouped by person
-  - [ ] A consegna without photos shows "Nessuno scontrino"
+  - [x] Opening /scontrini?data=2026-10-06 lists the thumbnails grouped by person
+  - [x] A consegna without photos shows "Nessuno scontrino"
 - Verify: `manual: dev server, mobile and desktop`
 - After: 2.2
 
-### [ ] 3.2 Link the gallery from the Storico · D10
+### [x] 3.2 Link the gallery from the Storico · D10
 
 - Decision: **D10** Where the gallery lives — Own page /scontrini?data=
 - Files: `server/routes/storico.js` (modify), `public/js/storico.js` (modify), `public/js/storico-desktop.js` (modify), `public/storico-desktop.html` (modify), `test/integration/storico.test.js` (modify)
 - Do: `GET /api/storico` adds `num_scontrini` per consegna (COUNT subquery). Mobile `consegnaRowHtml` adds "N scontrini" as a real link (`stopPropagation` so the row onclick does not fire); desktop adds a Scontrini column ("–" when 0).
 - Acceptance criteria:
-  - [ ] Tapping the link opens the gallery, tapping the rest of the row still opens the consegna
-  - [ ] Consegne before the feature show no link
+  - [x] Tapping the link opens the gallery, tapping the rest of the row still opens the consegna
+  - [x] Consegne before the feature show no link
 - Verify: `npm run test:integration -- storico`
 - After: 3.1
 
-### [ ] 3.3 Viewer for one photo: Own lightbox · D12
+### [x] 3.3 Viewer for one photo: Own lightbox · D12
 
 - Decision: **D12** How a photo opens large — Own lightbox
 - Files: `public/js/shared/scontrini.js` (modify), `public/style.css` (modify)
 - Do: Implement in `public/js/shared/scontrini.js`, styles in `public/style.css` (classes `.lightbox*`, `.initially-hidden` pattern for the overlay).
 - Acceptance criteria:
-  - [ ] From the gallery, next/previous goes through all photos of the consegna
-  - [ ] Esc or ‹ closes it
+  - [x] From the gallery, next/previous goes through all photos of the consegna
+  - [x] Esc or ‹ closes it
 - After: 3.1, 2.1
 
 ## Phase 4 — Docs and release 2.29.0 (≈ 0.5 d)
 
-### [ ] 4.1 Document the photo folder in the deploy and backup notes · D5
+### [x] 4.1 Document the photo folder in the deploy and backup notes · D5
 
 - Decision: **D5** Back up the photo folder at deploy
 - Files: `docs/TECHNICAL.md` (modify)
 - Acceptance criteria:
-  - [ ] TECHNICAL.md names the folder and the backup command
+  - [x] TECHNICAL.md names the folder and the backup command
 
-### [ ] 4.2 Update manuals, TECHNICAL.md and CLAUDE.md · D15
+### [x] 4.2 Update manuals, TECHNICAL.md and CLAUDE.md · D15
 
 - Decision: **D15** Docs, manuals and release
 - Files: `docs/MANUALE_PARTECIPANTI.md` (modify), `docs/MANUALE_AMMINISTRATORI.md` (modify), `docs/TECHNICAL.md` (modify), `CLAUDE.md` (modify), `public/js/shared/tips.js` (modify)
 - Acceptance criteria:
-  - [ ] /manuale explains how to attach a receipt
-  - [ ] CLAUDE.md lists the scontrini route, service and folder
+  - [x] /manuale explains how to attach a receipt
+  - [x] CLAUDE.md lists the scontrini route, service and folder
 
-### [ ] 4.3 Release 2.29.0 · D15
+### [x] 4.3 Release 2.29.0 · D15
 
 - Decision: **D15** Docs, manuals and release
 - Files: `package.json` (modify)
 - Do: Bump `package.json`, commit, tag `v2.29.0`, buildx multi-platform push; `docker run --rm --entrypoint ls jeremyjrossi/gass:2.29.0 /app` shows no `data-scontrini`. Deploy only on explicit request.
 - Acceptance criteria:
-  - [ ] npm test green
-  - [ ] Image contains no photo folder
+  - [x] npm test green
+  - [x] Image contains no photo folder
 - Verify: `npm test`
 - After: 4.2
 
 ## Final check
 
-- [ ] `npm test`
-- [ ] `npm run test:integration`
-- [ ] `npm run test:integration -- scontrini`
-- [ ] `manual: upload a phone photo in the dev server, check size in the network tab`
-- [ ] `manual: dev server, force_mobile=true cookie, then desktop`
-- [ ] `manual: dev server, mobile and desktop`
-- [ ] `npm run test:integration -- storico`
+- [x] `npm test`
+- [x] `npm run test:integration`
+- [x] `npm run test:integration -- scontrini`
+- [x] `manual: upload a phone photo in the dev server, check size in the network tab`
+- [x] `manual: dev server, force_mobile=true cookie, then desktop`
+- [x] `manual: dev server, mobile and desktop`
+- [x] `npm run test:integration -- storico`
+
+## Execution notes (2026-10-08)
+
+- 3.1: one gallery script `public/js/galleria-scontrini.js` serves both `scontrini.html` and `scontrini-desktop.html` (no layout logic differs), instead of two scripts.
+- Manual checks done on a scratch copy (fresh DB, port 3100) with Playwright: mobile upload of 2 + 2 photos (limit 3 enforced), 3000×4000 → 1200×1600 / 34 KB, thumbnail 240×320; lightbox, list badge, Storico link, gallery; desktop drop zone, Storico column, lightbox arrows, × with confirmation.
