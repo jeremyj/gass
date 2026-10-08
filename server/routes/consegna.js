@@ -9,6 +9,8 @@ const { quotePerPersona, registraPagamento, ensureSemestre } = require('../servi
 const { apertura } = require('../services/apertura');
 const { notifyClosed, canaliAttivi } = require('../services/report');
 const { listUscite, totaleUscite, sostituisciUscite } = require('../services/uscite');
+const { ensureConsegna } = require('../services/consegne');
+const { rimuoviScontriniConsegna } = require('../services/scontrini');
 
 const router = express.Router();
 
@@ -136,34 +138,17 @@ router.post('/', (req, res) => {
         trovatoInCassa, pagatoProduttore, lasciatoInCassa, noteGiornata || ''
       ];
 
-      if (consegna) {
-        console.log(`[CONSEGNA] ${timestamp} - Updating existing consegna ID: ${consegna.id}`);
-        const updateAudit = getAuditFields(req, 'update');
-        db.prepare(`
-          UPDATE consegne
-          SET trovato_in_cassa = ?, pagato_produttore = ?, lasciato_in_cassa = ?, note = ?,
-              updated_by = ?, updated_at = ?
-          WHERE id = ?
-        `).run(...consegnaData, updateAudit.updated_by, updateAudit.updated_at, consegna.id);
-      } else {
-        const createAudit = getAuditFields(req, 'create');
-        const result = db.prepare(`
-          INSERT INTO consegne (data, trovato_in_cassa, pagato_produttore, lasciato_in_cassa, note,
-                                created_by, created_at, updated_by, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `).run(data, ...consegnaData, createAudit.created_by, createAudit.created_at,
-               createAudit.updated_by, createAudit.updated_at);
-        consegna = { id: result.lastInsertRowid };
+      if (!consegna) {
+        consegna = ensureConsegna(db, data, getAuditFields(req, 'create'));
         console.log(`[CONSEGNA] ${timestamp} - Created new consegna ID: ${consegna.id}`);
-
-        logActivity({
-          eventType: 'consegna_created',
-          actorUserId: req.session.userId,
-          consegnaId: consegna.id,
-          details: `consegna: ${data}`,
-          createdAt: timestamp
-        });
       }
+      const updateAudit = getAuditFields(req, 'update');
+      db.prepare(`
+        UPDATE consegne
+        SET trovato_in_cassa = ?, pagato_produttore = ?, lasciato_in_cassa = ?, note = ?,
+            updated_by = ?, updated_at = ?
+        WHERE id = ?
+      `).run(...consegnaData, updateAudit.updated_by, updateAudit.updated_at, consegna.id);
 
       // Upsert movimenti and update saldi
       const insertMovimento = db.prepare(`
@@ -368,6 +353,7 @@ router.delete('/:id', requireAdmin, (req, res) => {
     });
 
     transaction();
+    rimuoviScontriniConsegna(id); // rows went by CASCADE
     console.log(`[CONSEGNA] ${timestamp} - Successfully deleted consegna ID: ${id} and recalculated saldi`);
     res.json({ success: true });
   } catch (error) {

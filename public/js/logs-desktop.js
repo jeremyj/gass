@@ -54,6 +54,8 @@ function getEventIcon(eventType) {
     case 'teatro_pagamento': return '🎭';
     case 'teatro_modifica': return '🎭';
     case 'teatro_cassa': return '🎭';
+    case 'scontrino_aggiunto': return '📷';
+    case 'scontrino_rimosso': return '📷';
     default: return '•';
   }
 }
@@ -98,6 +100,10 @@ function getEventDescription(event) {
       return 'Quota teatro modificata';
     case 'teatro_cassa':
       return 'Cassa teatro';
+    case 'scontrino_aggiunto':
+      return `Scontrino aggiunto per <strong>${escapeHtml(event.partecipante_nome || 'N/A')}</strong>`;
+    case 'scontrino_rimosso':
+      return `Scontrino tolto per <strong>${escapeHtml(event.partecipante_nome || 'N/A')}</strong>`;
     case 'movimento_changed':
       return `Movimento modificato per <strong>${escapeHtml(event.partecipante_nome || 'N/A')}</strong>`;
     default:

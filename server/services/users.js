@@ -23,6 +23,7 @@ function deleteUser(db, id) {
     return 'Impossibile eliminare: il partecipante ha movimenti, rettifiche di saldo o quote teatro. Disattivalo invece';
   }
 
+  rimuoviScontriniUtente(db, id);
   db.transaction(() => {
     const refs = db.prepare(`
       SELECT m.name AS tbl, f."from" AS col
@@ -38,6 +39,7 @@ function deleteUser(db, id) {
 }
 
 const { toLocalDateString } = require('./calculations');
+const { rimuoviScontriniUtente } = require('./scontrini');
 const { freeFutureTurni } = require('./turni');
 const { syncDovutoCorrente } = require('./teatro');
 

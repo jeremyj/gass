@@ -372,6 +372,24 @@ function createDatabase(dbPath) {
     CREATE INDEX IF NOT EXISTS idx_uscite_cassa_consegna ON uscite_cassa(consegna_id);
   `);
 
+  log('\n--- Scontrini (v2.29) ---');
+
+  // Receipt photos of a person in a consegna; the JPEG files live on the volume (services/scontrini.js)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS scontrini (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      consegna_id INTEGER NOT NULL REFERENCES consegne(id) ON DELETE CASCADE,
+      partecipante_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      file TEXT NOT NULL,
+      larghezza INTEGER,
+      altezza INTEGER,
+      byte INTEGER,
+      created_by INTEGER REFERENCES users(id),
+      created_at DATETIME
+    );
+    CREATE INDEX IF NOT EXISTS idx_scontrini_consegna ON scontrini(consegna_id);
+  `);
+
   log('\n--- Data initialization ---');
 
   const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get().count;

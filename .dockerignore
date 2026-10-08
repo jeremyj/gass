@@ -16,6 +16,7 @@ gass.db-wal
 
 # Data directory (use volume instead)
 data/
+data-scontrini/
 
 # Documentation and AI instructions
 *.md

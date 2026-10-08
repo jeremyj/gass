@@ -105,6 +105,7 @@ async function loginAs(agent, username, password = 'password123') {
  * Leaves users intact.
  */
 function clearConsegne(db) {
+  db.prepare('DELETE FROM scontrini').run();
   db.prepare('DELETE FROM consegne').run();
   db.prepare('DELETE FROM rettifiche_saldo').run();
   db.prepare('UPDATE users SET saldo = 0, ultima_modifica = NULL').run();
@@ -117,6 +118,7 @@ function clearConsegne(db) {
  * a test demoted/changed it.
  */
 function clearNonAdminUsers(db) {
+  db.prepare('DELETE FROM scontrini').run();
   db.prepare('DELETE FROM turni').run();
   db.prepare('DELETE FROM turni_pause').run();
   db.prepare("DELETE FROM settings WHERE key IN ('turni_auto', 'turni_note')").run();

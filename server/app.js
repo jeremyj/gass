@@ -31,6 +31,8 @@ function createApp() {
     },
   }));
 
+  // Receipt photos arrive as base64 JSON: a bigger limit only there, parsed before the global 100 KB parser
+  app.use('/api/scontrini', express.json({ limit: '3mb' }));
   app.use(express.json());
   app.use(cookieParser());
 
@@ -82,6 +84,7 @@ function createApp() {
   const turniRouter = require('./routes/turni');
   const teatroRouter = require('./routes/teatro');
   const altobelliRouter = require('./routes/altobelli');
+  const scontriniRouter = require('./routes/scontrini');
 
   // OIDC routes (only when OIDC_ISSUER is configured)
   if (process.env.OIDC_ISSUER) {
@@ -101,6 +104,7 @@ function createApp() {
   app.use('/api/turni', turniRouter);
   app.use('/api/teatro', teatroRouter);
   app.use('/api/altobelli', altobelliRouter);
+  app.use('/api/scontrini', scontriniRouter);
   // Pages router last — catches /, /consegna, /storico, /debiti, /logs, /turni HTML pages
   app.use('/', pagesRouter);
 

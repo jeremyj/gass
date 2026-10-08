@@ -21,3 +21,6 @@ backups/
 # Password management scripts
 update-admin-password.js
 handoff/
+
+# Receipt photos (local dev; in Docker they live on the /app/data volume)
+data-scontrini/
