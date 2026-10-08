@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const { shouldUseMobileView } = require('../middleware/userAgent');
 const packageJson = require('../../package.json');
+const { MANUALI, renderManuale } = require('../services/manuali');
 
 const router = express.Router();
 const PUBLIC = path.join(__dirname, '../../public');
@@ -24,6 +25,11 @@ router.get('/comefunziona', (req, res) => {
 router.get('/admin-video', (req, res) => {
   res.sendFile(path.join(PUBLIC, 'admin-video.html'));
 });
+
+// User manuals (public, rendered from docs/MANUALE_*.md)
+for (const [nome, { url }] of Object.entries(MANUALI)) {
+  router.get(url, (req, res) => res.type('html').send(renderManuale(nome)));
+}
 
 // API endpoint to get app version (public, no auth required)
 router.get('/api/version', (req, res) => {

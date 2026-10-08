@@ -22,8 +22,8 @@ GASS Pagamenti è un'applicazione web completa per la gestione di:
 
 ## Documentazione
 
-- **[Manuale partecipanti](docs/MANUALE_PARTECIPANTI.md)** - Guida per tutti i partecipanti
-- **[Manuale amministratori](docs/MANUALE_AMMINISTRATORI.md)** - Funzioni degli amministratori
+- **[Manuale partecipanti](docs/MANUALE_PARTECIPANTI.md)** - Guida per tutti i partecipanti, online su https://gass.x86.it/manuale
+- **[Manuale amministratori](docs/MANUALE_AMMINISTRATORI.md)** - Funzioni degli amministratori, online su https://gass.x86.it/manuale-admin
 - **[Documentazione Tecnica](docs/TECHNICAL.md)** - Riferimento per sviluppatori
 - **[Guida Deploy](DEPLOYMENT.md)** - Istruzioni per installazione e configurazione
 

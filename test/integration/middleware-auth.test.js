@@ -136,6 +136,16 @@ describe('public endpoints', () => {
     expect(res.text).toContain('gass-primo-accesso.mp4');
   });
 
+  it('serves the two manuals without a session, linked to each other', async () => {
+    const res = await request(app).get('/manuale');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('<h1>GASS - Manuale dei partecipanti</h1>');
+    expect(res.text).toContain('href="/manuale-admin"');
+    const admin = await request(app).get('/manuale-admin');
+    expect(admin.status).toBe(200);
+    expect(admin.text).toContain('href="/manuale"');
+  });
+
   it('serves the admin video page without a session', async () => {
     const res = await request(app).get('/admin-video');
     expect(res.status).toBe(200);

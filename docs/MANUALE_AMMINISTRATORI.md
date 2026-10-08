@@ -1,6 +1,6 @@
 # GASS - Manuale degli amministratori
 
-Lingua: italiano semplificato, regole ASD-STE100 (frasi brevi, un'azione per passo, gli stessi termini sempre). Questo manuale contiene solo le funzioni degli amministratori. Le funzioni di tutti i partecipanti e i termini sono in [MANUALE_PARTECIPANTI.md](MANUALE_PARTECIPANTI.md).
+Lingua: italiano semplificato, regole ASD-STE100 (frasi brevi, un'azione per passo, gli stessi termini sempre). Questo manuale contiene solo le funzioni degli amministratori. Le funzioni di tutti i partecipanti e i termini sono nel [Manuale dei partecipanti](MANUALE_PARTECIPANTI.md).
 
 Video delle funzioni degli amministratori: https://gass.x86.it/admin-video.
 

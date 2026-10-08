@@ -1,6 +1,6 @@
 # GASS - Manuale dei partecipanti
 
-Lingua: italiano semplificato, regole ASD-STE100 (frasi brevi, un'azione per passo, gli stessi termini sempre). Funzioni degli amministratori: [MANUALE_AMMINISTRATORI.md](MANUALE_AMMINISTRATORI.md).
+Lingua: italiano semplificato, regole ASD-STE100 (frasi brevi, un'azione per passo, gli stessi termini sempre). Funzioni degli amministratori: [Manuale degli amministratori](MANUALE_AMMINISTRATORI.md).
 
 ## Termini
 

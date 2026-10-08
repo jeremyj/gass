@@ -79,3 +79,7 @@ design/
 handoff/
 storico-consegne-cassa/
 .fluidplan/
+
+# The user manuals are served as pages (/manuale, /manuale-admin)
+!docs/MANUALE_PARTECIPANTI.md
+!docs/MANUALE_AMMINISTRATORI.md

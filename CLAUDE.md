@@ -12,7 +12,7 @@
 - **App Factory**: `server/app.js` - Express setup, middleware, route mounting
 - **Database**: `server/config/database.js` - exports `createDatabase(dbPath)` factory + production singleton
 - **Routes**: `server/routes/`
-  - `pages.js` - HTML routing with mobile/desktop detection; `/login`, `/comefunziona` (first-access video, turni swap included; `/v2.17` was folded into it in 2.27.2), `/admin-video` (desktop admin video, unlinked, shared with admins) and `/api/version` are public; videos in `public/video/` (how they are recorded: see the video memory)
+  - `pages.js` - HTML routing with mobile/desktop detection; `/login`, `/comefunziona` (first-access video, turni swap included; `/v2.17` was folded into it in 2.27.2), `/admin-video` (desktop admin video, unlinked, shared with admins), `/manuale` and `/manuale-admin` (the two `docs/MANUALE_*.md` rendered by `server/services/manuali.js`; `.dockerignore` re-includes them) and `/api/version` are public; videos in `public/video/` (how they are recorded: see the video memory)
   - `auth.js` - Authentication endpoints (login, logout, password change)
   - `oidc.js` - Authentik SSO (mounted at `/auth/oidc` only when `OIDC_ISSUER` is set)
   - `consegna.js` - Delivery API (`GET /apertura` declared before `GET /:date`, POST, DELETE/:id admin, `POST /:id/close`, `POST /:id/reopen` admin; close sends the reports); `GET /:date` adds `movimenti[].teatro` and `teatroExtra` (quota-only payers)
