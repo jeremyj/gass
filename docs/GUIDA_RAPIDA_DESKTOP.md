@@ -1,6 +1,6 @@
 ---
 title: "GASS Torpignattara - Guida Rapida (Desktop)"
-date: "Settembre 2026"
+date: "Ottobre 2026"
 ---
 
 # Accesso
@@ -13,7 +13,7 @@ Per cambiare la password in seguito vai su **https://auth.x86.it**, nelle impost
 
 ![](screenshots/01-login.png){ width=50% }
 
-**Navigazione:** menu in alto — *Consegna*, *Saldi*, *Storico* (e *Attività* per gli amministratori); a destra il tuo nome, *Cambia password* (solo account locali) ed *Esci*. L'intestazione scura cambia colore con la stagione.
+**Navigazione:** menu in alto — *Consegna*, *Saldi*, *Storico*, *Turni* (e *Teatro*, *Attività*, *Altobelli* per gli amministratori); a destra il tuo nome, *Cambia password* (solo account locali) ed *Esci*. L'intestazione scura cambia colore con la stagione.
 
 ---
 
@@ -45,7 +45,7 @@ La tabella ha le colonne Partecipante, Conto produttore, Importo saldato, Lascia
 
 > Se il partecipante ha un debito o credito pregressi, il sistema li compensa automaticamente — controlla il riepilogo prima di salvare.
 
-![Consegna del 24/02 con i movimenti della giornata](screenshots/02-consegna.png){ width=100% }
+![Consegna del 13/10 con i movimenti della giornata](screenshots/02-consegna.png){ width=100% }
 
 ## Chiudere la Consegna
 

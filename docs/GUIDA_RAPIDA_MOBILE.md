@@ -1,6 +1,6 @@
 ---
 title: "GASS Torpignattara - Guida Rapida (Mobile)"
-date: "Settembre 2026"
+date: "Ottobre 2026"
 ---
 
 # Accesso
@@ -13,7 +13,7 @@ Per cambiare la password in seguito vai su **https://auth.x86.it**, nelle impost
 
 ![](screenshots/01-login.png){ width=50% }
 
-**Navigazione:** barra in basso con tre schede — *Consegna*, *Saldi*, *Storico*. In alto compaiono il tuo nome, la chiave (cambia password, solo account locali) e l'icona di uscita (*Esci*). L'intestazione scura cambia colore con la stagione.
+**Navigazione:** barra in basso con quattro schede — *Consegna*, *Saldi*, *Storico*, *Turni*. In alto compaiono il tuo nome, la chiave (cambia password, solo account locali) e l'icona di uscita (*Esci*). L'intestazione scura cambia colore con la stagione.
 
 ---
 
