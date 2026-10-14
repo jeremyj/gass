@@ -82,6 +82,6 @@ Mockup: `design/mockups/consegna-mobile-compatta.html` (sections G, H, I = decis
 
 ## Final check
 
-- [ ] `npm test`
-- [ ] `browser check mobile + desktop`
-- [ ] `browser check mobile`
+- [x] `npm test`
+- [x] `browser check mobile + desktop`
+- [x] `browser check mobile`

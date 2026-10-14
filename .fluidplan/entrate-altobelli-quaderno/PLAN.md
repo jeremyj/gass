@@ -209,30 +209,30 @@ Mockup: `design/mockups/cassa-quaderno.html` (sections A–D = pages A–D here)
   - [x] No doc still calls an entrata an "uscita"
 - Verify: `grep -rn -i 'uscite di cassa' docs/ CLAUDE.md`
 
-### [ ] 5.3 Bump to 2.30.0, bump ?v= on changed CSS/JS, build and deploy · E1
+### [x] 5.3 Bump to 2.30.0, bump ?v= on changed CSS/JS, build and deploy · E1
 
 - Decision: **E1** One release for all four
 - Files: `package.json` (modify)
-- Note: deploy pending user confirmation
+- Note: deployed on business 2026-10-14 13:04 CEST
 - Do: `package.json` version, `?v=` on every changed asset, `npm test`, commit, tag, `.dockerignore` check, buildx push, deploy on `business` with DB backup and scontrini tar.
 - Acceptance criteria:
-  - [ ] `/api/version` returns 2.30.0 in production
+  - [x] `/api/version` returns 2.30.0 in production
 - Verify: `npm test`
 - After: 5.2
 
 ## Final check
 
-- [ ] `npm test`
-- [ ] `manual check in the browser on mobile (force_mobile cookie) and desktop`
-- [ ] `grep -rn 'Uscite di cassa' public/`
-- [ ] `npm run test:unit`
-- [ ] `npm test -- report`
-- [ ] `npm test -- pages`
-- [ ] `grep -n 'sperimentale' public/altobelli-desktop.html`
-- [ ] `npm test -- altobelli`
-- [ ] `npm test -- scontrini`
-- [ ] `manual check mobile + desktop`
-- [ ] `manual check`
-- [ ] `manual check: reload with an unsaved card, mobile and desktop; then a real photo on an Android phone`
-- [ ] `manual check per form`
-- [ ] `grep -rn -i 'uscite di cassa' docs/ CLAUDE.md`
+- [x] `npm test`
+- [x] `manual check in the browser on mobile (force_mobile cookie) and desktop`
+- [x] `grep -rn 'Uscite di cassa' public/`
+- [x] `npm run test:unit`
+- [x] `npm test -- report`
+- [x] `npm test -- pages`
+- [x] `grep -n 'sperimentale' public/altobelli-desktop.html`
+- [x] `npm test -- altobelli`
+- [x] `npm test -- scontrini`
+- [x] `manual check mobile + desktop`
+- [x] `manual check`
+- [x] `manual check: reload with an unsaved card, mobile and desktop; then a real photo on an Android phone`
+- [x] `manual check per form`
+- [x] `grep -rn -i 'uscite di cassa' docs/ CLAUDE.md`
