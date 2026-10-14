@@ -209,7 +209,7 @@ Mockup: `design/mockups/cassa-quaderno.html` (sections A–D = pages A–D here)
   - [x] No doc still calls an entrata an "uscita"
 - Verify: `grep -rn -i 'uscite di cassa' docs/ CLAUDE.md`
 
-### [x] 5.3 Bump to 2.30.0, bump ?v= on changed CSS/JS, build and deploy · E1
+### [ ] 5.3 Bump to 2.30.0, bump ?v= on changed CSS/JS, build and deploy · E1
 
 - Decision: **E1** One release for all four
 - Files: `package.json` (modify)
