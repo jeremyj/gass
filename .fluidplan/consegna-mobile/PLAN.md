@@ -14,69 +14,69 @@ Mockup: `design/mockups/consegna-mobile-compatta.html` (sections G, H, I = decis
 
 ## Phase 1 — Lighter mobile Consegna page (≈ 1 d)
 
-### [ ] 1.1 Move cassa, notebook, note and rows into a mobile sheet · F1
+### [x] 1.1 Move cassa, notebook, note and rows into a mobile sheet · F1
 
 - Decision: **F1** Detail, entrate/uscite, notebook and note in a sheet of their own — Taller summary box, full-screen sheet on tap
 - Files: `public/consegna.html` (modify), `public/js/consegna.js` (modify), `public/js/shared/scontrini.js` (modify), `public/style.css` (modify)
 - Do: `consegna.html`: wrap the cassa row, quote teatro, `#quaderno-box` and `#note-giornata-group` in `#giornata-sheet` with a header (back, title "Riepilogo, entrate/uscite cassa, teatro e note") and the Salva; add the summary box `#giornata-row` (lines + footer "Apri: dettaglio, entrate/uscite, quaderno, note ›": Conto produttore = `calculatePagatoProduttore()`, Quote teatro = `quoteOggi`, one line per `usciteVersi()` entry with motivo) before the add select; rename the block label to "Entrate/uscite di cassa" (mobile and desktop, `tips.js` text too); swap the order: Annulla consegna, then Chiudi consegna; place `#consegna-status-section` as decided in F5. `consegna.js`: `openGiornata()` / `closeGiornata()` (unsaved check) and `renderGiornataRow()` called from `updateLasciatoInCassa`/`renderQuoteOggi`. `style.css`: sheet full-screen at ≤ 768px like `.participant-card-flow`. `apriQuaderno` opens the sheet first on mobile.
 - Acceptance criteria:
-  - [ ] On a 390 px phone the list starts within the first screen
-  - [ ] The box has no title, a button-like footer with ›, and opens the sheet on any tap
-  - [ ] Note, rows and photos save as before; drafts still restore
-  - [ ] "Fotografa prima" opens the sheet and the camera
-  - [ ] Annulla on the left, Chiudi on the right
-  - [ ] Desktop layout unchanged (label renamed)
+  - [x] On a 390 px phone the list starts within the first screen
+  - [x] The box has no title, a button-like footer with ›, and opens the sheet on any tap
+  - [x] Note, rows and photos save as before; drafts still restore
+  - [x] "Fotografa prima" opens the sheet and the camera
+  - [x] Annulla on the left, Chiudi on the right
+  - [x] Desktop layout unchanged (label renamed)
 - Verify: `npm test` · `browser check mobile + desktop`
 
-### [ ] 1.2 Place the status buttons as decided · F5
+### [x] 1.2 Place the status buttons as decided · F5
 
 - Decision: **F5** Where Annulla / Chiudi consegna sit on mobile — J3 · At the top, under the header
 - Files: `public/consegna.html` (modify), `public/style.css` (modify)
 - Do: `consegna.html`: `#consegna-status-section` after `#section-movimenti` (J1), or as a fixed bar above `.bottom-nav` with page padding (J2), or before the summary box (J3). Annulla consegna first, Chiudi consegna second.
 - Acceptance criteria:
-  - [ ] Buttons where decided, on a closed consegna "Riapri consegna" (admin) in the same place
+  - [x] Buttons where decided, on a closed consegna "Riapri consegna" (admin) in the same place
 - Verify: `browser check mobile`
 - After: 1.1
 
-### [ ] 1.3 Rename the cassa lines to Uscite / Entrate di cassa · F6
+### [x] 1.3 Rename the cassa lines to Uscite / Entrate di cassa · F6
 
 - Decision: **F6** Words on the cassa lines after the rename
 - Files: `public/js/shared/consegna-common.js` (modify), `server/services/report.js` (modify), `server/services/validation.js` (modify), `test/integration/report.test.js` (modify), `test/unit/validation.test.js` (modify)
 - Do: `VERSO_USCITA` in `consegna-common.js` and `VERSO` in `report.js`; error messages "…dei 32,80 € entrati in cassa" / "usciti dalla cassa" in `erroreUscite` and `validation.js`; tests; manuals.
 - Acceptance criteria:
-  - [ ] No screen or report mixes tolti/rimessi with entrate/uscite
+  - [x] No screen or report mixes tolti/rimessi with entrate/uscite
 - Verify: `npm test`
 
-### [ ] 1.4 Show the cassa summary according to the consegna state · F2
+### [x] 1.4 Show the cassa summary according to the consegna state · F2
 
 - Decision: **F2** Where the cassa summary is while the consegna is open — Summary box while open (F1), full cassa on the page when closed
 - Files: `public/js/consegna.js` (modify), `public/style.css` (modify)
 - Do: `consegna.js` `updateConsegnaStatusUI`: the cassa row sits in the sheet while open and at the top of the page when closed (move the node on state change).
 - Acceptance criteria:
-  - [ ] Open consegna: summary in the sheet, In cassa in the row
-  - [ ] Closed consegna: full summary at the top of the page
+  - [x] Open consegna: summary in the sheet, In cassa in the row
+  - [x] Closed consegna: full summary at the top of the page
 - Verify: `browser check mobile`
 - After: 1.1
 
-### [ ] 1.5 Move the saldo before today under Importo saldato · F3
+### [x] 1.5 Move the saldo before today under Importo saldato · F3
 
 - Decision: **F3** "Prima di oggi" under Importo saldato in the card — Mobile and desktop
 - Files: `public/js/shared/consegna-common.js` (modify), `public/style.css` (modify)
 - Do: `buildParticipantCardHTML` in `consegna-common.js`: drop the header pill, add a `.prima-oggi` row after the Importo saldato field with `saldoPrimaText(saldo)` coloured by `--credito`/`--debito` ("pari" when 0). CSS in `style.css`.
 - Acceptance criteria:
-  - [ ] The row shows credito, debito or pari with sign and word
-  - [ ] Header shows only the name
+  - [x] The row shows credito, debito or pari with sign and word
+  - [x] Header shows only the name
 - Verify: `npm test` · `browser check mobile + desktop`
 
 ## Phase 2 — Docs, video check and release (≈ 0.5 d)
 
-### [ ] 2.1 Update docs and re-record the changed phone clips · F4
+### [x] 2.1 Update docs and re-record the changed phone clips · F4
 
 - Decision: **F4** Docs and videos after the layout change
 - Files: `docs/MANUALE_PARTECIPANTI.md` (modify), `docs/GUIDA_RAPIDA_MOBILE.md` (modify), `CLAUDE.md` (modify), `public/comefunziona.html` (modify)
 - Do: `docs/MANUALE_PARTECIPANTI.md`, `docs/GUIDA_RAPIDA_MOBILE.md`, `CLAUDE.md`; video procedure from the video memory (record-full8 + clips.py), replace only the changed clips, bump `data-v`.
 - Acceptance criteria:
-  - [ ] No doc or clip shows note/uscite on the mobile page itself
+  - [x] No doc or clip shows note/uscite on the mobile page itself
 - Verify: `npm test`
 - After: 1.1, 1.4, 1.5
 

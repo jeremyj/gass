@@ -49,7 +49,7 @@ Se la pagina si ricarica prima di **Salva** (per esempio quando torni dalla foto
 
 ### Aprire la consegna
 
-Video: [Aprire una consegna, 0:08](https://gass.x86.it/comefunziona#consegna).
+Video: [Aprire una consegna, 0:24](https://gass.x86.it/comefunziona#consegna).
 
 La pagina Consegna si apre sulla consegna giusta: l'ultimo turno fino a oggi, se è ancora aperto. Se l'ultima consegna è chiusa, la pagina si apre su oggi.
 
@@ -119,7 +119,7 @@ Per togliere una quota sbagliata, scrivi 0 e premi **Salva movimento**.
 
 ### Registrare entrate e uscite di cassa
 
-Video: [Uscite di cassa, 0:46](https://gass.x86.it/comefunziona#uscite).
+Video: [Entrate/uscite di cassa, 1:03](https://gass.x86.it/comefunziona#uscite).
 
 Usa **Entrate/uscite di cassa** quando togli soldi dalla cassa o metti soldi nella cassa per un motivo diverso dalla spesa. Sul telefono, premi prima **Apri: dettaglio, entrate/uscite, quaderno, note**.
 
@@ -170,7 +170,7 @@ Dopo la chiusura, solo chi ha chiuso la consegna o un amministratore può aggiun
 
 ### Chiudere la consegna
 
-Video: [Chiudere la consegna, 0:14](https://gass.x86.it/comefunziona#chiudere).
+Video: [Chiudere la consegna, 0:17](https://gass.x86.it/comefunziona#chiudere).
 
 **AVVERTENZA:** Dopo la chiusura, non puoi cambiare la consegna. Solo un amministratore può riaprirla.
 

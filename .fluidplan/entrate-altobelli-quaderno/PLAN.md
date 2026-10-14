@@ -209,10 +209,11 @@ Mockup: `design/mockups/cassa-quaderno.html` (sections A–D = pages A–D here)
   - [x] No doc still calls an entrata an "uscita"
 - Verify: `grep -rn -i 'uscite di cassa' docs/ CLAUDE.md`
 
-### [ ] 5.3 Bump to 2.30.0, bump ?v= on changed CSS/JS, build and deploy · E1
+### [x] 5.3 Bump to 2.30.0, bump ?v= on changed CSS/JS, build and deploy · E1
 
 - Decision: **E1** One release for all four
 - Files: `package.json` (modify)
+- Note: deploy pending user confirmation
 - Do: `package.json` version, `?v=` on every changed asset, `npm test`, commit, tag, `.dockerignore` check, buildx push, deploy on `business` with DB backup and scontrini tar.
 - Acceptance criteria:
   - [ ] `/api/version` returns 2.30.0 in production
