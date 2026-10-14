@@ -21,7 +21,7 @@ Per cambiare la password in seguito vai su **https://auth.x86.it**, nelle impost
 
 La pagina si apre da sola sull'ultimo giorno di turno fino a oggi, se non ha ancora una consegna o ce l'ha aperta; altrimenti su oggi. Se non esiste ancora una consegna, appare il pulsante **Nuova consegna**. In cima un riquadro avvisa delle altre consegne ancora aperte ("Sono ancora aperte le consegne di …", con le date come link). Le consegne passate si aprono da **Storico**.
 
-In cima la riga della cassa mostra i totali della giornata come una somma: Trovato, + Incassato, − Pagato, = In cassa — tutti calcolati automaticamente, non si inserisce nulla. Se qualcuno ha preso soldi dalla cassa per altro (es. quote portate al teatro) o ne ha rimessi dentro (es. ha pagato Altobelli 357 € invece di 357,20), li scrive in *Soldi tolti o rimessi in cassa* sotto le note: tocca *− esce* o *+ entra*, poi importo e motivo (**+** a destra per un'altra riga). Compaiono sotto la riga come *Tolti dalla cassa* / *Rimessi in cassa* e sono già nel conto di In cassa. Sotto, lo stato (*Consegna aperta* / *Consegna chiusa*), il riquadro *Quaderno* per la foto dei conti scritti a mano e le *Note della giornata*.
+In cima lo stato (*Consegna aperta* / *Consegna chiusa*) con **Annulla consegna** (solo admin) e **Chiudi consegna**. Sotto, un riquadro riepilogo: conto produttore, quote teatro e le entrate/uscite di cassa con il motivo. Toccalo (**Apri: dettaglio, entrate/uscite, quaderno, note**) per aprire a tutto schermo la cassa completa (Trovato, + Incassato, − Pagato, = In cassa, tutto calcolato), il riquadro *Quaderno* per la foto dei conti scritti a mano, le *Entrate/uscite di cassa* e le *Note della giornata*; **‹** torna alla pagina. Se qualcuno ha preso soldi dalla cassa per altro (es. quote portate al teatro) o ne ha rimessi dentro (es. ha pagato Altobelli 357 € invece di 357,20), lo scrive in *Entrate/uscite di cassa*: tocca *− esce* o *+ entra*, poi importo e motivo (**+** a destra per un'altra riga), e **Salva**. A consegna chiusa la cassa completa torna in cima alla pagina.
 
 ![](screenshots/m02-consegna.png){ width=45% }
 
@@ -30,7 +30,7 @@ In cima la riga della cassa mostra i totali della giornata come una somma: Trova
 1. Nella sezione **Chi ha ritirato** seleziona il **partecipante** da **+ Aggiungi partecipante** (per modificare un movimento già inserito, tocca la sua riga)
 2. Si apre il modulo a tutto schermo — inserisci:
    - **Conto produttore** (l'importo effettivo nel foglio Altobelli)
-   - **Importo saldato** (quanto porta oggi)
+   - **Importo saldato** (quanto porta oggi); sotto, la riga **Prima di oggi** mostra il credito o il debito che aveva
    - se c'è, la **Quota teatro** (vedi sotto)
 3. Il sistema calcola automaticamente credito o debito residuo e lo mostra nel riquadro finale (*Lascia credito*, *Lascia debito* o *Esito: saldato*). Nell'elenco *Chi ha ritirato* ogni riga mostra conto e pagato e, quando ci sono, *salda debito*, *usa credito* e *quota teatro*; chi ha pagato solo la quota ha una riga *solo teatro*
 4. Clicca **Salva movimento**
@@ -41,7 +41,7 @@ In cima la riga della cassa mostra i totali della giornata come una somma: Trova
 
 ## Chiudere la Consegna
 
-Dopo aver salvato almeno un movimento, sotto la riga della cassa compare il link **Chiudi consegna** — cliccalo e conferma il riepilogo per bloccare la giornata. Solo un amministratore può riaprirla: la apre da **Storico** e usa **Riapri consegna** qui. Se la cassa è negativa compare l'avviso "Cassa negativa": controlla i movimenti prima di chiudere.
+Dopo aver salvato almeno un movimento, in cima alla pagina compare il pulsante **Chiudi consegna** — cliccalo e conferma il riepilogo per bloccare la giornata. Solo un amministratore può riaprirla: la apre da **Storico** e usa **Riapri consegna** qui. Se la cassa è negativa compare l'avviso "Cassa negativa": controlla i movimenti prima di chiudere.
 
 ![Conferma di chiusura con il riepilogo](screenshots/m02c-chiudi.png){ width=45% }
 

@@ -28,10 +28,10 @@ La colonna a sinistra mostra la cassa come una somma, calcolata automaticamente 
 - **Trovato in cassa** — il lasciato della consegna precedente
 - **+ Incassato** — somma degli importi saldati
 - **− Pagato al produttore** — somma dei conti produttore di tutti i movimenti del giorno
-- **Tolti dalla cassa** / **Rimessi in cassa** — solo se ci sono: soldi presi dalla cassa (*esce*, es. quote portate al teatro) o rimessi dentro (*entra*, es. Altobelli pagato 357 € invece di 357,20)
-- **= Lasciato in cassa** — trovato + incassato - pagato - tolti + rimessi
+- **Uscite di cassa** / **Entrate di cassa** — solo se ci sono: soldi presi dalla cassa (*esce*, es. quote portate al teatro) o rimessi dentro (*entra*, es. Altobelli pagato 357 € invece di 357,20)
+- **= Lasciato in cassa** — trovato + incassato - pagato - uscite + entrate
 
-Sotto, il riquadro **Quaderno** (foto della pagina dei conti scritti a mano), le **Note della giornata** e i **Soldi tolti o rimessi in cassa** (scegli *− esce* o *+ entra*, poi importo e motivo; **+** per un'altra riga), con **Salva** quando cambiano. Lo stato (*Consegna aperta* / *chiusa*) e i pulsanti Chiudi / Riapri / Annulla consegna sono nell'intestazione.
+Sotto, il riquadro **Quaderno** (foto della pagina dei conti scritti a mano), le **Note della giornata** e le **Entrate/uscite di cassa** (scegli *− esce* o *+ entra*, poi importo e motivo; **+** per un'altra riga), con **Salva** quando cambiano. Lo stato (*Consegna aperta* / *chiusa*) e i pulsanti Chiudi / Riapri / Annulla consegna sono nell'intestazione.
 
 ## Registrare un Movimento
 

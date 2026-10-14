@@ -15,7 +15,7 @@ Funzioni degli amministratori: [Manuale degli amministratori](MANUALE_AMMINISTRA
 | Importo saldato | I soldi che il partecipante dà alla consegna. |
 | Saldo | La situazione del partecipante: credito (blu, +) o debito (rosso, −). |
 | Cassa | I soldi nella scatola della consegna. |
-| Soldi tolti o rimessi in cassa | Soldi che escono dalla cassa (**esce**, tolti) o entrano nella cassa (**entra**, rimessi) per un motivo diverso dalla spesa. |
+| Entrate/uscite di cassa | Soldi che escono dalla cassa (**esce**) o entrano nella cassa (**entra**) per un motivo diverso dalla spesa. |
 | Quaderno | Il quaderno dove il turno scrive i conti a mano. La sua foto è la controprova della cassa. |
 | Quota teatro | La quota per l'affitto del teatro. Si paga ogni semestre (gennaio–giugno, luglio–dicembre). |
 | Bussolotto | La cassa del teatro. È separata dalla cassa della consegna. |
@@ -58,6 +58,8 @@ La pagina Consegna si apre sulla consegna giusta: l'ultimo turno fino a oggi, se
 
 Un riquadro in alto mostra le altre consegne ancora aperte. Premi una data per aprire quella consegna.
 
+Sul telefono, in alto ci sono lo stato della consegna e i pulsanti **Annulla consegna** (solo amministratori) e **Chiudi consegna**. Sotto c'è un riepilogo: conto produttore, quote teatro, entrate e uscite di cassa con il motivo. Premi **Apri: dettaglio, entrate/uscite, quaderno, note** per aprire la cassa completa, il quaderno, le entrate/uscite di cassa e le note. Premi **‹** per tornare alla pagina. Sul computer queste parti sono nella colonna a sinistra.
+
 ### Registrare la spesa di un partecipante
 
 Video: [Registrare un pagamento, 0:28](https://gass.x86.it/comefunziona#pagamento).
@@ -66,7 +68,7 @@ Video: [Registrare un pagamento, 0:28](https://gass.x86.it/comefunziona#pagament
 2. Scegli il partecipante.
 3. Scrivi il **Conto produttore**.
 4. Scrivi l'**Importo saldato**.
-5. Controlla l'esito: credito, debito o "saldato".
+5. Controlla la riga **Prima di oggi** (credito, debito o in pari) e l'esito: credito, debito o "saldato".
 6. Premi **Salva movimento**.
 7. Ripeti i passi da 1 a 6 per ogni partecipante.
 
@@ -115,19 +117,19 @@ Se il partecipante non deve quote, premi **+ Quota teatro (anticipo)** per regis
 
 Per togliere una quota sbagliata, scrivi 0 e premi **Salva movimento**.
 
-### Registrare soldi tolti o rimessi in cassa
+### Registrare entrate e uscite di cassa
 
 Video: [Uscite di cassa, 0:46](https://gass.x86.it/comefunziona#uscite).
 
-Usa **Soldi tolti o rimessi in cassa** quando togli soldi dalla cassa o metti soldi nella cassa per un motivo diverso dalla spesa.
+Usa **Entrate/uscite di cassa** quando togli soldi dalla cassa o metti soldi nella cassa per un motivo diverso dalla spesa. Sul telefono, premi prima **Apri: dettaglio, entrate/uscite, quaderno, note**.
 
-1. Sotto le **Note della giornata**, scegli **− esce** (soldi tolti dalla cassa) o **+ entra** (soldi rimessi in cassa). Puoi anche scrivere − o + prima dell'importo.
+1. In **Entrate/uscite di cassa**, scegli **− esce** (soldi che escono dalla cassa) o **+ entra** (soldi che entrano in cassa). Puoi anche scrivere − o + prima dell'importo.
 2. Scrivi l'importo.
 3. Scrivi il motivo. Il motivo è obbligatorio.
 4. Per un'altra riga, premi **+**.
 5. Premi **Salva**.
 
-Se manca l'importo o il motivo, GASS dice quale riga devi completare, per esempio "Scrivi il motivo dei 32,80 € rimessi in cassa".
+Se manca l'importo o il motivo, GASS dice quale riga devi completare, per esempio "Scrivi il motivo dei 32,80 € entrati in cassa".
 
 Esempio: il conto Altobelli è 357,20 €. Dai ad Altobelli 357 €. Scegli **+ entra**, scrivi 0,20, motivo "arrotondamento Altobelli".
 
@@ -137,27 +139,27 @@ Per togliere una riga, cancella l'importo e il motivo. Premi **Salva**.
 
 ### Controllare la cassa
 
-GASS calcola la cassa. Non puoi scrivere questi valori.
+GASS calcola la cassa. Non puoi scrivere questi valori. Sul telefono la cassa completa è in **Apri: dettaglio, entrate/uscite, quaderno, note**; quando la consegna è chiusa è in alto nella pagina.
 
 | Valore | Calcolo |
 |---|---|
 | Trovato | "In cassa" della consegna precedente. |
 | + Incassato | La somma degli importi saldati. |
 | − Pagato | La somma dei conti produttore. |
-| Tolti dalla cassa | La somma dei soldi tolti (−), con i motivi. |
-| Rimessi in cassa | La somma dei soldi rimessi (+), con i motivi. |
-| = In cassa | Trovato + Incassato − Pagato − tolti + rimessi. |
+| Uscite di cassa | La somma delle uscite (−), con i motivi. |
+| Entrate di cassa | La somma delle entrate (+), con i motivi. |
+| = In cassa | Trovato + Incassato − Pagato − uscite + entrate. |
 
 1. Conta i soldi nella cassa.
 2. Compara il totale con **In cassa**.
-3. Se i valori sono diversi, controlla le spese e i soldi tolti o rimessi.
+3. Se i valori sono diversi, controlla le spese e le entrate/uscite di cassa.
 4. Se la differenza continua, scrivi la causa nelle **Note della giornata**.
 
 Se **In cassa** è negativo, GASS mostra l'avviso "Cassa negativa".
 
 ### Fotografare il quaderno
 
-Il riquadro **Quaderno** è sotto la cassa. Fotografa la pagina del quaderno con i conti della consegna: è la controprova della cassa.
+Il riquadro **Quaderno** è sotto la cassa (sul telefono, in **Apri: dettaglio, entrate/uscite, quaderno, note**). Fotografa la pagina del quaderno con i conti della consegna: è la controprova della cassa.
 
 1. Premi **Fotografa** (telefono) o **Allega foto** (computer). Sul computer puoi anche trascinare l'immagine nel riquadro.
 2. Attendi che la miniatura non mostri più "carico…".
