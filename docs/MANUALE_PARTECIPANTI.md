@@ -126,6 +126,8 @@ Usa un'uscita di cassa quando togli soldi dalla cassa o metti soldi nella cassa 
 
 Esempio: il conto Altobelli è 357,20 €. Dai ad Altobelli 357 €. Scrivi 0,20 **entra**, motivo "arrotondamento Altobelli".
 
+Esempio: nel foglio Altobelli c'è una riga con un importo negativo, per esempio −29,80 €. È un credito: Altobelli toglie questo importo dal totale. Non scrivere la riga negativa nel conto della persona. Scrivi 29,80 **entra**, motivo "credito Altobelli".
+
 Per togliere un'uscita, cancella l'importo e il motivo. Premi **Salva**.
 
 ### Controllare la cassa
