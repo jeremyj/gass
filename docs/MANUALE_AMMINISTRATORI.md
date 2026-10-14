@@ -21,7 +21,7 @@ Video: [Riaprire una consegna, 0:13](https://gass.x86.it/admin-video#riaprire).
 3. Fai le correzioni.
 4. Premi **Chiudi consegna**.
 
-Se il resoconto è diverso, GASS lo manda di nuovo con l'indicazione "(corretto)".
+Se il resoconto è diverso, GASS lo manda di nuovo con l'indicazione "(corretto)". Il resoconto corretto inizia con **Rettifiche rispetto al report del …**: una riga per ogni valore cambiato, con il valore di prima e quello di ora (per esempio "Marco B: conto produttore 0 → 23,50"). Le consegne chiuse prima della versione 2.30.0 non hanno le rettifiche alla prima correzione.
 
 ### Togliere la foto di uno scontrino
 
@@ -34,9 +34,11 @@ Un amministratore può togliere qualsiasi foto, anche se non l'ha scattata. La c
 
 Se la prima foto del giorno arriva prima di ogni **Salva**, GASS crea la consegna. Se è una consegna sbagliata, annullala come sotto.
 
+Le foto del **Quaderno** sono diverse: un amministratore può aggiungerle e toglierle anche dopo la chiusura, senza riaprire la consegna.
+
 ### Annullare una consegna
 
-**AVVERTENZA:** L'annullamento cancella la consegna, le sue spese, le sue uscite di cassa, le sue quote teatro e le foto dei suoi scontrini. Non puoi recuperare questi dati.
+**AVVERTENZA:** L'annullamento cancella la consegna, le sue spese, le sue uscite di cassa, le sue quote teatro, le foto dei suoi scontrini e del quaderno. Non puoi recuperare questi dati.
 
 1. Apri la consegna.
 2. Premi **Annulla consegna**.
@@ -168,7 +170,7 @@ Per cancellare un pagamento sbagliato, premi **×** sulla riga del pagamento.
 
 Video: [Foglio Altobelli, 0:50](https://gass.x86.it/admin-video#altobelli).
 
-La pagina **Altobelli** compara il foglio di Altobelli con i conti produttore in GASS.
+La pagina **Altobelli** compara il foglio di Altobelli con i conti produttore in GASS. La pagina è **sperimentale**: controlla sempre il risultato sul foglio.
 
 ### Impostare il foglio
 
@@ -180,10 +182,11 @@ Altobelli apre un foglio nuovo ogni anno.
 
 ### Controllare una consegna
 
-1. Scegli la **Consegna** e la **Scheda** del foglio.
-2. Premi **Aggiorna**.
-3. Compara **Σ effettivi (riga per riga)** con **Σ conti in GASS**.
-4. Per vedere solo le righe diverse, usa **Mostra solo le differenze**.
+1. Scegli la **Consegna**. GASS sceglie la scheda del foglio con la stessa data.
+2. Se Leonardo ha scritto gli ordini in un'altra scheda, scegli la scheda giusta in **Scheda del foglio**. Il menu mostra tutte le schede, anche quelle nascoste. GASS ricorda la scelta per quella consegna.
+3. Premi **Aggiorna**.
+4. Compara **Σ effettivi (riga per riga)** con **Σ conti in GASS**.
+5. Per vedere solo le righe diverse, usa **Mostra solo le differenze**.
 
 GASS somma gli effettivi riga per riga. Il **Totale scritto nel foglio** può essere sbagliato, perché la formula del foglio a volte non contiene tutte le righe.
 

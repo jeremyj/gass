@@ -15,7 +15,8 @@ Funzioni degli amministratori: [Manuale degli amministratori](MANUALE_AMMINISTRA
 | Importo saldato | I soldi che il partecipante dà alla consegna. |
 | Saldo | La situazione del partecipante: credito (blu, +) o debito (rosso, −). |
 | Cassa | I soldi nella scatola della consegna. |
-| Uscita di cassa | Soldi che escono dalla cassa o entrano nella cassa per un motivo diverso dalla spesa. |
+| Soldi tolti o rimessi in cassa | Soldi che escono dalla cassa (**esce**, tolti) o entrano nella cassa (**entra**, rimessi) per un motivo diverso dalla spesa. |
+| Quaderno | Il quaderno dove il turno scrive i conti a mano. La sua foto è la controprova della cassa. |
 | Quota teatro | La quota per l'affitto del teatro. Si paga ogni semestre (gennaio–giugno, luglio–dicembre). |
 | Bussolotto | La cassa del teatro. È separata dalla cassa della consegna. |
 
@@ -41,6 +42,8 @@ GASS funziona su telefono e su computer. Sul telefono le pagine sono nella barra
 | Turni | Mostra chi fa ogni turno. |
 
 Il simbolo ⓘ accanto ad alcune voci apre una spiegazione. Tocca in un altro punto per chiuderla.
+
+Se la pagina si ricarica prima di **Salva** (per esempio quando torni dalla fotocamera), GASS rimette quello che hai scritto e mostra "Ho ripreso quello che avevi scritto e non era salvato". Controlla i valori e premi **Salva**. GASS non conserva mai le password.
 
 ## Consegna
 
@@ -112,23 +115,25 @@ Se il partecipante non deve quote, premi **+ Quota teatro (anticipo)** per regis
 
 Per togliere una quota sbagliata, scrivi 0 e premi **Salva movimento**.
 
-### Registrare un'uscita di cassa
+### Registrare soldi tolti o rimessi in cassa
 
 Video: [Uscite di cassa, 0:46](https://gass.x86.it/comefunziona#uscite).
 
-Usa un'uscita di cassa quando togli soldi dalla cassa o metti soldi nella cassa per un motivo diverso dalla spesa.
+Usa **Soldi tolti o rimessi in cassa** quando togli soldi dalla cassa o metti soldi nella cassa per un motivo diverso dalla spesa.
 
-1. Sotto le **Note della giornata**, scrivi l'importo.
-2. Scrivi il motivo. Il motivo è obbligatorio.
-3. Scegli **esce** (soldi tolti) o **entra** (soldi messi). Puoi anche scrivere − o + prima dell'importo.
-4. Per un'altra uscita, premi **+**.
+1. Sotto le **Note della giornata**, scegli **− esce** (soldi tolti dalla cassa) o **+ entra** (soldi rimessi in cassa). Puoi anche scrivere − o + prima dell'importo.
+2. Scrivi l'importo.
+3. Scrivi il motivo. Il motivo è obbligatorio.
+4. Per un'altra riga, premi **+**.
 5. Premi **Salva**.
 
-Esempio: il conto Altobelli è 357,20 €. Dai ad Altobelli 357 €. Scrivi 0,20 **entra**, motivo "arrotondamento Altobelli".
+Se manca l'importo o il motivo, GASS dice quale riga devi completare, per esempio "Scrivi il motivo dei 32,80 € rimessi in cassa".
 
-Esempio: nel foglio Altobelli c'è una riga con un importo negativo, per esempio −29,80 €. È un credito: Altobelli toglie questo importo dal totale. Non scrivere la riga negativa nel conto della persona. Scrivi 29,80 **entra**, motivo "credito Altobelli".
+Esempio: il conto Altobelli è 357,20 €. Dai ad Altobelli 357 €. Scegli **+ entra**, scrivi 0,20, motivo "arrotondamento Altobelli".
 
-Per togliere un'uscita, cancella l'importo e il motivo. Premi **Salva**.
+Esempio: nel foglio Altobelli c'è una riga con un importo negativo, per esempio −29,80 €. È un credito: Altobelli toglie questo importo dal totale. Non scrivere la riga negativa nel conto della persona. Scegli **+ entra**, scrivi 29,80, motivo "credito Altobelli".
+
+Per togliere una riga, cancella l'importo e il motivo. Premi **Salva**.
 
 ### Controllare la cassa
 
@@ -139,15 +144,27 @@ GASS calcola la cassa. Non puoi scrivere questi valori.
 | Trovato | "In cassa" della consegna precedente. |
 | + Incassato | La somma degli importi saldati. |
 | − Pagato | La somma dei conti produttore. |
-| Uscite di cassa | Le uscite (−) e le entrate (+). |
-| = In cassa | Trovato + Incassato − Pagato − uscite + entrate. |
+| Tolti dalla cassa | La somma dei soldi tolti (−), con i motivi. |
+| Rimessi in cassa | La somma dei soldi rimessi (+), con i motivi. |
+| = In cassa | Trovato + Incassato − Pagato − tolti + rimessi. |
 
 1. Conta i soldi nella cassa.
 2. Compara il totale con **In cassa**.
-3. Se i valori sono diversi, controlla le spese e le uscite di cassa.
+3. Se i valori sono diversi, controlla le spese e i soldi tolti o rimessi.
 4. Se la differenza continua, scrivi la causa nelle **Note della giornata**.
 
 Se **In cassa** è negativo, GASS mostra l'avviso "Cassa negativa".
+
+### Fotografare il quaderno
+
+Il riquadro **Quaderno** è sotto la cassa. Fotografa la pagina del quaderno con i conti della consegna: è la controprova della cassa.
+
+1. Premi **Fotografa** (telefono) o **Allega foto** (computer). Sul computer puoi anche trascinare l'immagine nel riquadro.
+2. Attendi che la miniatura non mostri più "carico…".
+
+Puoi aggiungere al massimo 4 foto. Per togliere una foto, premi **×** sulla foto e conferma. Puoi togliere solo le foto che hai scattato.
+
+Dopo la chiusura, solo chi ha chiuso la consegna o un amministratore può aggiungere o togliere foto del quaderno.
 
 ### Chiudere la consegna
 
@@ -157,7 +174,7 @@ Video: [Chiudere la consegna, 0:14](https://gass.x86.it/comefunziona#chiudere).
 
 1. Controlla che tutte le spese siano registrate.
 2. Premi **Chiudi consegna**.
-3. Controlla il riepilogo.
+3. Controlla il riepilogo. Se non ci sono foto del quaderno, GASS lo ricorda: premi **Fotografa prima** per fare la foto, poi premi di nuovo **Chiudi consegna**.
 4. Scegli dove mandare il resoconto (per esempio Telegram).
 5. Conferma.
 
@@ -193,7 +210,7 @@ Lo Storico mostra una riga per ogni consegna. Le consegne più recenti sono in a
 
 Una consegna chiusa si apre solo in lettura.
 
-Se la consegna ha foto di scontrini, la riga mostra il link **N scontrini** (colonna **Scontrini** sul computer). Il link apre la galleria: le foto sono divise per partecipante. Premi una foto per vederla grande. Usa **Prec.** e **Succ.**, oppure scorri con il dito (telefono) o usa le frecce ← → (computer).
+Se la consegna ha foto di scontrini, la riga mostra il link **N scontrini** (colonna **Scontrini** sul computer). Il link apre la galleria: prima le foto del quaderno, poi le foto divise per partecipante. Premi una foto per vederla grande. Usa **Prec.** e **Succ.**, oppure scorri con il dito (telefono) o usa le frecce ← → (computer).
 
 ## Turni
 

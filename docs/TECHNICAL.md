@@ -51,7 +51,8 @@ PUT    /api/teatro/dovuti             - {userId, semestre, dovuto}: owed amount,
 PUT    /api/teatro/semestri/:s        - {quota}: semester quota; people on the old quota follow it (admin)
 PUT    /api/teatro/nota               - {userId, nota} (admin); DELETE /api/teatro/pagamenti/:id (admin); POST /api/teatro/cassa {data, importo ±, descrizione} (admin)
 POST   /api/turni/pause                - Add a pause (admin); DELETE /api/turni/pause/:id removes it
-GET    /api/altobelli/confronto?data=&gid= - The consegna's tab of the Altobelli sheet vs the conti in GASS; `scelte` when several tabs match the date (admin)
+GET    /api/altobelli/confronto?data=&gid= - A tab of the Altobelli sheet vs the consegna's conti in GASS; returns all `schede`, the `scheda` used (gid, else the one remembered for the consegna, else the single date match) or `messaggio` when none (admin)
+PUT    /api/altobelli/scheda          - {data, gid|null}: remember the tab for that consegna in `consegne.altobelli_gid` (admin)
 GET|PUT /api/altobelli/foglio         - {url}: the sheet's link, setting `altobelli_foglio` (admin)
 PUT    /api/altobelli/nomi            - {nome, userId|null}: map a sheet name to a person, null removes it (admin)
 GET    /api/version                   - Get application version from package.json (public, no auth)
@@ -112,6 +113,9 @@ note                  TEXT
 chiusa                INTEGER DEFAULT 0
 chiusa_by             TEXT, chiusa_at DATETIME
 riaperta_by           TEXT, riaperta_at DATETIME
+report_telegram       TEXT, report_email TEXT  -- last report text sent per channel
+report_dati           TEXT      -- JSON of what the last report showed, for the rettifiche (v2.30)
+altobelli_gid         TEXT      -- tab of the Altobelli sheet picked for this consegna, null = by date (v2.30)
 created_by            TEXT, created_at DATETIME
 updated_by            TEXT, updated_at DATETIME
 ```
@@ -190,6 +194,11 @@ nome TEXT PK (lower-case name in the sheet), user_id FK CASCADE
 ```sql
 id, consegna_id FK CASCADE, partecipante_id FK users CASCADE, file TEXT,  -- file = uuid of <file>.jpg / <file>_t.jpg
 larghezza, altezza, byte, created_by, created_at
+```
+
+#### Table: quaderno_foto (v2.30)
+```sql
+id, consegna_id FK CASCADE, file TEXT, larghezza, altezza, byte, created_by, created_at  -- photos of the paper notebook
 ```
 
 #### Indexes
@@ -303,18 +312,18 @@ Activity events: `teatro_pagamento`, `teatro_modifica`, `teatro_cassa`. Pages: t
 
 ## Altobelli check
 
-Admin page `/altobelli` (desktop; mobile redirects to `/consegna`). `server/services/altobelli.js` reads the producer's Google sheet without credentials (it must stay shared with anyone with the link). The link is pasted by an admin on the page and kept only in `settings.altobelli_foglio`: never put it in the code, since anyone with it can read members' names and amounts and this repo and its image are public. Without a link `/confronto` returns 400. How it reads:
+Admin page `/altobelli` (desktop; mobile redirects to `/consegna`), marked *sperimentale* next to its title. `server/services/altobelli.js` reads the producer's Google sheet without credentials (it must stay shared with anyone with the link). The link is pasted by an admin on the page and kept only in `settings.altobelli_foglio`: never put it in the code, since anyone with it can read members' names and amounts and this repo and its image are public. Without a link `/confronto` returns 400. How it reads:
 
 1. Tab names → gid from the sheet's `/edit` page bootstrap (`parseSchede`). Not `htmlview`: it lists only visible tabs, and past tabs are hidden.
-2. The tab matching the consegna date (`trovaSchede`), read as `export?format=csv&gid=<gid>` (works on hidden tabs).
+2. The tab to compare: the `gid` passed, else `consegne.altobelli_gid` (an admin's pick, `PUT /api/altobelli/scheda`), else the single tab matching the consegna date (`trovaSchede`). With none, the page shows every tab (`ordinaSchede`: dated tabs newest first) and a `messaggio`. Leonardo sometimes writes a consegna's orders in an old tab (13/10/2026 in "6 ottobre"). Read as `export?format=csv&gid=<gid>` (works on hidden tabs).
 3. Effettivi (column C) summed row by row (`parseFoglio`): the sheet's own `=SUM` total can miss rows, so the page shows both.
 4. `confronta` matches sheet names to people through `altobelli_nomi` and compares each effettivo with the person's `conto_produttore`.
 
 Never read a tab with `gviz/tq?sheet=<name>`: an unknown name silently returns another tab. Tests stub `global.fetch` with `test/fixtures/altobelli/`.
 
-## Scontrini (receipt photos)
+## Scontrini (receipt photos) and quaderno (notebook photos)
 
-Photos of a person's receipts in a consegna. Files live on the data volume, the table holds only the row.
+Photos of a person's receipts in a consegna, and photos of the paper notebook with the day's accounts (table `quaderno_foto`, same folder and helpers). Files live on the data volume, the table holds only the row.
 
 | What | Where |
 |------|-------|
@@ -329,13 +338,18 @@ GET    /api/scontrini?data=yyyy-mm-dd   photos of that consegna (+ consegnaId, c
 POST   /api/scontrini                   { data, partecipanteId, foto, thumb, larghezza, altezza } (base64 JPEG)
 GET    /api/scontrini/:id/foto|thumb    image/jpeg, Cache-Control: private, 7 days
 DELETE /api/scontrini/:id               author or admin, open consegna only
+GET    /api/scontrini/quaderno?data=    notebook photos (+ consegnaId, max = 4, modificabile)
+POST   /api/scontrini/quaderno          { data, foto, thumb, larghezza, altezza }; the consegna must exist
+GET    /api/scontrini/quaderno/:id/foto|thumb
+DELETE /api/scontrini/quaderno/:id      author or admin
 ```
 
 - The browser shrinks the photo (canvas: 1600 px long side, JPEG 0.8; thumbnail 320 px, 0.7), which also drops EXIF/GPS. The server only checks the JPEG signature `FF D8 FF` and the sizes.
 - The first photo of a date with no consegna creates it through `ensureConsegna` (`server/services/consegne.js`, also used by `POST /api/consegna`): trovato = previous lasciato.
 - Closed consegna: 403 on POST and DELETE. Every logged-in user sees every photo; files are served only through the authenticated route.
 - `DELETE /api/consegna/:id` removes the consegna's folder after the transaction; `deleteUser` removes the user's files first. Rows go by CASCADE.
-- Activity events: `scontrino_aggiunto`, `scontrino_rimosso`. `GET /api/storico` returns `num_scontrini`.
+- Notebook photos: the block `#quaderno-box` sits under the cassa (`aggiornaQuaderno` from `updateConsegnaStatusUI`); the close confirmation counts them, or offers "Fotografa prima" (`confirmDialog({azione})` → `apriQuaderno`). Upload is not in the dialog: a phone reloading the page on return from the camera would lose it. After the close only the user who closed it (`chiusa_by`) or an admin may add or remove one (user decision 2026-10-14).
+- Activity events: `scontrino_aggiunto`, `scontrino_rimosso`, `quaderno_aggiunto`, `quaderno_rimosso`. `GET /api/storico` returns `num_scontrini` and `num_quaderno`.
 
 ## Features
 
@@ -348,7 +362,7 @@ Cash fields are **always readonly** - no manual override capability in mobile or
 **Fields:**
 - `trovato_in_cassa`: Cash found (from previous delivery's lasciato)
 - `pagato_produttore`: Total paid to producer (sum of all conto_produttore values)
-- `lasciato_in_cassa`: Cash left (trovato + incassato - pagato - uscite); uscite are rows of table `uscite_cassa` (`consegna_id` CASCADE, `importo` ≠ 0: positive = esce, negative = entra; `motivo` required). Pages show the effect on the cassa (−esce, +entra: `formatEffettoCassa` in `utils.js`, `effetto` in `report.js`). Positive = esce is kept so pages cached before 2.28.0, which send only positive amounts, stay correct
+- `lasciato_in_cassa`: Cash left (trovato + incassato - pagato - uscite); uscite are rows of table `uscite_cassa` (`consegna_id` CASCADE, `importo` ≠ 0: positive = esce, negative = entra; `motivo` required). The UI calls them *soldi tolti o rimessi in cassa*: each row has a `− esce | + entra` switch; the cassa line, the close summary and the report show one line per direction, *Tolti dalla cassa* / *Rimessi in cassa* (`usciteVersi` in `consegna-common.js`, `versi` in `report.js`), as the effect on the cassa (`formatEffettoCassa` in `utils.js`, `effetto` in `report.js`). Errors name the row and its direction (`erroreUscite` client-side before posting, same wording in `validation.js`). Positive = esce is kept so pages cached before 2.28.0, which send only positive amounts, stay correct
 
 **Implementation:**
 - **Mobile** (`consegna.js`, `consegna.html`):
@@ -477,6 +491,10 @@ document.cookie = "force_mobile=true";
 - **Mobile**: Bottom navigation bar, vertical layout
 - **Desktop**: Top navigation menu, horizontal layout
 
+## Unsaved drafts (bozze, v2.30)
+
+`public/js/shared/bozze.js`: a container with `data-bozza="<key>"` saves its id'ed fields (never password/file/hidden, never disabled) to `sessionStorage` on input/change; the page calls `bozzaRiprendi(key, root)` after filling the form and `bozzaCancella(key)` on save or cancel. sessionStorage survives a reload in the same tab and goes with the tab. Consegna: the open card (`consegna:<date>:scheda:<id>`) is reopened and refilled at the end of `checkDateData` (`riprendiBozzeConsegna`), note and rows are stored as data (`consegna:<date>:giornata`); `postConsegna` clears both on success. Other keys: `saldo:<id>`, `utente:<id>`, `nuovo-utente`, `teatro-cassa`, `teatro-dovuto:<id>:<semestre>`, `teatro-quota:<semestre>`, `turni-note`, `altobelli-link`; modals are refilled when opened again, never reopened by themselves.
+
 ## Data Integrity
 
 ### Transaction Management
@@ -535,7 +553,7 @@ Closing a consegna can send a report to a Telegram group/channel and by email (`
 | Telegram | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | `TELEGRAM_THREAD_ID` (topic of a forum group; without it the report goes to General) |
 | Email | `SMTP_HOST`, `REPORT_EMAIL_TO` | `SMTP_PORT` (default 587, 465 = implicit TLS), `SMTP_USER`, `SMTP_PASS`, `REPORT_EMAIL_FROM` (default `SMTP_USER`) |
 
-`GET /api/consegna/report-canali` lists the active channels; the close confirmation shows one checkbox per channel (ticked) and `POST /api/consegna/:id/close` sends only the ones in its `report` array. The text sent is stored per channel (`consegne.report_telegram`, `report_email`): closing again after a reopen sends a new report titled "(corretto)" only if the text changed. Sends run after the response; an error is only logged (`<canale> report for consegna … failed`) and retried at the next close.
+`GET /api/consegna/report-canali` lists the active channels; the close confirmation shows one checkbox per channel (ticked) and `POST /api/consegna/:id/close` sends only the ones in its `report` array. The text sent is stored per channel (`consegne.report_telegram`, `report_email`): closing again after a reopen sends a new report titled "(corretto)" only if the text changed. Each send also stores `consegne.report_dati` (`reportDati`: per person conto, versato, quota teatro; uscite; trovato, pagato, lasciato); a corrected report starts with "Rettifiche rispetto al report del dd/mm ore hh:mm:" and one line per change (`rettifiche`), before the full report. The stored text stays the plain report, so the "unchanged → no resend" rule still holds. Consegne reported before v2.30 have no `report_dati`: their first correction has no rettifiche block. Sends run after the response; an error is only logged (`<canale> report for consegna … failed`) and retried at the next close.
 
 Telegram setup: create the bot with @BotFather, add it to the group (or as admin to the channel), and take the chat id from `https://api.telegram.org/bot<token>/getUpdates` after posting a message there (a public channel also takes `@channelname`). In a group the bot must be addressed (`/start@<bot>`) while its privacy mode is on, or the message never reaches it; for a topic, `message_thread_id` of that update is `TELEGRAM_THREAD_ID`. For a mailing list, the sender address must be allowed to post, or the message waits for moderation.
 

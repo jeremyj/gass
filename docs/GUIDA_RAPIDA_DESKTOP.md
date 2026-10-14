@@ -28,10 +28,10 @@ La colonna a sinistra mostra la cassa come una somma, calcolata automaticamente 
 - **Trovato in cassa** — il lasciato della consegna precedente
 - **+ Incassato** — somma degli importi saldati
 - **− Pagato al produttore** — somma dei conti produttore di tutti i movimenti del giorno
-- **Uscite di cassa** — solo se ci sono: soldi presi dalla cassa (*esce*, es. quote portate al teatro) o rimessi dentro (*entra*, es. Altobelli pagato 357 € invece di 357,20)
-- **= Lasciato in cassa** — trovato + incassato - pagato - uscite + entrate
+- **Tolti dalla cassa** / **Rimessi in cassa** — solo se ci sono: soldi presi dalla cassa (*esce*, es. quote portate al teatro) o rimessi dentro (*entra*, es. Altobelli pagato 357 € invece di 357,20)
+- **= Lasciato in cassa** — trovato + incassato - pagato - tolti + rimessi
 
-Sotto, le **Note della giornata** e le **Uscite di cassa** (importo e motivo; clic su *esce*/*entra* o − / + davanti all'importo per il segno; **+** per aggiungerne un'altra), con **Salva** quando cambiano. Lo stato (*Consegna aperta* / *chiusa*) e i pulsanti Chiudi / Riapri / Annulla consegna sono nell'intestazione.
+Sotto, il riquadro **Quaderno** (foto della pagina dei conti scritti a mano), le **Note della giornata** e i **Soldi tolti o rimessi in cassa** (scegli *− esce* o *+ entra*, poi importo e motivo; **+** per un'altra riga), con **Salva** quando cambiano. Lo stato (*Consegna aperta* / *chiusa*) e i pulsanti Chiudi / Riapri / Annulla consegna sono nell'intestazione.
 
 ## Registrare un Movimento
 
@@ -94,7 +94,7 @@ Ogni semestre (gennaio–giugno, luglio–dicembre) si paga una quota per l'affi
 | Riaprire consegna chiusa | Storico → clicca la consegna → **Riapri consegna** |
 | Eliminare una consegna salvata | Consegna → **Annulla consegna** |
 | Quote teatro: griglia, quote ridotte, cassa teatro | **Teatro** (menu in alto) |
-| Confrontare il foglio Altobelli con i conti | **Altobelli** (menu in alto): scegli la consegna; associa una volta i nomi del foglio alle persone; in *Link del foglio* il foglio dell'anno |
+| Confrontare il foglio Altobelli con i conti | **Altobelli** (menu in alto, sperimentale): scegli la consegna e, se serve, la scheda del foglio; associa una volta i nomi del foglio alle persone; in *Link del foglio* il foglio dell'anno |
 | Modificare un saldo | Saldi → **Modifica saldo** |
 | Aggiungere partecipanti | Saldi → **+ Aggiungi partecipante** |
 | Modificare utenti | Saldi → **Modifica utente** |
