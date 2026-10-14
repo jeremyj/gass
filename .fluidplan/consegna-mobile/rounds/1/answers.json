@@ -1,0 +1,22 @@
+{
+  "F1": {
+    "choice": "sheet",
+    "status": "modify",
+    "round": 1,
+    "updated_at": "2026-10-14T08:45:29.648Z",
+    "comment": "closed box title should be: riepilogo, entrata/uscite cassa, teatro e note\nbox can be taller and show multiline with: conto produttore, quote teatro, movimenti di cassa con motivo"
+  },
+  "F2": {
+    "choice": "__other",
+    "status": "modify",
+    "round": 1,
+    "updated_at": "2026-10-14T08:47:31.878Z",
+    "comment": "see f1"
+  },
+  "F3": {
+    "choice": "both",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T08:47:51.662Z"
+  }
+}

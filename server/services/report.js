@@ -63,7 +63,7 @@ const effetto = importo => importo === 0 ? '0' : `${importo > 0 ? '−' : '+'}${
 const descrizione = uscite => uscite.length === 1 ? uscite[0].motivo : uscite.map(u => `${u.motivo} ${effetto(u.importo)}`).join(', ');
 
 // Same words as VERSO_USCITA in consegna-common.js: esce (stored positive) / entra (negative)
-const VERSO = { esce: 'Tolti dalla cassa', entra: 'Rimessi in cassa' };
+const VERSO = { esce: 'Uscite di cassa', entra: 'Entrate di cassa' };
 
 // One entry per direction that has rows, like usciteVersi in consegna-common.js
 function versi(uscite) {

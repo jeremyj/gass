@@ -233,6 +233,7 @@ async function togliQuaderno(fotoId) {
 
 // "Fotografa prima" in the close dialog: bring the block into view and open the camera / file chooser
 function apriQuaderno() {
+  if (typeof openGiornata === 'function') openGiornata(); // mobile: the block is in the sheet
   const box = document.getElementById('quaderno-box');
   box?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   document.getElementById('quaderno-input')?.click();

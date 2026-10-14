@@ -1,0 +1,37 @@
+{
+  "F3": {
+    "choice": "both",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T08:47:51.662Z"
+  },
+  "F2": {
+    "choice": "box",
+    "status": "ok",
+    "round": 2,
+    "updated_at": "2026-10-14T08:52:54.246Z"
+  },
+  "F4": {
+    "status": "ok",
+    "round": 2,
+    "updated_at": "2026-10-14T08:52:59.804Z"
+  },
+  "F1": {
+    "choice": "sheet",
+    "status": "ok",
+    "round": 4,
+    "updated_at": "2026-10-14T09:10:31.283Z"
+  },
+  "F5": {
+    "choice": "top",
+    "status": "ok",
+    "round": 4,
+    "updated_at": "2026-10-14T09:19:50.230Z"
+  },
+  "F6": {
+    "status": "ok",
+    "round": 4,
+    "updated_at": "2026-10-14T09:20:14.420Z",
+    "comment": ""
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "F3": {
+    "choice": "both",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T08:47:51.662Z"
+  },
+  "F1": {
+    "choice": "sheet",
+    "status": "modify",
+    "round": 2,
+    "updated_at": "2026-10-14T08:51:38.359Z",
+    "comment": "The title should be separated from the multi line details and it should be clearer that i'ts clickable"
+  },
+  "F2": {
+    "choice": "box",
+    "status": "ok",
+    "round": 2,
+    "updated_at": "2026-10-14T08:52:54.246Z"
+  },
+  "F4": {
+    "status": "ok",
+    "round": 2,
+    "updated_at": "2026-10-14T08:52:59.804Z"
+  }
+}

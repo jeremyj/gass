@@ -23,10 +23,10 @@ describe('validateConsegnaPayload', () => {
     expect(validateConsegnaPayload(uscite([{ importo: 0, motivo: 'x' }]), saldo(0))).toMatch(/importo/);
     expect(validateConsegnaPayload(uscite([{ importo: -0.2, motivo: 'arrotondamento' }]), saldo(0))).toBeNull();
     // The message names the direction: negative = rimessi in cassa, positive = tolti
-    expect(validateConsegnaPayload(uscite([{ importo: -32.8, motivo: '' }]), saldo(0))).toBe('Scrivi il motivo dei 32,8 € rimessi in cassa');
-    expect(validateConsegnaPayload(uscite([{ importo: 5, motivo: ' ' }]), saldo(0))).toBe('Scrivi il motivo dei 5 € tolti dalla cassa');
+    expect(validateConsegnaPayload(uscite([{ importo: -32.8, motivo: '' }]), saldo(0))).toBe('Scrivi il motivo dei 32,8 € entrati in cassa');
+    expect(validateConsegnaPayload(uscite([{ importo: 5, motivo: ' ' }]), saldo(0))).toBe('Scrivi il motivo dei 5 € usciti dalla cassa');
     expect(validateConsegnaPayload(uscite([{ importo: 0, motivo: 'tofu' }]), saldo(0))).toBe("Scrivi l'importo di «tofu»");
-    expect(validateConsegnaPayload(payload({ uscite: 'x' }), saldo(0))).toMatch(/tolti o rimessi/);
+    expect(validateConsegnaPayload(payload({ uscite: 'x' }), saldo(0))).toMatch(/entrate\/uscite/);
   });
 
   it('accepts a cassa-only save and a negative trovato', () => {

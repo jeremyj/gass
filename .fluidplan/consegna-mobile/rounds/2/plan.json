@@ -1,0 +1,322 @@
+{
+  "$schema": "../../../../../../.claude/skills/fluidplan/engine/schema/plan.schema.json",
+  "version": 2,
+  "id": "consegna-mobile",
+  "title": "A lighter Consegna page on mobile",
+  "subtitle": "GASS 2.30.x — mockup design/mockups/consegna-mobile-compatta.html",
+  "lang": "en",
+  "accent": "green",
+  "source": {
+    "kind": "request"
+  },
+  "context": "Request (2026-10-14), after looking at the 2.30 preview on a phone: the mobile Consegna page is too full. (1) Notebook photos, note and tolti/rimessi should live in a section of their own, as a modal. (2) Maybe the cassa summaries should leave the Consegna page and show only once the consegna is closed. (3) In the participant card, the saldo before today (credito/debito) should move under Importo saldato.\n\nToday (mobile, `public/consegna.html`): header, cassa row (Trovato/Incassato/Pagato/In cassa) + tolti/rimessi lines + quote teatro, status box with Chiudi/Annulla, Quaderno block, Note, tolti/rimessi rows, then the add select and the list \"Chi ha ritirato\". The participant card (`buildParticipantCardHTML` in `public/js/shared/consegna-common.js`) is full-screen at ≤ 768px and shows \"prima di oggi\" as a pill in its header.\n\nMockup: `design/mockups/consegna-mobile-compatta.html` (sections G, H, I = decisions F1, F2, F3). Ships together with the 2.30.0 work not yet released.",
+  "phases": [
+    {
+      "id": "p1",
+      "title": "Lighter mobile Consegna page",
+      "short": "Mobile",
+      "estimate": "≈ 1 d",
+      "days": 1
+    },
+    {
+      "id": "p2",
+      "title": "Docs, video check and release",
+      "short": "Release",
+      "estimate": "≈ 0.5 d",
+      "days": 0.5
+    }
+  ],
+  "glossary": [
+    {
+      "term": "sheet",
+      "aliases": [
+        "foglio"
+      ],
+      "definition": "A full-screen panel over the page with a back arrow, like the participant card on mobile."
+    }
+  ],
+  "pages": [
+    {
+      "id": "mobile",
+      "section": "F · Mobile",
+      "title": "A lighter Consegna page on mobile",
+      "intro": "Where cassa, notebook, note and tolti/rimessi live on the phone, and where the card shows the saldo before today.",
+      "visual": {
+        "kind": "image",
+        "src": "assets/g.png",
+        "alt": "Mockup G: today's mobile page, the proposed page with one 'Cassa e quaderno' row, and the full-screen sheet with cassa, notebook, tolti/rimessi and note",
+        "caption": "Mockup section G"
+      },
+      "decisions": [
+        {
+          "id": "F1",
+          "title": "Notebook, note and tolti/rimessi in a sheet of their own",
+          "importance": "important",
+          "phase": "p1",
+          "why": "On a phone the list of people starts about two screens down: the turnista scrolls past cassa, status, notebook, note and rows at every person. Moving them changes where people look for things they learned last week, so it is worth one decision.",
+          "proposal": "On mobile the page shows one taller box titled **\"Riepilogo, entrate/uscite cassa, teatro e note\"**, on several lines: **conto produttore** (Σ of the day), **quote teatro**, and the **movimenti di cassa with their motivo** (\"Rimessi in cassa: storno Altobelli +32,80\", \"Tolti dalla cassa: tofu −20\"). Tapping it opens a **full-screen sheet** with the same title, built like the participant card (back arrow, Salva): full cassa (Trovato, Incassato, Pagato, tolti/rimessi, In cassa), quote teatro, Quaderno, Soldi tolti o rimessi in cassa, Note della giornata. Chiudi/Annulla consegna move to the bottom of the page, after the list. Desktop is unchanged.",
+          "learn_more": "The sheet reuses the existing elements (`#quaderno-box`, `#uscite-edit`, `#noteGiornata`, `#uscite-errore`) moved into a container that gets the same full-screen CSS as `.participant-card-flow` at ≤ 768px, so saving, drafts and the close reminder keep working. \"Fotografa prima\" in the close dialog opens the sheet first. Leaving the sheet with unsaved changes asks like the card does (\"Modifiche non salvate\"). The box lists only what you named; In cassa and the notebook count are in the sheet (say so if you want them in the box too).",
+          "control": {
+            "kind": "choice",
+            "options": [
+              {
+                "id": "sheet",
+                "label": "Taller summary box, full-screen sheet on tap",
+                "recommended": true,
+                "pros": [
+                  "The list starts right under the header",
+                  "Same gesture as the participant card"
+                ],
+                "cons": [
+                  "One tap more to reach note and notebook"
+                ],
+                "effort": "M"
+              },
+              {
+                "id": "collapse",
+                "label": "Collapsible block in the page (closed by default)",
+                "pros": [
+                  "No new screen"
+                ],
+                "cons": [
+                  "Still pushes the list down when open",
+                  "Two kinds of 'open' on one page"
+                ],
+                "effort": "S"
+              }
+            ]
+          },
+          "tasks": [
+            {
+              "id": "sheet",
+              "title": "Move cassa, notebook, note and rows into a mobile sheet",
+              "do": "`consegna.html`: wrap the cassa row, quote teatro, `#quaderno-box` and `#note-giornata-group` in `#giornata-sheet` with a header (back, title \"Riepilogo, entrate/uscite cassa, teatro e note\") and the Salva; add the summary box `#giornata-row` (title + lines: Conto produttore = `calculatePagatoProduttore()`, Quote teatro = `quoteOggi`, one line per `usciteVersi()` entry with motivo) before the add select; move `#consegna-status-section` after the list. `consegna.js`: `openGiornata()` / `closeGiornata()` (unsaved check) and `renderGiornataRow()` called from `updateLasciatoInCassa`/`renderQuoteOggi`. `style.css`: sheet full-screen at ≤ 768px like `.participant-card-flow`. `apriQuaderno` opens the sheet first on mobile.",
+              "files": [
+                {
+                  "path": "public/consegna.html",
+                  "op": "modify"
+                },
+                {
+                  "path": "public/js/consegna.js",
+                  "op": "modify"
+                },
+                {
+                  "path": "public/js/shared/scontrini.js",
+                  "op": "modify"
+                },
+                {
+                  "path": "public/style.css",
+                  "op": "modify"
+                }
+              ],
+              "acceptance": [
+                "On a 390 px phone the list starts within the first screen",
+                "Note, rows and photos save as before; drafts still restore",
+                "\"Fotografa prima\" opens the sheet and the camera",
+                "Desktop unchanged"
+              ],
+              "verify": [
+                "npm test",
+                "browser check mobile + desktop"
+              ]
+            }
+          ],
+          "revision": {
+            "round": 2,
+            "note": "The page box now has your title and shows, on several lines, conto produttore, quote teatro and the movimenti di cassa with their motivo (mockup G updated). Tapping it still opens the full-screen sheet."
+          }
+        },
+        {
+          "id": "F2",
+          "title": "Where the cassa summary is while the consegna is open",
+          "importance": "important",
+          "phase": "p1",
+          "why": "Whoever counts the cash compares it with In cassa before closing. Hiding it while open removes a check the turnisti use; showing it on the page is what makes it full.",
+          "proposal": "As in F1: while the consegna is open the page shows the taller summary box (conto produttore, quote teatro, movimenti di cassa with motivo); Trovato, Incassato and In cassa are inside the sheet. When the consegna is closed, the page shows the full cassa at the top, read-only, as today.",
+          "visual": {
+            "kind": "image",
+            "src": "assets/h.png",
+            "alt": "Mockup H: page with the summary box while open, and the closed consegna with the full cassa at the top",
+            "caption": "Mockup section H"
+          },
+          "learn_more": "Following your remark the earlier H1/H2 choice is replaced by the box of F1.",
+          "control": {
+            "kind": "choice",
+            "options": [
+              {
+                "id": "box",
+                "label": "Summary box while open (F1), full cassa on the page when closed",
+                "recommended": true,
+                "pros": [
+                  "What you asked for in F1",
+                  "The cash check is one tap away in the sheet"
+                ],
+                "cons": [
+                  "In cassa not on the page while open"
+                ],
+                "effort": "S"
+              },
+              {
+                "id": "box-closed-too",
+                "label": "Same summary box also when closed",
+                "pros": [
+                  "One layout in both states"
+                ],
+                "cons": [
+                  "A closed consegna no longer shows Trovato/In cassa at a glance"
+                ],
+                "effort": "S"
+              }
+            ]
+          },
+          "depends_on": [
+            "F1"
+          ],
+          "tasks": [
+            {
+              "id": "riepilogo",
+              "title": "Show the cassa summary according to the consegna state",
+              "do": "`consegna.js` `updateConsegnaStatusUI`: the cassa row sits in the sheet while open and at the top of the page when closed (move the node on state change).",
+              "files": [
+                {
+                  "path": "public/js/consegna.js",
+                  "op": "modify"
+                },
+                {
+                  "path": "public/style.css",
+                  "op": "modify"
+                }
+              ],
+              "acceptance": [
+                "Open consegna: summary in the sheet, In cassa in the row",
+                "Closed consegna: full summary at the top of the page"
+              ],
+              "verify": [
+                "browser check mobile"
+              ],
+              "after": [
+                "F1/sheet"
+              ]
+            }
+          ],
+          "revision": {
+            "round": 2,
+            "note": "Rewritten after your \"see F1\": the page shows the F1 box while open; only the closed state is left to confirm (mockup H updated)."
+          }
+        },
+        {
+          "id": "F3",
+          "title": "\"Prima di oggi\" under Importo saldato in the card",
+          "importance": "important",
+          "phase": "p1",
+          "why": "The saldo before today is what turns conto and versato into credito/debito; shown as a pill in the header it is read apart from the numbers it explains.",
+          "proposal": "Remove the pill from the card header; show a row **\"Prima di oggi: debito −53,44 €\"** (or credito, or \"pari\") right under Importo saldato, before \"Debito saldato per intero\" / Lascia credito.",
+          "visual": {
+            "kind": "image",
+            "src": "assets/i.png",
+            "alt": "Mockup I: card before with the pill in the header, after with the Prima di oggi row under Importo saldato",
+            "caption": "Mockup section I"
+          },
+          "control": {
+            "kind": "choice",
+            "options": [
+              {
+                "id": "both",
+                "label": "Mobile and desktop",
+                "recommended": true,
+                "pros": [
+                  "One card markup, same reading on both",
+                  "Project rule: features on both"
+                ],
+                "cons": [
+                  "Desktop form also changes"
+                ],
+                "effort": "S"
+              },
+              {
+                "id": "mobile",
+                "label": "Mobile only",
+                "pros": [
+                  "Desktop untouched"
+                ],
+                "cons": [
+                  "Two layouts of the same card to maintain"
+                ],
+                "effort": "S"
+              }
+            ]
+          },
+          "tasks": [
+            {
+              "id": "prima",
+              "title": "Move the saldo before today under Importo saldato",
+              "do": "`buildParticipantCardHTML` in `consegna-common.js`: drop the header pill, add a `.prima-oggi` row after the Importo saldato field with `saldoPrimaText(saldo)` coloured by `--credito`/`--debito` (\"pari\" when 0). CSS in `style.css`.",
+              "files": [
+                {
+                  "path": "public/js/shared/consegna-common.js",
+                  "op": "modify"
+                },
+                {
+                  "path": "public/style.css",
+                  "op": "modify"
+                }
+              ],
+              "acceptance": [
+                "The row shows credito, debito or pari with sign and word",
+                "Header shows only the name"
+              ],
+              "verify": [
+                "npm test",
+                "browser check mobile + desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "F4",
+          "title": "Docs and videos after the layout change",
+          "importance": "minor",
+          "phase": "p2",
+          "why": "The manuals and the phone video clips show where note, uscite and the notebook are; after F1 several clips show a page that no longer exists.",
+          "proposal": "Update the manuals and quick guide (mobile), and re-record the phone clips whose screens changed (consegna, uscite, chiudere), cut as today.",
+          "tasks": [
+            {
+              "id": "docs",
+              "title": "Update docs and re-record the changed phone clips",
+              "do": "`docs/MANUALE_PARTECIPANTI.md`, `docs/GUIDA_RAPIDA_MOBILE.md`, `CLAUDE.md`; video procedure from the video memory (record-full8 + clips.py), replace only the changed clips, bump `data-v`.",
+              "files": [
+                {
+                  "path": "docs/MANUALE_PARTECIPANTI.md",
+                  "op": "modify"
+                },
+                {
+                  "path": "docs/GUIDA_RAPIDA_MOBILE.md",
+                  "op": "modify"
+                },
+                {
+                  "path": "CLAUDE.md",
+                  "op": "modify"
+                },
+                {
+                  "path": "public/comefunziona.html",
+                  "op": "modify"
+                }
+              ],
+              "acceptance": [
+                "No doc or clip shows note/uscite on the mobile page itself"
+              ],
+              "verify": [
+                "npm test"
+              ],
+              "after": [
+                "F1/sheet",
+                "F2/riepilogo",
+                "F3/prima"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GASS consegna mobile più leggera</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,500;0,700;1,500&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --calce: #F4F6F2; --carta: #FFFFFF; --inchiostro: #1E2420; --salvia: #5C6760; --riga: #DCE1DA;
+  --credito: #1F57B0; --credito-t: #E6EEFA; --debito: #A3175F; --debito-t: #F8E4EE;
+  --s-deep: #26392F; --s-acc: #E8890F; --s-alt: #6E4128; --s-tint: #FBEEDB; --s-on: #F3E6CF;
+  --teatro: #5B3A8C; --teatro-t: #EFE8F8;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #E3E7E2; color: var(--inchiostro); font-family: "Alegreya Sans", system-ui, sans-serif;
+  font-size: 16px; line-height: 1.45; font-variant-numeric: lining-nums tabular-nums; }
+.board { max-width: 1500px; margin: 0 auto; padding: 36px 16px 80px; }
+h1, h2, h3, h4 { font-family: "Alegreya", Georgia, serif; }
+.board > h1 { font-size: 46px; line-height: 1.05; margin: 0 0 8px; }
+.board > p { margin: 0 0 22px; color: var(--salvia); max-width: 80ch; font-size: 17px; }
+.section { margin: 48px 0 18px; }
+.section h2 { font-size: 32px; margin: 0 0 4px; }
+.section .tag { display: inline-block; font-family: "Alegreya Sans", sans-serif; font-size: 14px; font-weight: 800; color: #fff; background: var(--s-deep); border-radius: 6px; padding: 1px 8px; margin-right: 8px; vertical-align: 6px; }
+.section p { margin: 0; color: var(--salvia); max-width: 90ch; }
+.row { display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; margin-top: 22px; }
+.cap { font-size: 15px; color: var(--salvia); margin: 12px 4px 0; max-width: 390px; }
+.cap b { color: var(--inchiostro); }
+
+.phone { width: 390px; max-width: 100%; height: 800px; border-radius: 38px; background: var(--calce); border: 10px solid #22262a; overflow: hidden; display: flex; flex-direction: column; position: relative; }
+.desk { width: 1060px; max-width: 100%; border-radius: 10px; background: var(--calce); border: 1px solid #bcc3bd; overflow: hidden; }
+.stag { background: var(--s-deep); color: #fff; padding: 16px 20px; }
+.stag .when { font-size: 14px; color: var(--s-on); }
+.stag h3 { margin: 0; font-size: 30px; line-height: 1.05; }
+.body { padding: 16px; overflow: auto; flex: 1; }
+.bnav { display: flex; justify-content: space-around; background: var(--carta); border-top: 1px solid var(--riga); padding: 10px 0 14px; font-size: 13px; color: var(--salvia); font-weight: 700; }
+.bnav .on { color: var(--s-deep); border-top: 3px solid var(--s-acc); margin-top: -10px; padding-top: 7px; }
+.d-nav { background: var(--s-deep); color: #fff; display: flex; gap: 22px; padding: 12px 24px; font-weight: 700; font-size: 15px; }
+.d-nav b { color: #fff; border-bottom: 3px solid var(--s-acc); padding-bottom: 6px; }
+.d-nav span { color: #dfe5df; }
+.pill { display: inline-block; font-size: 14px; font-weight: 700; border-radius: 6px; padding: 1px 8px; }
+.pill.chiusa { color: var(--salvia); background: #E8ECE7; }
+.pill.aperta { color: #8a4a00; background: var(--s-tint); }
+.pill.cr { color: var(--credito); background: var(--credito-t); }
+.pill.sc { color: var(--s-deep); background: #E4ECE6; }
+.link { color: var(--s-deep); font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
+.ico { width: 18px; height: 18px; vertical-align: -3px; fill: none; stroke: currentColor; stroke-width: 2; }
+
+/* participant card (full-screen entry on mobile) */
+.entry-head { display: flex; gap: 10px; align-items: center; background: var(--carta); border-bottom: 1px solid var(--riga); padding: 14px 16px; }
+.entry-head .back { font-size: 26px; color: var(--s-deep); }
+.entry-head h4 { margin: 0; font-size: 24px; }
+.blk { font-family: "Alegreya Sans", sans-serif; font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--salvia); display: flex; justify-content: space-between; margin: 16px 2px 6px; }
+.fld { background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; padding: 8px 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+.fld label { font-weight: 700; }
+.fld b { font-size: 20px; }
+.sc-strip { display: flex; gap: 8px; flex-wrap: wrap; }
+.thumb { width: 74px; height: 96px; border-radius: 8px; border: 1px solid var(--riga); background: #fff; position: relative; overflow: hidden; }
+.thumb .x { position: absolute; top: 3px; right: 3px; width: 22px; height: 22px; border-radius: 50%; background: rgba(30,36,32,.75); color: #fff; font-size: 14px; display: grid; place-items: center; font-weight: 800; }
+.thumb.up::after { content: ""; position: absolute; left: 0; bottom: 0; height: 5px; width: 60%; background: var(--s-acc); }
+.thumb.up .lbl { position: absolute; inset: auto 0 8px 0; text-align: center; font-size: 12px; font-weight: 800; color: var(--s-deep); }
+.add-sc { width: 74px; height: 96px; border-radius: 8px; border: 1.5px dashed var(--s-deep); color: var(--s-deep); display: grid; place-items: center; text-align: center; font-weight: 800; font-size: 13px; line-height: 1.15; background: var(--carta); }
+.add-sc svg { width: 26px; height: 26px; display: block; margin: 0 auto 4px; }
+.sc-hint { color: var(--salvia); font-size: 15px; margin: 6px 2px 0; }
+.btns { display: flex; gap: 10px; margin-top: 18px; }
+.btn { flex: 1; display: block; text-align: center; font-weight: 800; border-radius: 9px; padding: 12px; border: 1.5px solid var(--s-deep); color: var(--s-deep); background: var(--carta); }
+.btn.go { background: var(--s-deep); color: #fff; }
+
+/* a drawn receipt */
+.rc { position: absolute; inset: 6px 8px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.18); transform: rotate(-2deg);
+  background-image: repeating-linear-gradient(#fff 0 6px, #e7e9e5 6px 7px); }
+.rc::before { content: "ALTOBELLI"; display: block; font: 800 8px/1 monospace; letter-spacing: .05em; color: #555; padding: 5px 0 0 5px; background: #fff; }
+.rc.b { transform: rotate(1.5deg); background-image: repeating-linear-gradient(#fff 0 5px, #e2e4df 5px 6px); }
+.rc.b::before { content: "FORNO 3"; }
+.rc.c { transform: rotate(-.5deg); }
+.rc.c::before { content: "TOFU"; }
+
+/* list rows */
+.mov, .idx { list-style: none; margin: 0; padding: 0; background: var(--carta); border: 1px solid var(--riga); border-radius: 12px; overflow: hidden; }
+.mov li, .idx li { display: grid; grid-template-columns: 1fr auto; gap: 0 10px; padding: 10px 14px; border-bottom: 1px solid var(--riga); }
+.mov li:last-child, .idx li:last-child { border-bottom: 0; }
+.mov .nm { font-weight: 800; font-size: 17px; }
+.mov .sub, .idx .sub { color: var(--salvia); font-size: 16px; grid-column: 1; }
+.mov .esito, .idx .cassa { grid-column: 2; grid-row: 1 / span 2; text-align: right; align-self: center; }
+.mov .esito b, .idx .cassa b { display: block; }
+.mov .esito small, .idx .cassa small { color: var(--salvia); font-size: 14px; }
+.mov .cr b { color: var(--credito); }
+.idx .dt { font-family: "Alegreya", serif; font-weight: 700; font-size: 20px; }
+.idx .gal { grid-column: 1 / -1; margin-top: 4px; }
+.sect { display: flex; justify-content: space-between; align-items: baseline; margin: 14px 2px 6px; }
+.sect h4 { margin: 0; font-size: 20px; }
+.sect span { color: var(--salvia); font-size: 15px; }
+.month { font-size: 14px; font-weight: 800; color: var(--salvia); text-transform: uppercase; letter-spacing: .06em; margin: 14px 4px 6px; }
+.month:first-child { margin-top: 0; }
+.hint { color: var(--salvia); font-size: 16px; margin: 0 4px 10px; }
+.new { background: #FFF6E5; border-radius: 4px; padding: 0 3px; }
+
+/* gallery */
+.g-person { margin: 0 2px 14px; }
+.g-person h5 { font-family: "Alegreya Sans", sans-serif; font-size: 17px; margin: 0 0 6px; display: flex; justify-content: space-between; }
+.g-person h5 small { color: var(--salvia); font-weight: 500; font-size: 15px; }
+.g-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.g-grid .thumb { width: auto; height: auto; aspect-ratio: 3 / 4; }
+.d-gal { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+.d-gal figure { margin: 0; }
+.d-gal .thumb { width: 100%; height: auto; aspect-ratio: 3 / 4; }
+.d-gal figcaption { font-size: 15px; margin-top: 4px; }
+.d-gal figcaption small { color: var(--salvia); display: block; font-size: 14px; }
+
+/* viewer */
+.viewer { background: #111512; color: #fff; display: flex; flex-direction: column; height: 100%; }
+.viewer .top { display: flex; justify-content: space-between; align-items: center; padding: 16px; font-size: 16px; }
+.viewer .top b { font-size: 18px; }
+.viewer .stage { flex: 1; position: relative; margin: 0 18px; }
+.viewer .stage .rc { inset: 10px 20px; }
+.viewer .stage .rc::before { font-size: 16px; padding: 12px; }
+.viewer .nav { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px 22px; color: #dfe5df; font-weight: 700; }
+.viewer .nav span.btnv { border: 1.5px solid rgba(255,255,255,.5); border-radius: 8px; padding: 6px 14px; }
+
+/* desktop */
+table.t { width: 100%; border-collapse: collapse; background: var(--carta); border-radius: 10px; overflow: hidden; font-size: 15px; }
+table.t th { text-align: left; font-size: 13px; color: var(--salvia); padding: 8px 10px; border-bottom: 1px solid var(--riga); }
+table.t td { padding: 9px 10px; border-bottom: 1px solid var(--riga); }
+table.t td.n, table.t th.n { text-align: right; }
+table.t .new-col { background: #FFF6E5; }
+.d-card { background: var(--carta); border: 1px solid var(--riga); border-radius: 10px; padding: 14px 16px; margin-top: 14px; }
+.d-card h4 { margin: 0 0 10px; font-size: 22px; }
+.d-row { display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: 16px; align-items: start; }
+.d-fld label { display: block; font-size: 14px; color: var(--salvia); font-weight: 700; }
+.d-fld .in { border: 1.5px solid var(--riga); border-radius: 8px; padding: 6px 10px; font-size: 17px; }
+.drop { border: 1.5px dashed var(--s-deep); border-radius: 10px; padding: 10px; display: flex; gap: 10px; align-items: center; background: #FAFBF9; }
+.drop .thumb { width: 60px; height: 78px; }
+.drop p { margin: 0; font-size: 15px; color: var(--salvia); }
+.drop p b { color: var(--s-deep); }
+
+.cmp { width: 100%; max-width: 1060px; border-collapse: collapse; background: var(--carta); border-radius: 10px; overflow: hidden; margin-top: 18px; }
+.cmp th, .cmp td { padding: 9px 12px; border-bottom: 1px solid var(--riga); text-align: left; vertical-align: top; }
+.cmp th { font-size: 14px; color: var(--salvia); }
+.note { background: #FFF6E5; border: 1.5px solid var(--s-acc); border-radius: 10px; padding: 14px 18px; max-width: 980px; margin-top: 48px; }
+.note ol { margin: 6px 0 0; padding-left: 22px; }
+.note li { margin: 6px 0; }
+.was { opacity: .75; }
+.lbl-old { font-size: 13px; font-weight: 800; color: var(--debito); text-transform: uppercase; letter-spacing: .06em; margin: 0 0 6px; }
+.lbl-new { font-size: 13px; font-weight: 800; color: #2d6a2d; text-transform: uppercase; letter-spacing: .06em; margin: 0 0 6px; }
+.panel { background: var(--carta); border: 1px solid var(--riga); border-radius: 12px; padding: 14px; }
+.panel h5 { font-family: "Alegreya Sans", sans-serif; font-size: 17px; margin: 0 0 8px; }
+.u-row { display: grid; grid-template-columns: auto 8ch 1fr 40px; gap: 8px; margin-bottom: 8px; align-items: center; }
+.u-row .in { border: 1.5px solid var(--riga); border-radius: 8px; padding: 7px 10px; font-size: 17px; background: #fff; min-height: 40px; }
+.u-row .in.ph { color: #9aa29c; }
+.u-row .plus { border: 1px solid var(--riga); border-radius: 8px; text-align: center; font-size: 22px; font-weight: 700; padding: 3px 0; }
+.badge-esce { width: 7ch; text-align: center; border: 1px solid var(--riga); border-radius: 8px; padding: 7px 0; font-weight: 800; background: var(--debito-t); color: var(--debito); }
+.badge-entra { width: 7ch; text-align: center; border: 1px solid var(--riga); border-radius: 8px; padding: 7px 0; font-weight: 800; background: #e3f2df; color: #2d6a2d; }
+.seg { display: inline-flex; border: 1.5px solid var(--riga); border-radius: 9px; overflow: hidden; font-weight: 800; font-size: 15px; }
+.seg span { padding: 7px 10px; color: var(--salvia); background: #fff; white-space: nowrap; }
+.seg span.on-esce { background: var(--debito-t); color: var(--debito); }
+.seg span.on-entra { background: #e3f2df; color: #2d6a2d; }
+.u2 { display: grid; grid-template-columns: 1fr 9ch; gap: 8px; margin-bottom: 6px; }
+.u2 .in { border: 1.5px solid var(--riga); border-radius: 8px; padding: 7px 10px; font-size: 17px; background: #fff; }
+.u2 .in.ph { color: #9aa29c; }
+.u-blk { border-top: 1px solid var(--riga); padding-top: 10px; margin-top: 10px; }
+.addlinks { display: flex; gap: 16px; margin-top: 4px; }
+.err { margin: 8px 0 0; padding: 8px 12px; border-radius: 8px; background: var(--debito-t); color: var(--debito); font-weight: 700; font-size: 16px; }
+.sumrow { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed var(--riga); font-size: 17px; }
+.sumrow:last-child { border-bottom: 0; }
+.plusv { color: #2d6a2d; font-weight: 800; } .minusv { color: var(--debito); font-weight: 800; }
+.dlg { background: #fff; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.25); padding: 18px; width: 370px; max-width: 100%; }
+.dlg h4 { margin: 0 0 6px; font-size: 22px; }
+.dlg p { margin: 0 0 10px; font-size: 16px; color: var(--salvia); }
+.chk { display: flex; gap: 8px; align-items: center; margin: 6px 0; font-size: 16px; }
+.chk i { width: 18px; height: 18px; border: 2px solid var(--s-deep); border-radius: 4px; display: inline-block; background: var(--s-deep); }
+.chk i.off { background: #fff; }
+.tg { background: #DCE8F2; border-radius: 14px; padding: 14px; width: 390px; max-width: 100%; }
+.tg .msg { background: #fff; border-radius: 12px; padding: 10px 12px; font-size: 15px; line-height: 1.4; white-space: pre-wrap; font-family: "Alegreya Sans", sans-serif; }
+.tg .msg b { font-weight: 800; }
+.tg .chg { background: #FFF6E5; display: block; border-left: 3px solid var(--s-acc); padding-left: 6px; margin: 2px 0; }
+.tg .st { text-decoration: line-through; color: #8a8f8b; }
+.exp { display: inline-block; font-size: 12px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; background: #FFF6E5; color: #8a4a00; border: 1px solid var(--s-acc); border-radius: 6px; padding: 0 6px; vertical-align: 3px; }
+.sel { border: 1.5px solid var(--riga); border-radius: 8px; padding: 6px 10px; background: #fff; font-size: 16px; display: inline-block; min-width: 200px; }
+.alt-bar { display: flex; gap: 18px; flex-wrap: wrap; align-items: start; padding: 14px 20px; }
+.alt-bar label { display: block; font-size: 14px; color: var(--salvia); font-weight: 700; }
+.drop-l { list-style: none; margin: 4px 0 0; padding: 0; border: 1.5px solid var(--riga); border-radius: 8px; background: #fff; width: 260px; font-size: 16px; }
+.drop-l li { padding: 5px 10px; border-bottom: 1px solid var(--riga); }
+.drop-l li.hit { background: #e3f2df; font-weight: 800; }
+.drop-l li small { color: var(--salvia); }
+.nb { position: absolute; inset: 6px 8px; background: #fffef6; transform: rotate(-1.5deg); box-shadow: 0 1px 3px rgba(0,0,0,.18);
+  background-image: linear-gradient(90deg, transparent 14px, #e9a1a1 14px 15px, transparent 15px), repeating-linear-gradient(#fffef6 0 7px, #c9d6e8 7px 8px); }
+.nb.b { transform: rotate(1deg); }
+.ph { width: 390px; border-radius: 34px; background: var(--calce); border: 10px solid #22262a; overflow: hidden; display: flex; flex-direction: column; position: relative; }
+.ph .bd { padding: 12px 14px 18px; }
+.hd { background: var(--s-deep); color: #fff; padding: 14px 18px; }
+.hd small { color: var(--s-on); font-size: 14px; }
+.hd b { display: block; font-family: "Alegreya", serif; font-size: 30px; line-height: 1.05; }
+.conto4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1.1fr; background: #fff; border-bottom: 1px solid var(--riga); }
+.conto4 div { padding: 10px 8px; font-size: 13px; color: var(--salvia); }
+.conto4 div b { display: block; font-family: "Alegreya", serif; font-size: 20px; color: var(--inchiostro); }
+.conto4 .tot { background: var(--s-tint); border-left: 3px solid var(--s-acc); }
+.strip { background: #fff; border-bottom: 1px solid var(--riga); padding: 7px 12px; font-size: 14px; display: flex; justify-content: space-between; }
+.strip.te { background: var(--teatro-t); color: var(--teatro); }
+.stato-box { background: #fff; border: 1px solid var(--riga); border-radius: 10px; padding: 10px 12px; margin-top: 10px; }
+.stato-box .bb { display: flex; gap: 8px; margin-top: 8px; }
+.stato-box .bb span { flex: 1; text-align: center; border: 1.5px solid var(--s-deep); border-radius: 8px; padding: 7px; font-weight: 800; font-size: 15px; }
+.stato-box .bb span.r { border-color: var(--debito); color: var(--debito); }
+.lbl2 { font-size: 14px; font-weight: 700; color: var(--salvia); margin: 10px 2px 4px; }
+.inp { background: #fff; border: 1.5px solid var(--riga); border-radius: 8px; padding: 8px 10px; font-size: 16px; color: #9aa29c; }
+.qrow { display: flex; gap: 6px; }
+.qrow .thumb { width: 54px; height: 70px; }
+.qrow .add-sc { width: 54px; height: 70px; font-size: 11px; }
+.sel-add { margin-top: 10px; border: 1.5px dashed var(--s-deep); border-radius: 10px; padding: 9px; text-align: center; font-weight: 800; color: var(--s-deep); background: #fff; }
+.lst { margin-top: 8px; background: #fff; border: 1px solid var(--riga); border-radius: 10px; }
+.lst div { display: flex; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid var(--riga); font-size: 15px; }
+.lst div:last-child { border-bottom: 0; }
+.lst small { color: var(--salvia); display: block; font-size: 13px; }
+.db { color: var(--debito); font-weight: 800; } .cr { color: var(--credito); font-weight: 800; }
+.giornata-btn { margin-top: 10px; background: #fff; border: 1px solid var(--riga); border-radius: 10px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; }
+.giornata-btn b { font-size: 17px; }
+.giornata-btn small { display: block; color: var(--salvia); font-size: 14px; }
+.giornata-btn .ch { font-size: 24px; color: var(--s-deep); }
+.sheet-hd { background: var(--s-deep); color: #fff; padding: 12px 16px; display: flex; gap: 10px; align-items: center; }
+.sheet-hd .bk { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid #fff; display: grid; place-items: center; }
+.sheet-hd b { font-family: "Alegreya", serif; font-size: 24px; }
+.cc { background: #fff; border: 1px solid var(--riga); border-radius: 10px; overflow: hidden; }
+.cc div { display: flex; justify-content: space-between; padding: 7px 12px; border-bottom: 1px solid var(--riga); font-size: 16px; }
+.cc div.t { background: var(--s-tint); border-left: 3px solid var(--s-acc); font-weight: 800; }
+.cc div:last-child { border-bottom: 0; }
+.fld2 { background: #fff; border: 1.5px solid var(--riga); border-radius: 10px; padding: 8px 12px; margin-top: 6px; display: flex; justify-content: space-between; font-family: "Alegreya", serif; font-size: 24px; font-weight: 700; }
+.fld2 i { font-style: normal; color: var(--salvia); font-size: 18px; }
+.flab { font-weight: 800; margin: 12px 2px 0; font-size: 16px; }
+.flab small { display: block; font-weight: 400; color: var(--salvia); font-size: 14px; }
+.prima { margin-top: 10px; border-radius: 8px; padding: 8px 12px; display: flex; justify-content: space-between; font-size: 16px; }
+.prima.db { background: var(--debito-t); color: var(--debito); font-weight: 700; }
+.esito { border-left: 3px solid var(--s-acc); padding: 4px 10px; color: var(--salvia); font-style: italic; margin-top: 10px; }
+.esito2 { margin-top: 8px; background: var(--credito-t); color: var(--credito); border-radius: 8px; padding: 8px 12px; display: flex; justify-content: space-between; font-weight: 700; }
+.pillh { display: inline-block; background: #fff; color: var(--debito); border-radius: 6px; padding: 1px 8px; font-size: 14px; font-weight: 800; margin-top: 4px; }
+.calc { margin-top: 10px; background: #fff; border: 1px solid var(--riga); border-radius: 10px; overflow: hidden; }
+.calc div { display: flex; justify-content: space-between; padding: 6px 12px; font-size: 16px; border-bottom: 1px dashed var(--riga); }
+.calc div:last-child { border-bottom: 0; }
+.calc div.r { font-weight: 800; color: var(--credito); background: var(--credito-t); }
+.rbox { margin-top: 10px; background: #fff; border: 1.5px solid var(--s-deep); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 0 rgba(38,57,47,.25); }
+.rbox-t { background: var(--s-deep); color: #fff; font-weight: 800; font-size: 16px; padding: 8px 12px; }
+.rbox-b { padding: 4px 12px 6px; }
+.rbox-b .sumrow { display: flex; }
+.rbox-f { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--riga); padding: 9px 12px; color: var(--s-deep); font-weight: 800; background: var(--s-tint); }
+.rbox-f .ch { font-size: 24px; line-height: 1; }
+.win { width: 330px; height: 620px; border-radius: 30px; border: 9px solid #22262a; overflow: hidden; position: relative; background: var(--calce); }
+.win .inner { position: absolute; left: 0; right: 0; top: 0; }
+.bnav2 { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-around; background: #fff; border-top: 1px solid var(--riga); padding: 10px 0 12px; font-size: 13px; color: var(--salvia); font-weight: 700; }
+.bnav2 b { color: var(--s-deep); }
+.stk { position: absolute; left: 0; right: 0; bottom: 42px; display: flex; gap: 8px; padding: 8px 10px; background: var(--s-tint); border-top: 1px solid var(--s-acc); }
+.stk span { flex: 1; text-align: center; border: 1.5px solid var(--s-deep); border-radius: 8px; padding: 7px; font-weight: 800; font-size: 14px; background: #fff; }
+.stk span.r { border-color: var(--debito); color: var(--debito); }
+</style>
+</head>
+<body>
+<div class="board">
+  <h1>Consegna su mobile: più leggera</h1>
+  <p>Prima = com'è oggi (2.30 in prova). Dopo = proposta. Il giallo segna ciò che cambia. Nomi e cifre di esempio.</p>
+
+  <!-- G -->
+  <div class="section">
+    <h2><span class="tag">G</span>La pagina: cassa, quaderno, note e soldi tolti/rimessi in una sezione a parte</h2>
+    <p>Oggi tutto sta sulla pagina, prima dell'elenco: per arrivare a "Aggiungi partecipante" si scorre oltre cassa, stato, quaderno, note e righe tolti/rimessi. Proposta (giro 4): un riquadro con conto produttore, quote teatro e movimenti di cassa con motivo; toccandolo si apre un foglio a tutto schermo (come la scheda del partecipante).</p>
+  </div>
+  <div class="row">
+    <div>
+      <p class="lbl-old">Prima</p>
+      <div class="ph">
+        <div class="hd"><small>Consegna di</small><b>martedì 20 ottobre</b></div>
+        <div class="conto4"><div>Trovato<b>463,70</b></div><div>Incassato<b>+290</b></div><div>Pagato<b>−319,50</b></div><div class="tot">In cassa<b>= 467</b></div></div>
+        <div class="strip"><span>Rimessi in cassa: storno Altobelli</span><b>+32,80</b></div>
+        <div class="strip te"><span>Quote teatro di questa consegna, a parte</span><b>45 €</b></div>
+        <div class="bd">
+          <div class="stato-box"><b>● Consegna aperta</b><div class="bb"><span>Chiudi consegna</span><span class="r">Annulla consegna</span></div></div>
+          <div class="stato-box"><b>Quaderno</b><div class="qrow" style="margin-top:6px"><div class="thumb"><div class="nb"></div></div><div class="add-sc">Fotografa</div></div></div>
+          <div class="lbl2">Note della giornata</div><div class="inp">Aggiungi una nota</div>
+          <div class="lbl2">Soldi tolti o rimessi in cassa</div>
+          <div class="qrow"><span class="seg" style="font-size:13px"><span>− esce</span><span class="on-entra">+ entra</span></span><div class="inp" style="flex:1;color:var(--inchiostro)">32,80</div></div>
+          <div class="inp" style="margin-top:6px;color:var(--inchiostro)">storno Altobelli</div>
+          <div class="sel-add">+ Aggiungi partecipante</div>
+          <div class="lbl2" style="font-size:18px;color:var(--inchiostro);font-family:Alegreya,serif">Chi ha ritirato</div>
+          <div class="lst"><div><span>Anna<small>conto 47,20, pagato 33,60</small></span><span class="db">−13,60</span></div><div><span>Luca<small>conto 23, pagato 70</small></span><span class="cr">+3,35</span></div></div>
+        </div>
+      </div>
+      <p class="cap">L'elenco "Chi ha ritirato" inizia dopo circa due schermate.</p>
+    </div>
+    <div>
+      <p class="lbl-new">Dopo · pagina (consegna aperta)</p>
+      <div class="ph">
+        <div class="hd"><small>Consegna di</small><b>martedì 20 ottobre</b></div>
+        <div class="bd">
+          <div class="rbox new">
+            <div class="rbox-b">
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Conto produttore</span><b>319,50 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Quote teatro</span><b style="color:var(--teatro)">45 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Rimessi in cassa: storno Altobelli</span><b class="plusv">+32,80 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Tolti dalla cassa: tofu</span><b class="minusv">−20 €</b></span>
+            </div>
+            <div class="rbox-f"><span>Apri: dettaglio, entrate/uscite, quaderno, note</span><span class="ch">›</span></div>
+          </div>
+          <div class="sel-add">+ Aggiungi partecipante</div>
+          <div class="lbl2" style="font-size:18px;color:var(--inchiostro);font-family:Alegreya,serif">Chi ha ritirato</div>
+          <div class="lst"><div><span>Anna<small>conto 47,20, pagato 33,60</small></span><span class="db">−13,60</span></div><div><span>Luca<small>conto 23, pagato 70</small></span><span class="cr">+3,35</span></div><div><span>Marta<small>conto 14,50, pagato 68</small></span><span class="cr">+0,06</span></div></div>
+          <div class="stato-box" style="margin-top:12px"><b>● Consegna aperta</b><div class="bb new"><span class="r">Annulla consegna</span><span>Chiudi consegna</span></div></div>
+        </div>
+      </div>
+      <p class="cap"><b>Proposta.</b> Restano: il riquadro riepilogo (più alto, su più righe), l'aggiunta, l'elenco, e in fondo lo stato con Chiudi/Annulla.</p>
+    </div>
+    <div>
+      <p class="lbl-new">Dopo · foglio a tutto schermo</p>
+      <div class="ph">
+        <div class="sheet-hd new"><span class="bk">‹</span><b style="font-size:21px">Dettaglio, entrate/uscite, quaderno, note</b></div>
+        <div class="bd">
+          <div class="cc"><div><span>Trovato</span><b>463,70</b></div><div><span>+ Incassato</span><b>290</b></div><div><span>− Pagato al produttore</span><b>319,50</b></div><div><span>Rimessi in cassa: storno Altobelli</span><b style="color:#2d6a2d">+32,80</b></div><div class="t"><span>= In cassa</span><span>467</span></div></div>
+          <div class="strip te" style="border-radius:8px;margin-top:6px"><span>Quote teatro, a parte</span><b>45 €</b></div>
+          <div class="stato-box"><b>Quaderno</b><div class="qrow" style="margin-top:6px"><div class="thumb"><div class="nb"></div></div><div class="add-sc">Fotografa</div></div></div>
+          <div class="lbl2 new">Entrate/uscite di cassa</div>
+          <div class="qrow"><span class="seg" style="font-size:13px"><span>− esce</span><span class="on-entra">+ entra</span></span><div class="inp" style="flex:1;color:var(--inchiostro)">32,80</div></div>
+          <div class="inp" style="margin-top:6px;color:var(--inchiostro)">storno Altobelli</div>
+          <div class="lbl2">Note della giornata</div><div class="inp">Aggiungi una nota</div>
+          <div class="btns"><span class="btn go">Salva</span></div>
+        </div>
+      </div>
+      <p class="cap">Tutto ciò che riguarda i soldi della cassa in un posto: chi conta i soldi apre il foglio e confronta con <b>In cassa</b>.</p>
+    </div>
+  </div>
+
+  <!-- H -->
+  <div class="section">
+    <h2><span class="tag">H</span>Il riquadro riepilogo, consegna aperta e chiusa</h2>
+    <p>Consegna aperta: il riquadro mostra conto produttore, quote teatro e i movimenti di cassa con il motivo; trovato, incassato e In cassa sono nel foglio. Consegna chiusa: la cassa completa resta in alto, in sola lettura, come oggi.</p>
+  </div>
+  <div class="row">
+    <div>
+      <p class="lbl-new">Consegna aperta</p>
+      <div class="ph"><div class="hd"><small>Consegna di</small><b>martedì 20 ottobre</b></div><div class="bd">
+        <div class="rbox new">
+            <div class="rbox-b">
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Conto produttore</span><b>319,50 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Quote teatro</span><b style="color:var(--teatro)">45 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Rimessi in cassa: storno Altobelli</span><b class="plusv">+32,80 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Tolti dalla cassa: tofu</span><b class="minusv">−20 €</b></span>
+            </div>
+            <div class="rbox-f"><span>Apri: dettaglio, entrate/uscite, quaderno, note</span><span class="ch">›</span></div>
+          </div>
+        <div class="sel-add">+ Aggiungi partecipante</div></div></div>
+    </div>
+    <div>
+      <p class="lbl-new">Consegna chiusa</p>
+      <div class="ph"><div class="hd"><small>Consegna di</small><b>martedì 13 ottobre</b></div>
+        <div class="conto4"><div>Trovato<b>463,70</b></div><div>Incassato<b>+290</b></div><div>Pagato<b>−319,50</b></div><div class="tot">In cassa<b>= 467</b></div></div>
+        <div class="strip"><span>Rimessi in cassa: storno Altobelli</span><b>+32,80</b></div>
+        <div class="bd"><div class="stato-box"><b>Consegna chiusa</b> · quaderno 2 foto ›</div>
+        <div class="lbl2" style="font-size:18px;color:var(--inchiostro);font-family:Alegreya,serif">Chi ha ritirato</div>
+        <div class="lst"><div><span>Anna<small>conto 47,20, pagato 33,60</small></span><span class="db">−13,60</span></div></div></div></div>
+    </div>
+  </div>
+
+  <!-- I -->
+  <div class="section">
+    <h2><span class="tag">I</span>Scheda del partecipante: "prima di oggi" sotto Importo saldato</h2>
+    <p>Oggi il saldo precedente è una pastiglia nell'intestazione, lontano dai campi che lo usano. Proposta: una riga sotto Importo saldato, così la scheda si legge come un conto: conto, versato, prima di oggi, risultato.</p>
+  </div>
+  <div class="row">
+    <div>
+      <p class="lbl-old">Prima</p>
+      <div class="ph">
+        <div class="sheet-hd"><span class="bk">‹</span><span><b>Marta</b><br><span class="pillh">prima di oggi: debito −53,44 €</span></span></div>
+        <div class="bd">
+          <div class="flab">Conto produttore<small>Importo effettivo dal foglio Altobelli</small></div><div class="fld2">14,50 <i>€</i></div>
+          <div class="flab">Importo saldato</div><div class="fld2">68 <i>€</i></div>
+          <div class="esito">Debito saldato per intero</div>
+          <div class="esito2"><span>Lascia credito</span><span>0,06 €</span></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <p class="lbl-new">Dopo</p>
+      <div class="ph">
+        <div class="sheet-hd"><span class="bk">‹</span><b>Marta</b></div>
+        <div class="bd">
+          <div class="flab">Conto produttore<small>Importo effettivo dal foglio Altobelli</small></div><div class="fld2">14,50 <i>€</i></div>
+          <div class="flab">Importo saldato</div><div class="fld2">68 <i>€</i></div>
+          <div class="prima db new"><span>Prima di oggi: debito</span><span>−53,44 €</span></div>
+          <div class="esito">Debito saldato per intero</div>
+          <div class="esito2"><span>Lascia credito</span><span>0,06 €</span></div>
+        </div>
+      </div>
+      <p class="cap"><b>Proposta.</b> Senza saldo precedente: "Prima di oggi: pari". Il nome resta solo nell'intestazione.</p>
+    </div>
+  </div>
+
+  <!-- J -->
+  <div class="section">
+    <h2><span class="tag">J</span>Come scorre la pagina, e dove mettere Annulla / Chiudi consegna</h2>
+    <p>Oggi su mobile resta sempre visibile solo la barra di navigazione in basso (Consegna, Saldi, Storico, Turni); l'intestazione con la data scorre via. Ogni riga sotto è la stessa pagina (consegna aperta, 18 persone) vista in tre punti dello scorrimento: inizio, metà, fine.</p>
+  </div>
+  <p class="lbl-new" style="margin-top:26px">J1 · In fondo, dopo l'elenco</p>
+  <div class="row" style="margin-top:6px"><div><div class="win"><div class="inner" data-pos="0"><div class="hd"><small>Consegna di</small><b>martedì 20 ottobre</b></div><div class="bd"><div class="rbox new">
+            <div class="rbox-b">
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Conto produttore</span><b>319,50 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Quote teatro</span><b style="color:var(--teatro)">45 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Rimessi in cassa: storno Altobelli</span><b class="plusv">+32,80 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Tolti dalla cassa: tofu</span><b class="minusv">−20 €</b></span>
+            </div>
+            <div class="rbox-f"><span>Apri: dettaglio, entrate/uscite, quaderno, note</span><span class="ch">›</span></div>
+          </div><div class="sel-add">+ Aggiungi partecipante</div><div class="lbl2" style="font-size:18px;color:var(--inchiostro);font-family:Alegreya,serif">Chi ha ritirato</div><div class="lst"><div><span>Anna<small>conto 47,20, pagato 33,60</small></span><span class="db">−13,60</span></div><div><span>Luca<small>conto 23, pagato 70</small></span><span class="cr">+3,35</span></div><div><span>Marta<small>conto 14,50, pagato 68</small></span><span class="cr">+0,06</span></div><div><span>Paolo<small>conto 31,10, pagato 30,10</small></span><span class="db">−1</span></div><div><span>Giulia<small>conto 26, pagato 20</small></span><span class="db">−6</span></div><div><span>Sara<small>conto 50,20, pagato 0</small></span><span class="db">−50,20</span></div><div><span>Teo<small>conto 39,10, pagato 30</small></span><span class="db">−9,10</span></div><div><span>Rita<small>conto 32,50, pagato 0</small></span><span class="db">−32,50</span></div><div><span>Ugo<small>conto 18,30, pagato 18,30</small></span><span class="">–</span></div><div><span>Elena<small>conto 37,60, pagato 1</small></span><span class="db">−18,04</span></div><div><span>Bruno<small>conto 0, pagato 19</small></span><span class="">–</span></div><div><span>Nadia<small>conto 22, pagato 22</small></span><span class="">–</span></div><div><span>Ivo<small>conto 12,40, pagato 10</small></span><span class="db">−2,40</span></div><div><span>Carla<small>conto 28, pagato 30</small></span><span class="cr">+2</span></div><div><span>Dario<small>conto 41, pagato 41</small></span><span class="">–</span></div><div><span>Lia<small>conto 9,80, pagato 10</small></span><span class="cr">+0,20</span></div><div><span>Gino<small>conto 33,30, pagato 40</small></span><span class="cr">+6,70</span></div><div><span>Pia<small>conto 19, pagato 19</small></span><span class="">–</span></div></div><div class="stato-box" style="margin-top:12px"><b>● Consegna aperta</b><div class="bb"><span class="r">Annulla consegna</span><span>Chiudi consegna</span></div></div><div style="height:70px"></div></div></div><div class="bnav2"><b>Consegna</b><span>Saldi</span><span>Storico</span><span>Turni</span></div></div><p class="cap">Inizio: riquadro, aggiunta, primi nomi.</p></div><div><div class="win"><div class="inner" data-pos="0.5"><div class="hd"><small>Consegna di</small><b>martedì 20 ottobre</b></div><div class="bd"><div class="rbox new">
+            <div class="rbox-b">
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Conto produttore</span><b>319,50 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Quote teatro</span><b style="color:var(--teatro)">45 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Rimessi in cassa: storno Altobelli</span><b class="plusv">+32,80 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Tolti dalla cassa: tofu</span><b class="minusv">−20 €</b></span>
+            </div>
+            <div class="rbox-f"><span>Apri: dettaglio, entrate/uscite, quaderno, note</span><span class="ch">›</span></div>
+          </div><div class="sel-add">+ Aggiungi partecipante</div><div class="lbl2" style="font-size:18px;color:var(--inchiostro);font-family:Alegreya,serif">Chi ha ritirato</div><div class="lst"><div><span>Anna<small>conto 47,20, pagato 33,60</small></span><span class="db">−13,60</span></div><div><span>Luca<small>conto 23, pagato 70</small></span><span class="cr">+3,35</span></div><div><span>Marta<small>conto 14,50, pagato 68</small></span><span class="cr">+0,06</span></div><div><span>Paolo<small>conto 31,10, pagato 30,10</small></span><span class="db">−1</span></div><div><span>Giulia<small>conto 26, pagato 20</small></span><span class="db">−6</span></div><div><span>Sara<small>conto 50,20, pagato 0</small></span><span class="db">−50,20</span></div><div><span>Teo<small>conto 39,10, pagato 30</small></span><span class="db">−9,10</span></div><div><span>Rita<small>conto 32,50, pagato 0</small></span><span class="db">−32,50</span></div><div><span>Ugo<small>conto 18,30, pagato 18,30</small></span><span class="">–</span></div><div><span>Elena<small>conto 37,60, pagato 1</small></span><span class="db">−18,04</span></div><div><span>Bruno<small>conto 0, pagato 19</small></span><span class="">–</span></div><div><span>Nadia<small>conto 22, pagato 22</small></span><span class="">–</span></div><div><span>Ivo<small>conto 12,40, pagato 10</small></span><span class="db">−2,40</span></div><div><span>Carla<small>conto 28, pagato 30</small></span><span class="cr">+2</span></div><div><span>Dario<small>conto 41, pagato 41</small></span><span class="">–</span></div><div><span>Lia<small>conto 9,80, pagato 10</small></span><span class="cr">+0,20</span></div><div><span>Gino<small>conto 33,30, pagato 40</small></span><span class="cr">+6,70</span></div><div><span>Pia<small>conto 19, pagato 19</small></span><span class="">–</span></div></div><div class="stato-box" style="margin-top:12px"><b>● Consegna aperta</b><div class="bb"><span class="r">Annulla consegna</span><span>Chiudi consegna</span></div></div><div style="height:70px"></div></div></div><div class="bnav2"><b>Consegna</b><span>Saldi</span><span>Storico</span><span>Turni</span></div></div><p class="cap">Metà: solo l'elenco.</p></div><div><div class="win"><div class="inner" data-pos="1"><div class="hd"><small>Consegna di</small><b>martedì 20 ottobre</b></div><div class="bd"><div class="rbox new">
+            <div class="rbox-b">
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Conto produttore</span><b>319,50 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Quote teatro</span><b style="color:var(--teatro)">45 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Rimessi in cassa: storno Altobelli</span><b class="plusv">+32,80 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Tolti dalla cassa: tofu</span><b class="minusv">−20 €</b></span>
+            </div>
+            <div class="rbox-f"><span>Apri: dettaglio, entrate/uscite, quaderno, note</span><span class="ch">›</span></div>
+          </div><div class="sel-add">+ Aggiungi partecipante</div><div class="lbl2" style="font-size:18px;color:var(--inchiostro);font-family:Alegreya,serif">Chi ha ritirato</div><div class="lst"><div><span>Anna<small>conto 47,20, pagato 33,60</small></span><span class="db">−13,60</span></div><div><span>Luca<small>conto 23, pagato 70</small></span><span class="cr">+3,35</span></div><div><span>Marta<small>conto 14,50, pagato 68</small></span><span class="cr">+0,06</span></div><div><span>Paolo<small>conto 31,10, pagato 30,10</small></span><span class="db">−1</span></div><div><span>Giulia<small>conto 26, pagato 20</small></span><span class="db">−6</span></div><div><span>Sara<small>conto 50,20, pagato 0</small></span><span class="db">−50,20</span></div><div><span>Teo<small>conto 39,10, pagato 30</small></span><span class="db">−9,10</span></div><div><span>Rita<small>conto 32,50, pagato 0</small></span><span class="db">−32,50</span></div><div><span>Ugo<small>conto 18,30, pagato 18,30</small></span><span class="">–</span></div><div><span>Elena<small>conto 37,60, pagato 1</small></span><span class="db">−18,04</span></div><div><span>Bruno<small>conto 0, pagato 19</small></span><span class="">–</span></div><div><span>Nadia<small>conto 22, pagato 22</small></span><span class="">–</span></div><div><span>Ivo<small>conto 12,40, pagato 10</small></span><span class="db">−2,40</span></div><div><span>Carla<small>conto 28, pagato 30</small></span><span class="cr">+2</span></div><div><span>Dario<small>conto 41, pagato 41</small></span><span class="">–</span></div><div><span>Lia<small>conto 9,80, pagato 10</small></span><span class="cr">+0,20</span></div><div><span>Gino<small>conto 33,30, pagato 40</small></span><span class="cr">+6,70</span></div><div><span>Pia<small>conto 19, pagato 19</small></span><span class="">–</span></div></div><div class="stato-box" style="margin-top:12px"><b>● Consegna aperta</b><div class="bb"><span class="r">Annulla consegna</span><span>Chiudi consegna</span></div></div><div style="height:70px"></div></div></div><div class="bnav2"><b>Consegna</b><span>Saldi</span><span>Storico</span><span>Turni</span></div></div><p class="cap">Fine: Annulla / Chiudi compaiono solo qui.</p></div></div>
+  <p class="lbl-new" style="margin-top:26px">J2 · Barra fissa sopra la navigazione</p>
+  <div class="row" style="margin-top:6px"><div><div class="win"><div class="inner" data-pos="0"><div class="hd"><small>Consegna di</small><b>martedì 20 ottobre</b></div><div class="bd"><div class="rbox new">
+            <div class="rbox-b">
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Conto produttore</span><b>319,50 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Quote teatro</span><b style="color:var(--teatro)">45 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Rimessi in cassa: storno Altobelli</span><b class="plusv">+32,80 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Tolti dalla cassa: tofu</span><b class="minusv">−20 €</b></span>
+            </div>
+            <div class="rbox-f"><span>Apri: dettaglio, entrate/uscite, quaderno, note</span><span class="ch">›</span></div>
+          </div><div class="sel-add">+ Aggiungi partecipante</div><div class="lbl2" style="font-size:18px;color:var(--inchiostro);font-family:Alegreya,serif">Chi ha ritirato</div><div class="lst"><div><span>Anna<small>conto 47,20, pagato 33,60</small></span><span class="db">−13,60</span></div><div><span>Luca<small>conto 23, pagato 70</small></span><span class="cr">+3,35</span></div><div><span>Marta<small>conto 14,50, pagato 68</small></span><span class="cr">+0,06</span></div><div><span>Paolo<small>conto 31,10, pagato 30,10</small></span><span class="db">−1</span></div><div><span>Giulia<small>conto 26, pagato 20</small></span><span class="db">−6</span></div><div><span>Sara<small>conto 50,20, pagato 0</small></span><span class="db">−50,20</span></div><div><span>Teo<small>conto 39,10, pagato 30</small></span><span class="db">−9,10</span></div><div><span>Rita<small>conto 32,50, pagato 0</small></span><span class="db">−32,50</span></div><div><span>Ugo<small>conto 18,30, pagato 18,30</small></span><span class="">–</span></div><div><span>Elena<small>conto 37,60, pagato 1</small></span><span class="db">−18,04</span></div><div><span>Bruno<small>conto 0, pagato 19</small></span><span class="">–</span></div><div><span>Nadia<small>conto 22, pagato 22</small></span><span class="">–</span></div><div><span>Ivo<small>conto 12,40, pagato 10</small></span><span class="db">−2,40</span></div><div><span>Carla<small>conto 28, pagato 30</small></span><span class="cr">+2</span></div><div><span>Dario<small>conto 41, pagato 41</small></span><span class="">–</span></div><div><span>Lia<small>conto 9,80, pagato 10</small></span><span class="cr">+0,20</span></div><div><span>Gino<small>conto 33,30, pagato 40</small></span><span class="cr">+6,70</span></div><div><span>Pia<small>conto 19, pagato 19</small></span><span class="">–</span></div></div><div style="height:70px"></div></div></div><div class="stk"><span class="r">Annulla consegna</span><span>Chiudi consegna</span></div><div class="bnav2"><b>Consegna</b><span>Saldi</span><span>Storico</span><span>Turni</span></div></div><p class="cap">Sempre visibile, a ogni punto dello scorrimento.</p></div><div><div class="win"><div class="inner" data-pos="0.5"><div class="hd"><small>Consegna di</small><b>martedì 20 ottobre</b></div><div class="bd"><div class="rbox new">
+            <div class="rbox-b">
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Conto produttore</span><b>319,50 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Quote teatro</span><b style="color:var(--teatro)">45 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Rimessi in cassa: storno Altobelli</span><b class="plusv">+32,80 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Tolti dalla cassa: tofu</span><b class="minusv">−20 €</b></span>
+            </div>
+            <div class="rbox-f"><span>Apri: dettaglio, entrate/uscite, quaderno, note</span><span class="ch">›</span></div>
+          </div><div class="sel-add">+ Aggiungi partecipante</div><div class="lbl2" style="font-size:18px;color:var(--inchiostro);font-family:Alegreya,serif">Chi ha ritirato</div><div class="lst"><div><span>Anna<small>conto 47,20, pagato 33,60</small></span><span class="db">−13,60</span></div><div><span>Luca<small>conto 23, pagato 70</small></span><span class="cr">+3,35</span></div><div><span>Marta<small>conto 14,50, pagato 68</small></span><span class="cr">+0,06</span></div><div><span>Paolo<small>conto 31,10, pagato 30,10</small></span><span class="db">−1</span></div><div><span>Giulia<small>conto 26, pagato 20</small></span><span class="db">−6</span></div><div><span>Sara<small>conto 50,20, pagato 0</small></span><span class="db">−50,20</span></div><div><span>Teo<small>conto 39,10, pagato 30</small></span><span class="db">−9,10</span></div><div><span>Rita<small>conto 32,50, pagato 0</small></span><span class="db">−32,50</span></div><div><span>Ugo<small>conto 18,30, pagato 18,30</small></span><span class="">–</span></div><div><span>Elena<small>conto 37,60, pagato 1</small></span><span class="db">−18,04</span></div><div><span>Bruno<small>conto 0, pagato 19</small></span><span class="">–</span></div><div><span>Nadia<small>conto 22, pagato 22</small></span><span class="">–</span></div><div><span>Ivo<small>conto 12,40, pagato 10</small></span><span class="db">−2,40</span></div><div><span>Carla<small>conto 28, pagato 30</small></span><span class="cr">+2</span></div><div><span>Dario<small>conto 41, pagato 41</small></span><span class="">–</span></div><div><span>Lia<small>conto 9,80, pagato 10</small></span><span class="cr">+0,20</span></div><div><span>Gino<small>conto 33,30, pagato 40</small></span><span class="cr">+6,70</span></div><div><span>Pia<small>conto 19, pagato 19</small></span><span class="">–</span></div></div><div style="height:70px"></div></div></div><div class="stk"><span class="r">Annulla consegna</span><span>Chiudi consegna</span></div><div class="bnav2"><b>Consegna</b><span>Saldi</span><span>Storico</span><span>Turni</span></div></div><p class="cap">Toglie circa 56 px di schermo all'elenco.</p></div><div><div class="win"><div class="inner" data-pos="1"><div class="hd"><small>Consegna di</small><b>martedì 20 ottobre</b></div><div class="bd"><div class="rbox new">
+            <div class="rbox-b">
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Conto produttore</span><b>319,50 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Quote teatro</span><b style="color:var(--teatro)">45 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Rimessi in cassa: storno Altobelli</span><b class="plusv">+32,80 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Tolti dalla cassa: tofu</span><b class="minusv">−20 €</b></span>
+            </div>
+            <div class="rbox-f"><span>Apri: dettaglio, entrate/uscite, quaderno, note</span><span class="ch">›</span></div>
+          </div><div class="sel-add">+ Aggiungi partecipante</div><div class="lbl2" style="font-size:18px;color:var(--inchiostro);font-family:Alegreya,serif">Chi ha ritirato</div><div class="lst"><div><span>Anna<small>conto 47,20, pagato 33,60</small></span><span class="db">−13,60</span></div><div><span>Luca<small>conto 23, pagato 70</small></span><span class="cr">+3,35</span></div><div><span>Marta<small>conto 14,50, pagato 68</small></span><span class="cr">+0,06</span></div><div><span>Paolo<small>conto 31,10, pagato 30,10</small></span><span class="db">−1</span></div><div><span>Giulia<small>conto 26, pagato 20</small></span><span class="db">−6</span></div><div><span>Sara<small>conto 50,20, pagato 0</small></span><span class="db">−50,20</span></div><div><span>Teo<small>conto 39,10, pagato 30</small></span><span class="db">−9,10</span></div><div><span>Rita<small>conto 32,50, pagato 0</small></span><span class="db">−32,50</span></div><div><span>Ugo<small>conto 18,30, pagato 18,30</small></span><span class="">–</span></div><div><span>Elena<small>conto 37,60, pagato 1</small></span><span class="db">−18,04</span></div><div><span>Bruno<small>conto 0, pagato 19</small></span><span class="">–</span></div><div><span>Nadia<small>conto 22, pagato 22</small></span><span class="">–</span></div><div><span>Ivo<small>conto 12,40, pagato 10</small></span><span class="db">−2,40</span></div><div><span>Carla<small>conto 28, pagato 30</small></span><span class="cr">+2</span></div><div><span>Dario<small>conto 41, pagato 41</small></span><span class="">–</span></div><div><span>Lia<small>conto 9,80, pagato 10</small></span><span class="cr">+0,20</span></div><div><span>Gino<small>conto 33,30, pagato 40</small></span><span class="cr">+6,70</span></div><div><span>Pia<small>conto 19, pagato 19</small></span><span class="">–</span></div></div><div style="height:70px"></div></div></div><div class="stk"><span class="r">Annulla consegna</span><span>Chiudi consegna</span></div><div class="bnav2"><b>Consegna</b><span>Saldi</span><span>Storico</span><span>Turni</span></div></div><p class="cap">Rischio: tocco accidentale vicino alla navigazione (Chiudi chiede comunque conferma).</p></div></div>
+  <p class="lbl-new" style="margin-top:26px">J3 · In alto, sotto l'intestazione</p>
+  <div class="row" style="margin-top:6px"><div><div class="win"><div class="inner" data-pos="0"><div class="hd"><small>Consegna di</small><b>martedì 20 ottobre</b></div><div class="bd"><div class="stato-box" style="margin-top:12px"><b>● Consegna aperta</b><div class="bb"><span class="r">Annulla consegna</span><span>Chiudi consegna</span></div></div><div class="rbox new">
+            <div class="rbox-b">
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Conto produttore</span><b>319,50 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Quote teatro</span><b style="color:var(--teatro)">45 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Rimessi in cassa: storno Altobelli</span><b class="plusv">+32,80 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Tolti dalla cassa: tofu</span><b class="minusv">−20 €</b></span>
+            </div>
+            <div class="rbox-f"><span>Apri: dettaglio, entrate/uscite, quaderno, note</span><span class="ch">›</span></div>
+          </div><div class="sel-add">+ Aggiungi partecipante</div><div class="lbl2" style="font-size:18px;color:var(--inchiostro);font-family:Alegreya,serif">Chi ha ritirato</div><div class="lst"><div><span>Anna<small>conto 47,20, pagato 33,60</small></span><span class="db">−13,60</span></div><div><span>Luca<small>conto 23, pagato 70</small></span><span class="cr">+3,35</span></div><div><span>Marta<small>conto 14,50, pagato 68</small></span><span class="cr">+0,06</span></div><div><span>Paolo<small>conto 31,10, pagato 30,10</small></span><span class="db">−1</span></div><div><span>Giulia<small>conto 26, pagato 20</small></span><span class="db">−6</span></div><div><span>Sara<small>conto 50,20, pagato 0</small></span><span class="db">−50,20</span></div><div><span>Teo<small>conto 39,10, pagato 30</small></span><span class="db">−9,10</span></div><div><span>Rita<small>conto 32,50, pagato 0</small></span><span class="db">−32,50</span></div><div><span>Ugo<small>conto 18,30, pagato 18,30</small></span><span class="">–</span></div><div><span>Elena<small>conto 37,60, pagato 1</small></span><span class="db">−18,04</span></div><div><span>Bruno<small>conto 0, pagato 19</small></span><span class="">–</span></div><div><span>Nadia<small>conto 22, pagato 22</small></span><span class="">–</span></div><div><span>Ivo<small>conto 12,40, pagato 10</small></span><span class="db">−2,40</span></div><div><span>Carla<small>conto 28, pagato 30</small></span><span class="cr">+2</span></div><div><span>Dario<small>conto 41, pagato 41</small></span><span class="">–</span></div><div><span>Lia<small>conto 9,80, pagato 10</small></span><span class="cr">+0,20</span></div><div><span>Gino<small>conto 33,30, pagato 40</small></span><span class="cr">+6,70</span></div><div><span>Pia<small>conto 19, pagato 19</small></span><span class="">–</span></div></div><div style="height:70px"></div></div></div><div class="bnav2"><b>Consegna</b><span>Saldi</span><span>Storico</span><span>Turni</span></div></div><p class="cap">Visibile appena si apre la pagina.</p></div><div><div class="win"><div class="inner" data-pos="0.5"><div class="hd"><small>Consegna di</small><b>martedì 20 ottobre</b></div><div class="bd"><div class="stato-box" style="margin-top:12px"><b>● Consegna aperta</b><div class="bb"><span class="r">Annulla consegna</span><span>Chiudi consegna</span></div></div><div class="rbox new">
+            <div class="rbox-b">
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Conto produttore</span><b>319,50 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Quote teatro</span><b style="color:var(--teatro)">45 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Rimessi in cassa: storno Altobelli</span><b class="plusv">+32,80 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Tolti dalla cassa: tofu</span><b class="minusv">−20 €</b></span>
+            </div>
+            <div class="rbox-f"><span>Apri: dettaglio, entrate/uscite, quaderno, note</span><span class="ch">›</span></div>
+          </div><div class="sel-add">+ Aggiungi partecipante</div><div class="lbl2" style="font-size:18px;color:var(--inchiostro);font-family:Alegreya,serif">Chi ha ritirato</div><div class="lst"><div><span>Anna<small>conto 47,20, pagato 33,60</small></span><span class="db">−13,60</span></div><div><span>Luca<small>conto 23, pagato 70</small></span><span class="cr">+3,35</span></div><div><span>Marta<small>conto 14,50, pagato 68</small></span><span class="cr">+0,06</span></div><div><span>Paolo<small>conto 31,10, pagato 30,10</small></span><span class="db">−1</span></div><div><span>Giulia<small>conto 26, pagato 20</small></span><span class="db">−6</span></div><div><span>Sara<small>conto 50,20, pagato 0</small></span><span class="db">−50,20</span></div><div><span>Teo<small>conto 39,10, pagato 30</small></span><span class="db">−9,10</span></div><div><span>Rita<small>conto 32,50, pagato 0</small></span><span class="db">−32,50</span></div><div><span>Ugo<small>conto 18,30, pagato 18,30</small></span><span class="">–</span></div><div><span>Elena<small>conto 37,60, pagato 1</small></span><span class="db">−18,04</span></div><div><span>Bruno<small>conto 0, pagato 19</small></span><span class="">–</span></div><div><span>Nadia<small>conto 22, pagato 22</small></span><span class="">–</span></div><div><span>Ivo<small>conto 12,40, pagato 10</small></span><span class="db">−2,40</span></div><div><span>Carla<small>conto 28, pagato 30</small></span><span class="cr">+2</span></div><div><span>Dario<small>conto 41, pagato 41</small></span><span class="">–</span></div><div><span>Lia<small>conto 9,80, pagato 10</small></span><span class="cr">+0,20</span></div><div><span>Gino<small>conto 33,30, pagato 40</small></span><span class="cr">+6,70</span></div><div><span>Pia<small>conto 19, pagato 19</small></span><span class="">–</span></div></div><div style="height:70px"></div></div></div><div class="bnav2"><b>Consegna</b><span>Saldi</span><span>Storico</span><span>Turni</span></div></div><p class="cap">Sparisce scorrendo.</p></div><div><div class="win"><div class="inner" data-pos="1"><div class="hd"><small>Consegna di</small><b>martedì 20 ottobre</b></div><div class="bd"><div class="stato-box" style="margin-top:12px"><b>● Consegna aperta</b><div class="bb"><span class="r">Annulla consegna</span><span>Chiudi consegna</span></div></div><div class="rbox new">
+            <div class="rbox-b">
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Conto produttore</span><b>319,50 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Quote teatro</span><b style="color:var(--teatro)">45 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Rimessi in cassa: storno Altobelli</span><b class="plusv">+32,80 €</b></span>
+              <span class="sumrow" style="font-size:15px;padding:3px 0"><span>Tolti dalla cassa: tofu</span><b class="minusv">−20 €</b></span>
+            </div>
+            <div class="rbox-f"><span>Apri: dettaglio, entrate/uscite, quaderno, note</span><span class="ch">›</span></div>
+          </div><div class="sel-add">+ Aggiungi partecipante</div><div class="lbl2" style="font-size:18px;color:var(--inchiostro);font-family:Alegreya,serif">Chi ha ritirato</div><div class="lst"><div><span>Anna<small>conto 47,20, pagato 33,60</small></span><span class="db">−13,60</span></div><div><span>Luca<small>conto 23, pagato 70</small></span><span class="cr">+3,35</span></div><div><span>Marta<small>conto 14,50, pagato 68</small></span><span class="cr">+0,06</span></div><div><span>Paolo<small>conto 31,10, pagato 30,10</small></span><span class="db">−1</span></div><div><span>Giulia<small>conto 26, pagato 20</small></span><span class="db">−6</span></div><div><span>Sara<small>conto 50,20, pagato 0</small></span><span class="db">−50,20</span></div><div><span>Teo<small>conto 39,10, pagato 30</small></span><span class="db">−9,10</span></div><div><span>Rita<small>conto 32,50, pagato 0</small></span><span class="db">−32,50</span></div><div><span>Ugo<small>conto 18,30, pagato 18,30</small></span><span class="">–</span></div><div><span>Elena<small>conto 37,60, pagato 1</small></span><span class="db">−18,04</span></div><div><span>Bruno<small>conto 0, pagato 19</small></span><span class="">–</span></div><div><span>Nadia<small>conto 22, pagato 22</small></span><span class="">–</span></div><div><span>Ivo<small>conto 12,40, pagato 10</small></span><span class="db">−2,40</span></div><div><span>Carla<small>conto 28, pagato 30</small></span><span class="cr">+2</span></div><div><span>Dario<small>conto 41, pagato 41</small></span><span class="">–</span></div><div><span>Lia<small>conto 9,80, pagato 10</small></span><span class="cr">+0,20</span></div><div><span>Gino<small>conto 33,30, pagato 40</small></span><span class="cr">+6,70</span></div><div><span>Pia<small>conto 19, pagato 19</small></span><span class="">–</span></div></div><div style="height:70px"></div></div></div><div class="bnav2"><b>Consegna</b><span>Saldi</span><span>Storico</span><span>Turni</span></div></div><p class="cap">Per chiudere si torna in cima.</p></div></div>
+</div>
+<script>
+document.querySelectorAll('.win .inner').forEach(el => {
+  const max = el.scrollHeight - el.parentElement.clientHeight;
+  el.style.transform = `translateY(-${Math.max(0, max * Number(el.dataset.pos))}px)`;
+});
+</script>
+</body>
+</html>

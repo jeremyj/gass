@@ -134,6 +134,41 @@ function updateNoteButtonVisibility() {
   }
 }
 
+// ===== SHEET "DETTAGLIO, ENTRATE/USCITE, QUADERNO, NOTE" =====
+// The page shows a summary box (renderGiornataRow); cassa, notebook, entrate/uscite and note are in a
+// full-screen sheet. A closed consegna shows its cassa at the top of the page instead (read-only).
+
+function placeCassa() {
+  const conto = document.getElementById('cassa-conto');
+  const warning = document.getElementById('cassa-warning');
+  if (isConsegnaClosed) document.getElementById('giornata-row').before(conto, warning);
+  else document.getElementById('giornata-body').prepend(conto, warning);
+}
+
+function openGiornata() {
+  document.getElementById('giornata-sheet').classList.add('aperto');
+}
+
+async function closeGiornata() {
+  if (noteGiornataModified) {
+    const ok = await confirmDialog({
+      title: 'Modifiche non salvate',
+      message: 'Vuoi chiudere senza salvare?',
+      confirmText: 'Chiudi senza salvare',
+      danger: true
+    });
+    if (!ok) return;
+    // Back to what is saved
+    const [note, uscite] = JSON.parse(originalNoteGiornata);
+    originalNoteGiornata = fillGiornata({ note }, uscite);
+    noteGiornataModified = false;
+    bozzaCancella(chiaveGiornata(getSelectedDate()));
+    updateLasciatoInCassa();
+    updateNoteButtonVisibility();
+  }
+  document.getElementById('giornata-sheet').classList.remove('aperto');
+}
+
 // ===== CONSEGNA STATUS MANAGEMENT =====
 
 function updateConsegnaStatusUI(consegna) {
@@ -141,6 +176,7 @@ function updateConsegnaStatusUI(consegna) {
   loadQuoteOggi();
   aggiornaQuaderno();
   isConsegnaClosed = consegna?.chiusa === true;
+  placeCassa();
 
   const statusSection = document.getElementById('consegna-status-section');
   if (!statusSection) return;
@@ -207,6 +243,7 @@ async function saveNoteOnly() {
     originalNoteGiornata = giornataSnapshot();
     noteGiornataModified = false;
     updateNoteButtonVisibility();
+    closeGiornata();
     // Reload to get fresh data
     setTimeout(() => checkDateData(), 1000);
   } catch (error) {

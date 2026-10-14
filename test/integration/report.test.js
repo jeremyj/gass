@@ -45,8 +45,8 @@ describe('reportBody', () => {
       '',
       'Trovato in cassa: 589 €',
       'Pagato al produttore: 357,20 €',
-      'Tolti dalla cassa: −65,80 € (teatro −45, tofu −20,80)',
-      'Rimessi in cassa: +0,20 € (arrotondamento)',
+      'Uscite di cassa: −65,80 € (teatro −45, tofu −20,80)',
+      'Entrate di cassa: +0,20 € (arrotondamento)',
       '',
       'Debiti saldati: Fernanda 50, Franky 30 (resta debito 0,85)',
       'Debiti lasciati: Jeremy 8,99',
@@ -118,7 +118,7 @@ describe('notifyClosed', () => {
       'Pari: conto produttore 20 → 23,50',
       'Matias: aggiunto, conto produttore 10, versato 10',
       'Rachele: tolto dalla consegna (era nessun importo)',
-      'Rimessi in cassa: +0,20 (arrotondamento) → +33 (arrotondamento +0,20, storno Altobelli +32,80)',
+      'Entrate di cassa: +0,20 (arrotondamento) → +33 (arrotondamento +0,20, storno Altobelli +32,80)',
       'Lasciato in cassa: 553,70 → 586,30'
     ]);
     expect(sent[1].body).toContain('Lasciato in cassa: 586,30 €');

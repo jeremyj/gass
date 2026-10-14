@@ -77,10 +77,10 @@ function calculateLasciatoInCassa() {
   return roundToCents(trovatoInCassa + calculateIncassato() - pagatoProduttore - usciteCassaValue());
 }
 
-// ===== NOTE AND SOLDI TOLTI O RIMESSI IN CASSA (saved together by the page's Salva button) =====
+// ===== NOTE AND ENTRATE/USCITE DI CASSA (saved together by the page's Salva button) =====
 
 // Rows of the form ("uscite" in code and DB); rows left empty are dropped (that is how one is removed).
-// The switch holds the sign: esce (tolti) is stored positive, entra (rimessi) negative
+// The switch holds the sign: esce (uscita) is stored positive, entra (entrata) negative
 function righeUscite() {
   return [...document.querySelectorAll('#uscite-edit .uscita')].map(row => {
     const importo = roundToCents(Math.abs(parseAmount(row.querySelector('.uscita-importo').value)));
@@ -155,14 +155,14 @@ function setGiornataDisabled(disabled) {
     .forEach(el => { el.disabled = disabled; });
 }
 
-// "tolti dalla cassa" / "rimessi in cassa": the words of the two directions (same as VERSO in report.js)
-const VERSO_USCITA = { esce: 'Tolti dalla cassa', entra: 'Rimessi in cassa' };
+// The words of the two directions (same as VERSO in report.js)
+const VERSO_USCITA = { esce: 'Uscite di cassa', entra: 'Entrate di cassa' };
 const versoDi = u => u.importo < 0 ? 'entra' : 'esce';
 
 // First incomplete row as a message naming its direction, or '' when every row is complete
 function erroreUscite() {
   for (const u of righeUscite()) {
-    const verso = u.segno === 'entra' ? 'rimess' : 'tolt';
+    const verso = u.segno === 'entra' ? 'entrat' : 'uscit';
     const dove = u.segno === 'entra' ? 'in cassa' : 'dalla cassa';
     if (!u.motivo) return `Scrivi il motivo dei ${formatEuro(Math.abs(u.importo))} ${verso}i ${dove}`;
     if (!u.importo) return `Scrivi l'importo di «${u.motivo}» ${verso}o ${dove}`;
@@ -188,7 +188,7 @@ function descrizioneUscite(uscite) {
   return uscite.length === 1 ? uscite[0].motivo : uscite.map(u => `${u.motivo} ${formatEffettoCassa(u.importo)}`).join(', ');
 }
 
-// Tolti and rimessi with their total, one entry per direction that has rows (page, close summary)
+// Uscite and entrate with their total, one entry per direction that has rows (page, close summary)
 function usciteVersi(uscite = readUscite().filter(u => u.importo)) {
   return ['esce', 'entra'].map(verso => {
     const righe = uscite.filter(u => versoDi(u) === verso);
@@ -197,7 +197,7 @@ function usciteVersi(uscite = readUscite().filter(u => u.importo)) {
   }).filter(v => v.totale);
 }
 
-// The cassa lines for tolti and rimessi (already in the In cassa total), shown only when there are any
+// The cassa lines for uscite and entrate (already in the In cassa total), shown only when there are any
 function updateUsciteView() {
   const view = document.getElementById('uscite-view');
   const versi = usciteVersi();
@@ -207,6 +207,18 @@ function updateUsciteView() {
       <label>${v.label}: <span class="uscite-motivo">${escapeHtml(v.motivo)}</span></label>
       <output>${formatEffettoCassa(v.totale)}</output>
     </div>`).join('');
+}
+
+// Mobile: the summary box that opens the sheet (conto produttore, quote teatro, entrate/uscite with motivo)
+function renderGiornataRow() {
+  const righe = document.getElementById('giornata-righe');
+  if (!righe) return;
+  const riga = (label, valore, cls = '') => `<span class="rg"><span>${label}</span><b class="${cls}">${valore}</b></span>`;
+  righe.innerHTML = [
+    riga('Conto produttore', formatEuro(calculatePagatoProduttore())),
+    ...(typeof quoteOggi !== 'undefined' && quoteOggi ? [riga('Quote teatro', formatEuro(quoteOggi), 'te')] : []),
+    ...usciteVersi().map(v => riga(`${v.label}: <span class="uscite-motivo">${escapeHtml(v.motivo)}</span>`, `${formatEffettoCassa(v.totale)} €`, v.totale < 0 ? 'en' : 'us'))
+  ].join('');
 }
 
 // Incassato is display-only (the cassa row shows the whole sum trovato + incassato − pagato)
@@ -228,6 +240,7 @@ function updateLasciatoInCassa() {
   updateIncassato();
   updateUsciteView();
   updateCassaWarning();
+  renderGiornataRow();
 }
 
 // Flag a negative lasciato in cassa while the consegna is still being entered
@@ -342,6 +355,7 @@ async function riprendiBozzeConsegna() {
     document.getElementById('noteGiornata').value = giornata.note;
     document.getElementById('uscite-edit').innerHTML = (giornata.uscite.length ? giornata.uscite : [{}]).map(usciteRowHtml).join('');
     onNoteGiornataChange();
+    if (!scheda && typeof openGiornata === 'function') openGiornata();
   }
   if (scheda) {
     const id = Number(scheda.split(':').pop());
@@ -585,14 +599,17 @@ function hidePartecipantiSection() {
   renderQuoteOggi();
 }
 
+// The mobile summary box follows the note group (shown once the consegna exists or is started)
 function showNoteGiornata() {
   const group = document.getElementById('note-giornata-group');
   if (group) group.style.display = 'block';
+  document.getElementById('giornata-row')?.classList.remove('initially-hidden');
 }
 
 function hideNoteGiornata() {
   const group = document.getElementById('note-giornata-group');
   if (group) group.style.display = 'none';
+  document.getElementById('giornata-row')?.classList.add('initially-hidden');
 }
 
 function startNuovaConsegna() {
@@ -739,7 +756,6 @@ function buildParticipantCardHTML(id, nome, saldo, haCredito, haDebito, buttonsH
       </button>
       <div>
         <h3 class="entry-name">${escapeHtml(nome)}</h3>
-        <span class="pill ${saldoClass}">prima di oggi: ${saldoPrimaText(saldo)}</span>
       </div>
     </div>
 
@@ -760,6 +776,8 @@ function buildParticipantCardHTML(id, nome, saldo, haCredito, haDebito, buttonsH
                  onfocus="handleInputFocus(this)"><span class="unit">€</span></span>
         </div>
       </div>
+
+      <p class="prima-oggi ${saldoClass}"><span>Prima di oggi</span><b>${saldoPrimaText(saldo)}</b></p>
 
       <div class="passi" id="passi_${id}">
         ${haCredito ? buildComputedLine(id, 'usaCredito', 'Usa parte del credito') : ''}
@@ -882,6 +900,7 @@ function renderQuoteOggi() {
   if (!el) return;
   el.querySelector('output').textContent = formatEuro(quoteOggi);
   el.classList.toggle('initially-hidden', !quoteOggi);
+  renderGiornataRow();
 }
 
 function addHiddenFields(card, id, haCredito, haDebito) {

@@ -1,0 +1,26 @@
+{
+  "F3": {
+    "choice": "both",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T08:47:51.662Z"
+  },
+  "F2": {
+    "choice": "box",
+    "status": "ok",
+    "round": 2,
+    "updated_at": "2026-10-14T08:52:54.246Z"
+  },
+  "F4": {
+    "status": "ok",
+    "round": 2,
+    "updated_at": "2026-10-14T08:52:59.804Z"
+  },
+  "F1": {
+    "choice": "sheet",
+    "status": "modify",
+    "round": 3,
+    "updated_at": "2026-10-14T09:04:11.859Z",
+    "comment": "\"soldi tolti o messi in cassa\" becomes \"entrate/uscite di cassa\"\nbox loses title, button says \"Apri: dettaglio, entrate/uscite, quaderno, note\"\nswap annulla e chiudi buttons\nshow me how the page scrolls, I need to understand which elements stay visbile soi I can decide where to put close/cancel buttons\n"
+  }
+}

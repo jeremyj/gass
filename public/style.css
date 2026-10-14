@@ -643,6 +643,30 @@ b.th { color: var(--teatro); }
 .lb-btn { flex: none; padding: 6px 14px; border: 1.5px solid rgba(255,255,255,.5); border-radius: 8px; background: transparent; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
 .lb-btn:disabled { opacity: .3; cursor: default; }
 
+/* ===== Mobile Consegna: summary box and the full-screen sheet (consegna.html only) ===== */
+
+.riepilogo-box { display: block; width: 100%; margin-top: 14px; padding: 0; border: 1.5px solid var(--s-deep); border-radius: 12px; background: var(--carta); color: inherit; font: inherit; text-align: left; overflow: hidden; cursor: pointer; box-shadow: 0 2px 0 rgba(38,57,47,.25); }
+.riepilogo-box.initially-hidden { display: none; }
+.riepilogo-righe { display: block; padding: 6px 14px 8px; }
+.riepilogo-righe .rg { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 4px 0; border-bottom: 1px dashed var(--riga); font-size: 17px; }
+.riepilogo-righe .rg:last-child { border-bottom: 0; }
+.riepilogo-righe .rg b { white-space: nowrap; }
+.riepilogo-righe .te { color: var(--teatro); } .riepilogo-righe .en { color: #2d6a2d; } .riepilogo-righe .us { color: var(--debito); }
+.riepilogo-apri { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 14px; border-top: 1px solid var(--riga); background: var(--s-tint); color: var(--s-deep); font-weight: 800; }
+.riepilogo-apri span + span { font-size: 26px; line-height: 1; }
+.giornata-sheet { display: none; }
+.giornata-sheet.aperto { position: fixed; inset: 0; z-index: 400; display: flex; flex-direction: column; overflow-y: auto; background: var(--calce); }
+body:has(.giornata-sheet.aperto) { overflow: hidden; }
+.giornata-sheet .entry-head { background: var(--s-deep); color: #fff; border: 0; }
+.giornata-sheet .entry-back { display: grid; place-items: center; flex: none; width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.4); color: #fff; cursor: pointer; }
+.giornata-sheet .entry-back svg { width: 18px; height: 18px; }
+.giornata-sheet .entry-name { font-size: 24px; }
+.giornata-sheet .conto { border-radius: 10px; border: 1px solid var(--riga); margin: 0; }
+.giornata-sheet .quaderno-box { margin: 0; }
+.prima-oggi { display: flex; justify-content: space-between; gap: 10px; margin: 0; padding: 8px 12px; border-radius: 8px; background: var(--calce); color: var(--salvia); font-size: 18px; }
+.prima-oggi.cr { background: var(--credito-t); color: var(--credito); }
+.prima-oggi.db { background: var(--debito-t); color: var(--debito); }
+
 /* ===== MOBILE (≤ 768px): the entry card becomes a full screen ===== */
 
 @media (max-width: 768px) {
