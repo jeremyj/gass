@@ -7,6 +7,7 @@ let participants = [];
 function showAddForm() {
   document.getElementById('add-form').style.display = 'block';
   document.getElementById('new-name').value = '';
+  bozzaRiprendi('nuovo-utente', document.getElementById('add-form'));
   document.getElementById('new-name').focus();
 }
 
@@ -15,6 +16,7 @@ function hideAddForm() {
   document.getElementById('new-name').value = '';
   document.getElementById('new-username').value = '';
   document.getElementById('new-password').value = '';
+  bozzaCancella('nuovo-utente');
 }
 
 // ===== RENDERING =====
@@ -46,7 +48,7 @@ function createParticipantRow(p) {
   row.innerHTML = `
     <td class="nm">${escapeHtml(p.nome)}${statoBadge(p.stato)}</td>
     ${isAdmin() ? `<td class="left">${escapeHtml(p.username) || '–'}${adminBadge}</td>` : ''}
-    <td>
+    <td data-bozza="saldo:${p.id}">
       <span id="saldo-view-${p.id}" class="${saldo.cls ? `pill ${saldo.cls}` : 'mute'}">${saldo.cls ? saldo.amount : '–'}</span>
       <input type="text" inputmode="decimal" id="saldo-edit-${p.id}" value="${formatNumber(p.saldo)}"
              class="saldo-input initially-hidden" aria-label="Nuovo saldo (negativo = debito)"
@@ -87,11 +89,13 @@ function editSaldo(id) {
   document.getElementById(`saldo-tip-${id}`).style.display = 'inline';
 
   handleInputFocus(inputField);
+  bozzaRiprendi(`saldo:${id}`, inputField.parentElement);
   inputField.focus();
   inputField.select();
 }
 
 function cancelEdit(id) {
+  bozzaCancella(`saldo:${id}`);
   const participant = participants.find(p => p.id === id);
   document.getElementById(`saldo-edit-${id}`).value = formatNumber(participant.saldo);
   document.getElementById(`saldo-view-${id}`).style.display = 'inline';
@@ -107,6 +111,7 @@ async function saveSaldo(id) {
 
   try {
     await API.put(`/api/participants/${id}`, { saldo: newSaldo });
+    bozzaCancella(`saldo:${id}`);
     showStatus('Saldo aggiornato con successo!', 'success');
     loadParticipants();
   } catch (error) {
@@ -285,6 +290,10 @@ async function showEditUserModal(id) {
     editingUserStato = user.stato;
     document.querySelector(`input[name="edit-user-stato"][value="${user.stato}"]`).checked = true;
 
+    // Draft of the name (the password is never stored)
+    document.getElementById('edit-user-modal').dataset.bozza = `utente:${id}`;
+    bozzaRiprendi(`utente:${id}`, document.getElementById('edit-user-modal'));
+
     document.getElementById('edit-user-modal').style.display = 'flex';
   } catch (error) {
     showStatus('Errore: ' + error.message, 'error');
@@ -292,7 +301,10 @@ async function showEditUserModal(id) {
 }
 
 function closeEditUserModal() {
-  document.getElementById('edit-user-modal').style.display = 'none';
+  const modal = document.getElementById('edit-user-modal');
+  bozzaCancella(`utente:${editingUserId}`);
+  delete modal.dataset.bozza;
+  modal.style.display = 'none';
   editingUserId = null;
 }
 

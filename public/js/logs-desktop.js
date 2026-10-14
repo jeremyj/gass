@@ -56,6 +56,8 @@ function getEventIcon(eventType) {
     case 'teatro_cassa': return '🎭';
     case 'scontrino_aggiunto': return '📷';
     case 'scontrino_rimosso': return '📷';
+    case 'quaderno_aggiunto': return '📒';
+    case 'quaderno_rimosso': return '📒';
     default: return '•';
   }
 }
@@ -104,6 +106,10 @@ function getEventDescription(event) {
       return `Scontrino aggiunto per <strong>${escapeHtml(event.partecipante_nome || 'N/A')}</strong>`;
     case 'scontrino_rimosso':
       return `Scontrino tolto per <strong>${escapeHtml(event.partecipante_nome || 'N/A')}</strong>`;
+    case 'quaderno_aggiunto':
+      return 'Foto del quaderno aggiunta';
+    case 'quaderno_rimosso':
+      return 'Foto del quaderno tolta';
     case 'movimento_changed':
       return `Movimento modificato per <strong>${escapeHtml(event.partecipante_nome || 'N/A')}</strong>`;
     default:

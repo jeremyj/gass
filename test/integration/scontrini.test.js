@@ -137,3 +137,49 @@ describe('/api/scontrini', () => {
     expect(fs.readdirSync(path.join(DIR, String(body.consegnaId)))).toEqual([]);
   });
 });
+
+describe('/api/scontrini/quaderno', () => {
+  const quaderno = (over = {}) => ({ data: '2026-10-13', foto: JPEG, thumb: JPEG, larghezza: 1200, altezza: 1600, ...over });
+
+  it('needs an existing consegna and stores the photo next to the receipts', async () => {
+    expect((await userAgent.post('/api/scontrini/quaderno').send(quaderno())).status).toBe(404);
+    const id = createConsegna(db, { data: '2026-10-13' });
+    const res = await userAgent.post('/api/scontrini/quaderno').send(quaderno());
+    expect(res.status).toBe(200);
+    const list = (await userAgent.get('/api/scontrini/quaderno?data=2026-10-13')).body;
+    expect(list).toMatchObject({ consegnaId: id, max: 4, modificabile: true });
+    expect(list.foto).toHaveLength(1);
+    expect(fs.readdirSync(path.join(DIR, String(id)))).toHaveLength(2);
+    expect((await userAgent.get(`/api/scontrini/quaderno/${res.body.id}/thumb`)).status).toBe(200);
+    expect(db.prepare("SELECT COUNT(*) AS n FROM activity_logs WHERE event_type = 'quaderno_aggiunto'").get().n).toBeGreaterThan(0);
+  });
+
+  it('refuses a non-JPEG and more than 4 photos', async () => {
+    createConsegna(db, { data: '2026-10-13' });
+    expect((await userAgent.post('/api/scontrini/quaderno').send(quaderno({ foto: PNG }))).status).toBe(400);
+    for (let i = 0; i < 4; i++) await userAgent.post('/api/scontrini/quaderno').send(quaderno()).expect(200);
+    expect((await userAgent.post('/api/scontrini/quaderno').send(quaderno())).body.error).toMatch(/Massimo 4/);
+  });
+
+  it('after the close only whoever closed it or an admin can add or remove', async () => {
+    const id = createConsegna(db, { data: '2026-10-13' });
+    const { body } = await userAgent.post('/api/scontrini/quaderno').send(quaderno()).expect(200);
+    db.prepare('UPDATE consegne SET chiusa = 1, chiusa_by = ? WHERE id = ?').run(mario, id);
+    expect((await otherAgent.post('/api/scontrini/quaderno').send(quaderno())).status).toBe(403);
+    expect((await otherAgent.get('/api/scontrini/quaderno?data=2026-10-13')).body.modificabile).toBe(false);
+    await userAgent.post('/api/scontrini/quaderno').send(quaderno()).expect(200);
+    await adminAgent.post('/api/scontrini/quaderno').send(quaderno()).expect(200);
+    expect((await otherAgent.delete(`/api/scontrini/quaderno/${body.id}`)).status).toBe(403);
+    await userAgent.delete(`/api/scontrini/quaderno/${body.id}`).expect(200);
+    expect(db.prepare('SELECT COUNT(*) AS n FROM quaderno_foto').get().n).toBe(2);
+  });
+
+  it('goes away with the consegna', async () => {
+    createConsegna(db, { data: '2026-10-13' });
+    await userAgent.post('/api/scontrini/quaderno').send(quaderno()).expect(200);
+    const c = db.prepare("SELECT id FROM consegne WHERE data = '2026-10-13'").get();
+    await adminAgent.delete(`/api/consegna/${c.id}`).expect(200);
+    expect(db.prepare('SELECT COUNT(*) AS n FROM quaderno_foto').get().n).toBe(0);
+    expect(fs.existsSync(path.join(DIR, String(c.id)))).toBe(false);
+  });
+});

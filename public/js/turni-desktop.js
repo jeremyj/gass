@@ -76,6 +76,7 @@ async function assignSlot(id, slot, select) {
 }
 
 // Notes above the table: admins edit them, everyone else reads them when there are any
+let noteRipresa = false; // the draft toast shows once, not at every reload of the list
 function renderNote(note) {
   const box = document.getElementById('turni-note-box');
   const view = document.getElementById('turni-note-view');
@@ -86,12 +87,17 @@ function renderNote(note) {
   edit.classList.toggle('initially-hidden', !isAdmin());
   if (isAdmin() && document.activeElement !== edit) edit.value = note;
   document.getElementById('turni-note-save').classList.add('initially-hidden');
+  if (isAdmin()) {
+    bozzaRiprendi('turni-note', box, { avviso: !noteRipresa });
+    noteRipresa = true;
+  }
 }
 
 async function saveNote() {
   try {
     await API.put('/api/turni/note', { note: document.getElementById('turni-note-edit').value });
     document.getElementById('turni-note-save').classList.add('initially-hidden');
+    bozzaCancella('turni-note');
     showStatus('Note salvate', 'success');
   } catch (error) {
     showStatus('Errore: ' + error.message, 'error');

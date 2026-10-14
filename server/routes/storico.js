@@ -20,7 +20,8 @@ router.get('/', (req, res) => {
         (SELECT COUNT(*) FROM movimenti WHERE consegna_id = c.id) AS num_movimenti,
         (SELECT COALESCE(SUM(importo_saldato), 0) FROM movimenti WHERE consegna_id = c.id) AS incassato,
         (SELECT COALESCE(SUM(importo), 0) FROM teatro_pagamenti WHERE consegna_id = c.id) AS teatro,
-        (SELECT COUNT(*) FROM scontrini WHERE consegna_id = c.id) AS num_scontrini
+        (SELECT COUNT(*) FROM scontrini WHERE consegna_id = c.id) AS num_scontrini,
+        (SELECT COUNT(*) FROM quaderno_foto WHERE consegna_id = c.id) AS num_quaderno
       FROM consegne c
       ORDER BY c.data DESC
     `).all();

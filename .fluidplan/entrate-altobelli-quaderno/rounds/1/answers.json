@@ -1,0 +1,105 @@
+{
+  "A1": {
+    "choice": "switch",
+    "status": "modify",
+    "round": 1,
+    "updated_at": "2026-10-14T07:16:00.741Z",
+    "comment": "but badge reads \"entra\" and \"esce\""
+  },
+  "A2": {
+    "choice": "entrate",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:16:14.187Z"
+  },
+  "A3": {
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:16:36.238Z"
+  },
+  "A4": {
+    "choice": "two",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:16:40.715Z"
+  },
+  "B1": {
+    "status": "modify",
+    "round": 1,
+    "updated_at": "2026-10-14T07:17:22.346Z",
+    "comment": "no nav item label, only title"
+  },
+  "B2": {
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:19:12.456Z"
+  },
+  "B3": {
+    "choice": "none",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:19:22.791Z"
+  },
+  "A5": {
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:19:45.704Z"
+  },
+  "C1": {
+    "choice": "top",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:20:51.684Z"
+  },
+  "C2": {
+    "choice": "json",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:21:15.106Z"
+  },
+  "C3": {
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:21:29.663Z"
+  },
+  "D1": {
+    "choice": "table",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:23:37.528Z"
+  },
+  "D2": {
+    "status": "modify",
+    "round": 1,
+    "updated_at": "2026-10-14T07:25:42.213Z",
+    "comment": "Adding photo can be problematic: a user yeesterday had to save movimento then edit it to add photo bcause when adding foto page would relaod. So adding quaderno photo should be allowed and maybe proposed outside of chiudi consegna though that's the right moment to do it"
+  },
+  "D4": {
+    "choice": "after",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:25:53.692Z"
+  },
+  "D5": {
+    "choice": "no",
+    "status": "modify",
+    "round": 1,
+    "updated_at": "2026-10-14T07:26:43.286Z",
+    "comment": "group has been made private"
+  },
+  "D3": {
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:26:23.745Z"
+  },
+  "D6": {
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:26:26.841Z"
+  },
+  "E1": {
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:26:46.702Z"
+  }
+}

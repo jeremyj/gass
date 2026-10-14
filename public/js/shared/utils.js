@@ -139,7 +139,8 @@ function debitoNuovo(m) {
 // In-page replacement for confirm(): resolves true/false.
 // details: [[label, value], ...] shown as a list; danger: red confirm button.
 // checks: [[name, label], ...] ticked checkboxes; then it resolves false or the names left ticked.
-function confirmDialog({ title, message = '', details = [], checks = [], confirmText = 'Conferma', danger = false }) {
+// azione: { nota, testo } a highlighted note with a third button; pressing it resolves 'azione'.
+function confirmDialog({ title, message = '', details = [], checks = [], azione = null, confirmText = 'Conferma', danger = false }) {
   return new Promise(resolve => {
     const modal = document.createElement('div');
     modal.className = 'modal confirm-modal';
@@ -154,6 +155,7 @@ function confirmDialog({ title, message = '', details = [], checks = [], confirm
         <h3>${escapeHtml(title)}</h3>
         ${message ? `<p class="confirm-message">${escapeHtml(message)}</p>` : ''}
         ${rows}
+        ${azione ? `<div class="confirm-azione"><p>${escapeHtml(azione.nota)}</p><button type="button" class="btn btn-line" data-answer="azione">${escapeHtml(azione.testo)}</button></div>` : ''}
         ${boxes}
         <div class="modal-buttons">
           <button type="button" data-answer="no">Annulla</button>
@@ -166,14 +168,14 @@ function confirmDialog({ title, message = '', details = [], checks = [], confirm
       const ticked = [...modal.querySelectorAll('.confirm-check input:checked')].map(i => i.name);
       document.removeEventListener('keydown', onKey);
       modal.remove();
-      resolve(answer && checks.length ? ticked : answer);
+      resolve(answer === 'azione' ? answer : answer && checks.length ? ticked : answer);
     };
     const onKey = e => { if (e.key === 'Escape') close(false); };
 
     modal.addEventListener('click', e => {
       if (e.target === modal) return close(false);
       const answer = e.target.closest('[data-answer]')?.dataset.answer;
-      if (answer) close(answer === 'yes');
+      if (answer) close(answer === 'azione' ? answer : answer === 'yes');
     });
     document.addEventListener('keydown', onKey);
     document.body.appendChild(modal);
@@ -197,10 +199,11 @@ function storicoDateLink(dateStr, label) {
   return `<a class="row-link" href="${consegnaHref(dateStr)}" onclick="event.stopPropagation()">${label}</a>`;
 }
 
-// Storico: link to the consegna's receipt gallery (a real link, not the row shortcut)
+// Storico: link to the consegna's photo gallery (receipts and notebook; a real link, not the row shortcut)
 function galleriaLink(c) {
   const n = c.num_scontrini;
-  return `<a class="link" href="/scontrini?data=${c.data}" onclick="event.stopPropagation()"><svg class="ico" aria-hidden="true"><use href="#i-foto"/></svg> ${n} scontrin${n === 1 ? 'o' : 'i'}</a>`;
+  const testo = c.num_quaderno ? `${n + c.num_quaderno} foto` : `${n} scontrin${n === 1 ? 'o' : 'i'}`;
+  return `<a class="link" href="/scontrini?data=${c.data}" onclick="event.stopPropagation()"><svg class="ico" aria-hidden="true"><use href="#i-foto"/></svg> ${testo}</a>`;
 }
 
 // Storico instruction: the Consegna page has the detail and, for admins, "Riapri consegna"

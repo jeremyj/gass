@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Foglio Altobelli</title>
-    <link rel="stylesheet" href="style.css?v=91">
+    <link rel="stylesheet" href="style.css?v=92">
 </head>
 <body>
     <nav class="nav-menu">
@@ -26,16 +26,16 @@
     <header class="stag">
         <div class="stag-art" aria-hidden="true"><svg class="stag-ill"><use href="#ill-zucca"/></svg></div>
         <div class="stag-when">Solo admin</div>
-        <h1>Foglio Altobelli</h1>
+        <h1>Foglio Altobelli <span class="badge-sperimentale">sperimentale</span></h1>
     </header>
 
     <main class="container">
         <div id="status" class="status" role="status"></div>
-        <p class="hint hint-top">Confronta la scheda della consegna nel foglio di Altobelli con i conti scritti in GASS. Gli effettivi si sommano riga per riga: il totale scritto in fondo al foglio a volte non prende tutte le righe.</p>
+        <p class="hint hint-top">Funzione in prova: controlla sempre il risultato sul foglio. Leonardo a volte scrive gli ordini in una scheda vecchia: in quel caso scegli tu la scheda. Confronta la scheda della consegna nel foglio di Altobelli con i conti scritti in GASS. Gli effettivi si sommano riga per riga: il totale scritto in fondo al foglio a volte non prende tutte le righe.</p>
 
         <form class="alt-bar" onsubmit="event.preventDefault(); caricaConfronto();">
             <label>Consegna <input type="text" id="alt-data" placeholder="gg/mm/aaaa"></label>
-            <label id="alt-scheda-wrap" class="initially-hidden">Scheda <select id="alt-scheda" onchange="caricaConfronto()"></select></label>
+            <label>Scheda del foglio <select id="alt-scheda" onchange="cambiaScheda()"></select></label>
             <button type="submit" class="btn btn-line">Aggiorna</button>
             <label class="alt-solo"><input type="checkbox" id="alt-solo" onchange="renderConfronto()"> Mostra solo le differenze</label>
         </form>
@@ -56,7 +56,7 @@
 
         <details class="alt-foglio">
             <summary>Link del foglio</summary>
-            <form onsubmit="event.preventDefault(); salvaFoglio();">
+            <form id="alt-form" data-bozza="altobelli-link" onsubmit="event.preventDefault(); salvaFoglio();">
                 <input type="text" id="alt-url" aria-label="Link del foglio Altobelli">
                 <button type="submit" class="btn btn-line">Salva link</button>
             </form>
@@ -68,12 +68,13 @@
         <span id="app-version"></span>
     </footer>
 
-    <script src="js/shared/utils.js?v=44"></script>
+    <script src="js/shared/utils.js?v=45"></script>
+    <script src="js/shared/bozze.js?v=1"></script>
     <script src="js/shared/season.js?v=34"></script>
     <script src="js/shared/calendar.js?v=37"></script>
     <script src="js/shared/api-client.js"></script>
     <script src="js/shared/auth.js?v=34"></script>
     <script src="js/shared/version.js"></script>
-    <script src="js/altobelli-desktop.js?v=3"></script>
+    <script src="js/altobelli-desktop.js?v=5"></script>
 </body>
 </html>

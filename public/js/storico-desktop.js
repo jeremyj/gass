@@ -45,7 +45,7 @@ function renderStorico(consegne) {
           <td>${formatNumber(c.pagato_produttore)}</td>
           ${cassaCell(c.lasciato_in_cassa, true)}
           ${numCell(c.teatro)}
-          ${c.num_scontrini ? `<td>${galleriaLink(c)}</td>` : '<td class="mute">–</td>'}
+          ${c.num_scontrini + c.num_quaderno ? `<td>${galleriaLink(c)}</td>` : '<td class="mute">–</td>'}
         </tr>`).join('')}
       </tbody>
     </table>

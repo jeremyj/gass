@@ -130,21 +130,41 @@ async function scarica(url) {
   return res.text();
 }
 
-// The tab of a consegna: { scheda, foglio } or { scelte } when several tabs match and no gid was picked
+// All tabs, day+month tabs first by date descending (a month after the consegna's belongs to the
+// previous year), then the others in sheet order
+function ordinaSchede(schede, date) {
+  const [anno, mese] = date.split('-').map(Number);
+  const re = new RegExp(`(^|\\s)(\\d{1,2})a?\\s(${MESI.join('|')})(\\s|$)`);
+  const conData = [], altre = [];
+  schede.forEach(s => {
+    const m = re.exec(norm(s.nome));
+    if (!m) return altre.push(s);
+    const mm = MESI.indexOf(m[3]) + 1;
+    conData.push({ s, key: (mm > mese ? anno - 1 : anno) * 10000 + mm * 100 + Number(m[2]) });
+  });
+  conData.sort((x, y) => y.key - x.key);
+  return [...conData.map(x => x.s), ...altre];
+}
+
+// { schede, scheda, foglio }: scheda = the tab with the given gid, else the only tab matching the
+// date, else null (none or several: the admin picks) and foglio null
 async function leggiFoglio(url, date, gid = null) {
   const id = foglioId(url);
   if (!id) throw new Error('Link del foglio Altobelli non valido');
-  const schede = parseSchede(await scarica(`https://docs.google.com/spreadsheets/d/${id}/edit`));
-  if (!schede.length) throw new Error('Non riesco a leggere l\'elenco delle schede del foglio (è ancora condiviso con chiunque abbia il link?)');
-  const candidate = trovaSchede(schede, date);
-  const scheda = gid ? candidate.find(s => s.gid === String(gid)) : candidate.length === 1 ? candidate[0] : null;
-  if (!candidate.length) {
-    const [, m, d] = date.split('-').map(Number);
-    throw new Error(`Nel foglio non c'è una scheda per il ${d} ${MESI[m - 1]}`);
+  const tutte = parseSchede(await scarica(`https://docs.google.com/spreadsheets/d/${id}/edit`));
+  if (!tutte.length) throw new Error('Non riesco a leggere l\'elenco delle schede del foglio (è ancora condiviso con chiunque abbia il link?)');
+  const schede = ordinaSchede(tutte, date);
+  let scheda = null;
+  if (gid) {
+    scheda = schede.find(s => s.gid === String(gid));
+    if (!scheda) throw new Error('Scheda non trovata nel foglio');
+  } else {
+    const candidate = trovaSchede(schede, date);
+    if (candidate.length === 1) scheda = candidate[0];
   }
-  if (!scheda) return { scelte: candidate };
+  if (!scheda) return { schede, scheda: null, foglio: null };
   const csv = await scarica(`https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${scheda.gid}`);
-  return { scheda, foglio: parseFoglio(csv) };
+  return { schede, scheda, foglio: parseFoglio(csv) };
 }
 
-module.exports = { foglioId, parseSchede, trovaSchede, parseCsv, parseImporto, parseFoglio, confronta, leggiFoglio };
+module.exports = { MESI, foglioId, parseSchede, trovaSchede, ordinaSchede, parseCsv, parseImporto, parseFoglio, confronta, leggiFoglio };

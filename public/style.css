@@ -298,28 +298,34 @@ body:has(.bottom-nav) { padding-bottom: 72px; }
 .conto .teatro-cell { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: baseline; gap: 10px; margin: 0 -16px -14px; padding: 8px 16px; background: var(--teatro-t); border-top: 1px solid var(--riga); color: var(--teatro); }
 .conto .teatro-cell output { font-size: 20px; white-space: nowrap; }
 .conto .teatro-cell.initially-hidden { display: none; }
-/* Uscite di cassa: already subtracted from In cassa, shown under the row */
+/* Soldi tolti o rimessi (uscite): already in In cassa, one line per direction under the row */
 .conto:has(.uscite-cell:not(.initially-hidden)) .tot { margin-bottom: -8px; }
-.conto .uscite-cell { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: baseline; gap: 10px; margin: 0 -16px; padding: 8px 16px 0; border-top: 1px solid var(--riga); }
+.conto .uscite-cell { grid-column: 1 / -1; margin: 0 -16px; padding: 8px 16px 0; border-top: 1px solid var(--riga); gap: 4px; }
 .conto .uscite-cell output { font-size: 20px; }
-.conto .uscite-cell.initially-hidden { display: none; }
-.cassa-v > p.initially-hidden { display: none; }
+.uscite-cell.initially-hidden, .cassa-v > p.initially-hidden { display: none; }
+.uscite-riga { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
 .uscite-motivo { font-weight: 400; color: var(--salvia); }
+.cassa-v .uscite-cell { display: grid; gap: 4px; padding: 9px 16px; border-bottom: 1px solid var(--riga); }
+.cassa-v .uscite-riga label { font-weight: 500; font-size: 18px; }
+.cassa-v .uscite-riga output { font-family: var(--serif); font-weight: 700; font-size: 22px; white-space: nowrap; }
 .cassa-v .uscite-motivo { display: block; font-size: 16px; }
 .uscite-edit { display: grid; gap: 8px; container-type: inline-size; }
 .uscita { display: grid; grid-template-columns: auto 8ch 1fr 44px; gap: 8px; }
-/* Narrow column (desktop cassa aside): the motivo goes on its own line under badge and importo */
-@container (max-width: 340px) {
+/* Narrow column (phone, desktop cassa aside): the motivo goes on its own line under switch and importo */
+@container (max-width: 480px) {
   .uscite-edit { gap: 14px; }
   .uscita { grid-template-columns: auto 1fr 44px; grid-template-areas: "segno importo add" "motivo motivo motivo"; gap: 6px 8px; }
   .uscita-segno { grid-area: segno; } .uscita-importo { grid-area: importo; } .uscita-motivo { grid-area: motivo; } .uscita-add { grid-area: add; }
 }
-.uscita-segno { width: 7ch; padding: 0; border: 1px solid var(--riga); border-radius: 8px; font: inherit; font-size: 16px; font-weight: 800; cursor: pointer; }
-.uscita-segno[data-segno="esce"] { background: var(--debito-t); color: var(--debito); }
-.uscita-segno[data-segno="entra"] { background: #e3f2df; color: #2d6a2d; }
+.uscita-segno { display: inline-flex; border: 1px solid var(--riga); border-radius: 8px; overflow: hidden; }
+.uscita-segno button { padding: 0 10px; border: 0; background: var(--carta); color: var(--salvia); font: inherit; font-size: 16px; font-weight: 800; white-space: nowrap; cursor: pointer; }
+.uscita-segno button + button { border-left: 1px solid var(--riga); }
+.uscita-segno[data-segno="esce"] [data-lato="esce"] { background: var(--debito-t); color: var(--debito); }
+.uscita-segno[data-segno="entra"] [data-lato="entra"] { background: #e3f2df; color: #2d6a2d; }
+.uscita-segno button:disabled { cursor: default; }
 .uscita-add { border: 1px solid var(--riga); border-radius: 8px; background: var(--carta); font-size: 22px; font-weight: 700; color: var(--inchiostro); cursor: pointer; }
 .uscita:not(:last-child) .uscita-add { visibility: hidden; }
-.note-giornata .uscite-edit + .btn, .note-giornata input + label { margin-top: 10px; }
+.note-giornata .uscite-edit ~ .btn, .note-giornata input + label { margin-top: 10px; }
 
 .input-cassa-negativa { color: var(--debito) !important; }
 .cassa-warning { margin: 10px 0 0; padding: 8px 12px; border-radius: 8px; background: var(--debito-t); color: var(--debito); font-weight: 700; font-size: 17px; }
@@ -570,6 +576,9 @@ b.th { color: var(--teatro); }
 .confirm-message { margin-bottom: 12px; }
 .confirm-detail { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--riga); color: var(--salvia); }
 .confirm-detail strong { color: var(--inchiostro); }
+.confirm-azione { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: var(--s-tint); }
+.confirm-azione p { margin: 0 0 8px; }
+.confirm-azione .btn { width: 100%; }
 .modal-content .confirm-check { display: flex; align-items: center; gap: 10px; margin: 0; padding: 10px 0 0; font-size: 18px; font-weight: 400; color: var(--inchiostro); cursor: pointer; }
 .modal-content .confirm-check:first-of-type { padding-top: 16px; }
 .confirm-check input { width: 20px; height: 20px; margin: 0; }
@@ -597,6 +606,9 @@ b.th { color: var(--teatro); }
 
 .scontrini-box { border-radius: 10px; }
 .scontrini-box .blocco-titolo { display: flex; margin-bottom: 8px; }
+.quaderno-box { margin: 14px 0; padding: 12px 14px; background: var(--carta); border: 1px solid var(--riga); }
+.quaderno-box.initially-hidden { display: none; }
+.cassa-v .quaderno-box { margin: 0; border: 0; border-bottom: 1px solid var(--riga); border-radius: 0; }
 .scontrini-box.drag { outline: 2px dashed var(--s-deep); outline-offset: 4px; background: var(--s-tint); }
 .sc-strip { display: flex; flex-wrap: wrap; gap: 10px; }
 .sc-thumb { position: relative; width: 78px; height: 104px; border-radius: 8px; overflow: hidden; border: 1px solid var(--riga); background: var(--carta); }
@@ -801,3 +813,4 @@ b.th { color: var(--teatro); }
 .alt-foglio summary { cursor: pointer; font-weight: 700; }
 .alt-foglio form { display: flex; gap: 10px; margin-top: 10px; }
 .alt-foglio input { flex: 1; height: 50px; }
+.badge-sperimentale { display: inline-block; font-family: "Alegreya Sans", sans-serif; font-size: 14px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; background: var(--s-tint); color: #8a4a00; border: 1px solid var(--s-acc); border-radius: 6px; padding: 0 6px; vertical-align: middle; }

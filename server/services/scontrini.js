@@ -1,11 +1,13 @@
-// Receipt photos (scontrini) of a person in a consegna. Rows in table `scontrini`, JPEG files
-// on the data volume: <dir>/<consegna_id>/<file>.jpg and <file>_t.jpg (thumbnail).
+// Receipt photos (scontrini) of a person in a consegna, and photos of the paper notebook with the
+// day's accounts (quaderno). Rows in tables `scontrini` / `quaderno_foto`, JPEG files on the data
+// volume, both in the same folder: <dir>/<consegna_id>/<file>.jpg and <file>_t.jpg (thumbnail).
 // The browser already shrinks the photo (public/js/shared/scontrini.js); here we only check it.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
 const MAX_FOTO_PERSONA = 3;
+const MAX_FOTO_QUADERNO = 4;
 const MAX_FOTO_BYTES = 1.5 * 1024 * 1024;
 const MAX_THUMB_BYTES = 100 * 1024;
 
@@ -44,23 +46,44 @@ function contaPerPersona(db, consegnaId, partecipanteId) {
     .get(consegnaId, partecipanteId).n;
 }
 
-// Files first, then the row; a failed insert leaves no file behind
-function salvaScontrino(db, { consegnaId, partecipanteId, foto, thumb, larghezza, altezza }, audit) {
+function listQuaderno(db, consegnaId) {
+  return db.prepare(`
+    SELECT q.id, q.created_by, a.display_name AS autore, q.created_at, q.larghezza, q.altezza
+    FROM quaderno_foto q LEFT JOIN users a ON a.id = q.created_by
+    WHERE q.consegna_id = ? ORDER BY q.id
+  `).all(consegnaId);
+}
+
+const contaQuaderno = (db, consegnaId) =>
+  db.prepare('SELECT COUNT(*) AS n FROM quaderno_foto WHERE consegna_id = ?').get(consegnaId).n;
+
+// Files first, then the row (insert(file, dim) returns its id); a failed insert leaves no file behind
+function salvaFile(consegnaId, foto, thumb, insert) {
   const row = { consegna_id: consegnaId, file: crypto.randomUUID() };
   fs.mkdirSync(path.dirname(fileFoto(row)), { recursive: true });
   fs.writeFileSync(fileFoto(row), foto);
   fs.writeFileSync(fileFoto(row, true), thumb);
   try {
-    const dim = v => (Number.isInteger(v) && v > 0 ? v : null);
-    return db.prepare(`
-      INSERT INTO scontrini (consegna_id, partecipante_id, file, larghezza, altezza, byte, created_by, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(consegnaId, partecipanteId, row.file, dim(larghezza), dim(altezza), foto.length,
-           audit.created_by, audit.created_at).lastInsertRowid;
+    return insert(row.file, v => (Number.isInteger(v) && v > 0 ? v : null));
   } catch (err) {
     rimuoviFile(row);
     throw err;
   }
+}
+
+function salvaScontrino(db, { consegnaId, partecipanteId, foto, thumb, larghezza, altezza }, audit) {
+  return salvaFile(consegnaId, foto, thumb, (file, dim) => db.prepare(`
+    INSERT INTO scontrini (consegna_id, partecipante_id, file, larghezza, altezza, byte, created_by, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(consegnaId, partecipanteId, file, dim(larghezza), dim(altezza), foto.length,
+         audit.created_by, audit.created_at).lastInsertRowid);
+}
+
+function salvaQuaderno(db, { consegnaId, foto, thumb, larghezza, altezza }, audit) {
+  return salvaFile(consegnaId, foto, thumb, (file, dim) => db.prepare(`
+    INSERT INTO quaderno_foto (consegna_id, file, larghezza, altezza, byte, created_by, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run(consegnaId, file, dim(larghezza), dim(altezza), foto.length, audit.created_by, audit.created_at).lastInsertRowid);
 }
 
 function rimuoviFile(row) {
@@ -70,6 +93,11 @@ function rimuoviFile(row) {
 
 function rimuoviScontrino(db, row) {
   db.prepare('DELETE FROM scontrini WHERE id = ?').run(row.id);
+  rimuoviFile(row);
+}
+
+function rimuoviQuaderno(db, row) {
+  db.prepare('DELETE FROM quaderno_foto WHERE id = ?').run(row.id);
   rimuoviFile(row);
 }
 
@@ -84,7 +112,7 @@ function rimuoviScontriniUtente(db, userId) {
 }
 
 module.exports = {
-  MAX_FOTO_PERSONA, MAX_FOTO_BYTES, MAX_THUMB_BYTES,
-  scontriniDir, fileFoto, decodeJpeg, listScontrini, contaPerPersona,
-  salvaScontrino, rimuoviScontrino, rimuoviScontriniConsegna, rimuoviScontriniUtente
+  MAX_FOTO_PERSONA, MAX_FOTO_QUADERNO, MAX_FOTO_BYTES, MAX_THUMB_BYTES,
+  scontriniDir, fileFoto, decodeJpeg, listScontrini, contaPerPersona, listQuaderno, contaQuaderno,
+  salvaScontrino, salvaQuaderno, rimuoviScontrino, rimuoviQuaderno, rimuoviScontriniConsegna, rimuoviScontriniUtente
 };

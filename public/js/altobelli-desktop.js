@@ -10,26 +10,35 @@ const ESITI = {
 };
 
 let confronto = null;
+let schedaData = null; // gid of the only tab matching the date, if any
 
 function amount(x) {
   return x === null || x === undefined ? '–' : formatNumber(x);
 }
 
-async function caricaConfronto() {
+function mostraAvviso(testo) {
+  const el = document.getElementById('alt-errore');
+  el.textContent = testo;
+  el.classList.remove('initially-hidden');
+}
+
+// gid: the tab picked in the select; without it the server uses the one remembered for the date
+async function caricaConfronto(gid = '') {
   const data = dateFieldValue('alt-data');
   if (!data) return;
-  const sel = document.getElementById('alt-scheda');
-  const gid = !document.getElementById('alt-scheda-wrap').classList.contains('initially-hidden') ? sel.value : '';
   document.getElementById('alt-errore').classList.add('initially-hidden');
   showStatus('Leggo il foglio…', 'success');
   try {
     const r = await API.get(`/api/altobelli/confronto?data=${data}${gid ? `&gid=${gid}` : ''}`);
     document.getElementById('status').className = 'status';
-    if (r.scelte) {
-      // Two tabs for the same date (a second order): pick one
-      sel.innerHTML = r.scelte.map(s => `<option value="${s.gid}">${escapeHtml(s.nome)}</option>`).join('');
-      document.getElementById('alt-scheda-wrap').classList.remove('initially-hidden');
-      return caricaConfronto();
+    document.getElementById('alt-scheda').innerHTML =
+      (r.scheda ? '' : '<option value="">scegli la scheda…</option>') +
+      r.schede.map(s => `<option value="${s.gid}" ${r.scheda && r.scheda.gid === s.gid ? 'selected' : ''}>${escapeHtml(s.nome)}</option>`).join('');
+    schedaData = r.schedaData;
+    if (!r.scheda) {
+      confronto = null;
+      document.getElementById('alt-risultato').classList.add('initially-hidden');
+      return mostraAvviso(r.messaggio);
     }
     confronto = r;
     renderConfronto();
@@ -37,14 +46,24 @@ async function caricaConfronto() {
     document.getElementById('status').className = 'status';
     confronto = null;
     document.getElementById('alt-risultato').classList.add('initially-hidden');
-    const el = document.getElementById('alt-errore');
-    el.textContent = error.message;
-    el.classList.remove('initially-hidden');
+    mostraAvviso(error.message);
   }
 }
 
+// Remember the pick for the consegna, except the single tab of the date (the default stays by date)
+async function cambiaScheda() {
+  const data = dateFieldValue('alt-data');
+  const gid = document.getElementById('alt-scheda').value;
+  if (!data || !gid) return;
+  try {
+    await API.put('/api/altobelli/scheda', { data, gid: schedaData === gid ? null : gid });
+  } catch (error) {
+    showStatus('Scheda non salvata: ' + error.message, 'error');
+  }
+  caricaConfronto(gid);
+}
+
 function onDataChange() {
-  document.getElementById('alt-scheda-wrap').classList.add('initially-hidden');
   caricaConfronto();
 }
 
@@ -102,6 +121,7 @@ async function associa(button) {
 async function salvaFoglio() {
   try {
     await API.put('/api/altobelli/foglio', { url: document.getElementById('alt-url').value });
+    bozzaCancella('altobelli-link');
     showStatus('Link salvato', 'success');
     caricaConfronto();
   } catch (error) {
@@ -120,7 +140,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     const [{ data }, { url }] = await Promise.all([API.get('/api/consegna/apertura'), API.get('/api/altobelli/foglio')]);
     document.getElementById('alt-url').value = url;
-    if (!url) document.querySelector('.alt-foglio').open = true;
+    if (!url || bozzaLeggi('altobelli-link')) document.querySelector('.alt-foglio').open = true;
+    bozzaRiprendi('altobelli-link', document.getElementById('alt-form'));
     setDateField('alt-data', data);
     caricaConfronto();
   } catch (error) {

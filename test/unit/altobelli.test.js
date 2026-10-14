@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { parseSchede, trovaSchede, parseCsv, parseImporto, parseFoglio, confronta, foglioId } =
+const { parseSchede, trovaSchede, ordinaSchede, parseCsv, parseImporto, parseFoglio, confronta, foglioId } =
   require('../../server/services/altobelli');
 
 const fixture = name => fs.readFileSync(path.join(__dirname, '../fixtures/altobelli', name), 'utf8');
@@ -121,5 +121,18 @@ describe('foglioId', () => {
   it('extracts the spreadsheet id from its link', () => {
     expect(foglioId('https://docs.google.com/spreadsheets/d/1Oe_f0CI-x/edit?usp=drivesdk')).toBe('1Oe_f0CI-x');
     expect(foglioId('https://example.com/x')).toBeNull();
+  });
+});
+
+describe('ordinaSchede', () => {
+  const schede = parseSchede(fixture('edit.html'));
+  const gids = l => l.map(s => s.gid);
+  it('orders day+month tabs by date descending, then the others in sheet order', () => {
+    const altre = [{ nome: 'Appunti', gid: '8' }, ...schede, { nome: 'Prova', gid: '9' }];
+    expect(gids(ordinaSchede(altre, '2026-10-13'))).toEqual(['666', '555', '444', '222', '333', '111', '8', '9']);
+  });
+  it('puts a month after the consegna\'s in the previous year', () => {
+    expect(gids(ordinaSchede(schede, '2026-03-10'))).toEqual(['666', '555', '444', '222', '333', '111']);
+    expect(gids(ordinaSchede(schede, '2026-05-05'))).toEqual(['111', '666', '555', '444', '222', '333']);
   });
 });

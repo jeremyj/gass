@@ -34,6 +34,7 @@ async function checkDateData() {
     if (select) select.value = '';
 
     renderAvvisoAperte();
+    riprendiBozzeConsegna();
   } catch (error) {
     console.error('Error checking date data:', error);
   }
@@ -186,6 +187,7 @@ function showParticipantForm() {
 
   const container = document.getElementById('selected-participants');
   container.innerHTML = '';
+  cancellaBozzeScheda();
 
   if (!id) {
     updateLasciatoInCassa();
@@ -202,6 +204,7 @@ function showParticipantForm() {
 
 function onNoteGiornataChange() {
   noteGiornataModified = giornataSnapshot() !== originalNoteGiornata;
+  salvaBozzaGiornata();
   updateLasciatoInCassa();
   updateSaveButtonVisibility();
 }
@@ -227,6 +230,7 @@ function updateSaveButtonVisibility() {
 function updateConsegnaStatusUI(consegna) {
   currentConsegnaId = consegna?.id || null;
   loadQuoteOggi();
+  aggiornaQuaderno();
   isConsegnaClosed = consegna?.chiusa === true;
 
   const statusSection = document.getElementById('consegna-status-section');

@@ -77,16 +77,20 @@ function calculateLasciatoInCassa() {
   return roundToCents(trovatoInCassa + calculateIncassato() - pagatoProduttore - usciteCassaValue());
 }
 
-// ===== NOTE AND USCITE DI CASSA (saved together by the page's Salva button) =====
+// ===== NOTE AND SOLDI TOLTI O RIMESSI IN CASSA (saved together by the page's Salva button) =====
 
-// Uscite rows of the form; rows left empty are dropped (that is how an uscita is removed).
-// The badge holds the sign: esce is stored positive, entra negative (subtracted from the cassa either way)
-function readUscite() {
+// Rows of the form ("uscite" in code and DB); rows left empty are dropped (that is how one is removed).
+// The switch holds the sign: esce (tolti) is stored positive, entra (rimessi) negative
+function righeUscite() {
   return [...document.querySelectorAll('#uscite-edit .uscita')].map(row => {
     const importo = roundToCents(Math.abs(parseAmount(row.querySelector('.uscita-importo').value)));
-    const entra = row.querySelector('.uscita-segno').dataset.segno === 'entra';
-    return { importo: entra ? -importo : importo, motivo: row.querySelector('.uscita-motivo').value.trim() };
+    const segno = row.querySelector('.uscita-segno').dataset.segno;
+    return { importo: segno === 'entra' ? -importo : importo, motivo: row.querySelector('.uscita-motivo').value.trim(), segno };
   }).filter(u => u.importo || u.motivo);
+}
+
+function readUscite() {
+  return righeUscite().map(({ importo, motivo }) => ({ importo, motivo }));
 }
 
 function usciteCassaValue() {
@@ -94,26 +98,28 @@ function usciteCassaValue() {
 }
 
 function usciteRowHtml(u = {}) {
-  const segno = u.importo < 0 ? 'entra' : 'esce';
+  const segno = u.segno || (u.importo < 0 ? 'entra' : 'esce');
+  const lato = (valore, testo) => `<button type="button" data-lato="${valore}" aria-pressed="${segno === valore}"
+              onclick="setSegnoUscita(this.parentElement, '${valore}')">${testo}</button>`;
   return `
     <div class="uscita">
-      <button type="button" class="uscita-segno" data-segno="${segno}" aria-label="Esce o entra dalla cassa"
-              onclick="setSegnoUscita(this, this.dataset.segno === 'esce' ? 'entra' : 'esce')">${segno}</button>
-      <input type="text" inputmode="decimal" class="input-field uscita-importo" placeholder="0" aria-label="Importo uscita"
+      <div class="uscita-segno" role="group" aria-label="Esce o entra dalla cassa" data-segno="${segno}">${lato('esce', '− esce')}${lato('entra', '+ entra')}</div>
+      <input type="text" inputmode="decimal" class="input-field uscita-importo" placeholder="0" aria-label="Importo"
              value="${u.importo ? formatNumber(Math.abs(u.importo)) : ''}" oninput="onUscitaImportoInput(this)">
-      <input type="text" class="input-field uscita-motivo" placeholder="Motivo, es. arrotondamento Altobelli" aria-label="Motivo uscita"
-             value="${escapeHtml(u.motivo || '')}" oninput="onNoteGiornataChange()">
-      <button type="button" class="uscita-add" aria-label="Aggiungi un'altra uscita" onclick="addUscitaRow()">+</button>
+      <input type="text" class="input-field uscita-motivo" placeholder="Motivo, es. storno Altobelli" aria-label="Motivo"
+             value="${escapeHtml(u.motivo || '')}" oninput="ricontrollaUscite(); onNoteGiornataChange()">
+      <button type="button" class="uscita-add" aria-label="Aggiungi un'altra riga" onclick="addUscitaRow()">+</button>
     </div>`;
 }
 
-function setSegnoUscita(badge, segno) {
-  badge.dataset.segno = segno;
-  badge.textContent = segno;
+function setSegnoUscita(group, segno) {
+  group.dataset.segno = segno;
+  group.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.lato === segno));
+  ricontrollaUscite();
   onNoteGiornataChange();
 }
 
-// A typed − or + sets the badge and leaves only the amount in the field
+// A typed − or + flips the switch and leaves only the amount in the field
 function onUscitaImportoInput(input) {
   const { segno, resto } = segnoDigitato(input.value);
   if (segno) {
@@ -121,6 +127,7 @@ function onUscitaImportoInput(input) {
     setSegnoUscita(input.closest('.uscita').querySelector('.uscita-segno'), segno);
   }
   normalizeInputField(input);
+  ricontrollaUscite();
   onNoteGiornataChange();
 }
 
@@ -134,6 +141,7 @@ function addUscitaRow() {
 function fillGiornata(consegna, uscite = []) {
   document.getElementById('noteGiornata').value = consegna?.note || '';
   document.getElementById('uscite-edit').innerHTML = (uscite.length ? uscite : [{}]).map(usciteRowHtml).join('');
+  mostraErroreUscite('');
   updateUsciteView();
   return giornataSnapshot();
 }
@@ -147,18 +155,58 @@ function setGiornataDisabled(disabled) {
     .forEach(el => { el.disabled = disabled; });
 }
 
-// "teatro −45, arrotondamento +0,20"; a single uscita shows only its motivo (the total is next to it).
+// "tolti dalla cassa" / "rimessi in cassa": the words of the two directions (same as VERSO in report.js)
+const VERSO_USCITA = { esce: 'Tolti dalla cassa', entra: 'Rimessi in cassa' };
+const versoDi = u => u.importo < 0 ? 'entra' : 'esce';
+
+// First incomplete row as a message naming its direction, or '' when every row is complete
+function erroreUscite() {
+  for (const u of righeUscite()) {
+    const verso = u.segno === 'entra' ? 'rimess' : 'tolt';
+    const dove = u.segno === 'entra' ? 'in cassa' : 'dalla cassa';
+    if (!u.motivo) return `Scrivi il motivo dei ${formatEuro(Math.abs(u.importo))} ${verso}i ${dove}`;
+    if (!u.importo) return `Scrivi l'importo di «${u.motivo}» ${verso}o ${dove}`;
+  }
+  return '';
+}
+
+// While the error shows, re-check at every keystroke so it goes away once the row is complete
+function ricontrollaUscite() {
+  if (!document.getElementById('uscite-errore')?.classList.contains('initially-hidden')) mostraErroreUscite(erroreUscite());
+}
+
+function mostraErroreUscite(messaggio) {
+  const box = document.getElementById('uscite-errore');
+  if (!box) return;
+  box.textContent = messaggio;
+  box.classList.toggle('initially-hidden', !messaggio);
+}
+
+// "teatro −45, arrotondamento +0,20"; a single row shows only its motivo (the total is next to it).
 // Same rule as `descrizione` in server/services/report.js
 function descrizioneUscite(uscite) {
   return uscite.length === 1 ? uscite[0].motivo : uscite.map(u => `${u.motivo} ${formatEffettoCassa(u.importo)}`).join(', ');
 }
 
-// The uscite line of the cassa (signed net total), shown only when there are uscite
+// Tolti and rimessi with their total, one entry per direction that has rows (page, close summary)
+function usciteVersi(uscite = readUscite().filter(u => u.importo)) {
+  return ['esce', 'entra'].map(verso => {
+    const righe = uscite.filter(u => versoDi(u) === verso);
+    const totale = roundToCents(righe.reduce((sum, u) => sum + u.importo, 0));
+    return { label: VERSO_USCITA[verso], totale, motivo: descrizioneUscite(righe) };
+  }).filter(v => v.totale);
+}
+
+// The cassa lines for tolti and rimessi (already in the In cassa total), shown only when there are any
 function updateUsciteView() {
   const view = document.getElementById('uscite-view');
-  view.classList.toggle('initially-hidden', !readUscite().some(u => u.importo));
-  view.querySelector('output').value = formatEffettoCassa(usciteCassaValue());
-  view.querySelector('.uscite-motivo').textContent = descrizioneUscite(readUscite());
+  const versi = usciteVersi();
+  view.classList.toggle('initially-hidden', !versi.length);
+  view.innerHTML = versi.map(v => `
+    <div class="uscite-riga">
+      <label>${v.label}: <span class="uscite-motivo">${escapeHtml(v.motivo)}</span></label>
+      <output>${formatEffettoCassa(v.totale)}</output>
+    </div>`).join('');
 }
 
 // Incassato is display-only (the cassa row shows the whole sum trovato + incassato − pagato)
@@ -205,7 +253,7 @@ function consegnaSummaryDetails() {
     ['Movimenti', String((existingConsegnaMovimenti || []).length)],
     ['Incassato', formatEuro(calculateIncassato())],
     ['Pagato produttore', amount('pagatoProduttore')],
-    ...(usciteCassaValue() !== 0 ? [['Uscite di cassa', `${formatEffettoCassa(usciteCassaValue())} €`]] : []),
+    ...usciteVersi().map(v => [v.label, `${formatEffettoCassa(v.totale)} €`]),
     ['Lasciato in cassa', amount('lasciatoInCassa')]
   ];
 }
@@ -259,6 +307,61 @@ function esitoMovimento(m) {
   return { cls: '', amount: '–', word: 'saldato' }; // nothing left over today; the saldo may still hold older credit/debt
 }
 
+// ===== BOZZE (bozze.js): the open card and the note/rows survive a page reload =====
+// One card at a time: consegna:<date>:scheda:<id>; note and rows: consegna:<date>:giornata
+
+const chiaveScheda = (date, id) => `consegna:${date}:scheda:${id}`;
+const chiaveGiornata = date => `consegna:${date}:giornata`;
+
+// Called whenever the card is closed or replaced (a saved card is cleared by postConsegna)
+function cancellaBozzeScheda(date = getSelectedDate()) {
+  bozzeChiavi(`consegna:${date}:scheda:`).forEach(bozzaCancella);
+}
+
+// The rows have no ids, so note and rows are stored as data (pages call this from onNoteGiornataChange)
+function salvaBozzaGiornata() {
+  const key = chiaveGiornata(getSelectedDate());
+  if (noteGiornataModified) bozzaScrivi(key, { note: document.getElementById('noteGiornata').value, uscite: righeUscite() });
+  else bozzaCancella(key);
+}
+
+// At the end of checkDateData: reopen what was typed and not saved before the page reloaded
+async function riprendiBozzeConsegna() {
+  const date = getSelectedDate();
+  const giornata = bozzaLeggi(chiaveGiornata(date));
+  const [scheda] = bozzeChiavi(`consegna:${date}:scheda:`);
+  if (!giornata && !scheda) return;
+  if (isConsegnaClosed) {
+    bozzaCancella(chiaveGiornata(date));
+    cancellaBozzeScheda(date);
+    return;
+  }
+  if (!currentConsegnaId) startNuovaConsegna();
+
+  if (giornata) {
+    document.getElementById('noteGiornata').value = giornata.note;
+    document.getElementById('uscite-edit').innerHTML = (giornata.uscite.length ? giornata.uscite : [{}]).map(usciteRowHtml).join('');
+    onNoteGiornataChange();
+  }
+  if (scheda) {
+    const id = Number(scheda.split(':').pop());
+    const bozza = bozzaLeggi(scheda); // opening the card clears its draft: keep a copy
+    openMovimento(id);
+    bozzaScrivi(scheda, bozza);
+    const card = document.querySelector('#selected-participants .participant-card-flow');
+    if (card) {
+      // The quota teatro block arrives later (its own request): fill it when it shows up
+      let mancanti = bozzaRiprendi(scheda, card, { avviso: false });
+      for (let i = 0; mancanti.length && i < 10; i++) {
+        await new Promise(r => setTimeout(r, 300));
+        if (bozza.valori[`teatroImporto_${id}`] && card.querySelector(`#teatro_${id} .teatro-btn`)) showTeatroBlock(id);
+        mancanti = bozzaRiprendi(scheda, card, { avviso: false, solo: mancanti });
+      }
+    }
+  }
+  showStatus('Ho ripreso quello che avevi scritto e non era salvato', 'success');
+}
+
 // ===== CONSEGNA STATUS =====
 
 async function toggleConsegnaStatus() {
@@ -271,15 +374,20 @@ async function toggleConsegnaStatus() {
     } else {
       const negativa = parseAmount(document.getElementById('lasciatoInCassa').value) < 0;
       const { canali } = await API.get('/api/consegna/report-canali').catch(() => ({ canali: [] }));
+      // The notebook photos are taken in the block under the cassa (a reload on the way back from the
+      // camera would lose this dialog); here they are only counted, or proposed when there are none
+      const foto = typeof quadernoGiorno !== 'undefined' ? quadernoGiorno.length : null;
       const ok = await confirmDialog({
         title: 'Chiudere la consegna?',
         message: (negativa ? '⚠️ La cassa è negativa. ' : '') +
           'Dopo la chiusura i dati non potranno essere modificati (solo un admin può riaprirla).',
-        details: consegnaSummaryDetails(),
+        details: [...consegnaSummaryDetails(), ...(foto ? [['Foto del quaderno', String(foto)]] : [])],
+        azione: foto === 0 ? { nota: 'Non hai fotografato il quaderno dei conti.', testo: 'Fotografa prima' } : null,
         checks: canali.map(c => [c, c === 'telegram' ? 'Invia il report su Telegram' : 'Invia il report per email']),
         confirmText: 'Chiudi consegna',
         danger: true
       });
+      if (ok === 'azione') return apriQuaderno();
       if (!ok) return;
       await API.post(`/api/consegna/${currentConsegnaId}/close`, { report: Array.isArray(ok) ? ok : [] });
       showStatus('Consegna chiusa', 'success');
@@ -570,6 +678,7 @@ function renderParticipant(id, buttonsHtml) {
 
   const card = document.createElement('div');
   card.className = 'participant-card-flow';
+  card.dataset.bozza = chiaveScheda(getSelectedDate(), id); // bozze.js keeps what is typed until it is saved
   card.innerHTML = buildParticipantCardHTML(id, p.nome, saldo, haCredito, haDebito, buttonsHtml);
   addHiddenFields(card, id, haCredito, haDebito);
   container.appendChild(card);
@@ -816,7 +925,11 @@ function readTeatroVersato(id) {
 
 // POST the consegna for the selected date with the current cassa fields and note
 function postConsegna(partecipanti) {
+  const errore = erroreUscite();
+  mostraErroreUscite(errore);
+  if (errore) return Promise.reject(new Error(errore));
   const amount = id => roundToCents(parseAmount(document.getElementById(id).value));
+  const data = getSelectedDate();
   return API.post('/api/consegna', {
     data: document.getElementById('data').value,
     trovatoInCassa: amount('trovatoInCassa'),
@@ -825,6 +938,11 @@ function postConsegna(partecipanti) {
     noteGiornata: document.getElementById('noteGiornata').value || '',
     uscite: readUscite(),
     partecipanti,
+  }).then(r => {
+    // Everything typed for this date is saved now (the card and note/rows go in the same post)
+    cancellaBozzeScheda(data);
+    bozzaCancella(chiaveGiornata(data));
+    return r;
   });
 }
 

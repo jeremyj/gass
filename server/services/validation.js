@@ -21,12 +21,15 @@ function validateConsegnaPayload(body, saldoBefore) {
     if (!isOptionalNumber(body[field])) return `Importo non valido: ${field}`;
   }
   if (body.uscite != null) {
-    if (!Array.isArray(body.uscite)) return 'Elenco uscite non valido';
+    if (!Array.isArray(body.uscite)) return 'Elenco dei soldi tolti o rimessi non valido';
     for (const u of body.uscite) {
+      const motivo = typeof u?.motivo === 'string' ? u.motivo.trim() : '';
       if (!u || !(typeof u.importo === 'number' && Number.isFinite(u.importo) && u.importo !== 0)) {
-        return 'Indica l\'importo di ogni uscita di cassa';
+        return motivo ? `Scrivi l'importo di «${motivo}»` : 'Scrivi l\'importo di ogni riga dei soldi tolti o rimessi';
       }
-      if (typeof u.motivo !== 'string' || !u.motivo.trim()) return 'Indica il motivo delle uscite di cassa';
+      // Positive = tolti dalla cassa, negative = rimessi (same words as the page)
+      const dove = u.importo < 0 ? 'rimessi in cassa' : 'tolti dalla cassa';
+      if (!motivo) return `Scrivi il motivo dei ${String(Math.abs(u.importo)).replace('.', ',')} € ${dove}`;
     }
   }
   if (!Array.isArray(body.partecipanti)) return 'Elenco partecipanti non valido';

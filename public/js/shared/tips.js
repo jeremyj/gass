@@ -2,7 +2,8 @@
 // Tap on mobile, click on desktop; elements rendered later get their button too (MutationObserver).
 
 const TIPS = {
-  uscite: 'Soldi presi dalla cassa o rimessi dentro. Esce = tolti (es. hai pagato Altobelli 358 invece di 357,20: 0,80), entra = rimessi (hai pagato 357: 0,20). Tocca esce/entra o scrivi − / + davanti all\'importo. Con il pulsante + a destra aggiungi una riga; per toglierne una svuota la riga.',
+  uscite: 'Soldi tolti dalla cassa o rimessi dentro, oltre ai conti delle persone. Scegli prima − esce (tolti, es. hai pagato Altobelli 358 invece di 357,20: 0,80) o + entra (rimessi, es. Altobelli ci restituisce 32,80), poi scrivi importo e motivo. Con il pulsante + a destra aggiungi una riga; per toglierne una svuota la riga.',
+  quaderno: 'Fotografa la pagina del quaderno dove avete fatto i conti a mano: è la controprova della cassa. Puoi farlo quando vuoi finché la consegna è aperta; alla chiusura GASS te lo ricorda. Dopo la chiusura può aggiungerle solo chi l\'ha chiusa o un admin.',
   scontrini: 'Foto degli scontrini di questa persona, al massimo 3. Ogni foto si salva subito, anche senza premere Salva. Tutti gli utenti le vedono nella galleria della consegna; può toglierle chi le ha scattate o un admin, finché la consegna è aperta.',
   teatro_oggi: 'Quote teatro pagate in questa consegna: vanno nella cassa del teatro, non in questa, e non cambiano In cassa.',
   teatro_versato: 'Quanto paga ora per la quota teatro: questi soldi vanno nel bussolotto, non in cassa. Copre prima i semestri più vecchi; quello che avanza resta come anticipo.',

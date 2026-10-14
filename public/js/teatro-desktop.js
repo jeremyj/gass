@@ -66,11 +66,16 @@ function openDovuto(userId, semestre) {
   document.getElementById('dovuto-title').textContent = `${p.nome}, ${s.label}`;
   document.getElementById('dovuto-importo').value = formatNumber(r ? r.dovuto : s.quota);
   document.getElementById('dovuto-hint').textContent = `Quota del semestre: ${formatEuro(s.quota)}. Per chi entra a metà semestre metti la quota ridotta.`;
-  document.getElementById('dovuto-modal').classList.remove('initially-hidden');
+  const modal = document.getElementById('dovuto-modal');
+  modal.dataset.bozza = `teatro-dovuto:${userId}:${semestre}`;
+  bozzaRiprendi(modal.dataset.bozza, modal);
+  modal.classList.remove('initially-hidden');
 }
 
 function closeDovuto() {
   const modal = document.getElementById('dovuto-modal');
+  if (modal.dataset.bozza) bozzaCancella(modal.dataset.bozza);
+  delete modal.dataset.bozza;
   modal.classList.add('initially-hidden');
   modal.classList.remove('quota-mode');
   editing = null;
@@ -102,6 +107,8 @@ function editQuota(semestre) {
   document.getElementById('dovuto-importo').value = formatNumber(s.quota);
   document.getElementById('dovuto-hint').textContent = 'Vale per tutti quelli che hanno la quota piena; le quote ridotte e i non dovuti restano.';
   const modal = document.getElementById('dovuto-modal');
+  modal.dataset.bozza = `teatro-quota:${semestre}`;
+  bozzaRiprendi(modal.dataset.bozza, modal);
   modal.classList.add('quota-mode');
   modal.classList.remove('initially-hidden');
 }
@@ -161,6 +168,7 @@ async function addCassa() {
     await API.post('/api/teatro/cassa', { data, importo, descrizione });
     document.getElementById('cassa-importo').value = '';
     document.getElementById('cassa-descr').value = '';
+    bozzaCancella('teatro-cassa');
     showStatus('Voce aggiunta', 'success');
     await loadTeatro();
   } catch (error) {
@@ -181,5 +189,9 @@ async function loadTeatro() {
 document.addEventListener('DOMContentLoaded', () => {
   initDateField('cassa-data');
   setDateField('cassa-data', toLocalDateString());
+  // The restored date is the displayed dd/mm/yyyy text: put its value back too
+  bozzaRiprendi('teatro-cassa', document.getElementById('cassa-form'));
+  const [g, m, a] = document.getElementById('cassa-data').value.split('/');
+  if (a) setDateField('cassa-data', `${a}-${m}-${g}`);
   loadTeatro();
 });

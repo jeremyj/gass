@@ -56,7 +56,7 @@ function createParticipantCard(p) {
   if (canEdit) {
     editSectionHtml = `
       <button type="button" class="btn btn-line btn-block" id="saldo-edit-btn-${p.id}" onclick="showSaldoEdit(${p.id})">Modifica saldo</button>
-      <div class="saldo-edit-section initially-hidden" id="saldo-edit-${p.id}">
+      <div class="saldo-edit-section initially-hidden" id="saldo-edit-${p.id}" data-bozza="saldo:${p.id}">
         <h3 data-tip="modifica_saldo">Modifica saldo</h3>
         <div class="input-row">
           <div class="form-group">
@@ -120,12 +120,19 @@ function showSaldoEdit(id) {
   document.getElementById(`saldo-edit-btn-${id}`).classList.add('initially-hidden');
   document.getElementById(`saldo-edit-${id}`).classList.remove('initially-hidden');
   const input = document.getElementById(p.saldo < 0 ? `debito-input-${id}` : `credito-input-${id}`);
+  if (bozzaLeggi(`saldo:${id}`)) {
+    // Both fields enabled so the draft finds them; its input events disable the unused one again
+    document.getElementById(`credito-input-${id}`).disabled = false;
+    document.getElementById(`debito-input-${id}`).disabled = false;
+  }
+  bozzaRiprendi(`saldo:${id}`, document.getElementById(`saldo-edit-${id}`));
   input.focus();
   input.select();
 }
 
 // Hide the form and put back the current saldo (by re-rendering the open card)
 function hideSaldoEdit(id) {
+  bozzaCancella(`saldo:${id}`);
   renderParticipants();
 }
 
@@ -199,6 +206,7 @@ async function toggleParticipantCard(id) {
       });
       if (!ok) return; // User cancelled, keep card open
     }
+    bozzaCancella(`saldo:${id}`);
     expandedParticipantId = null;
     originalSaldoValues = {}; // Clear saved values
   } else {
@@ -287,6 +295,7 @@ async function saveSaldo(id) {
 
   try {
     await API.put(`/api/participants/${id}`, { saldo: newSaldo });
+    bozzaCancella(`saldo:${id}`);
     showStatus('Saldo aggiornato', 'success');
     expandedParticipantId = null;
     originalSaldoValues = {}; // Clear saved values after successful save

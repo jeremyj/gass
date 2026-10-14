@@ -1,0 +1,48 @@
+{
+  "round": 3,
+  "status": "exported",
+  "opened_at": "2026-10-14T07:31:53.201Z",
+  "submitted_at": "2026-10-14T07:35:56.861Z",
+  "history": [
+    {
+      "round": 1,
+      "submitted_at": "2026-10-14T07:26:52.148Z",
+      "counts": {
+        "ok": 14,
+        "modify": 4,
+        "mixed": 0,
+        "explain": 0,
+        "ko": 0,
+        "pending": 0,
+        "all": 18
+      }
+    },
+    {
+      "round": 2,
+      "submitted_at": "2026-10-14T07:30:50.704Z",
+      "counts": {
+        "ok": 17,
+        "modify": 2,
+        "mixed": 0,
+        "explain": 0,
+        "ko": 0,
+        "pending": 0,
+        "all": 19
+      }
+    },
+    {
+      "round": 3,
+      "submitted_at": "2026-10-14T07:35:56.861Z",
+      "counts": {
+        "ok": 19,
+        "modify": 0,
+        "mixed": 0,
+        "explain": 0,
+        "ko": 0,
+        "pending": 0,
+        "all": 19
+      }
+    }
+  ],
+  "exported_at": "2026-10-14T07:36:04.096Z"
+}

@@ -148,6 +148,10 @@ function createDatabase(dbPath) {
   // Last report sent per channel, to resend only when a reclose changed it (v2.25)
   tryAddColumn('consegne', 'report_telegram', 'TEXT');
   tryAddColumn('consegne', 'report_email', 'TEXT');
+  // JSON of what the last report showed, compared at the next reclose to list the rettifiche (v2.30)
+  tryAddColumn('consegne', 'report_dati', 'TEXT');
+  // Tab (gid) of the Altobelli sheet picked by an admin for this consegna; null = the tab with its date (v2.30)
+  tryAddColumn('consegne', 'altobelli_gid', 'TEXT');
 
   log('\n--- Activity logs table (v2.1) ---');
 
@@ -388,6 +392,21 @@ function createDatabase(dbPath) {
       created_at DATETIME
     );
     CREATE INDEX IF NOT EXISTS idx_scontrini_consegna ON scontrini(consegna_id);
+  `);
+
+  // Photos of the paper notebook with the day's accounts (v2.30); files next to the receipts
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS quaderno_foto (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      consegna_id INTEGER NOT NULL REFERENCES consegne(id) ON DELETE CASCADE,
+      file TEXT NOT NULL,
+      larghezza INTEGER,
+      altezza INTEGER,
+      byte INTEGER,
+      created_by INTEGER REFERENCES users(id),
+      created_at DATETIME
+    );
+    CREATE INDEX IF NOT EXISTS idx_quaderno_foto_consegna ON quaderno_foto(consegna_id);
   `);
 
   log('\n--- Data initialization ---');

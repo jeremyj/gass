@@ -1,0 +1,515 @@
+{
+  "version": 2,
+  "id": "entrate-altobelli-quaderno",
+  "title": "Clearer entrate di cassa, Altobelli tab picker, corrected reports, notebook photos",
+  "subtitle": "GASS 2.30.0 — mockup design/mockups/cassa-quaderno.html",
+  "lang": "en",
+  "accent": "green",
+  "source": { "kind": "request" },
+  "context": "Request (2026-10-14), after the 13/10 consegna:\n\n1. The turnista did not understand that the 32,80 € given back by Altobelli could be entered as an *entra* in \"Uscite di cassa\". The save error said an *uscita* was missing its motivo, and the close summary still says \"Uscite di cassa\" for an entrata.\n2. The desktop Altobelli page must say it is experimental and let an admin pick which tab of Leonardo's sheet belongs to a consegna (default: the tab with the same date). The 13/10 orders were written in the \"6 ottobre\" tab.\n3. When a consegna is reopened and closed again, the report must highlight what changed since the previous report (today it only adds \"(corretto)\" to the title).\n4. At close, attach one or more photos of the paper notebook where the turnisti do the accounts (a counter-check).\n\nWhat exists: uscite rows in `public/js/shared/consegna-common.js` (`usciteRowHtml`, badge esce/entra, sign = stored sign), validation in `server/services/validation.js`, report in `server/services/report.js` (`consegne.report_telegram/report_email` hold the last plain-text body), Altobelli in `server/services/altobelli.js` (`trovaSchede` by date, `{ scelte }` when several match), receipt photos in `server/services/scontrini.js` (files under `/app/data/scontrini/<consegna_id>/`, `scontrini.partecipante_id NOT NULL`).\n\nMockup: `design/mockups/cassa-quaderno.html` (sections A–D = pages A–D here). App strings stay Italian; the plan is in English because fluidplan supports en/fr only. Every UI change ships on mobile **and** desktop (project rule), except the Altobelli page, which is desktop-only.",
+  "phases": [
+    { "id": "p1", "title": "Entrate/uscite wording, errors and summaries", "short": "Cassa", "estimate": "≈ 0.5 d", "days": 0.5 },
+    { "id": "p2", "title": "Altobelli: experimental label and tab picker", "short": "Altobelli", "estimate": "≈ 0.5 d", "days": 0.5 },
+    { "id": "p3", "title": "Report rettifiche on reclose", "short": "Report", "estimate": "≈ 0.5 d", "days": 0.5 },
+    { "id": "p4", "title": "Notebook photos at close", "short": "Quaderno", "estimate": "≈ 1 d", "days": 1 },
+    { "id": "p5", "title": "Docs and release 2.30.0", "short": "Release", "estimate": "≈ 0.5 d", "days": 0.5 }
+  ],
+  "glossary": [
+    { "term": "uscita", "aliases": ["uscite", "uscite di cassa"], "definition": "A row of `uscite_cassa`: cash taken out of (stored positive) or put back into (stored negative) the consegna's cassa, with a motivo." },
+    { "term": "entra", "aliases": ["entrata", "entrate"], "definition": "An uscita with a negative amount: money put back into the cassa, e.g. the 32,80 € Altobelli returned on 13/10." },
+    { "term": "rettifica", "aliases": ["rettifiche"], "definition": "Here: a value that changed between the report sent at the first close and the one sent after a reopen and reclose." },
+    { "term": "gid", "definition": "The numeric id of one tab of a Google sheet; GASS downloads a tab as CSV by its gid, hidden tabs included." },
+    { "term": "snapshot", "definition": "A JSON copy of the numbers a report showed, stored when the report is sent, so the next report can be compared field by field." }
+  ],
+  "pages": [
+    {
+      "id": "entrate",
+      "section": "A · Cassa",
+      "title": "Money taken out of or put back into the cassa",
+      "intro": "How a turnista enters an entrata without guessing, and how errors and summaries name it.",
+      "visual": { "kind": "image", "src": "assets/a.png", "alt": "Mockup A: today's Uscite di cassa block, the proposal with two add links and signed rows, the alternative with a per-row switch", "caption": "Mockup section A" },
+      "decisions": [
+        {
+          "id": "A1",
+          "title": "How the direction (out / in) is chosen",
+          "importance": "important",
+          "phase": "p1",
+          "why": "This is what failed on 13/10: the direction is a small badge that reads like a label, defaulting to esce. If the new control is still easy to miss, the next entrata goes in as an uscita and the cassa is off by twice the amount.",
+          "proposal": "The direction is chosen **before** typing: under the rows two links, \"− Tolti dalla cassa\" and \"+ Rimessi in cassa\", each add a row already signed. The row shows − or + in front of the amount (tap it to flip). Typing − or + in the amount keeps working.",
+          "learn_more": "Storage does not change: esce stays positive, entra negative in `uscite_cassa`, so pages cached before 2.28.0 and the report keep working. The empty row shown on a consegna with no uscite goes away: the two links are the empty state.",
+          "control": {
+            "kind": "choice",
+            "options": [
+              { "id": "links", "label": "Two add links, sign shown on the row", "recommended": true, "pros": ["The choice is made explicitly, with words, before the amount", "No empty row that defaults to esce"], "cons": ["Changes the layout people have learned since 2.26.0"], "effort": "S" },
+              { "id": "switch", "label": "Per-row switch \"− Esce dalla cassa | + Entra in cassa\"", "pros": ["Both choices visible on every row"], "cons": ["Takes a line per row on mobile", "Still defaults to one side"], "effort": "S" },
+              { "id": "rename", "label": "Keep the badge, only rename the block", "pros": ["Smallest change"], "cons": ["The badge stays easy to overlook, the cause of 13/10"], "effort": "XS" }
+            ]
+          },
+          "tasks": [
+            {
+              "id": "rows",
+              "title": "Replace the badge with signed rows and two add links",
+              "do": "In `consegna-common.js`: `usciteRowHtml(u)` renders motivo + amount with a sign button (− / +) inside the amount cell; `addUscitaRow(segno)` adds a signed row; `fillGiornata` renders saved rows only and the two links `− Tolti dalla cassa` / `+ Rimessi in cassa` under them (no empty default row). `readUscite` reads the sign from the row as today. Same markup on `consegna.html` and `consegna-desktop.html` (narrow aside container query adapted). CSS in `style.css`.",
+              "files": [
+                { "path": "public/js/shared/consegna-common.js", "op": "modify" },
+                { "path": "public/consegna.html", "op": "modify" },
+                { "path": "public/consegna-desktop.html", "op": "modify" },
+                { "path": "public/style.css", "op": "modify" }
+              ],
+              "acceptance": ["A new consegna shows the two links and no empty row", "\"+ Rimessi in cassa\" then 32,80 saves importo −32,80", "Typing −/+ in the amount still sets the sign", "Mobile 390 px and desktop aside both fit without overflow"],
+              "verify": ["npm test", "manual check in the browser on mobile (force_mobile cookie) and desktop"]
+            }
+          ]
+        },
+        {
+          "id": "A2",
+          "title": "The words used for the two directions",
+          "importance": "important",
+          "phase": "p1",
+          "why": "The same words appear in the block title, the errors, the cassa line, the close summary, the Telegram report and the manuals. Picking them once avoids a second round of renaming everywhere.",
+          "proposal": "Block title **\"Soldi tolti o rimessi in cassa\"**; rows and totals **\"Tolti dalla cassa\"** (−) and **\"Rimessi in cassa\"** (+).",
+          "control": {
+            "kind": "choice",
+            "options": [
+              { "id": "tolti", "label": "Tolti dalla cassa / Rimessi in cassa", "recommended": true, "pros": ["Says what happens to the cash box in everyday words", "\"Rimessi\" fits a refund like Altobelli's"], "cons": ["Longer labels"], "effort": "XS" },
+              { "id": "entrate", "label": "Uscite di cassa / Entrate di cassa", "pros": ["Short, accounting words", "\"Uscite\" is already known"], "cons": ["\"Entrata\" can be read as the members' payments (incassato)"], "effort": "XS" },
+              { "id": "esce", "label": "Esce dalla cassa / Entra in cassa", "pros": ["Same verbs as today's badge"], "cons": ["Verbs, awkward as totals (\"Entra in cassa +32,80\")"], "effort": "XS" }
+            ]
+          },
+          "tasks": [
+            {
+              "id": "words",
+              "title": "Apply the chosen words everywhere the uscite are named",
+              "do": "Block label and `data-tip` text (`tips.js` key `uscite`), cassa line `#uscite-view` (mobile and desktop), placeholders and aria-labels in `usciteRowHtml`.",
+              "files": [
+                { "path": "public/js/shared/tips.js", "op": "modify" },
+                { "path": "public/js/shared/consegna-common.js", "op": "modify" },
+                { "path": "public/consegna.html", "op": "modify" },
+                { "path": "public/consegna-desktop.html", "op": "modify" }
+              ],
+              "acceptance": ["`grep -rn \"Uscite di cassa\" public/` returns only intentional matches"],
+              "verify": ["grep -rn 'Uscite di cassa' public/"],
+              "after": ["A1/rows"]
+            }
+          ]
+        },
+        {
+          "id": "A3",
+          "title": "Save errors name the row and its direction",
+          "importance": "important",
+          "phase": "p1",
+          "why": "On 13/10 the error spoke of an \"uscita\" while the person was entering an entrata, which made them think the field was the wrong one.",
+          "proposal": "The page checks rows before saving and shows, under the rows, e.g. **\"Scrivi il motivo dei 32,80 € rimessi in cassa\"** or **\"Scrivi l'importo di «tofu» tolto dalla cassa\"**. The server keeps its own check with the same wording (by sign) as a safety net.",
+          "tasks": [
+            {
+              "id": "check",
+              "title": "Add a client-side row check with direction-aware messages",
+              "do": "`checkUscite()` in `consegna-common.js`, called by both Salva paths (`saveNoteOnly` on mobile, the cassa submit on desktop, and the movimento save that posts `uscite`): returns the first message, shown in a `.cassa-warning` under the rows, and blocks the post. `server/services/validation.js`: messages depend on the sign of the row.",
+              "files": [
+                { "path": "public/js/shared/consegna-common.js", "op": "modify" },
+                { "path": "public/js/consegna.js", "op": "modify" },
+                { "path": "public/js/consegna-desktop.js", "op": "modify" },
+                { "path": "server/services/validation.js", "op": "modify" },
+                { "path": "test/unit/validation.test.js", "op": "modify" }
+              ],
+              "acceptance": ["An entrata without motivo shows \"…rimessi in cassa\", never \"uscita\"", "Nothing is posted while a row is incomplete"],
+              "verify": ["npm run test:unit"]
+            }
+          ]
+        },
+        {
+          "id": "A4",
+          "title": "Totals: two lines instead of one net line",
+          "importance": "important",
+          "phase": "p1",
+          "why": "Today one net \"Uscite di cassa +32,80\" line mixes both directions; with a tolti and a rimessi on the same day the reader cannot tell what happened.",
+          "proposal": "Cassa line, close/annulla summary (`consegnaSummaryDetails`) and Telegram/email report show **one line per direction that exists**: \"Tolti dalla cassa −20 € (tofu)\" and \"Rimessi in cassa +32,80 € (storno Altobelli)\". The lasciato formula does not change.",
+          "control": {
+            "kind": "choice",
+            "options": [
+              { "id": "two", "label": "One line per direction", "recommended": true, "pros": ["Each line reads on its own", "Same layout in page, dialog and report"], "cons": ["Two lines on a day with both"], "effort": "S" },
+              { "id": "net", "label": "One net line, renamed by its sign", "pros": ["As compact as today"], "cons": ["A −20 and a +32,80 show as \"Rimessi +12,80\""], "effort": "XS" }
+            ]
+          },
+          "tasks": [
+            {
+              "id": "totals",
+              "title": "Split the uscite totals by direction in page, dialog and report",
+              "do": "Client: `updateUsciteView` renders up to two lines (mobile `.uscite-cell`, desktop `<p>` in the aside); `consegnaSummaryDetails` adds up to two rows. Server: `report.js` `reportBody` writes up to two lines, `descrizione` per direction. Keep `formatEffettoCassa` = `effetto`.",
+              "files": [
+                { "path": "public/js/shared/consegna-common.js", "op": "modify" },
+                { "path": "public/consegna.html", "op": "modify" },
+                { "path": "public/consegna-desktop.html", "op": "modify" },
+                { "path": "server/services/report.js", "op": "modify" },
+                { "path": "test/integration/report.test.js", "op": "modify" }
+              ],
+              "acceptance": ["A day with −20 and +32,80 shows two lines in page, dialog and report", "Lasciato in cassa unchanged for the same data"],
+              "verify": ["npm test -- report"]
+            }
+          ]
+        },
+        {
+          "id": "A5",
+          "title": "The \"Uscite di cassa\" video clip",
+          "importance": "minor",
+          "phase": "p5",
+          "why": "`public/video/primo-uscite.mp4` shows today's badge; after A1 it shows a screen that no longer exists.",
+          "proposal": "Re-record only that clip (record-full7 chapter `uscite`, cut by clips.py), replace it, bump `data-v` on `/comefunziona`.",
+          "tasks": [
+            {
+              "id": "clip",
+              "title": "Re-record the uscite clip",
+              "do": "Follow the video memory procedure; replace `public/video/primo-uscite.mp4` and its poster; bump `data-v` in `public/comefunziona.html`.",
+              "files": [
+                { "path": "public/video/primo-uscite.mp4", "op": "modify" },
+                { "path": "public/comefunziona.html", "op": "modify" }
+              ],
+              "acceptance": ["The clip shows the two add links and an entrata"],
+              "verify": ["npm test -- pages"],
+              "after": ["A1/rows", "A2/words"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "altobelli",
+      "section": "B · Altobelli",
+      "title": "Altobelli: experimental, with the sheet tab chosen per consegna",
+      "intro": "How the page warns that it is a trial and how an admin points a consegna at the right tab.",
+      "visual": { "kind": "image", "src": "assets/b.png", "alt": "Mockup B: desktop Altobelli page with Sperimentale badges, a hint and a Scheda del foglio menu listing every tab", "caption": "Mockup section B" },
+      "decisions": [
+        {
+          "id": "B1",
+          "title": "How \"experimental\" is shown",
+          "importance": "important",
+          "phase": "p2",
+          "why": "Admins may take the comparison as authoritative; it has already missed cases (reused tab, producer credits as negative rows).",
+          "proposal": "A **\"sperimentale\"** badge next to the nav item and the page title, and one hint line: \"Funzione in prova: controlla sempre il risultato sul foglio. Leonardo a volte scrive gli ordini in una scheda vecchia: in quel caso scegli tu la scheda.\"",
+          "tasks": [
+            {
+              "id": "badge",
+              "title": "Add the experimental badge and hint",
+              "do": "`#nav-altobelli` label in every desktop page that has it (badge class in `style.css`), title and hint in `altobelli-desktop.html`.",
+              "files": [
+                { "path": "public/altobelli-desktop.html", "op": "modify" },
+                { "path": "public/style.css", "op": "modify" }
+              ],
+              "acceptance": ["The badge appears in the nav of every desktop page for admins"],
+              "verify": ["grep -rln 'nav-altobelli' public/*.html"]
+            }
+          ]
+        },
+        {
+          "id": "B2",
+          "title": "Choosing the tab",
+          "importance": "important",
+          "phase": "p2",
+          "why": "On 13/10 the date lookup found nothing because the orders were in \"6 ottobre\"; the page stopped with an error and no way forward.",
+          "proposal": "A **\"Scheda del foglio\"** menu always visible, listing every tab (hidden ones included), newest date first. Default: the tab remembered for this consegna (B3), else the one with the same date, else empty with \"Nel foglio non c'è una scheda per il 13 ottobre: scegli la scheda da confrontare\".",
+          "learn_more": "`leggiFoglio` already reads all tabs from the `/edit` page; it will return `schede` (all) plus the chosen one instead of throwing when no date matches. Order: tabs whose name parses as a date (`trovaSchede` regex) by date descending, the others after in sheet order.",
+          "tasks": [
+            {
+              "id": "picker",
+              "title": "Return all tabs and let the page pick any of them",
+              "do": "`server/services/altobelli.js`: `leggiFoglio(url, date, gid)` → `{ schede, scheda, foglio }`, `scheda` null when no gid and no single date match (no throw). `GET /api/altobelli/confronto` passes `schede` through. `altobelli-desktop.js`: menu filled from `schede`, change → reload with `gid`.",
+              "files": [
+                { "path": "server/services/altobelli.js", "op": "modify" },
+                { "path": "server/routes/altobelli.js", "op": "modify" },
+                { "path": "public/js/altobelli-desktop.js", "op": "modify" },
+                { "path": "public/altobelli-desktop.html", "op": "modify" },
+                { "path": "test/integration/altobelli.test.js", "op": "modify" },
+                { "path": "test/unit/altobelli.test.js", "op": "modify" }
+              ],
+              "acceptance": ["A date with no tab shows the menu and no error", "Picking \"6 ottobre\" for 13/10 compares that tab with the 13/10 conti"],
+              "verify": ["npm test -- altobelli"]
+            }
+          ]
+        },
+        {
+          "id": "B3",
+          "title": "Where the chosen tab is remembered",
+          "importance": "important",
+          "phase": "p2",
+          "why": "Without memory the admin re-picks the tab at every visit; the wrong place to store it makes it outlive the consegna or need a migration later.",
+          "proposal": "A column **`consegne.altobelli_gid`** (TEXT, null = by date), written when the admin picks a tab different from the date match. It goes away with the consegna.",
+          "control": {
+            "kind": "choice",
+            "options": [
+              { "id": "col", "label": "Column on consegne", "recommended": true, "pros": ["Deleted with the consegna", "One `tryAddColumn` line"], "cons": ["Needs the consegna row to exist (it always does when there are conti to compare)"], "effort": "XS" },
+              { "id": "none", "label": "Not remembered", "pros": ["No storage"], "cons": ["Pick again at every visit"], "effort": "XS" }
+            ]
+          },
+          "tasks": [
+            {
+              "id": "store",
+              "title": "Store the picked tab per consegna",
+              "do": "`database.js`: `tryAddColumn('consegne', 'altobelli_gid', 'TEXT')`. `PUT /api/altobelli/scheda { data, gid|null }` (admin) sets it; `GET /confronto` uses it when no `gid` is passed.",
+              "files": [
+                { "path": "server/config/database.js", "op": "modify" },
+                { "path": "server/routes/altobelli.js", "op": "modify" },
+                { "path": "public/js/altobelli-desktop.js", "op": "modify" },
+                { "path": "test/integration/altobelli.test.js", "op": "modify" }
+              ],
+              "acceptance": ["Reloading the page for 13/10 opens on \"6 ottobre\""],
+              "verify": ["npm test -- altobelli"],
+              "after": ["B2/picker"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "report",
+      "section": "C · Report",
+      "title": "The report after a reopen and reclose",
+      "intro": "What the corrected report shows and how GASS knows what changed.",
+      "visual": { "kind": "image", "src": "assets/c.png", "alt": "Mockup C: three Telegram messages: rettifiche on top then full report; rettifiche only; full report with changed lines marked", "caption": "Mockup section C" },
+      "decisions": [
+        {
+          "id": "C1",
+          "title": "Layout of the corrected report",
+          "importance": "important",
+          "phase": "p3",
+          "why": "The report goes to the public Telegram topic, read by people without a GASS account; what they see is the only record they have of the correction.",
+          "proposal": "Title as today with \"(corretto)\", then a block **\"Rettifiche rispetto al report del 13/10 ore 21:40:\"** with one line per change (value before → value now), then the full report as usual.",
+          "control": {
+            "kind": "choice",
+            "options": [
+              { "id": "top", "label": "Rettifiche on top, then the full report", "recommended": true, "pros": ["Changes at a glance, full picture still there"], "cons": ["Longer message"], "effort": "S" },
+              { "id": "only", "label": "Only the rettifiche and a link", "pros": ["Short message"], "cons": ["People without an account lose the full report"], "effort": "S" },
+              { "id": "mark", "label": "Full report, changed lines marked ✎", "pros": ["No new section"], "cons": ["A line listing six people is marked whole when one changes", "Old value not visible"], "effort": "S" }
+            ]
+          },
+          "tasks": [
+            {
+              "id": "layout",
+              "title": "Put the rettifiche block in the corrected report",
+              "do": "`notifyClosed` in `report.js`: when a previous report was sent on that channel, build the rettifiche lines (C2) and prepend them to the body sent (Telegram: bold heading, HTML-escaped). The stored body stays the plain report without the rettifiche block, so the \"same as last time → don't resend\" rule still works.",
+              "files": [
+                { "path": "server/services/report.js", "op": "modify" },
+                { "path": "test/integration/report.test.js", "op": "modify" }
+              ],
+              "acceptance": ["A reclose with a changed conto sends a message whose first block lists that change", "A reclose with no change sends nothing (as today)"],
+              "verify": ["npm test -- report"],
+              "after": ["C2/snapshot"]
+            }
+          ]
+        },
+        {
+          "id": "C2",
+          "title": "How GASS knows what changed",
+          "importance": "critical",
+          "phase": "p3",
+          "why": "This decides the stored data. A text diff of the old message cannot tell which person in a line changed; a structured copy can, but adds a column whose shape must stay readable by later versions.",
+          "proposal": "When a report is sent, store a **JSON snapshot** of what it showed in `consegne.report_dati`: per person {conto, versato, teatro}, the uscite rows, trovato, pagato, lasciato, sent time. The next report compares the current data with it.",
+          "learn_more": "One snapshot for both channels (they are sent at the same close). Consegne closed before 2.30.0 have no snapshot: their first reclose falls back to today's behaviour (full report with \"(corretto)\", no rettifiche block).",
+          "control": {
+            "kind": "choice",
+            "options": [
+              { "id": "json", "label": "JSON snapshot column", "recommended": true, "pros": ["Per-person, per-field changes with old values", "Independent of the report wording"], "cons": ["One more column and a compare function"], "effort": "S" },
+              { "id": "text", "label": "Line diff of the stored text", "pros": ["No schema change: the text is already stored"], "cons": ["Changes only at line level; wording changes (A2) look like rettifiche"], "effort": "S" }
+            ]
+          },
+          "tasks": [
+            {
+              "id": "snapshot",
+              "title": "Store and compare the report snapshot",
+              "do": "`database.js`: `tryAddColumn('consegne', 'report_dati', 'TEXT')`. `report.js`: `reportDati(db, id)` builds the snapshot, `rettifiche(prima, ora)` returns Italian lines (C3), `notifyClosed` writes `report_dati` after a successful send.",
+              "files": [
+                { "path": "server/config/database.js", "op": "modify" },
+                { "path": "server/services/report.js", "op": "modify" },
+                { "path": "test/integration/report.test.js", "op": "modify" }
+              ],
+              "acceptance": ["After a close, `report_dati` holds valid JSON", "A consegna with no snapshot recloses as today"],
+              "verify": ["npm test -- report"]
+            }
+          ]
+        },
+        {
+          "id": "C3",
+          "title": "What counts as a rettifica",
+          "importance": "important",
+          "phase": "p3",
+          "why": "Too little and a correction goes unnoticed; too much and the block repeats the whole report.",
+          "proposal": "Lines for: a person added or removed; per person **conto produttore**, **versato** and **quota teatro** (\"Marco B: conto produttore 0 → 23,50\"); tolti/rimessi rows added, removed or changed; **trovato**, **pagato al produttore** and **lasciato in cassa** when they change. Not listed: credit/debt splits (they follow from conto and versato) and the day's note.",
+          "tasks": []
+        }
+      ]
+    },
+    {
+      "id": "quaderno",
+      "section": "D · Quaderno",
+      "title": "Photos of the notebook at close",
+      "intro": "Where the notebook photos live, when they are taken and who sees them.",
+      "visual": { "kind": "image", "src": "assets/d.png", "alt": "Mockup D: close dialog with a Foto del quaderno block, and the closed consegna showing the notebook thumbnails under the cassa", "caption": "Mockup section D" },
+      "decisions": [
+        {
+          "id": "D1",
+          "title": "Where notebook photos are stored",
+          "importance": "critical",
+          "phase": "p4",
+          "why": "`scontrini.partecipante_id` is NOT NULL and SQLite cannot drop that without rebuilding the table; the choice decides whether a production table is rebuilt.",
+          "proposal": "A new table **`quaderno_foto`** (id, consegna_id → consegne CASCADE, file, larghezza, altezza, byte, created_by, created_at). Files go in the same folder as the receipts, `/app/data/scontrini/<consegna_id>/`, so deleting a consegna and the deploy tar already cover them.",
+          "control": {
+            "kind": "choice",
+            "options": [
+              { "id": "table", "label": "New table, same folder", "recommended": true, "pros": ["No rebuild of a production table", "Reuses the file helpers and the backup"], "cons": ["A second, small API"], "effort": "M" },
+              { "id": "rebuild", "label": "Rebuild scontrini with a nullable person and a type", "pros": ["One table, one API"], "cons": ["Table rebuild migration in production", "Every scontrini query must handle \"no person\""], "effort": "M" }
+            ]
+          },
+          "tasks": [
+            {
+              "id": "api",
+              "title": "Add the quaderno table and API",
+              "do": "`database.js`: create `quaderno_foto`. `server/services/scontrini.js`: generalise the save/delete helpers to a table name. New routes in `server/routes/scontrini.js` under `/api/scontrini/quaderno`: `GET ?data=`, `POST {data, foto, thumb}`, `GET /:id/foto|thumb`, `DELETE /:id` (author or admin, open consegna only, like receipts). Activity events `quaderno_aggiunto` / `quaderno_rimosso`.",
+              "files": [
+                { "path": "server/config/database.js", "op": "modify" },
+                { "path": "server/services/scontrini.js", "op": "modify" },
+                { "path": "server/routes/scontrini.js", "op": "modify" },
+                { "path": "test/integration/scontrini.test.js", "op": "modify" }
+              ],
+              "acceptance": ["Deleting a consegna removes its notebook photos and files", "A closed consegna refuses POST and DELETE"],
+              "verify": ["npm test -- scontrini"]
+            }
+          ]
+        },
+        {
+          "id": "D2",
+          "title": "Where the photos are taken",
+          "importance": "important",
+          "phase": "p4",
+          "why": "The notebook is completed while counting the cash, just before closing; if the button is only elsewhere, people close first and forget.",
+          "proposal": "In the **\"Chiudere la consegna?\"** dialog, a \"Foto del quaderno\" block (Fotografa on touch, drag and drop with a mouse, same resize as receipts); each photo uploads at once. The photos then show under the cassa (mobile and desktop) and open in the lightbox; the block there also accepts photos while the consegna is open.",
+          "control": {
+            "kind": "choice",
+            "options": [
+              { "id": "both", "label": "In the close dialog and under the cassa", "recommended": true, "pros": ["Taken at the right moment", "Can be added earlier too"], "cons": ["`confirmDialog` gets a slot for custom content"], "effort": "M" },
+              { "id": "dialog", "label": "Only in the close dialog", "pros": ["One place"], "cons": ["Cannot add or remove one without closing"], "effort": "M" },
+              { "id": "cassa", "label": "Only under the cassa", "pros": ["No dialog change"], "cons": ["Easy to forget before closing"], "effort": "S" }
+            ]
+          },
+          "tasks": [
+            {
+              "id": "ui",
+              "title": "Add the notebook block to the close dialog and the cassa",
+              "do": "`utils.js` `confirmDialog`: optional `extra` element inserted before the checks. `public/js/shared/scontrini.js`: `renderQuadernoBox(container)` reusing `riduciFoto`, upload and lightbox; used by `toggleConsegnaStatus` (dialog) and under the cassa in `consegna.html` / `consegna-desktop.html`. After the dialog closes, the cassa block reloads.",
+              "files": [
+                { "path": "public/js/shared/utils.js", "op": "modify" },
+                { "path": "public/js/shared/scontrini.js", "op": "modify" },
+                { "path": "public/js/shared/consegna-common.js", "op": "modify" },
+                { "path": "public/consegna.html", "op": "modify" },
+                { "path": "public/consegna-desktop.html", "op": "modify" },
+                { "path": "public/style.css", "op": "modify" }
+              ],
+              "acceptance": ["A photo taken in the dialog is on the server before \"Chiudi consegna\" is pressed", "Cancel keeps uploaded photos", "Works on mobile (camera) and desktop (file / drag and drop)"],
+              "verify": ["npm test", "manual check mobile + desktop"],
+              "after": ["D1/api"]
+            }
+          ]
+        },
+        {
+          "id": "D3",
+          "title": "Maximum notebook photos per consegna",
+          "importance": "minor",
+          "phase": "p4",
+          "why": "A cap stops accidental bursts; one notebook page is usually one or two photos.",
+          "proposal": "Optional (no photo does not block the close), at most the number below.",
+          "control": { "kind": "number", "min": 1, "max": 10, "default": 4, "unit": "photos" },
+          "tasks": []
+        },
+        {
+          "id": "D4",
+          "title": "Adding a photo after the close",
+          "importance": "important",
+          "phase": "p4",
+          "why": "If someone forgets, the only way today would be an admin reopen, which also triggers a corrected report.",
+          "proposal": "Closed means closed, as for receipts: after the close only an admin reopen allows changes. A reclose with only a new photo sends no report (the report body does not include photos).",
+          "control": {
+            "kind": "choice",
+            "options": [
+              { "id": "closed", "label": "Only while open", "recommended": true, "pros": ["Same rule as receipts and movimenti"], "cons": ["A forgotten photo needs an admin"], "effort": "XS" },
+              { "id": "after", "label": "Also after the close, author of the close or admin", "pros": ["No reopen for a forgotten photo"], "cons": ["An exception to \"closed = read-only\""], "effort": "S" }
+            ]
+          },
+          "tasks": []
+        },
+        {
+          "id": "D5",
+          "title": "Send the notebook photos with the Telegram report",
+          "importance": "important",
+          "phase": "p4",
+          "why": "The topic is in the public group @gasstorpigna: anything sent there can be read and kept by anyone, while in GASS the photos stay behind the login.",
+          "proposal": "**No**: the report keeps its link to the consegna, where logged-in members see the photos.",
+          "control": {
+            "kind": "choice",
+            "options": [
+              { "id": "no", "label": "No, photos stay in GASS", "recommended": true, "pros": ["Handwritten names and amounts stay behind the login", "No Telegram media code"], "cons": ["One tap more to see them"], "effort": "XS" },
+              { "id": "yes", "label": "Yes, as an album after the report", "pros": ["The counter-check is right there in the chat"], "cons": ["Public group", "`sendMediaGroup` with multipart upload"], "effort": "M" }
+            ]
+          },
+          "tasks": []
+        },
+        {
+          "id": "D6",
+          "title": "Notebook photos in the receipts gallery",
+          "importance": "minor",
+          "phase": "p4",
+          "why": "The gallery is where people already look for the photos of a consegna.",
+          "proposal": "`/scontrini?data=` shows a first group **\"Quaderno\"** before the people.",
+          "tasks": [
+            {
+              "id": "gallery",
+              "title": "Show the notebook group in the gallery",
+              "do": "`public/js/galleria-scontrini.js`: load `/api/scontrini/quaderno?data=` and render it first; same lightbox.",
+              "files": [{ "path": "public/js/galleria-scontrini.js", "op": "modify" }],
+              "acceptance": ["The gallery of a consegna with notebook photos shows them first, mobile and desktop"],
+              "verify": ["manual check"],
+              "after": ["D1/api"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "release",
+      "section": "E · Release",
+      "title": "Docs and release",
+      "intro": "How the four changes ship.",
+      "decisions": [
+        {
+          "id": "E1",
+          "title": "One release for all four",
+          "importance": "minor",
+          "phase": "p5",
+          "why": "The next consegna is Tuesday 20/10; everything fits before it, and one deploy means one backup and one announcement.",
+          "proposal": "Release **2.30.0** with A–D, deployed before 20/10 (deploy backs up `gass.db` and tars `/data/gass/scontrini`).",
+          "tasks": [
+            {
+              "id": "docs",
+              "title": "Update manuals, technical docs and CLAUDE.md",
+              "do": "`docs/MANUALE_PARTECIPANTI.md` (tolti/rimessi, notebook photos at close), `docs/MANUALE_AMMINISTRATORI.md` (Altobelli tab picker and experimental, corrected report), `docs/TECHNICAL.md` (`report_dati`, `altobelli_gid`, `quaderno_foto`), `CLAUDE.md` (same facts), quick guides if they mention uscite.",
+              "files": [
+                { "path": "docs/MANUALE_PARTECIPANTI.md", "op": "modify" },
+                { "path": "docs/MANUALE_AMMINISTRATORI.md", "op": "modify" },
+                { "path": "docs/TECHNICAL.md", "op": "modify" },
+                { "path": "CLAUDE.md", "op": "modify" }
+              ],
+              "acceptance": ["No doc still calls an entrata an \"uscita\""],
+              "verify": ["grep -rn -i 'uscite di cassa' docs/ CLAUDE.md"]
+            },
+            {
+              "id": "release",
+              "title": "Bump to 2.30.0, bump ?v= on changed CSS/JS, build and deploy",
+              "do": "`package.json` version, `?v=` on every changed asset, `npm test`, commit, tag, `.dockerignore` check, buildx push, deploy on `business` with DB backup and scontrini tar.",
+              "files": [{ "path": "package.json", "op": "modify" }],
+              "acceptance": ["`/api/version` returns 2.30.0 in production"],
+              "verify": ["npm test"],
+              "after": ["E1/docs"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

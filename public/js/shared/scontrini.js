@@ -12,7 +12,7 @@ const THUMB_LATO = 320;
 const conMouse = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
 function fotoUrl(s, thumb = false) {
-  return `/api/scontrini/${s.id}/${thumb ? 'thumb' : 'foto'}`;
+  return `/api/scontrini/${s.quaderno ? 'quaderno/' : ''}${s.id}/${thumb ? 'thumb' : 'foto'}`;
 }
 
 async function loadScontrini(date) {
@@ -135,6 +135,109 @@ async function togliScontrino(scontrinoId, id) {
   renderMovimentiGiorno();
 }
 
+// ----- Quaderno: photos of the paper notebook with the day's accounts, block under the cassa -----
+
+let quadernoGiorno = []; // shaped like receipts for the lightbox: nome 'Quaderno', quaderno: true
+let quadernoMax = 4;
+let quadernoModificabile = false; // open consegna, or closed by this user, or admin
+let quadernoConsegna = null;
+
+async function loadQuaderno(date) {
+  try {
+    const r = await API.get(`/api/scontrini/quaderno?data=${date}`);
+    quadernoGiorno = r.foto.map(f => ({ ...f, quaderno: true, nome: 'Quaderno', partecipante_id: 'quaderno' }));
+    quadernoMax = r.max;
+    quadernoModificabile = r.modificabile;
+    quadernoConsegna = r.consegnaId;
+  } catch {
+    quadernoGiorno = [];
+    quadernoConsegna = null;
+  }
+  return quadernoGiorno;
+}
+
+// Called by the page whenever the consegna state changes (load, close, reopen, first save)
+async function aggiornaQuaderno() {
+  await loadQuaderno(getSelectedDate());
+  renderQuadernoBox();
+  renderScontriniLink();
+}
+
+function renderQuadernoBox() {
+  const box = document.getElementById('quaderno-box');
+  if (!box) return;
+  box.classList.toggle('initially-hidden', !quadernoConsegna);
+  if (!quadernoConsegna) return;
+  const mio = f => f.created_by === currentUser?.id || isAdmin();
+  const tile = quadernoModificabile && quadernoGiorno.length < quadernoMax;
+  box.innerHTML = `
+    <h4 class="blocco-titolo"><span data-tip="quaderno">Quaderno</span><span>${quadernoGiorno.length ? `${quadernoGiorno.length} foto` : ''}</span></h4>
+    <div class="sc-strip">
+      ${quadernoGiorno.map((f, i) => `
+        <span class="sc-thumb">
+          <img src="${fotoUrl(f, true)}" alt="Quaderno ${i + 1}" onclick="openLightbox(quadernoGiorno, ${i})">
+          ${quadernoModificabile && mio(f) ? `<button type="button" class="sc-x" aria-label="Togli la foto" onclick="togliQuaderno(${f.id})">×</button>` : ''}
+        </span>`).join('')}
+      ${tile ? `
+        <label class="sc-add">
+          <input type="file" id="quaderno-input" accept="image/*,application/pdf" multiple onchange="caricaQuaderno(this)">
+          <svg aria-hidden="true"><use href="#i-foto"/></svg>
+          <span>${conMouse() ? 'Allega foto' : 'Fotografa'}</span>
+        </label>` : ''}
+    </div>
+    ${tile ? `<p class="sc-hint">La pagina dei conti scritti a mano, come controprova.${conMouse() ? ' Oppure trascina qui l\'immagine.' : ''}</p>` : ''}
+    ${quadernoModificabile && !tile ? `<p class="sc-hint">Massimo ${quadernoMax} foto del quaderno.</p>` : ''}
+  `;
+  box.ondragover = e => { if (tile) { e.preventDefault(); box.classList.add('drag'); } };
+  box.ondragleave = () => box.classList.remove('drag');
+  box.ondrop = e => {
+    e.preventDefault();
+    box.classList.remove('drag');
+    if (tile) caricaQuaderno(e.dataTransfer);
+  };
+}
+
+async function caricaQuaderno(source) {
+  const date = getSelectedDate();
+  const liberi = quadernoMax - quadernoGiorno.length;
+  const immagini = [...(source.files || [])].filter(f => f.type.startsWith('image/'));
+  if (immagini.length < (source.files?.length || 0)) showStatus('Solo foto: gli altri file non sono stati caricati', 'error');
+  else if (immagini.length > liberi) showStatus(`Massimo ${quadernoMax} foto del quaderno: caricate solo ${liberi}`, 'error');
+  const strip = document.querySelector('#quaderno-box .sc-strip');
+  for (const file of immagini.slice(0, liberi)) {
+    const segno = document.createElement('span');
+    segno.className = 'sc-thumb up';
+    segno.innerHTML = '<span class="sc-up">carico…</span>';
+    strip?.insertBefore(segno, strip.querySelector('.sc-add'));
+    try {
+      const ridotta = await riduciFoto(file);
+      segno.insertAdjacentHTML('afterbegin', `<img src="data:image/jpeg;base64,${ridotta.thumb}" alt="">`);
+      await API.post('/api/scontrini/quaderno', { data: date, ...ridotta });
+    } catch (error) {
+      showStatus('Foto non caricata: ' + error.message, 'error');
+    }
+  }
+  await aggiornaQuaderno();
+}
+
+async function togliQuaderno(fotoId) {
+  const ok = await confirmDialog({ title: 'Togliere la foto?', message: 'La foto del quaderno viene eliminata.', confirmText: 'Togli', danger: true });
+  if (!ok) return;
+  try {
+    await API.delete(`/api/scontrini/quaderno/${fotoId}`);
+  } catch (error) {
+    showStatus('Errore: ' + error.message, 'error');
+  }
+  await aggiornaQuaderno();
+}
+
+// "Fotografa prima" in the close dialog: bring the block into view and open the camera / file chooser
+function apriQuaderno() {
+  const box = document.getElementById('quaderno-box');
+  box?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  document.getElementById('quaderno-input')?.click();
+}
+
 // ----- Day's list: count per person, people with photos only, link to the gallery -----
 
 function scontriniBadge(id) {
@@ -154,7 +257,9 @@ function renderScontriniLink() {
   const el = document.getElementById('scontrini-link');
   if (!el) return;
   const n = scontriniGiorno.length;
-  el.innerHTML = n ? `<a class="link" href="/scontrini?data=${getSelectedDate()}">Vedi ${n === 1 ? 'lo scontrino' : `i ${n} scontrini`} ›</a>` : '';
+  const tutte = n + (typeof quadernoGiorno !== 'undefined' ? quadernoGiorno.length : 0);
+  const testo = tutte > n ? (tutte === 1 ? 'la foto' : `le ${tutte} foto`) : n === 1 ? 'lo scontrino' : `i ${n} scontrini`;
+  el.innerHTML = tutte ? `<a class="link" href="/scontrini?data=${getSelectedDate()}">Vedi ${testo} ›</a>` : '';
 }
 
 // ----- Lightbox: one photo large, previous/next, swipe, arrows, Esc -----
@@ -178,7 +283,7 @@ function openLightbox(lista, indice) {
         <button type="button" class="lb-btn" data-lb="close">‹ Chiudi</button>
         <span><b>${escapeHtml(s.nome)}</b>${pos}</span>
       </div>
-      <div class="lb-stage"><img src="${fotoUrl(s)}" alt="Scontrino di ${escapeHtml(s.nome)}"></div>
+      <div class="lb-stage"><img src="${fotoUrl(s)}" alt="${s.quaderno ? 'Foto del quaderno' : `Scontrino di ${escapeHtml(s.nome)}`}"></div>
       <div class="lb-nav">
         <button type="button" class="lb-btn" data-lb="prev" ${i === 0 ? 'disabled' : ''}>‹ Prec.</button>
         <span>${s.autore ? `scattata alle ${quando(s)} da ${escapeHtml(s.autore)}` : `scattata alle ${quando(s)}`}</span>

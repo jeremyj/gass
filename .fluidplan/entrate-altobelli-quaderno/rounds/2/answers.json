@@ -1,0 +1,109 @@
+{
+  "A3": {
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:16:36.238Z"
+  },
+  "A4": {
+    "choice": "two",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:16:40.715Z"
+  },
+  "B2": {
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:19:12.456Z"
+  },
+  "B3": {
+    "choice": "none",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:19:22.791Z"
+  },
+  "A5": {
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:19:45.704Z"
+  },
+  "C1": {
+    "choice": "top",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:20:51.684Z"
+  },
+  "C2": {
+    "choice": "json",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:21:15.106Z"
+  },
+  "C3": {
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:21:29.663Z"
+  },
+  "D1": {
+    "choice": "table",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:23:37.528Z"
+  },
+  "D4": {
+    "choice": "after",
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:25:53.692Z"
+  },
+  "D3": {
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:26:23.745Z"
+  },
+  "D6": {
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:26:26.841Z"
+  },
+  "E1": {
+    "status": "ok",
+    "round": 1,
+    "updated_at": "2026-10-14T07:26:46.702Z"
+  },
+  "A1": {
+    "choice": "switch",
+    "status": "ok",
+    "round": 2,
+    "updated_at": "2026-10-14T07:28:38.626Z"
+  },
+  "A2": {
+    "choice": "entrate",
+    "status": "ok",
+    "round": 2,
+    "updated_at": "2026-10-14T07:28:53.326Z"
+  },
+  "B1": {
+    "status": "ok",
+    "round": 2,
+    "updated_at": "2026-10-14T07:29:07.628Z"
+  },
+  "D2": {
+    "status": "modify",
+    "round": 2,
+    "updated_at": "2026-10-14T07:29:30.232Z",
+    "comment": "do a mockup"
+  },
+  "D5": {
+    "choice": "no",
+    "status": "ok",
+    "round": 2,
+    "updated_at": "2026-10-14T07:29:34.563Z"
+  },
+  "D7": {
+    "choice": "draft",
+    "status": "modify",
+    "round": 2,
+    "updated_at": "2026-10-14T07:30:42.633Z",
+    "comment": "\"unsaved fields are kept in sessionStorage\" this should always be, across the app"
+  }
+}

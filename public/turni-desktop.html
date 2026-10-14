@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Turni</title>
-    <link rel="stylesheet" href="style.css?v=91">
+    <link rel="stylesheet" href="style.css?v=92">
 </head>
 <body>
     <nav class="nav-menu">
@@ -36,7 +36,7 @@
         <label id="passati-wrap" class="auto-switch"><input type="checkbox" id="turni-passati" onchange="loadTurni()"> Mostra turni passati</label>
         <label id="auto-wrap" class="auto-switch initially-hidden"><input type="checkbox" id="turni-auto" onchange="toggleAuto(this)"> Generazione automatica dei turni</label>
         </div>
-        <section id="turni-note-box" class="turni-note initially-hidden" aria-label="Note sui turni">
+        <section id="turni-note-box" class="turni-note initially-hidden" data-bozza="turni-note" aria-label="Note sui turni">
             <h2>Note</h2>
             <p id="turni-note-view" class="turni-note-text initially-hidden"></p>
             <textarea id="turni-note-edit" class="initially-hidden" rows="3" placeholder="Note sui turni: affiancamenti, chi non può, accordi…" oninput="document.getElementById('turni-note-save').classList.remove('initially-hidden')"></textarea>
@@ -85,13 +85,14 @@
         <span id="app-version"></span>
     </footer>
 
-    <script src="js/shared/utils.js?v=44"></script>
+    <script src="js/shared/utils.js?v=45"></script>
+    <script src="js/shared/bozze.js?v=1"></script>
     <script src="js/shared/season.js?v=34"></script>
     <script src="js/shared/calendar.js?v=37"></script>
     <script src="js/shared/api-client.js"></script>
     <script src="js/shared/auth.js?v=34"></script>
     <script src="js/shared/version.js"></script>
     <script src="js/shared/turni-common.js?v=3"></script>
-    <script src="js/turni-desktop.js?v=13"></script>
+    <script src="js/turni-desktop.js?v=14"></script>
 </body>
 </html>

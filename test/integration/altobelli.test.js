@@ -26,11 +26,13 @@ beforeAll(async () => {
   const c = createConsegna(db, { data: '2026-10-06' });
   createMovimento(db, { consegnaId: c, partecipanteId: anna, contoProduttore: 37.61, importoSaldato: 40 });
   createMovimento(db, { consegnaId: c, partecipanteId: bruno, contoProduttore: 25, importoSaldato: 25 });
+  createConsegna(db, { data: '2026-10-13' });
 
   // The sheet: /edit lists the tabs, export?format=csv&gid= gives one
   realFetch = global.fetch;
   global.fetch = async url => {
     if (String(url).includes('/edit')) return new Response(fixture('edit.html'));
+    if (String(url).includes('gid=555')) return new Response(fixture('29-settembre.csv'));
     if (String(url).includes('gid=666')) return new Response(fixture('6-ottobre.csv'));
     return new Response('', { status: 404 });
   };
@@ -78,16 +80,58 @@ describe('/api/altobelli', () => {
     expect(res.body.righe.find(r => r.nome === 'Anna').esito).toBe('da_associare');
   });
 
-  it('asks to pick a tab when two match, and reads the picked one', async () => {
+  it('returns all tabs, newest first, and asks to pick when two match', async () => {
     const res = await adminAgent.get('/api/altobelli/confronto?data=2026-06-23');
     expect(res.status).toBe(200);
-    expect(res.body.scelte.map(s => s.gid)).toEqual(['222', '333']);
+    expect(res.body.scheda).toBeNull();
+    expect(res.body.righe).toBeUndefined();
+    expect(res.body.messaggio).toBe('Più schede per il 23 giugno: scegli quella da confrontare');
+    // October and September are after June: previous year
+    expect(res.body.schede.map(s => s.gid)).toEqual(['444', '222', '333', '111', '666', '555']);
   });
 
-  it('answers 502 with a readable message when the sheet has no tab for the date or cannot be read', async () => {
-    const res = await adminAgent.get('/api/altobelli/confronto?data=2026-10-16');
-    expect(res.status).toBe(502);
-    expect(res.body.error).toMatch(/16 ottobre/);
+  it('gives no error when the sheet has no tab for the date: the admin picks one', async () => {
+    const res = await adminAgent.get('/api/altobelli/confronto?data=2026-10-13');
+    expect(res.status).toBe(200);
+    expect(res.body.scheda).toBeNull();
+    expect(res.body.messaggio).toBe('Nel foglio non c\'è una scheda per il 13 ottobre: scegli la scheda da confrontare');
+    expect(res.body.schede).toHaveLength(6);
+  });
+
+  it('reads the tab of the given gid, even if it is not the date\'s', async () => {
+    const res = await adminAgent.get('/api/altobelli/confronto?data=2026-10-13&gid=555');
+    expect(res.status).toBe(200);
+    expect(res.body.scheda).toEqual({ nome: '29 settembre', gid: '555' });
+    expect(res.body.righe.length).toBeGreaterThan(0);
+    expect(res.body.messaggio).toBeUndefined();
+    const bad = await adminAgent.get('/api/altobelli/confronto?data=2026-10-13&gid=999');
+    expect(bad.status).toBe(404);
+    expect(bad.body.error).toBe('Scheda non trovata nel foglio');
+  });
+
+  it('remembers the picked tab per consegna', async () => {
+    expect((await adminAgent.put('/api/altobelli/scheda').send({ data: '2026-10-6', gid: '555' })).status).toBe(400);
+    expect((await adminAgent.put('/api/altobelli/scheda').send({ data: '2026-11-03', gid: '555' })).status).toBe(404);
+    expect((await userAgent.put('/api/altobelli/scheda').send({ data: '2026-10-13', gid: '555' })).status).toBe(403);
+    expect((await adminAgent.put('/api/altobelli/scheda').send({ data: '2026-10-13', gid: '555' })).status).toBe(200);
+    let res = await adminAgent.get('/api/altobelli/confronto?data=2026-10-13');
+    expect(res.body.scheda.gid).toBe('555');
+    expect(res.body.messaggio).toBeUndefined();
+
+    // a remembered tab that left the sheet falls back to the date
+    db.prepare("UPDATE consegne SET altobelli_gid = '999' WHERE data = '2026-10-13'").run();
+    res = await adminAgent.get('/api/altobelli/confronto?data=2026-10-13');
+    expect(res.status).toBe(200);
+    expect(res.body.scheda).toBeNull();
+
+    await adminAgent.put('/api/altobelli/scheda').send({ data: '2026-10-13', gid: '555' });
+    expect((await adminAgent.put('/api/altobelli/scheda').send({ data: '2026-10-13', gid: null })).status).toBe(200);
+    expect(db.prepare("SELECT altobelli_gid FROM consegne WHERE data = '2026-10-13'").get().altobelli_gid).toBeNull();
+    res = await adminAgent.get('/api/altobelli/confronto?data=2026-10-13');
+    expect(res.body.scheda).toBeNull();
+  });
+
+  it('answers 400 on a bad date', async () => {
     expect((await adminAgent.get('/api/altobelli/confronto?data=2026-10-6')).status).toBe(400);
   });
 });

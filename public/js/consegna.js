@@ -42,6 +42,7 @@ async function checkDateData() {
     originalParticipantValues = {};
 
     renderAvvisoAperte();
+    riprendiBozzeConsegna();
   } catch (error) {
     console.error('Error checking date data:', error);
   }
@@ -111,6 +112,7 @@ function loadNewConsegna(result) {
 
 function onNoteGiornataChange() {
   noteGiornataModified = giornataSnapshot() !== originalNoteGiornata;
+  salvaBozzaGiornata();
   updateLasciatoInCassa();
   updateNoteButtonVisibility();
 }
@@ -137,6 +139,7 @@ function updateNoteButtonVisibility() {
 function updateConsegnaStatusUI(consegna) {
   currentConsegnaId = consegna?.id || null;
   loadQuoteOggi();
+  aggiornaQuaderno();
   isConsegnaClosed = consegna?.chiusa === true;
 
   const statusSection = document.getElementById('consegna-status-section');
@@ -266,6 +269,7 @@ function showParticipantForm() {
   if (!container) return;
 
   container.innerHTML = '';
+  cancellaBozzeScheda();
 
   if (!id) {
     updateLasciatoInCassa();
@@ -308,6 +312,7 @@ async function closeParticipant(id) {
 
   const container = document.getElementById('selected-participants');
   container.innerHTML = '';
+  cancellaBozzeScheda();
 
   const select = document.getElementById('participant-select');
   select.value = '';

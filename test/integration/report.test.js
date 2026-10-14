@@ -45,7 +45,8 @@ describe('reportBody', () => {
       '',
       'Trovato in cassa: 589 €',
       'Pagato al produttore: 357,20 €',
-      'Uscite di cassa: −65,60 € (teatro −45, tofu −20,80, arrotondamento +0,20)',
+      'Tolti dalla cassa: −65,80 € (teatro −45, tofu −20,80)',
+      'Rimessi in cassa: +0,20 € (arrotondamento)',
       '',
       'Debiti saldati: Fernanda 50, Franky 30 (resta debito 0,85)',
       'Debiti lasciati: Jeremy 8,99',
@@ -90,6 +91,45 @@ describe('notifyClosed', () => {
       ['email', 'Report turno 29/09/2026']
     ]);
     expect(sent[2].body).toContain('Lasciato in cassa: 550 €');
+  });
+
+  it('starts a corrected report with the rettifiche against the previous one', async () => {
+    const id = setup();
+    const sent = [];
+    const send = async (title, body, rett) => { sent.push({ title, body, rett }); };
+    await notifyClosed(db, id, URL, 'telegram', send);
+    expect(sent[0].rett).toBeNull();
+    expect(JSON.parse(db.prepare('SELECT report_dati FROM consegne WHERE id = ?').get(id).report_dati).lasciato).toBe(553.7);
+
+    // Pari's conto changes, Matias joins, Rachele's movimento is removed, an entrata of 32,80 and the new lasciato
+    const pari = db.prepare("SELECT id FROM users WHERE username = 'p'").get().id;
+    const matias = db.prepare("SELECT id FROM users WHERE username = 'm'").get().id;
+    const rachele = db.prepare("SELECT id FROM users WHERE username = 'r'").get().id;
+    db.prepare('UPDATE movimenti SET conto_produttore = 23.5 WHERE partecipante_id = ?').run(pari);
+    createMovimento(db, { consegnaId: id, partecipanteId: matias, importoSaldato: 10, contoProduttore: 10 });
+    db.prepare('DELETE FROM movimenti WHERE partecipante_id = ?').run(rachele);
+    db.prepare("INSERT INTO uscite_cassa (consegna_id, importo, motivo) VALUES (?, -32.8, 'storno Altobelli')").run(id);
+    db.prepare('UPDATE consegne SET lasciato_in_cassa = 586.3 WHERE id = ?').run(id);
+    await notifyClosed(db, id, URL, 'telegram', send);
+
+    expect(sent[1].title).toBe('Report turno 29/09/2026 (corretto)');
+    expect(sent[1].rett.titolo).toMatch(/^Rettifiche rispetto al report del \d\d\/\d\d ore \d\d:\d\d:$/);
+    expect(sent[1].rett.righe).toEqual([
+      'Pari: conto produttore 20 → 23,50',
+      'Matias: aggiunto, conto produttore 10, versato 10',
+      'Rachele: tolto dalla consegna (era nessun importo)',
+      'Rimessi in cassa: +0,20 (arrotondamento) → +33 (arrotondamento +0,20, storno Altobelli +32,80)',
+      'Lasciato in cassa: 553,70 → 586,30'
+    ]);
+    expect(sent[1].body).toContain('Lasciato in cassa: 586,30 €');
+  });
+
+  it('sends a corrected report without rettifiche for a consegna reported before they existed', async () => {
+    const id = setup();
+    db.prepare("UPDATE consegne SET report_telegram = 'vecchio' WHERE id = ?").run(id);
+    const sent = [];
+    await notifyClosed(db, id, URL, 'telegram', async (title, body, rett) => { sent.push({ title, rett }); });
+    expect(sent).toEqual([{ title: 'Report turno 29/09/2026 (corretto)', rett: null }]);
   });
 
   it('retries on the next close when sending failed', async () => {
