@@ -26,187 +26,187 @@ Mockup: `design/mockups/cassa-quaderno.html` (sections A–D = pages A–D here)
 
 ## Phase 1 — Entrate/uscite wording, errors and summaries (≈ 0.5 d)
 
-### [ ] 1.1 Replace the badge with a two-label switch per row · A1
+### [x] 1.1 Replace the badge with a two-label switch per row · A1
 
 - Decision: **A1** How the direction (out / in) is chosen — Per-row switch "− esce | + entra"
 - Files: `public/js/shared/consegna-common.js` (modify), `public/consegna.html` (modify), `public/consegna-desktop.html` (modify), `public/style.css` (modify)
 - Do: In `consegna-common.js`: `usciteRowHtml(u)` renders a segmented switch `− esce | + entra` (two buttons, `aria-pressed`) instead of the single toggle badge; `setSegnoUscita` updates it; `readUscite` reads the pressed side. Same markup on `consegna.html` and `consegna-desktop.html` (narrow aside container query adapted). CSS in `style.css`.
 - Acceptance criteria:
-  - [ ] Both labels are visible on every row, the active one coloured
-  - [ ] Pressing "+ entra" then typing 32,80 saves importo −32,80
-  - [ ] Typing −/+ in the amount still flips the switch
-  - [ ] Mobile 390 px and desktop aside both fit without overflow
+  - [x] Both labels are visible on every row, the active one coloured
+  - [x] Pressing "+ entra" then typing 32,80 saves importo −32,80
+  - [x] Typing −/+ in the amount still flips the switch
+  - [x] Mobile 390 px and desktop aside both fit without overflow
 - Verify: `npm test` · `manual check in the browser on mobile (force_mobile cookie) and desktop`
 
-### [ ] 1.2 Apply the chosen words everywhere the uscite are named · A2
+### [x] 1.2 Apply the chosen words everywhere the uscite are named · A2
 
 - Decision: **A2** The words used for the two directions — Uscite di cassa / Entrate di cassa
 - Files: `public/js/shared/tips.js` (modify), `public/js/shared/consegna-common.js` (modify), `public/consegna.html` (modify), `public/consegna-desktop.html` (modify)
 - Do: Block label and `data-tip` text (`tips.js` key `uscite`), cassa line `#uscite-view` (mobile and desktop), placeholders and aria-labels in `usciteRowHtml`.
 - Acceptance criteria:
-  - [ ] `grep -rn "Uscite di cassa" public/` returns only intentional matches
+  - [x] `grep -rn "Uscite di cassa" public/` returns only intentional matches
 - Verify: `grep -rn 'Uscite di cassa' public/`
 - After: 1.1
 
-### [ ] 1.3 Add a client-side row check with direction-aware messages · A3
+### [x] 1.3 Add a client-side row check with direction-aware messages · A3
 
 - Decision: **A3** Save errors name the row and its direction
 - Files: `public/js/shared/consegna-common.js` (modify), `public/js/consegna.js` (modify), `public/js/consegna-desktop.js` (modify), `server/services/validation.js` (modify), `test/unit/validation.test.js` (modify)
 - Do: `checkUscite()` in `consegna-common.js`, called by both Salva paths (`saveNoteOnly` on mobile, the cassa submit on desktop, and the movimento save that posts `uscite`): returns the first message, shown in a `.cassa-warning` under the rows, and blocks the post. `server/services/validation.js`: messages depend on the sign of the row.
 - Acceptance criteria:
-  - [ ] An entrata without motivo shows "…rimessi in cassa", never "uscita"
-  - [ ] Nothing is posted while a row is incomplete
+  - [x] An entrata without motivo shows "…rimessi in cassa", never "uscita"
+  - [x] Nothing is posted while a row is incomplete
 - Verify: `npm run test:unit`
 
-### [ ] 1.4 Split the uscite totals by direction in page, dialog and report · A4
+### [x] 1.4 Split the uscite totals by direction in page, dialog and report · A4
 
 - Decision: **A4** Totals: two lines instead of one net line — One line per direction
 - Files: `public/js/shared/consegna-common.js` (modify), `public/consegna.html` (modify), `public/consegna-desktop.html` (modify), `server/services/report.js` (modify), `test/integration/report.test.js` (modify)
 - Do: Client: `updateUsciteView` renders up to two lines (mobile `.uscite-cell`, desktop `<p>` in the aside); `consegnaSummaryDetails` adds up to two rows. Server: `report.js` `reportBody` writes up to two lines, `descrizione` per direction. Keep `formatEffettoCassa` = `effetto`.
 - Acceptance criteria:
-  - [ ] A day with −20 and +32,80 shows two lines in page, dialog and report
-  - [ ] Lasciato in cassa unchanged for the same data
+  - [x] A day with −20 and +32,80 shows two lines in page, dialog and report
+  - [x] Lasciato in cassa unchanged for the same data
 - Verify: `npm test -- report`
 
 ## Phase 2 — Altobelli: experimental label and tab picker (≈ 0.5 d)
 
-### [ ] 2.1 Add the experimental badge and hint · B1
+### [x] 2.1 Add the experimental badge and hint · B1
 
 - Decision: **B1** How "experimental" is shown
 - Files: `public/altobelli-desktop.html` (modify), `public/style.css` (modify)
 - Do: Title badge and hint in `altobelli-desktop.html`, badge class in `style.css`. Nav unchanged.
 - Acceptance criteria:
-  - [ ] The badge shows next to the page title, not in the nav
+  - [x] The badge shows next to the page title, not in the nav
 - Verify: `grep -n 'sperimentale' public/altobelli-desktop.html`
 
-### [ ] 2.2 Return all tabs and let the page pick any of them · B2
+### [x] 2.2 Return all tabs and let the page pick any of them · B2
 
 - Decision: **B2** Choosing the tab
 - Files: `server/services/altobelli.js` (modify), `server/routes/altobelli.js` (modify), `public/js/altobelli-desktop.js` (modify), `public/altobelli-desktop.html` (modify), `test/integration/altobelli.test.js` (modify), `test/unit/altobelli.test.js` (modify)
 - Do: `server/services/altobelli.js`: `leggiFoglio(url, date, gid)` → `{ schede, scheda, foglio }`, `scheda` null when no gid and no single date match (no throw). `GET /api/altobelli/confronto` passes `schede` through. `altobelli-desktop.js`: menu filled from `schede`, change → reload with `gid`.
 - Acceptance criteria:
-  - [ ] A date with no tab shows the menu and no error
-  - [ ] Picking "6 ottobre" for 13/10 compares that tab with the 13/10 conti
+  - [x] A date with no tab shows the menu and no error
+  - [x] Picking "6 ottobre" for 13/10 compares that tab with the 13/10 conti
 - Verify: `npm test -- altobelli`
 
-### [ ] 2.3 Store the picked tab per consegna · B3
+### [x] 2.3 Store the picked tab per consegna · B3
 
 - Decision: **B3** Where the chosen tab is remembered — Not remembered
 - Files: `server/config/database.js` (modify), `server/routes/altobelli.js` (modify), `public/js/altobelli-desktop.js` (modify), `test/integration/altobelli.test.js` (modify)
 - Do: `database.js`: `tryAddColumn('consegne', 'altobelli_gid', 'TEXT')`. `PUT /api/altobelli/scheda { data, gid|null }` (admin) sets it; `GET /confronto` uses it when no `gid` is passed.
 - Acceptance criteria:
-  - [ ] Reloading the page for 13/10 opens on "6 ottobre"
+  - [x] Reloading the page for 13/10 opens on "6 ottobre"
 - Verify: `npm test -- altobelli`
 - After: 2.2
 
 ## Phase 3 — Report rettifiche on reclose (≈ 0.5 d)
 
-### [ ] 3.1 Store and compare the report snapshot · C2
+### [x] 3.1 Store and compare the report snapshot · C2
 
 - Decision: **C2** How GASS knows what changed — JSON snapshot column [critical]
 - Files: `server/config/database.js` (modify), `server/services/report.js` (modify), `test/integration/report.test.js` (modify)
 - Do: `database.js`: `tryAddColumn('consegne', 'report_dati', 'TEXT')`. `report.js`: `reportDati(db, id)` builds the snapshot, `rettifiche(prima, ora)` returns Italian lines (C3), `notifyClosed` writes `report_dati` after a successful send.
 - Acceptance criteria:
-  - [ ] After a close, `report_dati` holds valid JSON
-  - [ ] A consegna with no snapshot recloses as today
+  - [x] After a close, `report_dati` holds valid JSON
+  - [x] A consegna with no snapshot recloses as today
 - Verify: `npm test -- report`
 
-### [ ] 3.2 Put the rettifiche block in the corrected report · C1
+### [x] 3.2 Put the rettifiche block in the corrected report · C1
 
 - Decision: **C1** Layout of the corrected report — Rettifiche on top, then the full report
 - Files: `server/services/report.js` (modify), `test/integration/report.test.js` (modify)
 - Do: `notifyClosed` in `report.js`: when a previous report was sent on that channel, build the rettifiche lines (C2) and prepend them to the body sent (Telegram: bold heading, HTML-escaped). The stored body stays the plain report without the rettifiche block, so the "same as last time → don't resend" rule still works.
 - Acceptance criteria:
-  - [ ] A reclose with a changed conto sends a message whose first block lists that change
-  - [ ] A reclose with no change sends nothing (as today)
+  - [x] A reclose with a changed conto sends a message whose first block lists that change
+  - [x] A reclose with no change sends nothing (as today)
 - Verify: `npm test -- report`
 - After: 3.1
 
 ## Phase 4 — Notebook photos at close (≈ 1 d)
 
-### [ ] 4.1 Add the quaderno table and API · D1
+### [x] 4.1 Add the quaderno table and API · D1
 
 - Decision: **D1** Where notebook photos are stored — New table, same folder [critical]
 - Files: `server/config/database.js` (modify), `server/services/scontrini.js` (modify), `server/routes/scontrini.js` (modify), `test/integration/scontrini.test.js` (modify)
 - Do: `database.js`: create `quaderno_foto`. `server/services/scontrini.js`: generalise the save/delete helpers to a table name. New routes in `server/routes/scontrini.js` under `/api/scontrini/quaderno`: `GET ?data=`, `POST {data, foto, thumb}`, `GET /:id/foto|thumb`, `DELETE /:id` (author or admin, open consegna only, like receipts). Activity events `quaderno_aggiunto` / `quaderno_rimosso`.
 - Acceptance criteria:
-  - [ ] Deleting a consegna removes its notebook photos and files
-  - [ ] A closed consegna refuses POST and DELETE
+  - [x] Deleting a consegna removes its notebook photos and files
+  - [x] A closed consegna refuses POST and DELETE
 - Verify: `npm test -- scontrini`
 
-### [ ] 4.2 Add the Quaderno block under the cassa and the reminder in the close dialog · D2
+### [x] 4.2 Add the Quaderno block under the cassa and the reminder in the close dialog · D2
 
 - Decision: **D2** Where the photos are taken — Block under the cassa, proposed by the close dialog
 - Files: `public/js/shared/utils.js` (modify), `public/js/shared/scontrini.js` (modify), `public/js/shared/consegna-common.js` (modify), `public/consegna.html` (modify), `public/consegna-desktop.html` (modify), `public/style.css` (modify)
 - Do: `public/js/shared/scontrini.js`: `renderQuadernoBox()` (reuses `riduciFoto`, upload, lightbox) in a new `#quaderno` block under the cassa in `consegna.html` / `consegna-desktop.html`, hidden when there is no consegna, read-only when closed. `toggleConsegnaStatus` (`consegna-common.js`): adds a detail row "Foto del quaderno" with the count, or the message and a "Fotografa prima" button (`confirmDialog` gets an optional extra button returning `'quaderno'`), which scrolls to the block and opens the picker.
 - Acceptance criteria:
-  - [ ] Photos can be added and removed under the cassa while the consegna is open, mobile (camera) and desktop (file / drag and drop)
-  - [ ] The close dialog shows the count, or the reminder with "Fotografa prima"
-  - [ ] Closing without photos still works
+  - [x] Photos can be added and removed under the cassa while the consegna is open, mobile (camera) and desktop (file / drag and drop)
+  - [x] The close dialog shows the count, or the reminder with "Fotografa prima"
+  - [x] Closing without photos still works
 - Verify: `npm test` · `manual check mobile + desktop`
 - After: 4.1
 
-### [ ] 4.3 Show the notebook group in the gallery · D6
+### [x] 4.3 Show the notebook group in the gallery · D6
 
 - Decision: **D6** Notebook photos in the receipts gallery
 - Files: `public/js/galleria-scontrini.js` (modify)
 - Do: `public/js/galleria-scontrini.js`: load `/api/scontrini/quaderno?data=` and render it first; same lightbox.
 - Acceptance criteria:
-  - [ ] The gallery of a consegna with notebook photos shows them first, mobile and desktop
+  - [x] The gallery of a consegna with notebook photos shows them first, mobile and desktop
 - Verify: `manual check`
 - After: 4.1
 
-### [ ] 4.4 Add the shared draft helper · D7
+### [x] 4.4 Add the shared draft helper · D7
 
 - Decision: **D7** Unsaved fields survive a page reload, across the app — Keep unsaved fields in every form and restore them
 - Files: `public/js/shared/bozze.js` (create), `public/consegna.html` (modify), `public/consegna-desktop.html` (modify), `public/debiti-desktop.html` (modify), `public/teatro-desktop.html` (modify), `public/turni-desktop.html` (modify), `public/altobelli-desktop.html` (modify)
 - Do: `public/js/shared/bozze.js`: `bozzaSalva(key, container)` on `input`/`change` (skips `type=password`), `bozzaRiprendi(key, container)` → true if values were put back (toast), `bozzaCancella(key)`. Auto-wiring for elements with `data-bozza` on `DOMContentLoaded` (plus a MutationObserver like `tips.js` for forms rendered later). Load it on every page with a form, bump `?v=`.
 - Acceptance criteria:
-  - [ ] No password ever appears in sessionStorage
-  - [ ] A draft is removed when its form is saved or cancelled
+  - [x] No password ever appears in sessionStorage
+  - [x] A draft is removed when its form is saved or cancelled
 - Verify: `npm test`
 
-### [ ] 4.5 Restore the consegna card and the day's note/uscite · D7
+### [x] 4.5 Restore the consegna card and the day's note/uscite · D7
 
 - Decision: **D7** Unsaved fields survive a page reload, across the app — Keep unsaved fields in every form and restore them
 - Files: `public/js/shared/consegna-common.js` (modify), `public/js/consegna.js` (modify), `public/js/consegna-desktop.js` (modify)
 - Do: `consegna-common.js`: the card container gets `data-bozza="consegna:<date>:<id>"`, note+uscite `consegna:<date>:giornata`. After `checkDateData()` in `consegna.js` / `consegna-desktop.js`: if a card draft for this date exists, `openMovimento(id)` (or `showParticipantForm` for a new one), then `bozzaRiprendi`; uscite rows are re-created before filling. Clear on Salva, on closing the card and on 'Chiudi senza salvare'.
 - Acceptance criteria:
-  - [ ] Type a conto, reload: the card reopens with the conto and the toast
-  - [ ] Same on mobile and desktop
-  - [ ] A saved card leaves no draft
+  - [x] Type a conto, reload: the card reopens with the conto and the toast
+  - [x] Same on mobile and desktop
+  - [x] A saved card leaves no draft
 - Verify: `npm test` · `manual check: reload with an unsaved card, mobile and desktop; then a real photo on an Android phone`
 - After: 4.4
 
-### [ ] 4.6 Mark the other forms · D7
+### [x] 4.6 Mark the other forms · D7
 
 - Decision: **D7** Unsaved fields survive a page reload, across the app — Keep unsaved fields in every form and restore them
 - Files: `public/js/debiti-desktop.js` (modify), `public/js/debiti.js` (modify), `public/js/teatro-desktop.js` (modify), `public/js/turni-desktop.js` (modify), `public/js/altobelli-desktop.js` (modify)
 - Do: Add `data-bozza` and clear-on-save in: `debiti-desktop.js` (Modifica saldo, Modifica utente, new participant; mobile `debiti.js` Modifica saldo), `teatro-desktop.js` (cassa entry, notes, dovuti/quote edits), `turni-desktop.js` (notes), `altobelli-desktop.js` (link).
 - Acceptance criteria:
-  - [ ] Each listed form restores after a reload and clears after save
+  - [x] Each listed form restores after a reload and clears after save
 - Verify: `manual check per form`
 - After: 4.4
 
 ## Phase 5 — Docs and release 2.30.0 (≈ 0.5 d)
 
-### [ ] 5.1 Re-record the uscite clip · A5
+### [x] 5.1 Re-record the uscite clip · A5
 
 - Decision: **A5** The "Uscite di cassa" video clip
 - Files: `public/video/primo-uscite.mp4` (modify), `public/comefunziona.html` (modify)
 - Do: Follow the video memory procedure; replace `public/video/primo-uscite.mp4` and its poster; bump `data-v` in `public/comefunziona.html`.
 - Acceptance criteria:
-  - [ ] The clip shows the two add links and an entrata
+  - [x] The clip shows the two add links and an entrata
 - Verify: `npm test -- pages`
 - After: 1.1, 1.2
 
-### [ ] 5.2 Update manuals, technical docs and CLAUDE.md · E1
+### [x] 5.2 Update manuals, technical docs and CLAUDE.md · E1
 
 - Decision: **E1** One release for all four
 - Files: `docs/MANUALE_PARTECIPANTI.md` (modify), `docs/MANUALE_AMMINISTRATORI.md` (modify), `docs/TECHNICAL.md` (modify), `CLAUDE.md` (modify)
 - Do: `docs/MANUALE_PARTECIPANTI.md` (tolti/rimessi, notebook photos at close), `docs/MANUALE_AMMINISTRATORI.md` (Altobelli tab picker and experimental, corrected report), `docs/TECHNICAL.md` (`report_dati`, `altobelli_gid`, `quaderno_foto`), `CLAUDE.md` (same facts), quick guides if they mention uscite.
 - Acceptance criteria:
-  - [ ] No doc still calls an entrata an "uscita"
+  - [x] No doc still calls an entrata an "uscita"
 - Verify: `grep -rn -i 'uscite di cassa' docs/ CLAUDE.md`
 
 ### [ ] 5.3 Bump to 2.30.0, bump ?v= on changed CSS/JS, build and deploy · E1
