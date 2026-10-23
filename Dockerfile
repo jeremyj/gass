@@ -11,8 +11,11 @@ RUN npm ci --omit=dev && npm cache clean --force
 # Stage 2: Runtime — clean Alpine image without build tools (~200MB smaller)
 FROM node:20-alpine
 
-# Install dumb-init for proper signal handling, tzdata for local dates
-RUN apk add --no-cache dumb-init tzdata
+# Install dumb-init for proper signal handling, tzdata for local dates.
+# Upgrade ca-certificates-bundle: node:20-alpine still ships one that trusts the
+# compromised eMudhra roots (CVE-2026-111943)
+RUN apk add --no-cache dumb-init tzdata && \
+    apk upgrade --no-cache ca-certificates-bundle
 ENV TZ=Europe/Rome
 
 # Create non-root user
