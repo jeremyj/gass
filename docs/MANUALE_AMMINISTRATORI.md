@@ -23,6 +23,8 @@ Video: [Riaprire una consegna, 0:13](https://gass.x86.it/admin-video#riaprire).
 
 Se il resoconto è diverso, GASS lo manda di nuovo con l'indicazione "(corretto)". Il resoconto corretto inizia con **Rettifiche rispetto al report del …**: una riga per ogni valore cambiato, con il valore di prima e quello di ora (per esempio "Marco B: conto produttore 0 → 23,50"). Le consegne chiuse prima della versione 2.30.0 non hanno le rettifiche alla prima correzione.
 
+Se la correzione cambia la cassa, GASS aggiorna anche le consegne dopo: il **Trovato in cassa** di ogni consegna è il **Lasciato in cassa** della consegna di prima. Non devi riaprire le consegne dopo.
+
 ### Togliere la foto di uno scontrino
 
 Video: [Togliere uno scontrino, 0:15](https://gass.x86.it/admin-video#scontrini).
