@@ -26,4 +26,22 @@ function ensureConsegna(db, data, audit) {
   return db.prepare('SELECT * FROM consegne WHERE id = ?').get(id);
 }
 
-module.exports = { ensureConsegna };
+// After a change on or before `data` (save, correction, delete), each later consegna takes the
+// previous lasciato as trovato and its lasciato moves by the same amount. Only the difference is
+// carried, so a lasciato set by hand (15/9 and 22/9/2026, loaded from the old sheet) keeps its gap.
+function propagaCassa(db, data) {
+  let prev = db.prepare('SELECT lasciato_in_cassa FROM consegne WHERE data <= ? ORDER BY data DESC LIMIT 1').get(data);
+  if (!prev) return;
+  const update = db.prepare('UPDATE consegne SET trovato_in_cassa = ?, lasciato_in_cassa = ? WHERE id = ?');
+  for (const c of db.prepare('SELECT id, trovato_in_cassa, lasciato_in_cassa FROM consegne WHERE data > ? ORDER BY data').all(data)) {
+    const delta = roundToCents(prev.lasciato_in_cassa - c.trovato_in_cassa);
+    if (delta !== 0) {
+      c.trovato_in_cassa = roundToCents(prev.lasciato_in_cassa);
+      c.lasciato_in_cassa = roundToCents(c.lasciato_in_cassa + delta);
+      update.run(c.trovato_in_cassa, c.lasciato_in_cassa, c.id);
+    }
+    prev = c;
+  }
+}
+
+module.exports = { ensureConsegna, propagaCassa };

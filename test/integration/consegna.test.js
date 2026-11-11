@@ -188,6 +188,22 @@ describe('POST /api/consegna/ — saldo calculation', () => {
     expect((await adminAgent.get('/api/consegna/2026-02-19')).body.uscite).toEqual(uscite);
   });
 
+  it('a correction carries the new lasciato into the trovato and lasciato of the later consegne', async () => {
+    createConsegna(db, { data: '2026-02-05', trovatoInCassa: 100, lasciatoInCassa: 100 });
+    // later consegne, one with a hand-set gap (lasciato 50 off the formula) that must survive
+    createConsegna(db, { data: '2026-02-12', trovatoInCassa: 100, lasciatoInCassa: 150, chiusa: true });
+    createConsegna(db, { data: '2026-02-19', trovatoInCassa: 150, lasciatoInCassa: 130, chiusa: true });
+
+    await adminAgent.post('/api/consegna/').send({
+      data: '2026-02-05', trovatoInCassa: 100, uscite: [{ importo: 3.72, motivo: 'differenza di cassa' }], partecipanti: []
+    }).expect(200);
+
+    const cassa = d => db.prepare('SELECT trovato_in_cassa t, lasciato_in_cassa l FROM consegne WHERE data = ?').get(d);
+    expect(cassa('2026-02-05')).toEqual({ t: 100, l: 96.28 });
+    expect(cassa('2026-02-12')).toEqual({ t: 96.28, l: 146.28 });
+    expect(cassa('2026-02-19')).toEqual({ t: 146.28, l: 126.28 });
+  });
+
   it('returns 403 when non-admin tries to save to a closed consegna', async () => {
     const userId = createUser(db, { username: 'user1', password: 'password1', displayName: 'User1' });
     const consegnaId = createConsegna(db, { data: '2026-02-19', chiusa: true });
@@ -268,6 +284,17 @@ describe('DELETE /api/consegna/:id', () => {
     // Saldo should be replayed from remaining consegna (only +20)
     user = db.prepare('SELECT saldo FROM users WHERE id = ?').get(userId);
     expect(user.saldo).toBe(20);
+  });
+
+  it('carries the cassa over the deleted consegna into the later ones', async () => {
+    createConsegna(db, { data: '2026-02-05', trovatoInCassa: 100, lasciatoInCassa: 100 });
+    const middle = createConsegna(db, { data: '2026-02-12', trovatoInCassa: 100, lasciatoInCassa: 140 });
+    createConsegna(db, { data: '2026-02-19', trovatoInCassa: 140, lasciatoInCassa: 160 });
+
+    await adminAgent.delete(`/api/consegna/${middle}`).expect(200);
+
+    expect(db.prepare("SELECT trovato_in_cassa t, lasciato_in_cassa l FROM consegne WHERE data = '2026-02-19'").get())
+      .toEqual({ t: 100, l: 120 });
   });
 });
 

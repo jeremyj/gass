@@ -260,6 +260,8 @@ pagato = SUM(conto_produttore);
 lasciato = trovato + incassato - pagato - SUM(uscite_cassa.importo);
 ```
 
+Saving or deleting a consegna carries the change forward (`propagaCassa` in `server/services/consegne.js`): each later consegna gets the previous lasciato as trovato, and its lasciato moves by the same amount. Only the difference is carried, so the hand-set cassa of 15/9 and 22/9/2026 (loaded from the old sheet) keeps its gap. Before 2.31.0 a correction to a past consegna left the stored values of the later ones stale.
+
 Where `incassato` (cash collected) is:
 ```javascript
 incassato = SUM(importo_saldato);

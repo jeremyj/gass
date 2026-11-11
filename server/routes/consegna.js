@@ -9,7 +9,7 @@ const { quotePerPersona, registraPagamento, ensureSemestre } = require('../servi
 const { apertura } = require('../services/apertura');
 const { notifyClosed, canaliAttivi } = require('../services/report');
 const { listUscite, totaleUscite, sostituisciUscite } = require('../services/uscite');
-const { ensureConsegna } = require('../services/consegne');
+const { ensureConsegna, propagaCassa } = require('../services/consegne');
 const { rimuoviScontriniConsegna } = require('../services/scontrini');
 
 const router = express.Router();
@@ -273,6 +273,8 @@ router.post('/', (req, res) => {
 
       console.log(`[CONSEGNA] ${timestamp} - Calculated pagato_produttore: ${totalPagato}€`);
       console.log(`[CONSEGNA] ${timestamp} - Calculated lasciato_in_cassa: ${lasciato}€`);
+
+      propagaCassa(db, data);
     });
 
     transaction();
@@ -345,6 +347,7 @@ router.delete('/:id', requireAdmin, (req, res) => {
       }
 
       db.prepare('DELETE FROM consegne WHERE id = ?').run(id);
+      propagaCassa(db, consegna.data);
 
       // Only participants with a movimento in the deleted consegna are affected
       const audit = getAuditFields(req, 'update');
