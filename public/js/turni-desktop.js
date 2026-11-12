@@ -183,7 +183,7 @@ async function addPause() {
   if (!dal || !al) return showStatus('Scegli le date della pausa', 'error');
   const ok = await confirmDialog({
     title: 'Aggiungere la pausa?',
-    message: 'Le consegne già in programma in queste date diventano "niente consegna"' + (autoOn ? ' e i loro turnisti tornano i primi in fila.' : '.'),
+    message: 'Le consegne in queste date, anche passate, diventano "niente consegna"' + (autoOn ? ' e i loro turnisti tornano i primi in fila.' : '.'),
     details: [['Dal', formatDateItalian(dal)], ['Al', formatDateItalian(al)]],
     confirmText: 'Aggiungi pausa'
   });
@@ -192,6 +192,8 @@ async function addPause() {
     await API.post('/api/turni/pause', { dal, al, nota: document.getElementById('pausa-nota').value });
     document.getElementById('pausa-nota').value = '';
     showStatus('Pausa aggiunta', 'success');
+    // A pause in the past shows only with the past turni
+    if (al < toLocalDateString()) document.getElementById('turni-passati').checked = true;
     await loadTurni();
   } catch (error) {
     showStatus('Errore: ' + error.message, 'error');

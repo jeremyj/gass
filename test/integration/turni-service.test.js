@@ -3,7 +3,7 @@
 const { setupTestDb } = require('../helpers/setup-test-db');
 const db = setupTestDb();
 
-const { createUser, createTurno, clearTurni, clearNonAdminUsers } = require('../helpers/seed');
+const { createUser, createTurno, createConsegna, clearTurni, clearNonAdminUsers } = require('../helpers/seed');
 const T = require('../../server/services/turni');
 const { setStato } = require('../../server/services/users');
 
@@ -14,6 +14,7 @@ const rnd = () => 0.5;
 beforeEach(() => {
   clearNonAdminUsers(db);
   clearTurni(db);
+  db.prepare('DELETE FROM consegne').run();
   db.prepare("UPDATE users SET stato = 'sospeso' WHERE username = 'admin'").run();
 });
 
@@ -257,6 +258,25 @@ describe('pauses and stato', () => {
     expect([first.a, first.b].sort()).toEqual([a, b].sort());
     const pid = db.prepare('SELECT id FROM turni_pause').get().id;
     expect(T.deletePause(db, pid)).toBe(true);
+  });
+
+  it('addPause marks past weeks too, and listPause shows past pauses with passati', () => {
+    const [a, b] = people(2);
+    const id = createTurno(db, { settimana: '2026-09-22', t1: a, t2: b });
+    expect(T.addPause(db, { dal: '2026-09-22', al: '2026-09-22', nota: 'niente verdura' }, TODAY, audit).error).toBeUndefined();
+    expect(db.prepare('SELECT saltata, turnista1_id, turnista2_id FROM turni WHERE id = ?').get(id))
+      .toEqual({ saltata: 1, turnista1_id: null, turnista2_id: null });
+    expect(T.listPause(db, TODAY)).toHaveLength(0);
+    expect(T.listPause(db, TODAY, { passati: true })).toHaveLength(1);
+  });
+
+  it('addPause refuses a past date with a recorded consegna', () => {
+    const [a, b] = people(2);
+    const id = createTurno(db, { settimana: '2026-09-22', t1: a, t2: b });
+    createConsegna(db, { data: '2026-09-22' });
+    expect(T.addPause(db, { dal: '2026-09-20', al: '2026-09-25' }, TODAY, audit).error).toMatch(/22\/09/);
+    expect(db.prepare('SELECT saltata FROM turni WHERE id = ?').get(id).saltata).toBe(0);
+    expect(T.listPause(db, TODAY, { passati: true })).toHaveLength(0);
   });
 
   it('addPause validates the range', () => {

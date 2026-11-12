@@ -102,8 +102,10 @@ function listTurni(db, today, { passati = false } = {}) {
   }));
 }
 
-function listPause(db, today) {
-  return db.prepare('SELECT id, dal, al, nota FROM turni_pause WHERE al >= ? ORDER BY dal').all(today);
+// Pauses not over yet; with passati, also those that ended in the last PAST_DAYS
+function listPause(db, today, { passati = false } = {}) {
+  return db.prepare('SELECT id, dal, al, nota FROM turni_pause WHERE al >= ? ORDER BY dal')
+    .all(passati ? addDays(today, -PAST_DAYS) : today);
 }
 
 const isAttivo = (db, id) => !!db.prepare("SELECT 1 FROM users WHERE id = ? AND stato = 'attivo'").get(id);
@@ -231,6 +233,10 @@ function moveTurno(db, a, toId, today, audit) {
 function addPause(db, { dal, al, nota }, today, audit) {
   if (!isDateString(dal) || !isDateString(al) || dal > al) return { error: 'Date della pausa non valide' };
   const text = (nota || '').trim() || 'pausa';
+  // A pause can be added after the fact (a consegna that didn't happen), but not over one recorded in GASS
+  const fatte = db.prepare('SELECT data FROM consegne WHERE data BETWEEN ? AND ? AND data < ? ORDER BY data')
+    .all(dal, al, today).map(r => ddmm(r.data));
+  if (fatte.length > 0) return { error: `In questo periodo c'è una consegna registrata (${fatte.join(', ')})` };
   let id;
   db.transaction(() => {
     id = db.prepare('INSERT INTO turni_pause (dal, al, nota, created_by, created_at) VALUES (?, ?, ?, ?, ?)')
@@ -238,8 +244,8 @@ function addPause(db, { dal, al, nota }, today, audit) {
     // Weeks already written inside the pause become "niente consegna" and free their people
     db.prepare(`
       UPDATE turni SET saltata = 1, turnista1_id = NULL, turnista2_id = NULL, nota = ?, updated_by = ?, updated_at = ?
-      WHERE data BETWEEN ? AND ? AND data >= ?
-    `).run(text, audit.userId, audit.timestamp, dal, al, today);
+      WHERE data BETWEEN ? AND ?
+    `).run(text, audit.userId, audit.timestamp, dal, al);
   })();
   return { id };
 }
