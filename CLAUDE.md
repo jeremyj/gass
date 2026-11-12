@@ -307,6 +307,7 @@ npm run test:coverage       # with coverage report
 ### Key gotchas
 - `database.js` creates no production singleton when `NODE_ENV=test`; test files must call `setupTestDb()` first to patch the require cache before loading app
 - API routes are mounted before the pages router so unauthenticated API calls return 401 (not 302)
+- The login limiter (`routes/auth.js`, 10 per 15 min per app instance) also runs in tests: a file that logs in in `beforeEach` breaks at its 11th login with a 401 on an unrelated test. Put new login-heavy tests in their own file (each file is a fresh process)
 - `clearNonAdminUsers` deletes all users except `username='admin'` and resets admin's `is_admin=1`; cleans FK-dependent `activity_logs` rows first
 
 ### Dev testing tip
