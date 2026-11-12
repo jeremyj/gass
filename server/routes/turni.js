@@ -50,8 +50,16 @@ router.put('/:id', (req, res) => {
   const audit = auditOf(req);
   const row = db.prepare('SELECT settimana, data FROM turni WHERE id = ?').get(req.params.id);
   if (!row) return res.status(404).json({ success: false, error: 'Turno non trovato' });
-  if (row.data < toLocalDateString()) return res.status(400).json({ success: false, error: 'Le consegne passate non si modificano' });
-  const result = T.updateTurno(db, Number(req.params.id), req.body, audit);
+  const oggi = toLocalDateString();
+  // Past consegne: only an admin, and only the day ("Giorno"), never the names
+  if (row.data < oggi) {
+    const body = req.body || {};
+    if (!req.session.isAdmin) return res.status(400).json({ success: false, error: 'Le consegne passate non si modificano' });
+    if (body.turnista1Id !== undefined || body.turnista2Id !== undefined) {
+      return res.status(400).json({ success: false, error: 'I turnisti delle consegne passate non si modificano' });
+    }
+  }
+  const result = T.updateTurno(db, Number(req.params.id), req.body, audit, oggi);
   if (result.error) return res.status(400).json({ success: false, error: result.error });
   if (result.changes.length > 0) log(req, audit, 'turno_modificato', `turno ${row.settimana}: ${result.changes.join(', ')}`);
   res.json({ success: true });

@@ -121,7 +121,7 @@ Sul computer, nella pagina **Turni**:
 | Generazione automatica | Usa la casella **Generazione automatica dei turni**. Quando è spenta, le settimane nuove sono **da coprire** e un amministratore sceglie i nomi. |
 | Note | Scrivi nel riquadro **Note**. Premi **Salva note**. Tutti i partecipanti leggono le note. |
 | Pausa | In **Pause**, scrivi le date **Dal** e **Al** e una nota. Premi **Aggiungi pausa**. Le settimane della pausa diventano **niente consegna**. |
-| Consegna saltata | Una consegna passata non è stata fatta? Aggiungi una pausa su quella data. GASS rifiuta la pausa se in quella data c'è una consegna registrata. Per vedere la pausa, spunta **Mostra turni passati**. |
+| Consegna saltata | Una consegna passata non è stata fatta? Spunta **Mostra turni passati**. Premi **Giorno** su quella data e segna **niente consegna**, oppure aggiungi una pausa. GASS rifiuta se in quella data c'è una consegna registrata. Per annullare, premi **Giorno** e togli **niente consegna**: i turnisti restano **da coprire**. Solo un amministratore modifica le consegne passate, e non i loro nomi. |
 
 Le settimane già visibili non cambiano quando cambi la generazione automatica.
 

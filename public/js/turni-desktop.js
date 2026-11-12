@@ -40,7 +40,7 @@ function renderTurni() {
     <tr class="${t.id === curId ? 'cur' : ''}${t.saltata ? ' off' : ''}${t.data < today ? ' past' : ''}">
       <td class="left d"><b>${weekdayShort(t.data)} ${formatDateItalian(t.data).slice(0, 5)}</b>${t.data !== t.settimana ? `<span class="mv">da ${weekdayShort(t.settimana)} ${formatDateItalian(t.settimana).slice(0, 5)}</span>` : ''}</td>
       ${nameCell(t, 1)}${nameCell(t, 2)}${noteCell(t)}
-      <td>${t.data >= today ? `<button type="button" class="link-btn" onclick="openGiorno(${t.id})">Giorno</button>` : ''}</td>
+      <td>${t.data >= today || isAdmin() ? `<button type="button" class="link-btn" onclick="openGiorno(${t.id})">Giorno</button>` : ''}</td>
     </tr>`).join('');
 
   const next = turni.find(t => t.data >= today && !t.saltata && t.turnisti.some(p => p && p.id === myId));

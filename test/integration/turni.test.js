@@ -52,12 +52,10 @@ describe('edits', () => {
     expect((await userAgent.post('/api/turni/pause').send({ dal: '2027-08-01', al: '2027-08-31' })).status).toBe(403);
   });
 
-  it('refuses edits to past consegne', async () => {
+  it('refuses edits to past consegne by non-admins', async () => {
     const x = createTurno(db, { settimana: '2020-01-07' });
-    expect((await adminAgent.put(`/api/turni/${x}`).send({ nota: 'x' })).status).toBe(400);
     expect((await userAgent.put(`/api/turni/${x}`).send({ nota: 'x' })).status).toBe(400);
   });
-
   it('moves a consegna within its week and logs it', async () => {
     const t = await firstTurno();
     const wed = new Date(`${t.settimana}T12:00:00Z`);

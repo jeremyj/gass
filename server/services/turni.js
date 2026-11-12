@@ -113,7 +113,12 @@ const ddmm = dateStr => `${dateStr.slice(8, 10)}/${dateStr.slice(5, 7)}`;
 
 const nomeDi = (db, id) => (id && db.prepare('SELECT display_name FROM users WHERE id = ?').get(id)?.display_name) || 'da coprire';
 
-function updateTurno(db, id, fields, audit) {
+// A past consegna recorded in GASS can't be marked skipped (same rule as addPause)
+function consegnaRegistrata(db, data, today) {
+  return data < today && !!db.prepare('SELECT 1 FROM consegne WHERE data = ?').get(data);
+}
+
+function updateTurno(db, id, fields, audit, today = null) {
   const row = db.prepare('SELECT * FROM turni WHERE id = ?').get(id);
   if (!row) return { error: 'Turno non trovato' };
   const next = { ...row };
@@ -144,6 +149,9 @@ function updateTurno(db, id, fields, audit) {
   if (fields.saltata !== undefined) {
     next.saltata = fields.saltata ? 1 : 0;
     if (next.saltata !== row.saltata) changes.push(next.saltata ? 'niente consegna' : 'consegna ripristinata');
+  }
+  if (next.saltata && !row.saltata && today && consegnaRegistrata(db, next.data, today)) {
+    return { error: `Il ${ddmm(next.data)} c'è una consegna registrata` };
   }
   // A skipped consegna doesn't count: its people go back to the front of the queue
   if (next.saltata) {
