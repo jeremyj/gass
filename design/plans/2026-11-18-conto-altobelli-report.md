@@ -33,5 +33,5 @@ Decided with the user 2026-11-18. Done the same day: Saldi says "15 € anticipa
 
 ## Open questions
 
-- Rounding of the approssimativo in point 1: to the 10 cents, to the euro, or to the cent?
+- Rounding in point 1. Checked on the sheet 2026-11-18 (214 effettivi in 31 tabs): since 21 luglio 2026 every effettivo is a multiple of 10 cents (before, 41 had cents). Where GASS holds the receipt total, the effettivo is that total rounded to the 10 cents (20,82 → 20,80; 21,08 → 21,10; 37,07 → 37,10; 26,14 → 26,10). The only tie seen, 21,05 (Paola Mazza 17/11), went to 21,00: one case, not enough to say how Leonardo rounds a 5. The approssimativo is not a rounded effettivo (17/11: Polly 40,60 vs 50,40; Riccardo e Camille 37,70 vs 44): proposing it as the conto is unreliable. To confirm with the user: without an effettivo, the warning button proposes the typed receipt total rounded to the 10 cents, not the approssimativo.
 - Rename list: validate each row (table in the conversation of 2026-11-18).
