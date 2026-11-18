@@ -394,7 +394,7 @@ tr.off td { opacity: .6; }
 .show-inactive { display: flex; align-items: center; gap: 6px; margin-left: auto; margin-right: 22px; color: var(--salvia); }
 .admin-badge { display: inline-block; margin-left: 6px; padding: 0 5px; font-family: var(--sans); font-size: 16px; font-weight: 700; color: var(--salvia); border: 1px solid var(--riga); border-radius: 4px; vertical-align: 2px; }
 
-.consegna-closed .mov-list > li, .consegna-closed tr.clickable { cursor: default; }
+.consegna-closed tr.clickable { cursor: default; }
 .consegna-closed .add-select { display: none; }
 /* Closed: no "Apri: dettaglio…" invitation on mobile, no entrate/uscite editor on desktop (the cassa shows them) */
 .consegna-closed .riepilogo-apri, .consegna-closed .uscite-blocco { display: none; }

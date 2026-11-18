@@ -32,7 +32,7 @@ In cima lo stato (*Consegna aperta* / *Consegna chiusa*) con **Annulla consegna*
    - **Conto produttore** (l'importo effettivo nel foglio Altobelli)
    - **Importo saldato** (quanto porta oggi); sotto, la riga **Prima di oggi** mostra il credito o il debito che aveva
    - se c'è, la **Quota teatro** (vedi sotto)
-3. Il sistema calcola automaticamente credito o debito residuo e lo mostra nel riquadro finale (*Lascia credito*, *Lascia debito* o *Esito: saldato*). Nell'elenco *Chi ha ritirato* ogni riga mostra conto e pagato e, quando ci sono, *salda debito*, *usa credito* e *quota teatro*; chi ha pagato solo la quota ha una riga *solo teatro*
+3. Il sistema calcola automaticamente credito o debito residuo e lo mostra nel riquadro finale (*Lascia credito*, *Lascia debito* o *Esito: saldato*). Nell'elenco *Chi ha ritirato* ogni riga mostra conto, pagato e, quando c'è, *quota teatro* (debito saldato e credito usato sono nei Saldi dal computer); a consegna chiusa una riga apre la scheda in sola lettura; chi ha pagato solo la quota ha una riga *solo teatro*
 4. Clicca **Salva movimento**
 
 > Se il partecipante ha debiti/crediti pregressi, vengono compensati automaticamente.
@@ -85,4 +85,4 @@ Ogni semestre (gennaio–giugno, luglio–dicembre) si paga una quota per l'affi
 |---|---|
 | Riaprire consegna chiusa | Storico → tocca la consegna → **Riapri consegna** |
 | Eliminare una consegna salvata | Consegna → **Annulla consegna** |
-| Modificare un saldo | Saldi → tocca il nome → **Modifica saldo** |
+| Modificare un saldo | dal computer: Saldi → **Modifica utente** |

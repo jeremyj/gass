@@ -2,7 +2,6 @@
 
 let participants = [];
 let expandedParticipantId = null;
-let originalSaldoValues = {}; // Track original values when card is expanded
 let transactionsCache = {}; // Cache loaded transactions
 
 // Calendar state now managed in calendar.js
@@ -50,50 +49,9 @@ function createParticipantCard(p) {
   }
 
   card.classList.add('open');
-  const canEdit = isAdmin();
-
-  let editSectionHtml = '';
-  if (canEdit) {
-    editSectionHtml = `
-      <button type="button" class="btn btn-line btn-block" id="saldo-edit-btn-${p.id}" onclick="showSaldoEdit(${p.id})">Modifica saldo</button>
-      <div class="saldo-edit-section initially-hidden" id="saldo-edit-${p.id}" data-bozza="saldo:${p.id}">
-        <h3 data-tip="modifica_saldo">Modifica saldo</h3>
-        <div class="input-row">
-          <div class="form-group">
-            <label for="credito-input-${p.id}">Nuovo credito</label>
-            <input type="text"
-                   inputmode="decimal"
-                   id="credito-input-${p.id}"
-                   class="input-field"
-                   value="${p.saldo > 0 ? formatNumber(p.saldo) : ''}"
-                   placeholder="0"
-                   oninput="normalizeInputField(this); updateSaldoInputs(${p.id}, 'credito')"
-                   onfocus="handleInputFocus(this)"
-                   ${p.saldo < 0 ? 'disabled' : ''}>
-          </div>
-          <div class="form-group">
-            <label for="debito-input-${p.id}">Nuovo debito</label>
-            <input type="text"
-                   inputmode="decimal"
-                   id="debito-input-${p.id}"
-                   class="input-field"
-                   value="${p.saldo < 0 ? formatNumber(Math.abs(p.saldo)) : ''}"
-                   placeholder="0"
-                   oninput="normalizeInputField(this); updateSaldoInputs(${p.id}, 'debito')"
-                   onfocus="handleInputFocus(this)"
-                   ${p.saldo > 0 ? 'disabled' : ''}>
-          </div>
-        </div>
-        <p class="hint">La modifica manuale registra una rettifica con la data di oggi.</p>
-        <button class="btn btn-go btn-block" onclick="saveSaldo(${p.id})">Salva saldo</button>
-        <button type="button" class="btn btn-line btn-block" onclick="hideSaldoEdit(${p.id})">Annulla</button>
-      </div>
-    `;
-  }
 
   card.innerHTML = `
     <div class="saldo-header-expanded clickable" id="header-${p.id}">${summary}</div>
-    ${editSectionHtml}
     <div class="saldo-transactions-section" id="transactions-${p.id}">
       <h3>Transazioni</h3>
       <div class="transactions-loading">Caricamento…</div>
@@ -112,28 +70,6 @@ function createParticipantCard(p) {
   }, 100);
 
   return card;
-}
-
-// The edit form stays behind the "Modifica saldo" button so opening a card doesn't pop up the keyboard
-function showSaldoEdit(id) {
-  const p = participants.find(p => p.id === id);
-  document.getElementById(`saldo-edit-btn-${id}`).classList.add('initially-hidden');
-  document.getElementById(`saldo-edit-${id}`).classList.remove('initially-hidden');
-  const input = document.getElementById(p.saldo < 0 ? `debito-input-${id}` : `credito-input-${id}`);
-  if (bozzaLeggi(`saldo:${id}`)) {
-    // Both fields enabled so the draft finds them; its input events disable the unused one again
-    document.getElementById(`credito-input-${id}`).disabled = false;
-    document.getElementById(`debito-input-${id}`).disabled = false;
-  }
-  bozzaRiprendi(`saldo:${id}`, document.getElementById(`saldo-edit-${id}`));
-  input.focus();
-  input.select();
-}
-
-// Hide the form and put back the current saldo (by re-rendering the open card)
-function hideSaldoEdit(id) {
-  bozzaCancella(`saldo:${id}`);
-  renderParticipants();
 }
 
 // ===== TRANSACTIONS =====
@@ -191,129 +127,21 @@ function renderTransactions(container, { transactions }) {
   });
 
   html += '</div>';
-  html += `<p class="hint">${transactions.length > MOBILE_TRANSAZIONI ? 'Le transazioni precedenti, il credito usato' : 'Il credito usato'}
-    e il debito saldato sono nella pagina Saldi dal computer.</p>`;
+  html += '<p class="hint">Altri dettagli su movimenti di crediti e debiti sulla versione desktop.</p>';
   container.innerHTML = html;
 }
 
 // ===== CARD INTERACTION =====
 
-async function toggleParticipantCard(id) {
-  if (expandedParticipantId === id) {
-    // Trying to close - check for unsaved changes (admin only)
-    if (isAdmin() && hasUnsavedChanges(id)) {
-      const ok = await confirmDialog({
-        title: 'Modifiche non salvate',
-        message: 'Vuoi chiudere senza salvare?',
-        confirmText: 'Chiudi senza salvare',
-        danger: true
-      });
-      if (!ok) return; // User cancelled, keep card open
-    }
-    bozzaCancella(`saldo:${id}`);
-    expandedParticipantId = null;
-    originalSaldoValues = {}; // Clear saved values
-  } else {
-    // Opening card - save original values for admin edit tracking
-    if (isAdmin()) {
-      const participant = participants.find(p => p.id === id);
-      if (participant) {
-        originalSaldoValues[id] = {
-          credito: participant.saldo > 0 ? participant.saldo : 0,
-          debito: participant.saldo < 0 ? Math.abs(participant.saldo) : 0
-        };
-      }
-    }
-    expandedParticipantId = id;
-  }
+// Saldi on the phone are read-only: the saldo is edited on the computer (Modifica utente)
+function toggleParticipantCard(id) {
+  expandedParticipantId = expandedParticipantId === id ? null : id;
   renderParticipants();
-}
-
-function hasUnsavedChanges(id) {
-  // Check if current input values differ from original values
-  const creditoInput = document.getElementById(`credito-input-${id}`);
-  const debitoInput = document.getElementById(`debito-input-${id}`);
-
-  if (!creditoInput || !debitoInput || !originalSaldoValues[id]) {
-    return false;
-  }
-
-  const currentCredito = parseAmount(creditoInput.value);
-  const currentDebito = parseAmount(debitoInput.value);
-
-  const originalCredito = originalSaldoValues[id].credito;
-  const originalDebito = originalSaldoValues[id].debito;
-
-  return currentCredito !== originalCredito || currentDebito !== originalDebito;
-}
-
-function updateSaldoInputs(id, changedField) {
-  const creditoInput = document.getElementById(`credito-input-${id}`);
-  const debitoInput = document.getElementById(`debito-input-${id}`);
-
-  if (changedField === 'credito') {
-    const creditoValue = parseAmount(creditoInput.value);
-    if (creditoValue > 0) {
-      debitoInput.value = '';
-      debitoInput.disabled = true;
-    } else {
-      debitoInput.disabled = false;
-    }
-  } else if (changedField === 'debito') {
-    const debitoValue = parseAmount(debitoInput.value);
-    if (debitoValue > 0) {
-      creditoInput.value = '';
-      creditoInput.disabled = true;
-    } else {
-      creditoInput.disabled = false;
-    }
-  }
-}
-
-// ===== SAVE =====
-
-async function saveSaldo(id) {
-  const creditoInput = document.getElementById(`credito-input-${id}`);
-  const debitoInput = document.getElementById(`debito-input-${id}`);
-
-  let newSaldo = 0;
-
-  if (creditoInput && !creditoInput.disabled) {
-    const creditoValue = parseAmount(creditoInput.value);
-    if (creditoValue > 0) {
-      newSaldo = creditoValue;
-    }
-  }
-
-  if (debitoInput && !debitoInput.disabled) {
-    const debitoValue = parseAmount(debitoInput.value);
-    if (debitoValue > 0) {
-      newSaldo = -debitoValue;
-    }
-  }
-
-  if (isNaN(newSaldo)) {
-    showStatus('Inserisci un saldo valido', 'error');
-    return;
-  }
-
-  try {
-    await API.put(`/api/participants/${id}`, { saldo: newSaldo });
-    bozzaCancella(`saldo:${id}`);
-    showStatus('Saldo aggiornato', 'success');
-    expandedParticipantId = null;
-    originalSaldoValues = {}; // Clear saved values after successful save
-    transactionsCache = {}; // Clear transactions cache
-    loadParticipants();
-  } catch (error) {
-    showStatus('Errore durante l\'aggiornamento: ' + error.message, 'error');
-  }
 }
 
 // ===== INITIALIZATION =====
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Saldi are editable only by admins: know the user before rendering
   await sessionReady;
   setDateDisplay(toLocalDateString());
   loadParticipants();

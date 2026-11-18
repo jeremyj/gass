@@ -296,6 +296,19 @@ function participantButtonsHTML(id) {
   `;
 }
 
+// Closed consegna: a tap on a row shows the card read-only, with only Chiudi (user decision 2026-11-18)
+function openMovimentoChiuso(id) {
+  const container = document.getElementById('selected-participants');
+  container.innerHTML = '';
+  const chiudi = `<div class="entry-actions"><button type="button" class="btn btn-line" onclick="chiudiSolaLettura()">Chiudi</button></div>`;
+  if (!renderParticipant(id, chiudi)) return;
+  container.querySelectorAll('input, textarea, select').forEach(el => { el.disabled = true; });
+}
+
+function chiudiSolaLettura() {
+  document.getElementById('selected-participants').innerHTML = '';
+}
+
 function showParticipantForm() {
   const select = document.getElementById('participant-select');
   if (!select) return;

@@ -34,6 +34,6 @@ describe('renderContoHint', () => {
   it('without an effettivo, shows nothing: the empty field asks for the receipt rounded', () => {
     expect(hint('20,82', null).innerHTML).toBe('');
     expect(hint('', null).textContent).toBe('');
-    expect(vm.runInContext('CONTO_PLACEHOLDER', sandbox)).toBe('scontrino a 0,10');
+    expect(vm.runInContext('CONTO_PLACEHOLDER', sandbox)).toBe('importo scontrino arrotondato: .01-.05 -> .00, .06-.09 -> .10');
   });
 });

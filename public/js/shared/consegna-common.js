@@ -46,10 +46,9 @@ async function renderAvvisoAperte() {
 let teatroExtra = [];
 
 // "conto 15, pagato 25, salda debito 8, quota teatro 15" (mobile list rows)
+// Mobile list row: like Saldi on the phone, without debito saldato / credito usato
 function movimentoDetails(m) {
   const details = [`conto <b>${formatNumber(m.conto_produttore || 0)}</b>`, `pagato <b>${formatNumber(m.importo_saldato || 0)}</b>`];
-  if (debitoPagato(m)) details.push(`salda debito <b>${formatNumber(debitoPagato(m))}</b>`);
-  if (m.usa_credito) details.push(`usa credito <b>${formatNumber(m.usa_credito)}</b>`);
   if (m.teatro) details.push(`quota teatro <b>${formatNumber(m.teatro)}</b>`);
   return details.join(', ');
 }
@@ -303,7 +302,11 @@ function renderParticipantSelect() {
 // Open a saved movimento from the day's list (same as picking the participant in the select)
 function openMovimento(id) {
   const select = document.getElementById('participant-select');
-  if (isConsegnaClosed || !select) return;
+  if (!select) return;
+  if (isConsegnaClosed) {
+    if (typeof openMovimentoChiuso === 'function') openMovimentoChiuso(id); // mobile: read-only card
+    return;
+  }
   if (!select.querySelector(`option[value="${id}"]`)) {
     const p = participants.find(p => p.id === id);
     select.add(new Option(p ? p.nome : id, id));
@@ -714,8 +717,8 @@ function renderParticipant(id, buttonsHtml) {
 // ===== CONTO PRODUTTORE PROPOSAL =====
 // The effettivo of the Altobelli sheet when there is one: a green button, a tap writes it (the conto
 // is never filled in by itself). Without it, the empty field says to write the receipt rounded to the
-// 10 cents, as Leonardo writes the effettivi (user decision 2026-11-18: inside the field, short)
-const CONTO_PLACEHOLDER = 'scontrino a 0,10';
+// 10 cents as Leonardo writes the effettivi, .01-.05 down and .06-.09 up (user decision 2026-11-18: inside the field)
+const CONTO_PLACEHOLDER = 'importo scontrino arrotondato: .01-.05 -> .00, .06-.09 -> .10';
 const contoFoglio = {};
 
 async function loadContoFoglio(id) {
@@ -866,6 +869,7 @@ async function loadTeatroBlock(id) {
     if (!box || !stato.righe.length) return;
     box.dataset.righe = JSON.stringify(stato.righe.filter(r => r.dovuto > r.pagato));
     if (stato.residuo > 0 || teatroGiaQui(id) > 0) showTeatroBlock(id);
+    else if (isConsegnaClosed) box.innerHTML = '';
     else box.innerHTML = `<button type="button" class="teatro-btn" onclick="showTeatroBlock(${id})"><span>+ Quota teatro (anticipo)</span></button>`;
   } catch (error) {
     showStatus('Errore: ' + error.message, 'error');
@@ -880,7 +884,7 @@ function showTeatroBlock(id) {
     <div class="form-group fld teatro-importo">
       <label for="teatroImporto_${id}" data-tip="teatro_versato">Versato per il teatro</label>
       <span class="fld-in"><input type="text" inputmode="decimal" id="teatroImporto_${id}" placeholder="0" value="${gia ? formatNumber(gia) : ''}"
-            oninput="normalizeInputField(this); renderTeatro(${id})" onfocus="handleInputFocus(this)"><span class="unit">€</span></span>
+            oninput="normalizeInputField(this); renderTeatro(${id})" onfocus="handleInputFocus(this)"${isConsegnaClosed ? ' disabled' : ''}><span class="unit">€</span></span>
     </div>
     <p class="teatro-resto" id="teatroResto_${id}"></p>`;
   renderTeatro(id);

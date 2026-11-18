@@ -16,7 +16,7 @@
   - `auth.js` - Authentication endpoints (login, logout, password change)
   - `oidc.js` - Authentik SSO (mounted at `/auth/oidc` only when `OIDC_ISSUER` is set)
   - `consegna.js` - Delivery API (`GET /apertura` declared before `GET /:date`, POST, DELETE/:id admin, `POST /:id/close`, `POST /:id/reopen` admin; close sends the reports); `GET /:date` adds `movimenti[].teatro` and `teatroExtra` (quota-only payers)
-  - `participants.js` - Participant API (CRUD, saldo management, `GET /:id/transactions` — any authenticated user, quota teatro payments attached to the movimento of the same date (`teatro_importo`/`teatro_copre`/`teatro_foglio`) or as `{tipo:'teatro'}` rows, labelled by `coperturaPagamenti`/`copreLabel` (`teatro-calc.js`) via `pagamentiCoperti` (`teatro.js`), rendered by `quotaTeatroHtml` (`debiti-common.js`); mobile shows the last 12 without usa credito/salda debito, desktop a near-full-page modal, 15 per page)
+  - `participants.js` - Participant API (CRUD, saldo management, `GET /:id/transactions` — any authenticated user, quota teatro payments attached to the movimento of the same date (`teatro_importo`/`teatro_copre`/`teatro_foglio`) or as `{tipo:'teatro'}` rows, labelled by `coperturaPagamenti`/`copreLabel` (`teatro-calc.js`) via `pagamentiCoperti` (`teatro.js`), rendered by `quotaTeatroHtml` (`debiti-common.js`); only rows from `TRANSAZIONI_DAL = '2026-09-14'` (before it: the old sheet's load); mobile shows the last 12 without usa credito/salda debito, desktop a near-full-page modal, 15 per page)
   - `users.js` - User management API (admin-only: display name, password, `stato`; admin status is not editable here)
   - `storico.js` - History API: `GET /` only (index summary: `num_movimenti`, `incassato`, `teatro`, chained `trovato_in_cassa`); `/dettaglio` was removed in 2.23.0
   - `logs.js` - Activity log API (admin-only)
@@ -200,7 +200,8 @@ On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_
 - Cassa is one row (`.conto`): Trovato + Incassato − Pagato = In cassa; uscite di cassa show as one full-width `.uscite-cell` (total + motivi) under it (already subtracted). All four cassa values (mobile and desktop) are display-only `<output>`s, read and written through `.value` like inputs; `#incassatoCassa` is filled by `updateIncassato()`
 - The day's movimenti are listed ("Chi ha ritirato"); tapping a row opens it
 - The participant card becomes a full-screen entry at ≤ 768px (pure CSS on `.participant-card-flow`); `#status` is a fixed toast above it
-- Saldi card (mobile) opens on Transazioni; the admin saldo form is behind a "Modifica saldo" button (`showSaldoEdit`/`hideSaldoEdit` in `debiti.js`). The user disliked the form opening (and the keyboard popping up) on every tap of a name
+- Saldi card (mobile) is read-only: Transazioni only, the saldo is edited on desktop (Modifica utente; mobile form removed 2026-11-18)
+- Mobile day's list (`movimentoDetails`) shows conto, pagato, quota teatro, no salda debito/usa credito (as Saldi on the phone). On a closed consegna a row opens the card read-only (`openMovimentoChiuso` in `consegna.js`, called by `openMovimento`; every field disabled, only Chiudi); desktop keeps closed rows inert
 
 ### Desktop
 - Form card below the table, buttons Annulla / Salva movimento
@@ -226,7 +227,7 @@ On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_
 
 ### Admin-Only Features
 - Delete a saved consegna (`DELETE /api/consegna/:id` has `requireAdmin`; "Annulla Consegna" is hidden for others once the consegna exists)
-- Edit saldi: desktop in the Modifica utente modal (Saldo field → `PUT /api/participants/:id`), mobile "Modifica saldo" in the card
+- Edit saldi: desktop only, in the Modifica utente modal (Saldo field → `PUT /api/participants/:id`)
 - Reopen closed consegne
 - Add participants (desktop) - creates a full user account with username/password
 - Delete users (desktop, Modifica Utente) - `deleteUser(db, id)` in `server/services/users.js`, shared with `manage-users.js delete`: refused if last user or the user has movimenti or rettifiche (they would CASCADE away); otherwise every non-cascading FK to `users` (activity logs, audit `*_by` columns) is set to NULL first, found dynamically via `pragma_foreign_key_list`. The route also refuses deleting yourself (the `user_deleted` log's actor FK would fail)

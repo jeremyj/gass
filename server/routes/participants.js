@@ -78,6 +78,9 @@ function conQuoteTeatro(transactions, pagamenti) {
 }
 
 // Get transactions for a specific participant
+// The ledger before the first GASS consegna is the old sheet's load: not shown (user decision 2026-11-18)
+const TRANSAZIONI_DAL = '2026-09-14';
+
 router.get('/:id/transactions', (req, res) => {
   const timestamp = new Date().toISOString();
   const { id } = req.params;
@@ -85,7 +88,8 @@ router.get('/:id/transactions', (req, res) => {
   console.log(`[PARTICIPANTS] ${timestamp} - GET transactions for participant ID: ${id}`);
 
   try {
-    const transactions = conQuoteTeatro(getTransactions(id), teatro.pagamentiCoperti(db, id, toLocalDateString()));
+    const transactions = conQuoteTeatro(getTransactions(id), teatro.pagamentiCoperti(db, id, toLocalDateString()))
+      .filter(t => t.data >= TRANSAZIONI_DAL);
 
     console.log(`[PARTICIPANTS] ${timestamp} - Retrieved ${transactions.length} transactions for participant ID: ${id}`);
     res.json({ success: true, transactions });

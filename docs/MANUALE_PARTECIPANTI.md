@@ -58,7 +58,7 @@ La pagina Consegna si apre sulla consegna giusta: l'ultimo turno fino a oggi, se
 
 Un riquadro in alto mostra le altre consegne ancora aperte. Premi una data per aprire quella consegna.
 
-Sul telefono, in alto ci sono lo stato della consegna e i pulsanti **Annulla consegna** (solo amministratori) e **Chiudi consegna**. Sotto c'è un riepilogo: conto produttore, quote teatro, entrate e uscite di cassa con il motivo. Premi **Apri: dettaglio, entrate/uscite, quaderno, note** per aprire la cassa completa, il quaderno, le entrate/uscite di cassa e le note. Premi **‹** per tornare alla pagina. Sul computer queste parti sono nella colonna a sinistra. Quando la consegna è chiusa, la scritta **Apri: …** non compare e sul computer il riquadro **Entrate/uscite di cassa** non compare: le entrate e le uscite restano nella cassa.
+Sul telefono, in alto ci sono lo stato della consegna e i pulsanti **Annulla consegna** (solo amministratori) e **Chiudi consegna**. Sotto c'è un riepilogo: conto produttore, quote teatro, entrate e uscite di cassa con il motivo. Premi **Apri: dettaglio, entrate/uscite, quaderno, note** per aprire la cassa completa, il quaderno, le entrate/uscite di cassa e le note. Premi **‹** per tornare alla pagina. Sul computer queste parti sono nella colonna a sinistra. Quando la consegna è chiusa, la scritta **Apri: …** non compare. Sul telefono puoi ancora premere una riga di *Chi ha ritirato*: la scheda si apre in sola lettura, con il pulsante **Chiudi**. Sul computer il riquadro **Entrate/uscite di cassa** non compare: le entrate e le uscite restano nella cassa.
 
 ### Registrare la spesa di un partecipante
 
@@ -68,7 +68,7 @@ Video: [Registrare un pagamento, 0:28](https://gass.x86.it/comefunziona#pagament
 2. Scegli il partecipante.
 3. Scrivi il **Conto produttore**.
    - Se il foglio Altobelli ha l'importo effettivo, sopra il campo c'è il bottone verde **Foglio Altobelli: X €**. Premi il bottone per scrivere l'importo nel campo. Quando il conto è uguale, GASS mostra **Uguale al foglio Altobelli**.
-   - Se il foglio non ha l'importo, il campo vuoto mostra **scontrino a 0,10**: scrivi il totale dello scontrino arrotondato ai 10 centesimi, come Altobelli. Per esempio, 20,82 diventa 20,80 e 21,05 diventa 21,10.
+   - Se il foglio non ha l'importo, il campo vuoto mostra **importo scontrino arrotondato: .01-.05 -> .00, .06-.09 -> .10**: scrivi il totale dello scontrino arrotondato ai 10 centesimi, come Altobelli. Per esempio, 20,82 diventa 20,80, 21,05 diventa 21,00 e 21,08 diventa 21,10.
 4. Scrivi l'**Importo saldato**.
 5. Controlla la riga **Prima di oggi** (credito, debito o in pari) e l'esito: credito, debito o "saldato".
 6. Premi **Salva movimento**.
@@ -193,7 +193,7 @@ La pagina Saldi mostra la situazione di oggi.
 
 Le transazioni mostrano ogni consegna e il **Saldo dopo**. Una correzione dell'amministratore ha il nome **Rettifica manuale**. Una quota teatro pagata è nel giorno del pagamento, con il semestre che copre: per esempio "quota teatro 10 € (salda 2° sem. 2026)". **acconto** vuol dire che il semestre non è ancora pagato tutto, **anticipo** che il pagamento è per un semestre futuro, **vecchio foglio** che il pagamento viene dal foglio di prima di GASS. La quota teatro va nel bussolotto e non cambia il saldo.
 
-Sul telefono ci sono le ultime 12 transazioni, senza il credito usato e il debito saldato. Sul computer ci sono tutte le transazioni, 15 per pagina, con tutte le colonne.
+Le transazioni partono dal 14/09/2026, la prima consegna in GASS. Sul telefono ci sono le ultime 12, senza il credito usato e il debito saldato. Sul computer ci sono tutte, 15 per pagina, con tutte le colonne. Il saldo si modifica solo dal computer.
 
 Colonna **Quota teatro** (computer):
 

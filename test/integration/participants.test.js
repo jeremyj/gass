@@ -113,7 +113,7 @@ describe('GET /api/participants/:id/transactions', () => {
 
   it('returns transactions for own user (non-admin)', async () => {
     const userId = createUser(db, { username: 'user1', password: 'password1', displayName: 'User1' });
-    const c1 = createConsegna(db, { data: '2026-01-10' });
+    const c1 = createConsegna(db, { data: '2026-11-10' });
     createMovimento(db, { consegnaId: c1, partecipanteId: userId, contoProduttore: 100, importoSaldato: 80, creditoLasciato: 20 });
 
     const userAgent = request.agent(app);
@@ -123,7 +123,7 @@ describe('GET /api/participants/:id/transactions', () => {
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.transactions).toHaveLength(1);
-    expect(res.body.transactions[0].data).toBe('2026-01-10');
+    expect(res.body.transactions[0].data).toBe('2026-11-10');
     expect(res.body.transactions[0].conto_produttore).toBe(100);
     expect(res.body.transactions[0].credito_lasciato).toBe(20);
   });
@@ -136,17 +136,15 @@ describe('GET /api/participants/:id/transactions', () => {
     db.prepare("INSERT OR IGNORE INTO teatro_semestri (semestre, quota) VALUES ('2025-2', 15), ('2026-1', 15), ('2026-2', 15)").run();
     db.prepare("INSERT INTO teatro_dovuti (user_id, semestre, dovuto) VALUES (?, '2025-2', 15), (?, '2026-1', 15), (?, '2026-2', 15)").run(userId, userId, userId);
     db.prepare(`INSERT INTO teatro_pagamenti (user_id, data, importo, fonte, consegna_id) VALUES
-      (?, '2025-12-31', 15, 'foglio', NULL), (?, '2026-03-03', 10, NULL, NULL), (?, '2026-10-27', 30, NULL, ?)`)
+      (?, '2025-12-31', 15, 'foglio', NULL), (?, '2026-10-13', 10, NULL, NULL), (?, '2026-10-27', 30, NULL, ?)`)
       .run(userId, userId, userId, c1);
 
     const res = await adminAgent.get(`/api/participants/${userId}/transactions`);
     expect(res.body.teatro).toBeUndefined();
     expect(res.body.transactions.map(t => [t.tipo, t.data, t.teatro_importo, t.teatro_copre, t.teatro_foglio, t.saldo_dopo])).toEqual([
       ['movimento', '2026-10-27', 30, 'salda 1° sem. 2026, salda 2° sem. 2026, anticipo 1° sem. 2027', false, -65],
-      ['teatro', '2026-03-03', 10, 'acconto 1° sem. 2026', false, -5],
-      ['teatro', '2025-12-31', 15, 'salda 2° sem. 2025', true, -5],
-      ['rettifica', '2025-12-01', undefined, undefined, undefined, -5]
-    ]);
+      ['teatro', '2026-10-13', 10, 'acconto 1° sem. 2026', false, -5],
+    ]); // the foglio payment and the rettifica are before 14/09/2026: not shown
   });
 
   it('allows non-admin to view another user transactions', async () => {
@@ -163,7 +161,7 @@ describe('GET /api/participants/:id/transactions', () => {
 
   it('admin can view any user transactions', async () => {
     const userId = createUser(db, { username: 'user1', password: 'password1', displayName: 'User1' });
-    const c1 = createConsegna(db, { data: '2026-01-10' });
+    const c1 = createConsegna(db, { data: '2026-11-10' });
     createMovimento(db, { consegnaId: c1, partecipanteId: userId, contoProduttore: 50, debitoLasciato: 10 });
 
     const res = await adminAgent.get(`/api/participants/${userId}/transactions`);
@@ -175,15 +173,15 @@ describe('GET /api/participants/:id/transactions', () => {
 
   it('returns transactions sorted by date descending', async () => {
     const userId = createUser(db, { username: 'user1', password: 'password1', displayName: 'User1' });
-    const c1 = createConsegna(db, { data: '2026-01-01' });
-    const c2 = createConsegna(db, { data: '2026-02-01' });
+    const c1 = createConsegna(db, { data: '2026-10-01' });
+    const c2 = createConsegna(db, { data: '2026-11-01' });
     createMovimento(db, { consegnaId: c1, partecipanteId: userId, contoProduttore: 30 });
     createMovimento(db, { consegnaId: c2, partecipanteId: userId, contoProduttore: 50 });
 
     const res = await adminAgent.get(`/api/participants/${userId}/transactions`);
     expect(res.body.transactions).toHaveLength(2);
-    expect(res.body.transactions[0].data).toBe('2026-02-01');
-    expect(res.body.transactions[1].data).toBe('2026-01-01');
+    expect(res.body.transactions[0].data).toBe('2026-11-01');
+    expect(res.body.transactions[1].data).toBe('2026-10-01');
   });
 
   it('returns empty array when no transactions exist', async () => {
@@ -259,14 +257,14 @@ describe('manual rettifiche in the ledger', () => {
 
   it('transactions include rettifiche with the running saldo', async () => {
     const userId = createUser(db, { username: 'mario', displayName: 'Mario' });
-    const c1 = createConsegna(db, { data: '2026-01-01' });
+    const c1 = createConsegna(db, { data: '2026-10-01' });
     createMovimento(db, { consegnaId: c1, partecipanteId: userId, debitoLasciato: 10 });
-    createRettifica(db, { partecipanteId: userId, data: '2026-01-05', importo: 10 });
+    createRettifica(db, { partecipanteId: userId, data: '2026-10-05', importo: 10 });
 
     const res = await adminAgent.get(`/api/participants/${userId}/transactions`);
     expect(res.body.transactions.map(t => [t.tipo, t.data, t.saldo_dopo])).toEqual([
-      ['rettifica', '2026-01-05', 0],
-      ['movimento', '2026-01-01', -10]
+      ['rettifica', '2026-10-05', 0],
+      ['movimento', '2026-10-01', -10]
     ]);
   });
 });

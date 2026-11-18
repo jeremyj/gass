@@ -58,7 +58,7 @@ Video: [Correggere un saldo, 0:12](https://gass.x86.it/admin-video#saldo).
 Usa questa funzione solo per correggere un errore che non è in una consegna.
 
 1. Apri **Saldi**.
-2. Sul computer, premi il pulsante **Modifica utente** sulla riga del partecipante. Sul telefono, apri il partecipante e premi **Modifica saldo**.
+2. Sul computer, premi il pulsante **Modifica utente** sulla riga del partecipante. Sul telefono non puoi modificare il saldo.
 3. Scrivi il saldo corretto in **Saldo**. Per un debito, scrivi − prima dell'importo. Per un saldo in pari, scrivi 0.
 4. Premi **Salva**.
 
