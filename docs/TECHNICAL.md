@@ -26,7 +26,7 @@ RESTful API with the following endpoints:
 
 ```
 GET    /api/participants              - Retrieve all participants with current balances, `teatro_residuo` (owed, negative = advance), `teatro_anticipo_per` (only with an advance: label of the semester after the person's last owed one, e.g. "1° sem. 2027") and `teatro_dovuto` (current semester quota, 0 = none)
-GET    /api/participants/:id/transactions - Ledger (movimenti + rettifiche) with running saldo (any authenticated user)
+GET    /api/participants/:id/transactions - Ledger (movimenti + rettifiche) with running saldo, plus `teatro` (the person's quota teatro payments, newest first, `fonte` 'foglio' = old sheet) (any authenticated user)
 GET    /api/consegna/apertura         - {data, aperte}: date the Consegna page opens on, all open consegne (declared before /:date)
 GET    /api/consegna/:date            - Delivery data for a date; each movimento has `teatro`, plus `teatroExtra` [{user_id, nome, importo}] for quota-only payers
 POST   /api/consegna                  - Create or update delivery with movements; per participant `teatroVersato` (see Quota teatro)
@@ -55,6 +55,7 @@ GET    /api/altobelli/confronto?data=&gid= - A tab of the Altobelli sheet vs the
 PUT    /api/altobelli/scheda          - {data, gid|null}: remember the tab for that consegna in `consegne.altobelli_gid` (admin)
 GET|PUT /api/altobelli/foglio         - {url}: the sheet's link, setting `altobelli_foglio` (admin)
 PUT    /api/altobelli/nomi            - {nome, userId|null}: map a sheet name to a person, null removes it (admin)
+GET    /api/altobelli/conto?data=&partecipanteId= - {effettivo|null}: that person's effettivo in the consegna's tab, proposed as the conto in the card; null for no link/tab/row or an unreachable sheet (any user; tab read cached 3 min)
 GET    /api/version                   - Get application version from package.json (public, no auth)
 ```
 
@@ -319,7 +320,8 @@ Admin page `/altobelli` (desktop; mobile redirects to `/consegna`), marked *sper
 1. Tab names → gid from the sheet's `/edit` page bootstrap (`parseSchede`). Not `htmlview`: it lists only visible tabs, and past tabs are hidden.
 2. The tab to compare: the `gid` passed, else `consegne.altobelli_gid` (an admin's pick, `PUT /api/altobelli/scheda`), else the single tab matching the consegna date (`trovaSchede`). With none, the page shows every tab (`ordinaSchede`: dated tabs newest first) and a `messaggio`. Leonardo sometimes writes a consegna's orders in an old tab (13/10/2026 in "6 ottobre"). Read as `export?format=csv&gid=<gid>` (works on hidden tabs).
 3. Effettivi (column C) summed row by row (`parseFoglio`): the sheet's own `=SUM` total can miss rows, so the page shows both.
-4. `confronta` matches sheet names to people through `altobelli_nomi` and compares each effettivo with the person's `conto_produttore`.
+4. `confronta` matches sheet names to people through `altobelli_nomi` and compares each effettivo with the person's `conto_produttore`. A sheet name equal to a display name (`nomeUguale`: case, spaces and "&" = "e" ignored, exactly one person) is saved there first without asking; a first-word match stays a suggestion ("simone e sara" would hit Simone & Laura).
+5. The consegna card (`renderContoHint`, `consegna-common.js`) shows a green button with the effettivo, else an amber one with the typed receipt rounded to the 10 cents, a 5 upwards (`arrotonda10`): since 21/7/2026 Leonardo writes every effettivo as the receipt rounded that way (checked on 214 effettivi, 2026-11-18). A tap writes the value; the field is never filled by itself. The approssimativo is not proposed: it differs from the effettivo by up to ~10 €.
 
 Never read a tab with `gviz/tq?sheet=<name>`: an unknown name silently returns another tab. Tests stub `global.fetch` with `test/fixtures/altobelli/`.
 
@@ -555,7 +557,7 @@ Closing a consegna can send a report to a Telegram group/channel and by email (`
 | Telegram | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | `TELEGRAM_THREAD_ID` (topic of a forum group; without it the report goes to General) |
 | Email | `SMTP_HOST`, `REPORT_EMAIL_TO` | `SMTP_PORT` (default 587, 465 = implicit TLS), `SMTP_USER`, `SMTP_PASS`, `REPORT_EMAIL_FROM` (default `SMTP_USER`) |
 
-`GET /api/consegna/report-canali` lists the active channels; the close confirmation shows one checkbox per channel (ticked) and `POST /api/consegna/:id/close` sends only the ones in its `report` array. The text sent is stored per channel (`consegne.report_telegram`, `report_email`): closing again after a reopen sends a new report titled "(corretto)" only if the text changed. Each send also stores `consegne.report_dati` (`reportDati`: per person conto, versato, quota teatro; uscite; trovato, pagato, lasciato); a corrected report starts with "Rettifiche rispetto al report del dd/mm ore hh:mm:" and one line per change (`rettifiche`), before the full report. The stored text stays the plain report, so the "unchanged → no resend" rule still holds. Consegne reported before v2.30 have no `report_dati`: their first correction has no rettifiche block. Sends run after the response; an error is only logged (`<canale> report for consegna … failed`) and retried at the next close.
+`GET /api/consegna/report-canali` lists the active channels; the close confirmation shows one checkbox per channel (ticked) and `POST /api/consegna/:id/close` sends only the ones in its `report` array. The text sent is stored per channel (`consegne.report_telegram`, `report_email`): closing again after a reopen sends a new report titled "(corretto)" only if the text changed. Each send also stores `consegne.report_dati` (`reportDati`: per person conto, versato, quota teatro; uscite; trovato, pagato, lasciato); a corrected report holds only "Rettifiche rispetto al report del dd/mm ore hh:mm:", one line per change (`rettifiche`) and "In cassa ora: X €" (user decision 2026-11-18). With no rettifiche lines (consegne reported before v2.30 have no `report_dati`, or only a note or a credit/debt split changed) it is the full report. The stored text stays the plain report, so the "unchanged → no resend" rule still holds. Sends run after the response; an error is only logged (`<canale> report for consegna … failed`) and retried at the next close.
 
 Telegram setup: create the bot with @BotFather, add it to the group (or as admin to the channel), and take the chat id from `https://api.telegram.org/bot<token>/getUpdates` after posting a message there (a public channel also takes `@channelname`). In a group the bot must be addressed (`/start@<bot>`) while its privacy mode is on, or the message never reaches it; for a topic, `message_thread_id` of that update is `TELEGRAM_THREAD_ID`. For a mailing list, the sender address must be allowed to post, or the message waits for moderation.
 

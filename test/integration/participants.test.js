@@ -126,6 +126,13 @@ describe('GET /api/participants/:id/transactions', () => {
     expect(res.body.transactions[0].data).toBe('2026-01-10');
     expect(res.body.transactions[0].conto_produttore).toBe(100);
     expect(res.body.transactions[0].credito_lasciato).toBe(20);
+    expect(res.body.teatro).toEqual([]);
+
+    // quota teatro payments come apart, newest first: they don't change the saldo
+    db.prepare("INSERT INTO teatro_pagamenti (user_id, data, importo, fonte) VALUES (?, '2025-12-31', 15, 'foglio'), (?, '2026-01-10', 10, NULL)").run(userId, userId);
+    const t = (await userAgent.get(`/api/participants/${userId}/transactions`)).body.teatro;
+    expect(t).toEqual([{ data: '2026-01-10', importo: 10, fonte: null }, { data: '2025-12-31', importo: 15, fonte: 'foglio' }]);
+    db.prepare('DELETE FROM teatro_pagamenti WHERE user_id = ?').run(userId);
   });
 
   it('allows non-admin to view another user transactions', async () => {

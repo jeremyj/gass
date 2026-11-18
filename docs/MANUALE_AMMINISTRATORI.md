@@ -21,7 +21,7 @@ Video: [Riaprire una consegna, 0:13](https://gass.x86.it/admin-video#riaprire).
 3. Fai le correzioni.
 4. Premi **Chiudi consegna**.
 
-Se il resoconto è diverso, GASS lo manda di nuovo con l'indicazione "(corretto)". Il resoconto corretto inizia con **Rettifiche rispetto al report del …**: una riga per ogni valore cambiato, con il valore di prima e quello di ora (per esempio "Marco B: conto produttore 0 → 23,50"). Le consegne chiuse prima della versione 2.30.0 non hanno le rettifiche alla prima correzione.
+Se il resoconto è diverso, GASS manda un resoconto con l'indicazione "(corretto)". Il resoconto corretto contiene solo le **Rettifiche rispetto al report del …** e la riga **In cassa ora**. Ogni rettifica è un valore cambiato, con il valore di prima e quello di ora (per esempio "Marco B: conto produttore 0 → 23,50"). GASS manda di nuovo tutto il resoconto quando non ha rettifiche da mostrare: consegne chiuse prima della versione 2.30.0, o una correzione solo delle note.
 
 Se la correzione cambia la cassa, GASS aggiorna anche le consegne dopo: il **Trovato in cassa** di ogni consegna è il **Lasciato in cassa** della consegna di prima. Non devi riaprire le consegne dopo.
 
@@ -195,7 +195,7 @@ GASS somma gli effettivi riga per riga. Il **Totale scritto nel foglio** può es
 
 ### Associare un nome del foglio a un partecipante
 
-Quando GASS non trova il partecipante di un nome del foglio:
+Quando un nome del foglio è uguale al nome di un partecipante in GASS, GASS associa il nome automaticamente. GASS non considera maiuscole, spazi e "&" (uguale a "e"). Quando GASS non trova il partecipante di un nome del foglio:
 
 1. Nel menu **a chi corrisponde?**, scegli il partecipante.
 2. Premi **Associa**.

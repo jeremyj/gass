@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { parseSchede, trovaSchede, ordinaSchede, parseCsv, parseImporto, parseFoglio, confronta, foglioId } =
+const { parseSchede, trovaSchede, ordinaSchede, parseCsv, parseImporto, parseFoglio, confronta, foglioId, nomeUguale } =
   require('../../server/services/altobelli');
 
 const fixture = name => fs.readFileSync(path.join(__dirname, '../fixtures/altobelli', name), 'utf8');
@@ -134,5 +134,17 @@ describe('ordinaSchede', () => {
   it('puts a month after the consegna\'s in the previous year', () => {
     expect(gids(ordinaSchede(schede, '2026-03-10'))).toEqual(['666', '555', '444', '222', '333', '111']);
     expect(gids(ordinaSchede(schede, '2026-05-05'))).toEqual(['111', '666', '555', '444', '222', '333']);
+  });
+});
+
+describe('nomeUguale', () => {
+  const persone = [{ id: 1, nome: 'Simone & Laura' }, { id: 2, nome: 'Marco B' }, { id: 3, nome: 'Marco Zeno' }];
+  it('finds the person whose display name equals the sheet name, ignoring case, spaces and & = e', () => {
+    expect(nomeUguale('simone  e laura', persone)).toBe(1);
+    expect(nomeUguale('Marco b ', persone)).toBe(2);
+  });
+  it('never guesses from the first word', () => {
+    expect(nomeUguale('Marco', persone)).toBeNull();
+    expect(nomeUguale('Laura e Simone', persone)).toBeNull();
   });
 });

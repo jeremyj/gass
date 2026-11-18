@@ -150,16 +150,16 @@ async function loadTransactions(participantId) {
 
   try {
     const result = await API.get(`/api/participants/${participantId}/transactions`);
-    transactionsCache[participantId] = result.transactions;
-    renderTransactions(container, result.transactions);
+    transactionsCache[participantId] = result;
+    renderTransactions(container, result);
   } catch (error) {
     container.innerHTML = `<h3>Transazioni</h3><p class="empty-state">Errore: ${escapeHtml(error.message)}</p>`;
   }
 }
 
-function renderTransactions(container, transactions) {
+function renderTransactions(container, { transactions, teatro }) {
   if (transactions.length === 0) {
-    container.innerHTML = `<h3>Transazioni</h3><p class="empty-state">Nessuna transazione</p>`;
+    container.innerHTML = `<h3>Transazioni</h3><p class="empty-state">Nessuna transazione</p>${teatroPagamentiHtml(teatro)}`;
     return;
   }
 
@@ -189,6 +189,7 @@ function renderTransactions(container, transactions) {
   });
 
   html += '</div>';
+  html += teatroPagamentiHtml(teatro);
   container.innerHTML = html;
 }
 

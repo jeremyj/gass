@@ -121,7 +121,8 @@ describe('notifyClosed', () => {
       'Entrate di cassa: +0,20 (arrotondamento) → +33 (arrotondamento +0,20, storno Altobelli +32,80)',
       'Lasciato in cassa: 553,70 → 586,30'
     ]);
-    expect(sent[1].body).toContain('Lasciato in cassa: 586,30 €');
+    // only the corrections and the cassa now, not the whole report again
+    expect(sent[1].body).toBe('In cassa ora: 586,30 €');
   });
 
   it('sends a corrected report without rettifiche for a consegna reported before they existed', async () => {

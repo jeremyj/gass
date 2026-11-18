@@ -179,17 +179,17 @@ async function showTransactionsModal(id) {
 
   try {
     const result = await API.get(`/api/participants/${id}/transactions`);
-    renderTransactionsTable(result.transactions);
+    renderTransactionsTable(result.transactions, result.teatro);
   } catch (error) {
     document.getElementById('transactions-modal-body').innerHTML = `<p>Errore: ${escapeHtml(error.message)}</p>`;
   }
 }
 
-function renderTransactionsTable(transactions) {
+function renderTransactionsTable(transactions, teatro) {
   const body = document.getElementById('transactions-modal-body');
 
   if (transactions.length === 0) {
-    body.innerHTML = '<p>Nessuna transazione</p>';
+    body.innerHTML = `<p>Nessuna transazione</p>${teatroPagamentiHtml(teatro)}`;
     return;
   }
 
@@ -241,6 +241,7 @@ function renderTransactionsTable(transactions) {
       </thead>
       <tbody>${rows}</tbody>
     </table>
+    ${teatroPagamentiHtml(teatro)}
   `;
 }
 

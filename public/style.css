@@ -494,6 +494,11 @@ b.th { color: var(--teatro); }
 .entry-fields { display: grid; gap: 12px; }
 .fld label { display: block; margin-bottom: 2px; }
 .fld-hint { display: block; font-size: 16px; color: var(--salvia); margin-bottom: 4px; }
+/* Conto produttore proposal: green = Altobelli effettivo, amber = receipt to round */
+.conto-prop { font: inherit; font-size: 16px; font-weight: 700; padding: 6px 10px; border-radius: 8px; border: 2px solid; cursor: pointer; text-align: left; }
+.conto-prop.verde { color: #1E6B2A; background: #E3F2E5; border-color: #1E6B2A; }
+.conto-prop.ambra { color: #7A4B00; background: #FFF0CC; border-color: #C98A00; }
+.conto-ok { color: #1E6B2A; font-weight: 700; }
 .fld-in { display: flex; align-items: baseline; background: var(--carta); border: 1.5px solid var(--riga); border-radius: 10px; padding: 2px 16px; }
 .fld-in:focus-within { border-color: var(--s-deep); box-shadow: inset 0 -4px 0 var(--s-acc); }
 .fld-in input { border: 0; padding: 4px 0; font-family: var(--serif); font-weight: 700; font-size: 40px; line-height: 1.1; box-shadow: none; }
@@ -543,6 +548,7 @@ b.th { color: var(--teatro); }
 .transactions-list { display: flex; flex-direction: column; }
 .transaction-item { padding: 8px 0; border-bottom: 1px solid var(--riga); }
 .transaction-item:last-child { border-bottom: 0; }
+.teatro-trans { margin-top: 18px; color: var(--teatro); }
 .transaction-header { display: flex; justify-content: space-between; gap: 10px; }
 .transaction-date { font-weight: 700; }
 .transaction-effect { font-weight: 700; }

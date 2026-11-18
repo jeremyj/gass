@@ -12,7 +12,7 @@ const request = require('supertest');
 const fixture = name => fs.readFileSync(path.join(__dirname, '../fixtures/altobelli', name), 'utf8');
 const URL_FOGLIO = 'https://docs.google.com/spreadsheets/d/TESTID/edit';
 
-let adminAgent, userAgent, anna, bruno, realFetch;
+let adminAgent, userAgent, anna, bruno, carla, realFetch;
 
 beforeAll(async () => {
   const { app } = setupTestApp();
@@ -23,6 +23,7 @@ beforeAll(async () => {
   await userAgent.post('/api/auth/login').send({ username: 'alt-user', password: 'password1' });
   anna = createUser(db, { username: 'anna', displayName: 'Anna' });
   bruno = createUser(db, { username: 'bruno', displayName: 'Bruno' });
+  carla = createUser(db, { username: 'carla', displayName: 'Carla Rossi' });
   const c = createConsegna(db, { data: '2026-10-06' });
   createMovimento(db, { consegnaId: c, partecipanteId: anna, contoProduttore: 37.61, importoSaldato: 40 });
   createMovimento(db, { consegnaId: c, partecipanteId: bruno, contoProduttore: 25, importoSaldato: 25 });
@@ -49,6 +50,10 @@ describe('/api/altobelli', () => {
   it('refuses the check until a sheet link is set', async () => {
     const r = await adminAgent.get('/api/altobelli/confronto?data=2026-10-06');
     expect(r.status).toBe(400);
+    // the conto proposal just has nothing to propose
+    const c = await userAgent.get(`/api/altobelli/conto?data=2026-10-06&partecipanteId=${anna}`);
+    expect(c.status).toBe(200);
+    expect(c.body.effettivo).toBeNull();
     expect((await adminAgent.get('/api/altobelli/foglio')).body.url).toBe('');
   });
 
@@ -59,25 +64,40 @@ describe('/api/altobelli', () => {
     expect((await adminAgent.get('/api/altobelli/foglio')).body.url).toBe(URL_FOGLIO);
   });
 
-  it('compares the tab of the consegna with the conti, once names are mapped', async () => {
+  it('compares the tab of the consegna with the conti, mapping equal names by itself', async () => {
     let res = await adminAgent.get('/api/altobelli/confronto?data=2026-10-06');
     expect(res.status).toBe(200);
     expect(res.body.scheda).toEqual({ nome: '6 ottobre', gid: '666' });
-    expect(res.body.righe.find(r => r.nome === 'Anna')).toMatchObject({ esito: 'da_associare', suggerito: anna });
-
-    expect((await adminAgent.put('/api/altobelli/nomi').send({ nome: 'Anna', userId: anna })).status).toBe(200);
-    expect((await adminAgent.put('/api/altobelli/nomi').send({ nome: 'Bruno ', userId: bruno })).status).toBe(200);
-    res = await adminAgent.get('/api/altobelli/confronto?data=2026-10-06');
+    // "Carla" is not "Carla Rossi": only suggested
+    expect(res.body.righe.find(r => r.nome === 'Carla')).toMatchObject({ esito: 'da_associare', suggerito: carla });
+    expect(db.prepare("SELECT user_id FROM altobelli_nomi WHERE nome = 'anna'").get().user_id).toBe(anna);
     expect(res.body.righe.find(r => r.nome === 'Anna')).toMatchObject({ esito: 'uguale', persona: 'Anna', conto: 37.61 });
     expect(res.body.righe.find(r => r.nome === 'Bruno')).toMatchObject({ esito: 'diverso', effettivo: 26, conto: 25 });
     expect(res.body.kpi.sommaEffettivi).toBe(319.51);
     expect(res.body.kpi.totaleDiverso).toBe(false);
     expect(res.body.persone.length).toBeGreaterThan(0);
 
-    // null unmaps the name
-    await adminAgent.put('/api/altobelli/nomi').send({ nome: 'anna', userId: null });
+    // an admin maps the others; null unmaps
+    expect((await adminAgent.put('/api/altobelli/nomi').send({ nome: 'Carla', userId: carla })).status).toBe(200);
     res = await adminAgent.get('/api/altobelli/confronto?data=2026-10-06');
-    expect(res.body.righe.find(r => r.nome === 'Anna').esito).toBe('da_associare');
+    expect(res.body.righe.find(r => r.nome === 'Carla').persona).toBe('Carla Rossi');
+    await adminAgent.put('/api/altobelli/nomi').send({ nome: 'carla', userId: null });
+    res = await adminAgent.get('/api/altobelli/confronto?data=2026-10-06');
+    expect(res.body.righe.find(r => r.nome === 'Carla').esito).toBe('da_associare');
+  });
+
+  it('gives any user the effettivo of one person, to propose it as the conto', async () => {
+    let res = await userAgent.get(`/api/altobelli/conto?data=2026-10-06&partecipanteId=${bruno}`);
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ success: true, effettivo: 26 });
+    // not in the sheet (or not mapped): nothing
+    res = await userAgent.get(`/api/altobelli/conto?data=2026-10-06&partecipanteId=${carla}`);
+    expect(res.body.effettivo).toBeNull();
+    // no tab for the date: nothing, no error
+    res = await userAgent.get(`/api/altobelli/conto?data=2026-10-13&partecipanteId=${bruno}`);
+    expect(res.status).toBe(200);
+    expect(res.body.effettivo).toBeNull();
+    expect((await userAgent.get(`/api/altobelli/conto?data=2026-10-6&partecipanteId=${bruno}`)).status).toBe(400);
   });
 
   it('returns all tabs, newest first, and asks to pick when two match', async () => {

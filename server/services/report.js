@@ -181,8 +181,9 @@ const CANALI = {
 
 const canaliAttivi = () => Object.keys(CANALI).filter(k => CANALI[k].vars.every(v => process.env[v]));
 
-// Send the report on one channel unless the same one was already sent there; a changed resend is marked (corretto)
-// and starts with the rettifiche against the data of the previous report (consegne closed before v2.30 have none)
+// Send the report on one channel unless the same one was already sent there. A changed resend is marked (corretto)
+// and holds only the rettifiche against the previous report plus the cassa now (user decision 2026-11-18); with no
+// rettifiche to list (consegne reported before v2.30, or only a note or split changed) it is the whole report
 async function notifyClosed(db, consegnaId, baseUrl, canale, send = CANALI[canale].send) {
   const { column } = CANALI[canale];
   const c = db.prepare(`SELECT data, report_dati, ${column} AS inviato FROM consegne WHERE id = ?`).get(consegnaId);
@@ -191,7 +192,11 @@ async function notifyClosed(db, consegnaId, baseUrl, canale, send = CANALI[canal
   const dati = reportDati(db, consegnaId);
   const prima = c.inviato != null && c.report_dati ? JSON.parse(c.report_dati) : null;
   const righe = prima ? rettifiche(prima, dati) : [];
-  await send(reportTitle(c.data, c.inviato != null), body, righe.length ? { titolo: rettificheTitolo(prima.inviato_at), righe } : null);
+  if (righe.length) {
+    await send(reportTitle(c.data, true), `In cassa ora: ${num(dati.lasciato)} €`, { titolo: rettificheTitolo(prima.inviato_at), righe });
+  } else {
+    await send(reportTitle(c.data, c.inviato != null), body, null);
+  }
   db.prepare(`UPDATE consegne SET ${column} = ?, report_dati = ? WHERE id = ?`).run(body, JSON.stringify(dati), consegnaId);
 }
 

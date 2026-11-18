@@ -66,7 +66,10 @@ Video: [Registrare un pagamento, 0:28](https://gass.x86.it/comefunziona#pagament
 
 1. Premi **+ Aggiungi partecipante**.
 2. Scegli il partecipante.
-3. Scrivi il **Conto produttore**.
+3. Scrivi il **Conto produttore**. Sopra il campo GASS mostra un aiuto:
+   - Bottone verde **Foglio Altobelli: X €**: l'importo effettivo del foglio Altobelli. Premi il bottone per scrivere l'importo nel campo.
+   - Bottone giallo **Arrotonda ai 10 centesimi: X €**: nel foglio non c'è ancora l'importo. Scrivi il totale dello scontrino, poi premi il bottone. GASS arrotonda ai 10 centesimi, come Altobelli: 20,82 diventa 20,80, 21,05 diventa 21,10.
+   - **Uguale al foglio Altobelli**: il conto è corretto.
 4. Scrivi l'**Importo saldato**.
 5. Controlla la riga **Prima di oggi** (credito, debito o in pari) e l'esito: credito, debito o "saldato".
 6. Premi **Salva movimento**.
@@ -189,7 +192,7 @@ La pagina Saldi mostra la situazione di oggi.
 - Sul telefono, premi un nome per vedere le transazioni.
 - Sul computer, premi **Transazioni** sulla riga del partecipante.
 
-Le transazioni mostrano ogni consegna e il **Saldo dopo**. Una correzione dell'amministratore ha il nome **Rettifica manuale**.
+Le transazioni mostrano ogni consegna e il **Saldo dopo**. Una correzione dell'amministratore ha il nome **Rettifica manuale**. Sotto, il riquadro **Quota teatro** mostra i pagamenti della quota teatro. Questi pagamenti vanno nel bussolotto e non cambiano il saldo.
 
 Colonna **Quota teatro** (computer):
 

@@ -79,6 +79,14 @@ function parseFoglio(csv) {
   return { righe, totaleScritto: totali.length ? parseImporto(totali[totali.length - 1][2]) : null };
 }
 
+// The person whose display name is the sheet name (case, spaces and "&" = "e" ignored), else null.
+// Safe to save without asking; a first-word match is not ("simone e sara" vs Simone & Laura)
+function nomeUguale(nome, persone) {
+  const n = s => norm(s).replace(/\s*&\s*/g, ' e ').replace(/\s+/g, ' ');
+  const trovate = persone.filter(p => n(p.nome) === n(nome));
+  return trovate.length === 1 ? trovate[0].id : null;
+}
+
 // Guess the person of an unknown sheet name: same display name, or same first word
 function suggerisci(nome, persone) {
   const n = norm(nome);
@@ -167,4 +175,4 @@ async function leggiFoglio(url, date, gid = null) {
   return { schede, scheda, foglio: parseFoglio(csv) };
 }
 
-module.exports = { MESI, foglioId, parseSchede, trovaSchede, ordinaSchede, parseCsv, parseImporto, parseFoglio, confronta, leggiFoglio };
+module.exports = { MESI, foglioId, parseSchede, trovaSchede, ordinaSchede, parseCsv, parseImporto, parseFoglio, confronta, nomeUguale, leggiFoglio };

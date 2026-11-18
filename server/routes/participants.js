@@ -59,9 +59,11 @@ router.get('/:id/transactions', (req, res) => {
 
   try {
     const transactions = getTransactions(id);
+    // Quota teatro payments: apart, they go in the bussolotto and don't change the saldo
+    const teatro = db.prepare('SELECT data, importo, fonte FROM teatro_pagamenti WHERE user_id = ? ORDER BY data DESC, id DESC').all(id);
 
     console.log(`[PARTICIPANTS] ${timestamp} - Retrieved ${transactions.length} transactions for participant ID: ${id}`);
-    res.json({ success: true, transactions });
+    res.json({ success: true, transactions, teatro });
   } catch (error) {
     console.error(`[PARTICIPANTS] ${timestamp} - Error fetching transactions for participant ID ${id}:`, error);
     res.status(500).json({ success: false, error: 'Errore durante il recupero delle transazioni' });
