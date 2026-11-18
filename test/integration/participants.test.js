@@ -126,13 +126,27 @@ describe('GET /api/participants/:id/transactions', () => {
     expect(res.body.transactions[0].data).toBe('2026-01-10');
     expect(res.body.transactions[0].conto_produttore).toBe(100);
     expect(res.body.transactions[0].credito_lasciato).toBe(20);
-    expect(res.body.teatro).toEqual([]);
+  });
 
-    // quota teatro payments come apart, newest first: they don't change the saldo
-    db.prepare("INSERT INTO teatro_pagamenti (user_id, data, importo, fonte) VALUES (?, '2025-12-31', 15, 'foglio'), (?, '2026-01-10', 10, NULL)").run(userId, userId);
-    const t = (await userAgent.get(`/api/participants/${userId}/transactions`)).body.teatro;
-    expect(t).toEqual([{ data: '2026-01-10', importo: 10, fonte: null }, { data: '2025-12-31', importo: 15, fonte: 'foglio' }]);
-    db.prepare('DELETE FROM teatro_pagamenti WHERE user_id = ?').run(userId);
+  it('puts quota teatro payments on the day, with what they covered', async () => {
+    const userId = createUser(db, { username: 'user1', password: 'password1', displayName: 'User1' });
+    createRettifica(db, { partecipanteId: userId, data: '2025-12-01', importo: -5 });
+    const c1 = createConsegna(db, { data: '2026-10-27' });
+    createMovimento(db, { consegnaId: c1, partecipanteId: userId, contoProduttore: 80, importoSaldato: 20, debitoLasciato: 60 });
+    db.prepare("INSERT OR IGNORE INTO teatro_semestri (semestre, quota) VALUES ('2025-2', 15), ('2026-1', 15), ('2026-2', 15)").run();
+    db.prepare("INSERT INTO teatro_dovuti (user_id, semestre, dovuto) VALUES (?, '2025-2', 15), (?, '2026-1', 15), (?, '2026-2', 15)").run(userId, userId, userId);
+    db.prepare(`INSERT INTO teatro_pagamenti (user_id, data, importo, fonte, consegna_id) VALUES
+      (?, '2025-12-31', 15, 'foglio', NULL), (?, '2026-03-03', 10, NULL, NULL), (?, '2026-10-27', 30, NULL, ?)`)
+      .run(userId, userId, userId, c1);
+
+    const res = await adminAgent.get(`/api/participants/${userId}/transactions`);
+    expect(res.body.teatro).toBeUndefined();
+    expect(res.body.transactions.map(t => [t.tipo, t.data, t.teatro_importo, t.teatro_copre, t.teatro_foglio, t.saldo_dopo])).toEqual([
+      ['movimento', '2026-10-27', 30, 'salda 1° sem. 2026, salda 2° sem. 2026, anticipo 1° sem. 2027', false, -65],
+      ['teatro', '2026-03-03', 10, 'acconto 1° sem. 2026', false, -5],
+      ['teatro', '2025-12-31', 15, 'salda 2° sem. 2025', true, -5],
+      ['rettifica', '2025-12-01', undefined, undefined, undefined, -5]
+    ]);
   });
 
   it('allows non-admin to view another user transactions', async () => {

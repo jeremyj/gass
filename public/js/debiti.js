@@ -157,24 +157,26 @@ async function loadTransactions(participantId) {
   }
 }
 
-function renderTransactions(container, { transactions, teatro }) {
+// The phone shows the latest transactions only, without credito usato / debito saldato: the computer has them all
+const MOBILE_TRANSAZIONI = 12;
+
+function renderTransactions(container, { transactions }) {
   if (transactions.length === 0) {
-    container.innerHTML = `<h3>Transazioni</h3><p class="empty-state">Nessuna transazione</p>${teatroPagamentiHtml(teatro)}`;
+    container.innerHTML = '<h3>Transazioni</h3><p class="empty-state">Nessuna transazione</p>';
     return;
   }
 
   let html = '<h3>Transazioni</h3>';
   html += '<div class="transactions-list">';
 
-  transactions.forEach(t => {
+  transactions.slice(0, MOBILE_TRANSAZIONI).forEach(t => {
     const saldo = saldoLabel(t.saldo_dopo);
 
     const details = [];
     if (t.tipo === 'rettifica') details.push(`rettifica manuale ${formatSigned(t.importo)}`);
     if (t.conto_produttore) details.push(`conto ${formatEuro(t.conto_produttore)}`);
     if (t.importo_saldato) details.push(`pagato ${formatEuro(t.importo_saldato)}`);
-    if (t.usa_credito) details.push(`usa credito ${formatEuro(t.usa_credito)}`);
-    if (debitoPagato(t)) details.push(`salda debito ${formatEuro(debitoPagato(t))}`);
+    if (t.teatro_importo) details.push(quotaTeatroHtml(t));
 
     html += `
       <div class="transaction-item">
@@ -189,7 +191,8 @@ function renderTransactions(container, { transactions, teatro }) {
   });
 
   html += '</div>';
-  html += teatroPagamentiHtml(teatro);
+  html += `<p class="hint">${transactions.length > MOBILE_TRANSAZIONI ? 'Le transazioni precedenti, il credito usato' : 'Il credito usato'}
+    e il debito saldato sono nella pagina Saldi dal computer.</p>`;
   container.innerHTML = html;
 }
 

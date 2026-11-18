@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Consegna</title>
-    <link rel="stylesheet" href="style.css?v=94">
+    <link rel="stylesheet" href="style.css?v=95">
 </head>
 <body>
     <nav class="nav-menu">
@@ -64,14 +64,16 @@
                     <output id="lasciatoInCassa">–</output>
                 </p>
                 <div id="cassa-warning" class="cassa-warning initially-hidden" role="alert"></div>
-                <p id="quote-teatro-oggi" class="teatro-oggi initially-hidden" data-tip="teatro_oggi">Quote teatro della consegna, a parte: <output>0</output></p>
+                <p id="quote-teatro-oggi" class="teatro-oggi initially-hidden" data-tip="teatro_oggi">Quote teatro raccolte: <output>0</output></p>
                 <div id="quaderno-box" class="scontrini-box quaderno-box initially-hidden"></div>
                 <div id="note-giornata-group" class="form-group note-giornata initially-hidden">
                     <label for="noteGiornata">Note della giornata</label>
                     <input type="text" id="noteGiornata" placeholder="Aggiungi una nota" oninput="onNoteGiornataChange()">
-                    <label data-tip="uscite">Entrate/uscite di cassa</label>
-                    <div id="uscite-edit" class="uscite-edit"></div>
-                    <div id="uscite-errore" class="cassa-warning initially-hidden" role="alert"></div>
+                    <div class="uscite-blocco">
+                        <label data-tip="uscite">Entrate/uscite di cassa</label>
+                        <div id="uscite-edit" class="uscite-edit"></div>
+                        <div id="uscite-errore" class="cassa-warning initially-hidden" role="alert"></div>
+                    </div>
                     <button type="submit" class="btn btn-go initially-hidden" id="save-btn-cassa">Salva</button>
                 </div>
             </aside>
@@ -100,11 +102,11 @@
 
     <script src="js/shared/utils.js?v=45"></script>
     <script src="js/shared/bozze.js?v=1"></script>
-    <script src="js/shared/tips.js?v=6"></script>
+    <script src="js/shared/tips.js?v=7"></script>
     <script src="js/shared/season.js?v=34"></script>
     <script src="js/shared/calendar.js?v=37"></script>
     <script src="js/shared/api-client.js"></script>
-    <script src="js/shared/consegna-common.js?v=52"></script>
+    <script src="js/shared/consegna-common.js?v=53"></script>
     <script src="js/shared/auth.js?v=34"></script>
     <script src="js/shared/version.js"></script>
     <script src="js/shared/scontrini.js?v=5"></script>

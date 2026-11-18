@@ -58,7 +58,7 @@ La pagina Consegna si apre sulla consegna giusta: l'ultimo turno fino a oggi, se
 
 Un riquadro in alto mostra le altre consegne ancora aperte. Premi una data per aprire quella consegna.
 
-Sul telefono, in alto ci sono lo stato della consegna e i pulsanti **Annulla consegna** (solo amministratori) e **Chiudi consegna**. Sotto c'è un riepilogo: conto produttore, quote teatro, entrate e uscite di cassa con il motivo. Premi **Apri: dettaglio, entrate/uscite, quaderno, note** per aprire la cassa completa, il quaderno, le entrate/uscite di cassa e le note. Premi **‹** per tornare alla pagina. Sul computer queste parti sono nella colonna a sinistra.
+Sul telefono, in alto ci sono lo stato della consegna e i pulsanti **Annulla consegna** (solo amministratori) e **Chiudi consegna**. Sotto c'è un riepilogo: conto produttore, quote teatro, entrate e uscite di cassa con il motivo. Premi **Apri: dettaglio, entrate/uscite, quaderno, note** per aprire la cassa completa, il quaderno, le entrate/uscite di cassa e le note. Premi **‹** per tornare alla pagina. Sul computer queste parti sono nella colonna a sinistra. Quando la consegna è chiusa, la scritta **Apri: …** non compare e sul computer il riquadro **Entrate/uscite di cassa** non compare: le entrate e le uscite restano nella cassa.
 
 ### Registrare la spesa di un partecipante
 
@@ -66,10 +66,9 @@ Video: [Registrare un pagamento, 0:28](https://gass.x86.it/comefunziona#pagament
 
 1. Premi **+ Aggiungi partecipante**.
 2. Scegli il partecipante.
-3. Scrivi il **Conto produttore**. Sopra il campo GASS mostra un aiuto:
-   - Bottone verde **Foglio Altobelli: X €**: l'importo effettivo del foglio Altobelli. Premi il bottone per scrivere l'importo nel campo.
-   - Bottone giallo **Arrotonda ai 10 centesimi: X €**: nel foglio non c'è ancora l'importo. Scrivi il totale dello scontrino, poi premi il bottone. GASS arrotonda ai 10 centesimi, come Altobelli: 20,82 diventa 20,80, 21,05 diventa 21,10.
-   - **Uguale al foglio Altobelli**: il conto è corretto.
+3. Scrivi il **Conto produttore**.
+   - Se il foglio Altobelli ha l'importo effettivo, sopra il campo c'è il bottone verde **Foglio Altobelli: X €**. Premi il bottone per scrivere l'importo nel campo. Quando il conto è uguale, GASS mostra **Uguale al foglio Altobelli**.
+   - Se il foglio non ha l'importo, il campo vuoto mostra **scontrino a 0,10**: scrivi il totale dello scontrino arrotondato ai 10 centesimi, come Altobelli. Per esempio, 20,82 diventa 20,80 e 21,05 diventa 21,10.
 4. Scrivi l'**Importo saldato**.
 5. Controlla la riga **Prima di oggi** (credito, debito o in pari) e l'esito: credito, debito o "saldato".
 6. Premi **Salva movimento**.
@@ -192,7 +191,9 @@ La pagina Saldi mostra la situazione di oggi.
 - Sul telefono, premi un nome per vedere le transazioni.
 - Sul computer, premi **Transazioni** sulla riga del partecipante.
 
-Le transazioni mostrano ogni consegna e il **Saldo dopo**. Una correzione dell'amministratore ha il nome **Rettifica manuale**. Sotto, il riquadro **Quota teatro** mostra i pagamenti della quota teatro. Questi pagamenti vanno nel bussolotto e non cambiano il saldo.
+Le transazioni mostrano ogni consegna e il **Saldo dopo**. Una correzione dell'amministratore ha il nome **Rettifica manuale**. Una quota teatro pagata è nel giorno del pagamento, con il semestre che copre: per esempio "quota teatro 10 € (salda 2° sem. 2026)". **acconto** vuol dire che il semestre non è ancora pagato tutto, **anticipo** che il pagamento è per un semestre futuro, **vecchio foglio** che il pagamento viene dal foglio di prima di GASS. La quota teatro va nel bussolotto e non cambia il saldo.
+
+Sul telefono ci sono le ultime 12 transazioni, senza il credito usato e il debito saldato. Sul computer ci sono tutte le transazioni, 15 per pagina, con tutte le colonne.
 
 Colonna **Quota teatro** (computer):
 
@@ -231,16 +232,21 @@ La pagina Turni mostra i prossimi 6 mesi. La tua riga ha l'etichetta **TU**.
 
 Per vedere gli ultimi 3 mesi, premi **Mostra turni passati**.
 
-### Cambiare il tuo turno (telefono)
+### Cambiare un turno (telefono)
 
 Video: [Scambiare un turno, 0:31](https://gass.x86.it/comefunziona#scambio).
 
-1. Premi **cambia** sulla tua riga.
-2. Scegli un'azione:
+1. Premi la riga della consegna.
+2. Scegli i nomi in **Turnista 1** e **Turnista 2**. Se sostituisci o togli un nome, conferma.
+3. Per cambiare il giorno, premi **Modifica giorno**.
+4. Premi **Chiudi**.
+
+Sulla tua riga, **Il tuo turno** ha anche queste azioni:
    - **scambia con…**: la persona scelta prende il tuo turno. Tu prendi il suo primo turno da oggi. Prima parla con quella persona.
    - **sposta al…**: vai a un'altra data con un posto libero. Il tuo posto resta da coprire.
    - **Non posso**: lasci il turno. Il posto resta da coprire.
-3. Conferma.
+
+Conferma l'azione.
 
 ### Cambiare un turno (computer)
 
@@ -252,7 +258,7 @@ Sul computer puoi cambiare tutti i turni futuri.
 
 Per uno scambio, cambia i nomi nelle due date.
 
-Per cambiare il giorno della consegna, usa il menu **Giorno**. Il menu permette anche di segnare **niente consegna** o **riunione GASS**.
+Per cambiare il giorno della consegna, premi **Modifica giorno**. Il menu permette anche di segnare **niente consegna** o **riunione GASS**.
 
 Non puoi cambiare i turni passati.
 

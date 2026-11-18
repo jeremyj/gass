@@ -36,4 +36,41 @@ function allocate(dovuti, totalePagato) {
   return { righe, residuo: Math.round(residuo * 100) / 100, anticipo: left };
 }
 
-module.exports = { semestreOf, semestreLabel, semestreDopo, isSemestre, allocate };
+// What each payment covered, replaying them by date then id over the owed semesters oldest first.
+// copre: [{ tipo: 'salda' | 'acconto' | 'anticipo', semestre }]. What goes beyond every owed
+// semester is an advance on the semesters after max(last owed, dopo), `quota` each (0 = all on one).
+function coperturaPagamenti(dovuti, pagamenti, { quota = 0, dopo = null } = {}) {
+  const round = x => Math.round(x * 100) / 100;
+  const aperti = [...dovuti].sort((a, b) => a.semestre.localeCompare(b.semestre))
+    .filter(d => d.dovuto > 0).map(d => ({ semestre: d.semestre, resta: d.dovuto }));
+  const ultimo = [...dovuti.map(d => d.semestre), dopo].filter(Boolean).sort().pop();
+  let anticipo = null; // { semestre, resta } once the owed semesters are paid
+  return [...pagamenti].sort((a, b) => a.data.localeCompare(b.data) || a.id - b.id).map(p => {
+    let left = round(p.importo);
+    const copre = [];
+    for (const d of aperti) {
+      if (left <= 0) break;
+      if (d.resta <= 0) continue;
+      const x = Math.min(d.resta, left);
+      d.resta = round(d.resta - x);
+      left = round(left - x);
+      copre.push({ tipo: d.resta === 0 ? 'salda' : 'acconto', semestre: d.semestre });
+    }
+    while (left > 0) {
+      if (!anticipo) anticipo = { semestre: semestreDopo(ultimo || semestreOf(p.data)), resta: quota };
+      if (quota > 0 && anticipo.resta <= 0) anticipo = { semestre: semestreDopo(anticipo.semestre), resta: quota };
+      copre.push({ tipo: 'anticipo', semestre: anticipo.semestre });
+      const x = quota > 0 ? Math.min(anticipo.resta, left) : left;
+      anticipo.resta = round(anticipo.resta - x);
+      left = round(left - x);
+    }
+    return { ...p, copre };
+  });
+}
+
+// 'salda 2° sem. 2025, anticipo 1° sem. 2026'
+function copreLabel(copre) {
+  return copre.map(c => `${c.tipo} ${semestreLabel(c.semestre)}`).join(', ');
+}
+
+module.exports = { semestreOf, semestreLabel, semestreDopo, isSemestre, allocate, coperturaPagamenti, copreLabel };

@@ -1,4 +1,4 @@
-// ===== TURNI: SWAP (mobile + desktop) =====
+// ===== TURNI: SWAP (mobile) =====
 // "scambia con…": the chosen person takes the picked slot, the picked person
 // takes the chosen one's first non-skipped turno from today (same rule as the server).
 
@@ -52,7 +52,7 @@ async function scambiaTurno(turni, t, slot, userId) {
   }
 }
 
-// ===== TURNI: MOVE TO A FREE SLOT, LEAVE (mobile + desktop) =====
+// ===== TURNI: MOVE TO A FREE SLOT, LEAVE (mobile, own turno) =====
 
 // Future consegne with a free slot that the person is not already on
 function candidatiSposta(turni, t, personId) {
@@ -112,5 +112,119 @@ async function lasciaTurno(t, slot) {
   } catch (error) {
     showStatus('Errore: ' + error.message, 'error');
     return false;
+  }
+}
+
+// ===== TURNI: NAMES AND DAY (mobile + desktop) =====
+// Everyone picks the names of future consegne from a menu and changes their day;
+// on past consegne only an admin changes the day (the server refuses the rest).
+
+const turnoFuturo = t => t.data >= toLocalDateString();
+const nomiModificabili = t => !t.saltata && turnoFuturo(t);
+const giornoModificabile = t => turnoFuturo(t) || isAdmin();
+
+// Menu for one slot: every attivo, plus the current person if no longer attivo.
+// The page defines assignSlot(id, slot, select).
+function nameSelectHtml(t, slot, attivi) {
+  const p = t.turnisti[slot - 1];
+  const people = p && !attivi.some(u => u.id === p.id) ? [...attivi, p] : attivi;
+  const options = people.map(u => `<option value="${u.id}"${p && u.id === p.id ? ' selected' : ''}>${escapeHtml(u.nome)}</option>`).join('');
+  return `<select class="name-sel${p ? '' : ' empty'}" aria-label="Turnista ${slot}, ${dataBreve(t.data)}" onchange="assignSlot(${t.id}, ${slot}, this)">
+    <option value=""${p ? '' : ' selected'}>da coprire</option>${options}</select>`;
+}
+
+// Menu change: filling a free slot is immediate, replacing or clearing a name asks first.
+// Resolves false when the change was declined (the menu is reset), true once it was sent.
+async function assegnaTurnista(t, slot, select, attivi) {
+  const p = t.turnisti[slot - 1];
+  const value = select.value ? Number(select.value) : null;
+  if (p) {
+    const nuovo = value ? attivi.find(u => u.id === value)?.nome || '' : null;
+    const ok = await confirmDialog({
+      title: nuovo ? 'Sostituire il turnista?' : 'Lasciare il posto da coprire?',
+      details: [[dataBreve(t.data), nuovo ? `${nuovo} al posto di ${p.nome}` : `da coprire (esce ${p.nome})`]],
+      confirmText: nuovo ? 'Sostituisci' : 'Lascia da coprire'
+    });
+    if (!ok) { select.value = p.id; return false; }
+  }
+  try {
+    await API.put(`/api/turni/${t.id}`, { [slot === 1 ? 'turnista1Id' : 'turnista2Id']: value });
+    showStatus('Turno aggiornato', 'success');
+  } catch (error) {
+    showStatus('Errore: ' + error.message, 'error');
+  }
+  return true;
+}
+
+// "Modifica giorno": move, skip, mark the meeting. The modal is added to the page by initGiorno().
+let giorno = null; // { t, autoOn, onSaved } while the modal is open
+
+function initGiorno() {
+  document.body.insertAdjacentHTML('beforeend', `
+    <div id="giorno-modal" class="modal initially-hidden">
+        <div class="modal-content">
+            <h3 id="giorno-title">Consegna</h3>
+            <form onsubmit="event.preventDefault(); saveGiorno();">
+                <div class="form-group">
+                    <label for="giorno-data">Giorno della consegna</label>
+                    <input type="text" id="giorno-data">
+                    <small class="hint">stessa coppia, solo nella stessa settimana</small>
+                </div>
+                <div class="form-group"><label><input type="checkbox" id="giorno-saltata"> Niente consegna <small class="hint" id="giorno-saltata-hint">i due turnisti torneranno i primi in fila</small></label></div>
+                <div class="form-group"><label><input type="checkbox" id="giorno-riunione"> Riunione GASS</label></div>
+                <div class="form-group"><label for="giorno-nota">Nota</label><input type="text" id="giorno-nota" placeholder="es. festa (Immacolata)"></div>
+                <div id="giorno-error" class="error-message initially-hidden"></div>
+                <div class="modal-buttons">
+                    <button type="button" onclick="closeGiorno()">Annulla</button>
+                    <button type="submit" class="btn-save">Salva</button>
+                </div>
+            </form>
+        </div>
+    </div>`);
+  initDateField('giorno-data');
+}
+
+function openGiorno(t, { autoOn, onSaved }) {
+  giorno = { t, autoOn, onSaved };
+  document.getElementById('giorno-title').textContent = `Consegna di ${formatDateLong(t.settimana)}`;
+  setDateField('giorno-data', t.data);
+  document.getElementById('giorno-saltata').checked = t.saltata;
+  document.getElementById('giorno-riunione').checked = t.riunione;
+  document.getElementById('giorno-nota').value = t.nota || '';
+  document.getElementById('giorno-error').classList.add('initially-hidden');
+  document.getElementById('giorno-saltata-hint').classList.toggle('initially-hidden', !autoOn);
+  document.getElementById('giorno-modal').classList.remove('initially-hidden');
+}
+
+function closeGiorno() {
+  document.getElementById('giorno-modal').classList.add('initially-hidden');
+  giorno = null;
+}
+
+async function saveGiorno() {
+  const { t, autoOn, onSaved } = giorno;
+  const saltata = document.getElementById('giorno-saltata').checked;
+  if (saltata && !t.saltata && t.turnisti.some(Boolean)) {
+    const ok = await confirmDialog({
+      title: 'Niente consegna?',
+      message: 'I due turnisti verranno tolti da questa data' + (autoOn ? ' e saranno i primi a fare il prossimo turno libero.' : '.'),
+      confirmText: 'Niente consegna'
+    });
+    if (!ok) return;
+  }
+  try {
+    await API.put(`/api/turni/${t.id}`, {
+      data: dateFieldValue('giorno-data'),
+      saltata,
+      riunione: document.getElementById('giorno-riunione').checked,
+      nota: document.getElementById('giorno-nota').value
+    });
+    closeGiorno();
+    showStatus('Consegna aggiornata', 'success');
+    await onSaved();
+  } catch (error) {
+    const err = document.getElementById('giorno-error');
+    err.textContent = error.message;
+    err.classList.remove('initially-hidden');
   }
 }

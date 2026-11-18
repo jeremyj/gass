@@ -32,7 +32,7 @@ function renderStorico(consegne) {
       <thead>
         <tr>
           <th>Consegna</th><th class="left">Stato</th><th>Persone</th><th>Trovato</th><th>Incassato</th>
-          <th>Pagato</th><th>In cassa</th><th>Quota teatro</th><th>Scontrini</th>
+          <th>Pagato</th><th>In cassa</th><th>Quote teatro</th><th>Scontrini</th>
         </tr>
       </thead>
       <tbody>${consegne.map(c => `

@@ -9,7 +9,7 @@
  * Takes the db handle so the CLI can pass its own connection.
  */
 
-const { semestreOf, semestreLabel, isSemestre, allocate } = require('./teatro-calc');
+const { semestreOf, semestreLabel, isSemestre, allocate, coperturaPagamenti, copreLabel } = require('./teatro-calc');
 
 const DEFAULT_QUOTA = 15;
 const round = x => Math.round(x * 100) / 100;
@@ -83,6 +83,16 @@ function statoTeatro(db, userId, escludiConsegna = null) {
   const dovuti = db.prepare('SELECT semestre, dovuto FROM teatro_dovuti WHERE user_id = ?').all(userId);
   const r = allocate(dovuti, totalePagato(db, userId, escludiConsegna));
   return { ...r, righe: r.righe.map(x => ({ ...x, label: semestreLabel(x.semestre) })) };
+}
+
+// A person's payments oldest first, each with what it covered ('salda 2° sem. 2026, anticipo 1° sem. 2027'):
+// the same replay as statoTeatro, an advance counted from the semester after today's
+function pagamentiCoperti(db, userId, today) {
+  const dovuti = db.prepare('SELECT semestre, dovuto FROM teatro_dovuti WHERE user_id = ?').all(userId);
+  const pagamenti = db.prepare('SELECT id, data, importo, fonte FROM teatro_pagamenti WHERE user_id = ?').all(userId);
+  const quota = db.prepare('SELECT quota FROM teatro_semestri ORDER BY semestre DESC LIMIT 1').get()?.quota ?? DEFAULT_QUOTA;
+  return coperturaPagamenti(dovuti, pagamenti, { quota, dopo: semestreOf(today) })
+    .map(({ copre, ...p }) => ({ ...p, copre: copreLabel(copre) }));
 }
 
 // Owed minus advance for every user (negative = advance), for the Saldi lists
@@ -214,6 +224,6 @@ function riepilogo(db) {
 }
 
 module.exports = {
-  DEFAULT_QUOTA, ensureSemestre, syncDovutoCorrente, setQuota, setDovuto, statoTeatro, residui, registraPagamento, deletePagamento,
+  DEFAULT_QUOTA, ensureSemestre, syncDovutoCorrente, setQuota, setDovuto, statoTeatro, pagamentiCoperti, residui, registraPagamento, deletePagamento,
   addCassa, saldoCassa, quoteDellaConsegna, quotePerPersona, setNota, riepilogo, importFoglio
 };

@@ -23,7 +23,8 @@ function addTipButtons() {
     btn.dataset.tipKey = el.dataset.tip;
     btn.setAttribute('aria-label', 'Spiegazione');
     btn.setAttribute('aria-expanded', 'false');
-    el.append(btn);
+    // data-tip-prima: the (i) before the text
+    if ('tipPrima' in el.dataset) el.prepend(btn); else el.append(btn);
   });
 }
 

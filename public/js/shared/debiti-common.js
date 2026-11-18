@@ -41,20 +41,13 @@ function teatroLabel(residuo, anticipoPer) {
   return { cls: 'th-ok', text: 'in pari' };
 }
 
-// Quota teatro payments under the Transazioni (mobile and desktop)
-function teatroPagamentiHtml(teatro) {
-  if (!teatro || !teatro.length) return '';
-  const righe = teatro.map(t => `
-    <div class="transaction-item">
-      <div class="transaction-header">
-        <span class="transaction-date">${formatDateItalian(t.data)}</span>
-        <span class="th-inline th-ok">${formatEuro(t.importo)}</span>
-      </div>
-      ${t.fonte === 'foglio' ? '<div class="transaction-details">dal vecchio foglio</div>' : ''}
-    </div>`).join('');
-  return `<h3 class="teatro-trans">Quota teatro</h3>
-    <p class="transaction-details">Va nel bussolotto, non cambia il saldo.</p>
-    <div class="transactions-list">${righe}</div>`;
+// Quota teatro paid that day, for the Transazioni (mobile and desktop): "quota teatro 10 € (salda 2° sem. 2026)".
+// It goes in the bussolotto and doesn't change the saldo. Old sheet payments get a "vecchio foglio" mark.
+// prefisso: false in the desktop "Quota teatro" column, whose header already says it
+function quotaTeatroHtml(t, prefisso = true) {
+  if (!t.teatro_importo) return '';
+  return `${prefisso ? 'quota teatro ' : ''}${formatEuro(t.teatro_importo)} (${escapeHtml(t.teatro_copre)})`
+    + (t.teatro_foglio ? ' <span class="foglio-mark">vecchio foglio</span>' : '');
 }
 
 function teatroMancanti() {

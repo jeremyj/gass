@@ -58,8 +58,8 @@ Video: [Correggere un saldo, 0:12](https://gass.x86.it/admin-video#saldo).
 Usa questa funzione solo per correggere un errore che non è in una consegna.
 
 1. Apri **Saldi**.
-2. Premi **Modifica saldo** sulla riga del partecipante.
-3. Scrivi il saldo corretto. Per un debito, scrivi − prima dell'importo.
+2. Sul computer, premi il pulsante **Modifica utente** sulla riga del partecipante. Sul telefono, apri il partecipante e premi **Modifica saldo**.
+3. Scrivi il saldo corretto in **Saldo**. Per un debito, scrivi − prima dell'importo. Per un saldo in pari, scrivi 0.
 4. Premi **Salva**.
 
 GASS registra la differenza come **Rettifica manuale** con la data di oggi. La rettifica resta valida anche se una consegna viene annullata.
@@ -79,7 +79,7 @@ Per l'accesso con Authentik, lo username in Authentik deve essere uguale allo us
 
 1. Apri **Saldi** sul computer.
 2. Premi **Modifica utente** sulla riga del partecipante.
-3. Cambia il nome, la password o lo **Stato**.
+3. Cambia il nome, la password, il **Saldo** o lo **Stato**.
 4. Premi **Salva**.
 
 Non puoi cambiare lo username.
@@ -121,11 +121,11 @@ Sul computer, nella pagina **Turni**:
 | Generazione automatica | Usa la casella **Generazione automatica dei turni**. Quando è spenta, le settimane nuove sono **da coprire** e un amministratore sceglie i nomi. |
 | Note | Scrivi nel riquadro **Note**. Premi **Salva note**. Tutti i partecipanti leggono le note. |
 | Pausa | In **Pause**, scrivi le date **Dal** e **Al** e una nota. Premi **Aggiungi pausa**. Le settimane della pausa diventano **niente consegna**. |
-| Consegna saltata | Una consegna passata non è stata fatta? Spunta **Mostra turni passati**. Premi **Giorno** su quella data e segna **niente consegna**, oppure aggiungi una pausa. GASS rifiuta se in quella data c'è una consegna registrata. Per annullare, premi **Giorno** e togli **niente consegna**: i turnisti restano **da coprire**. Solo un amministratore modifica le consegne passate, e non i loro nomi. |
+| Consegna saltata | Una consegna passata non è stata fatta? Spunta **Mostra turni passati**. Premi **Modifica giorno** su quella data e segna **niente consegna**, oppure aggiungi una pausa. GASS rifiuta se in quella data c'è una consegna registrata. Per annullare, premi **Modifica giorno** e togli **niente consegna**: i turnisti restano **da coprire**. Solo un amministratore modifica le consegne passate, anche dal telefono, e non i loro nomi. |
 
 Le settimane già visibili non cambiano quando cambi la generazione automatica.
 
-Quando elimini una pausa, GASS crea di nuovo le settimane mancanti. Le settimane segnate **niente consegna** a mano restano così. Per ripristinarle, usa il menu **Giorno**.
+Quando elimini una pausa, GASS crea di nuovo le settimane mancanti. Le settimane segnate **niente consegna** a mano restano così. Per ripristinarle, premi **Modifica giorno**.
 
 ## Teatro
 

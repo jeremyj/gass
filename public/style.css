@@ -396,6 +396,9 @@ tr.off td { opacity: .6; }
 
 .consegna-closed .mov-list > li, .consegna-closed tr.clickable { cursor: default; }
 .consegna-closed .add-select { display: none; }
+/* Closed: no "Apri: dettaglio…" invitation on mobile, no entrate/uscite editor on desktop (the cassa shows them) */
+.consegna-closed .riepilogo-apri, .consegna-closed .uscite-blocco { display: none; }
+input[id^="contoProduttore_"]::placeholder { font-size: 16px; }
 
 /* Consegna page: other consegne still open */
 .avviso { background: var(--s-tint); border: 1.5px solid var(--s-acc); border-left-width: 5px; border-radius: 10px; padding: 10px 14px; margin: 14px 0; font-size: 17px; }
@@ -494,10 +497,9 @@ b.th { color: var(--teatro); }
 .entry-fields { display: grid; gap: 12px; }
 .fld label { display: block; margin-bottom: 2px; }
 .fld-hint { display: block; font-size: 16px; color: var(--salvia); margin-bottom: 4px; }
-/* Conto produttore proposal: green = Altobelli effettivo, amber = receipt to round */
+/* Conto produttore proposal: the Altobelli effettivo (the empty field asks for the receipt rounded) */
 .conto-prop { font: inherit; font-size: 16px; font-weight: 700; padding: 6px 10px; border-radius: 8px; border: 2px solid; cursor: pointer; text-align: left; }
 .conto-prop.verde { color: #1E6B2A; background: #E3F2E5; border-color: #1E6B2A; }
-.conto-prop.ambra { color: #7A4B00; background: #FFF0CC; border-color: #C98A00; }
 .conto-ok { color: #1E6B2A; font-weight: 700; }
 .fld-in { display: flex; align-items: baseline; background: var(--carta); border: 1.5px solid var(--riga); border-radius: 10px; padding: 2px 16px; }
 .fld-in:focus-within { border-color: var(--s-deep); box-shadow: inset 0 -4px 0 var(--s-acc); }
@@ -548,7 +550,6 @@ b.th { color: var(--teatro); }
 .transactions-list { display: flex; flex-direction: column; }
 .transaction-item { padding: 8px 0; border-bottom: 1px solid var(--riga); }
 .transaction-item:last-child { border-bottom: 0; }
-.teatro-trans { margin-top: 18px; color: var(--teatro); }
 .transaction-header { display: flex; justify-content: space-between; gap: 10px; }
 .transaction-date { font-weight: 700; }
 .transaction-effect { font-weight: 700; }
@@ -844,3 +845,29 @@ body:has(.giornata-sheet.aperto) { overflow: hidden; }
 .alt-foglio form { display: flex; gap: 10px; margin-top: 10px; }
 .alt-foglio input { flex: 1; height: 50px; }
 .badge-sperimentale { display: inline-block; font-family: "Alegreya Sans", sans-serif; font-size: 14px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; background: var(--s-tint); color: #8a4a00; border: 1px solid var(--s-acc); border-radius: 6px; padding: 0 6px; vertical-align: middle; }
+
+/* ===== SALDI: transactions modal, row buttons ===== */
+/* Saldi: Transazioni modal almost full page (desktop), scrolls inside */
+.modal-content.modal-content-full { width: 92vw; max-width: 92vw; height: 90vh; max-height: 90vh; }
+
+/* small secondary buttons, e.g. "Transazioni" / "Modifica utente" in the Saldi rows */
+.btn-sm { padding: 6px 12px; font-size: 16px; border-radius: 8px; }
+.t td.lk { white-space: nowrap; }
+.t td.lk .btn + .btn { margin-left: 8px; }
+
+/* old sheet payment in the Transazioni */
+.foglio-mark { display: inline-block; margin-left: 4px; padding: 0 5px; font-size: 16px; font-weight: 700; color: var(--salvia); border: 1px solid var(--riga); border-radius: 4px; }
+
+/* ===== TURNI: mobile row editing, Modifica giorno ===== */
+/* Turni: tap a consegna to edit it on mobile; "Modifica giorno" button on desktop */
+.turni-ag > li.tap { cursor: pointer; }
+.turni-ag > li.open { background: var(--s-tint); }
+.turno-edit { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--riga); cursor: default; }
+.turno-edit .turno-nome { display: flex; flex-direction: column; gap: 4px; font-size: 16px; font-weight: 700; color: var(--salvia); }
+.turno-edit .name-sel { min-height: 48px; padding: 10px 12px; font-size: 18px; color: var(--inchiostro); }
+.turno-edit .name-sel.empty { color: var(--debito); }
+.turno-edit > .btn { width: 100%; min-height: 48px; }
+.turno-edit .turno-swap { margin-top: 4px; }
+.turno-edit .turno-swap select { min-height: 48px; }
+.turno-edit-h { flex: 1 1 100%; font-size: 16px; font-weight: 700; color: var(--salvia); }
+.turni-t .btn-giorno { padding: 6px 12px; font-size: 16px; white-space: nowrap; }

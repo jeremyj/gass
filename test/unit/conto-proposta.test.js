@@ -24,16 +24,6 @@ const hint = (conto, effettivo) => {
   return els.contoHint_1;
 };
 
-describe('arrotonda10', () => {
-  it('rounds to the 10 cents, a 5 upwards', () => {
-    expect(sandbox.arrotonda10(20.82)).toBe(20.8);
-    expect(sandbox.arrotonda10(21.08)).toBe(21.1);
-    expect(sandbox.arrotonda10(21.05)).toBe(21.1);
-    expect(sandbox.arrotonda10(37.07)).toBe(37.1);
-    expect(sandbox.arrotonda10(14.3)).toBe(14.3);
-  });
-});
-
 describe('renderContoHint', () => {
   it('proposes the Altobelli effettivo in green until the conto equals it', () => {
     expect(hint('', 44).innerHTML).toContain('class="conto-prop verde"');
@@ -41,10 +31,9 @@ describe('renderContoHint', () => {
     expect(hint('44', 44).innerHTML).toContain('Uguale al foglio Altobelli');
   });
 
-  it('without an effettivo, proposes the receipt rounded to the 10 cents in amber', () => {
-    expect(hint('20,82', null).innerHTML).toContain('class="conto-prop ambra"');
-    expect(hint('20,82', null).innerHTML).toContain('20,80');
-    expect(hint('20,80', null).textContent).toContain('arrotondato ai 10 centesimi');
-    expect(hint('', null).textContent).toContain('arrotondato ai 10 centesimi');
+  it('without an effettivo, shows nothing: the empty field asks for the receipt rounded', () => {
+    expect(hint('20,82', null).innerHTML).toBe('');
+    expect(hint('', null).textContent).toBe('');
+    expect(vm.runInContext('CONTO_PLACEHOLDER', sandbox)).toBe('scontrino a 0,10');
   });
 });

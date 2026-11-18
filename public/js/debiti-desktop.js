@@ -42,20 +42,12 @@ function createParticipantRow(p) {
   const saldo = saldoLabel(p.saldo);
   const adminBadge = p.is_admin ? '<span class="admin-badge">admin</span>' : '';
 
-  const canEdit = isAdmin();
   if (p.stato === 'disattivato') row.classList.add('off');
 
   row.innerHTML = `
     <td class="nm">${escapeHtml(p.nome)}${statoBadge(p.stato)}</td>
     ${isAdmin() ? `<td class="left">${escapeHtml(p.username) || '–'}${adminBadge}</td>` : ''}
-    <td data-bozza="saldo:${p.id}">
-      <span id="saldo-view-${p.id}" class="${saldo.cls ? `pill ${saldo.cls}` : 'mute'}">${saldo.cls ? saldo.amount : '–'}</span>
-      <input type="text" inputmode="decimal" id="saldo-edit-${p.id}" value="${formatNumber(p.saldo)}"
-             class="saldo-input initially-hidden" aria-label="Nuovo saldo (negativo = debito)"
-             oninput="normalizeInputField(this)"
-             onfocus="handleInputFocus(this)"
-             onkeydown="if(event.key==='Enter'){event.preventDefault();saveSaldo(${p.id})}">
-    </td>
+    <td><span class="${saldo.cls ? `pill ${saldo.cls}` : 'mute'}">${saldo.cls ? saldo.amount : '–'}</span></td>
     ${p.teatro_residuo > 0
       ? `<td><span class="th-mark n" title="deve ${formatEuro(p.teatro_residuo)}">✗</span></td>`
       : p.teatro_dovuto === 0 && p.teatro_residuo === 0
@@ -63,60 +55,12 @@ function createParticipantRow(p) {
         : `<td><span class="th-mark p" title="${p.teatro_residuo < 0 ? `pagato; ${teatroLabel(p.teatro_residuo, p.teatro_anticipo_per).text}` : 'tutto pagato'}">✓</span></td>`}
     <td>${formatDateItalian(p.ultima_modifica)}</td>
     <td class="lk">
-      <button type="button" class="link-btn" onclick="showTransactionsModal(${p.id})">Transazioni</button>
-      ${isAdmin() ? `<button type="button" class="link-btn" onclick="showEditUserModal(${p.id})">Modifica utente</button>` : ''}
-      ${canEdit ? `
-        <button type="button" class="link-btn" onclick="editSaldo(${p.id})" id="edit-btn-${p.id}">Modifica saldo</button>
-        <button type="button" class="link-btn initially-hidden" onclick="saveSaldo(${p.id})" id="save-btn-${p.id}">Salva</button>
-        <button type="button" class="link-btn initially-hidden" onclick="cancelEdit(${p.id})" id="cancel-btn-${p.id}">Annulla</button><span class="initially-hidden" id="saldo-tip-${p.id}" data-tip="modifica_saldo"></span>
-      ` : ''}
+      <button type="button" class="btn btn-line btn-sm" onclick="showTransactionsModal(${p.id})">Transazioni</button>
+      ${isAdmin() ? `<button type="button" class="btn btn-line btn-sm" onclick="showEditUserModal(${p.id})">Modifica utente</button>` : ''}
     </td>
   `;
 
   return row;
-}
-
-// ===== EDIT SALDO =====
-
-function editSaldo(id) {
-  const inputField = document.getElementById(`saldo-edit-${id}`);
-
-  document.getElementById(`saldo-view-${id}`).style.display = 'none';
-  inputField.style.display = 'inline-block';
-  document.getElementById(`edit-btn-${id}`).style.display = 'none';
-  document.getElementById(`save-btn-${id}`).style.display = 'inline-block';
-  document.getElementById(`cancel-btn-${id}`).style.display = 'inline-block';
-  document.getElementById(`saldo-tip-${id}`).style.display = 'inline';
-
-  handleInputFocus(inputField);
-  bozzaRiprendi(`saldo:${id}`, inputField.parentElement);
-  inputField.focus();
-  inputField.select();
-}
-
-function cancelEdit(id) {
-  bozzaCancella(`saldo:${id}`);
-  const participant = participants.find(p => p.id === id);
-  document.getElementById(`saldo-edit-${id}`).value = formatNumber(participant.saldo);
-  document.getElementById(`saldo-view-${id}`).style.display = 'inline';
-  document.getElementById(`saldo-edit-${id}`).style.display = 'none';
-  document.getElementById(`edit-btn-${id}`).style.display = 'inline-block';
-  document.getElementById(`save-btn-${id}`).style.display = 'none';
-  document.getElementById(`cancel-btn-${id}`).style.display = 'none';
-  document.getElementById(`saldo-tip-${id}`).style.display = 'none';
-}
-
-async function saveSaldo(id) {
-  const newSaldo = parseAmount(document.getElementById(`saldo-edit-${id}`).value);
-
-  try {
-    await API.put(`/api/participants/${id}`, { saldo: newSaldo });
-    bozzaCancella(`saldo:${id}`);
-    showStatus('Saldo aggiornato con successo!', 'success');
-    loadParticipants();
-  } catch (error) {
-    showStatus('Errore durante l\'aggiornamento: ' + error.message, 'error');
-  }
 }
 
 // ===== ADD PARTICIPANT =====
@@ -148,12 +92,17 @@ async function addParticipant() {
 
 // ===== TRANSACTIONS MODAL =====
 
+// Almost full page, TRANSAZIONI_PAGINA rows per page, newest first
+const TRANSAZIONI_PAGINA = 15;
+let transazioni = [];
+let transazioniPagina = 1;
+
 function injectTransactionsModal() {
   if (document.getElementById('transactions-modal')) return;
 
   const modalHtml = `
     <div id="transactions-modal" class="modal" style="display:none;">
-      <div class="modal-content modal-content-wide">
+      <div class="modal-content modal-content-full">
         <div class="modal-header-row">
           <h3 id="transactions-modal-title">Transazioni</h3>
           <button type="button" class="modal-close-btn" onclick="closeTransactionsModal()" aria-label="Chiudi">&times;</button>
@@ -179,22 +128,34 @@ async function showTransactionsModal(id) {
 
   try {
     const result = await API.get(`/api/participants/${id}/transactions`);
-    renderTransactionsTable(result.transactions, result.teatro);
+    transazioni = result.transactions;
+    transazioniPagina = 1;
+    renderTransactionsTable();
   } catch (error) {
     document.getElementById('transactions-modal-body').innerHTML = `<p>Errore: ${escapeHtml(error.message)}</p>`;
   }
 }
 
-function renderTransactionsTable(transactions, teatro) {
+function transazioniVaiA(pagina) {
+  transazioniPagina = pagina;
+  renderTransactionsTable();
+  document.querySelector('#transactions-modal .modal-content').scrollTop = 0;
+}
+
+function renderTransactionsTable() {
   const body = document.getElementById('transactions-modal-body');
 
-  if (transactions.length === 0) {
-    body.innerHTML = `<p>Nessuna transazione</p>${teatroPagamentiHtml(teatro)}`;
+  if (transazioni.length === 0) {
+    body.innerHTML = '<p>Nessuna transazione</p>';
     return;
   }
 
+  const pagine = Math.ceil(transazioni.length / TRANSAZIONI_PAGINA);
+  const pagina = transazioni.slice((transazioniPagina - 1) * TRANSAZIONI_PAGINA, transazioniPagina * TRANSAZIONI_PAGINA);
+
   const num = (value, cls = '') => value ? `<td class="${cls}">${formatNumber(value)}</td>` : '<td class="mute">–</td>';
-  const rows = transactions.map(t => {
+  const teatroCell = t => t.teatro_importo ? `<td class="left">${quotaTeatroHtml(t, false)}</td>` : '<td class="mute">–</td>';
+  const rows = pagina.map(t => {
     const saldo = saldoLabel(t.saldo_dopo);
     const saldoCell = `<td><span class="pill ${saldo.cls}">${saldo.amount}</span></td>`;
 
@@ -203,6 +164,7 @@ function renderTransactionsTable(transactions, teatro) {
       <tr>
         <td class="left">${formatDateItalian(t.data)}</td>
         <td colspan="6" class="left">Rettifica manuale ${formatSigned(t.importo)}</td>
+        ${teatroCell(t)}
         ${saldoCell}
         <td class="nt">${escapeHtml(t.note)}</td>
       </tr>
@@ -218,11 +180,19 @@ function renderTransactionsTable(transactions, teatro) {
         ${num(debitoNuovo(t), 'db')}
         ${num(t.usa_credito)}
         ${num(debitoPagato(t))}
+        ${teatroCell(t)}
         ${saldoCell}
         <td class="nt">${escapeHtml(t.note)}</td>
       </tr>
     `;
   }).join('');
+
+  const pager = pagine <= 1 ? '' : `
+    <div class="pagination">
+      <button type="button" class="btn btn-line" onclick="transazioniVaiA(${transazioniPagina - 1})" ${transazioniPagina <= 1 ? 'disabled' : ''}>← Più recenti</button>
+      <span class="page-info">pagina ${transazioniPagina} di ${pagine}</span>
+      <button type="button" class="btn btn-line" onclick="transazioniVaiA(${transazioniPagina + 1})" ${transazioniPagina >= pagine ? 'disabled' : ''}>Meno recenti →</button>
+    </div>`;
 
   body.innerHTML = `
     <table class="t">
@@ -235,13 +205,14 @@ function renderTransactionsTable(transactions, teatro) {
           <th>Lascia debito</th>
           <th>Usa credito</th>
           <th>Salda debito</th>
+          <th class="left">Quota teatro</th>
           <th>Saldo dopo</th>
           <th class="nt">Note</th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>
     </table>
-    ${teatroPagamentiHtml(teatro)}
+    ${pager}
   `;
 }
 
@@ -287,11 +258,12 @@ async function showEditUserModal(id) {
     document.getElementById('edit-user-username').textContent = user.username;
     document.getElementById('edit-user-displayname').value = user.displayName;
     document.getElementById('edit-user-password').value = '';
+    document.getElementById('edit-user-saldo').value = formatNumber(participants.find(p => p.id === id)?.saldo || 0);
     document.getElementById('edit-user-error').style.display = 'none';
     editingUserStato = user.stato;
     document.querySelector(`input[name="edit-user-stato"][value="${user.stato}"]`).checked = true;
 
-    // Draft of the name (the password is never stored)
+    // Draft of name and saldo (the password is never stored)
     document.getElementById('edit-user-modal').dataset.bozza = `utente:${id}`;
     bozzaRiprendi(`utente:${id}`, document.getElementById('edit-user-modal'));
 
@@ -349,6 +321,16 @@ async function submitEditUser() {
     return;
   }
 
+  // Saldo: a change is stored as a rettifica dated today (PUT /api/participants/:id)
+  const saldoField = document.getElementById('edit-user-saldo').value.trim();
+  if (!/^[-−]?\d+([.,]\d{1,2})?$/.test(saldoField)) {
+    errorDiv.textContent = 'Saldo non valido: scrivi un importo, negativo per un debito (0 se in pari)';
+    errorDiv.style.display = 'block';
+    return;
+  }
+  const nuovoSaldo = parseAmount(saldoField.replace('−', '-'));
+  const saldoCambiato = roundToCents(nuovoSaldo) !== roundToCents(participants.find(p => p.id === editingUserId)?.saldo || 0);
+
   const stato = document.querySelector('input[name="edit-user-stato"]:checked').value;
   if (stato !== editingUserStato && stato !== 'attivo') {
     const username = document.getElementById('edit-user-username').textContent;
@@ -373,6 +355,7 @@ async function submitEditUser() {
 
   try {
     await API.put(`/api/users/${editingUserId}`, data);
+    if (saldoCambiato) await API.put(`/api/participants/${editingUserId}`, { saldo: nuovoSaldo });
     closeEditUserModal();
     showStatus('Utente aggiornato con successo!', 'success');
     loadParticipants();

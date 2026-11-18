@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Turni</title>
-    <link rel="stylesheet" href="style.css?v=94">
+    <link rel="stylesheet" href="style.css?v=95">
 </head>
 <body>
     <nav class="nav-menu">
@@ -46,7 +46,7 @@
             <thead><tr><th class="left">Consegna</th><th class="left">Turnista</th><th class="left">Turnista</th><th class="left">Note</th><th></th></tr></thead>
             <tbody id="turni-body"></tbody>
         </table>
-        <p id="turni-hint" class="hint">Scegli i due nomi di ogni consegna dai menu; sostituire o togliere un nome chiede conferma. Per uno scambio cambia i nomi in tutte e due le date. “Giorno”: sposta o salta la consegna, segna la riunione. Ogni modifica finisce in Attività.</p>
+        <p id="turni-hint" class="hint">Scegli i due nomi di ogni consegna dai menu; sostituire o togliere un nome chiede conferma. Per uno scambio cambia i nomi in tutte e due le date. “Modifica giorno”: sposta o salta la consegna, segna la riunione. Ogni modifica finisce in Attività.</p>
 
         <section id="pause-section" class="pause-box initially-hidden">
             <h2>Pause</h2>
@@ -60,27 +60,6 @@
         </section>
     </main>
 
-    <div id="giorno-modal" class="modal initially-hidden">
-        <div class="modal-content">
-            <h3 id="giorno-title">Consegna</h3>
-            <form onsubmit="event.preventDefault(); saveGiorno();">
-                <div class="form-group">
-                    <label for="giorno-data">Giorno della consegna</label>
-                    <input type="text" id="giorno-data">
-                    <small class="hint">stessa coppia, solo nella stessa settimana</small>
-                </div>
-                <div class="form-group"><label><input type="checkbox" id="giorno-saltata"> Niente consegna <small class="hint" id="giorno-saltata-hint">i due turnisti torneranno i primi in fila</small></label></div>
-                <div class="form-group"><label><input type="checkbox" id="giorno-riunione"> Riunione GASS</label></div>
-                <div class="form-group"><label for="giorno-nota">Nota</label><input type="text" id="giorno-nota" placeholder="es. festa (Immacolata)"></div>
-                <div id="giorno-error" class="error-message initially-hidden"></div>
-                <div class="modal-buttons">
-                    <button type="button" onclick="closeGiorno()">Annulla</button>
-                    <button type="submit" class="btn-save">Salva</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <footer class="app-footer">
         <span id="app-version"></span>
     </footer>
@@ -92,7 +71,7 @@
     <script src="js/shared/api-client.js"></script>
     <script src="js/shared/auth.js?v=34"></script>
     <script src="js/shared/version.js"></script>
-    <script src="js/shared/turni-common.js?v=3"></script>
-    <script src="js/turni-desktop.js?v=16"></script>
+    <script src="js/shared/turni-common.js?v=4"></script>
+    <script src="js/turni-desktop.js?v=17"></script>
 </body>
 </html>

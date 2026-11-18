@@ -712,16 +712,11 @@ function renderParticipant(id, buttonsHtml) {
 }
 
 // ===== CONTO PRODUTTORE PROPOSAL =====
-// The effettivo of the Altobelli sheet when there is one (green button), else the typed receipt
-// rounded to the 10 cents, a 5 upwards, as Leonardo writes the effettivi (warning button).
-// A tap writes it into the field: the conto is never filled in by itself.
-const CONTO_HINT = 'Nel foglio Altobelli non c\'è ancora l\'importo: scrivi il totale dello scontrino arrotondato ai 10 centesimi';
+// The effettivo of the Altobelli sheet when there is one: a green button, a tap writes it (the conto
+// is never filled in by itself). Without it, the empty field says to write the receipt rounded to the
+// 10 cents, as Leonardo writes the effettivi (user decision 2026-11-18: inside the field, short)
+const CONTO_PLACEHOLDER = 'scontrino a 0,10';
 const contoFoglio = {};
-
-// 21,05 → 21,10; 20,82 → 20,80 (whole cents first, so 21.05 is not 21.0499…)
-function arrotonda10(x) {
-  return Math.round(Math.round(x * 100) / 10) / 10;
-}
 
 async function loadContoFoglio(id) {
   if (isConsegnaClosed) return;
@@ -741,14 +736,12 @@ function renderContoHint(id) {
   const conto = parseAmount(field.value);
   const eff = contoFoglio[id];
   const btn = (cls, text, v) => `<button type="button" class="conto-prop ${cls}" onclick="usaConto(${id}, ${v})">${text}</button>`;
-  if (isConsegnaClosed) hint.textContent = CONTO_HINT;
-  else if (eff != null) {
+  if (isConsegnaClosed || eff == null) hint.textContent = '';
+  else {
     hint.innerHTML = Math.abs(conto - eff) < 0.005
       ? '<span class="conto-ok">Uguale al foglio Altobelli</span>'
-      : btn('verde', `Foglio Altobelli: ${formatEuro(eff)}, usa questo`, eff);
-  } else if (conto && Math.abs(arrotonda10(conto) - conto) > 0.001) {
-    hint.innerHTML = btn('ambra', `Arrotonda ai 10 centesimi: ${formatEuro(arrotonda10(conto))}`, arrotonda10(conto));
-  } else hint.textContent = CONTO_HINT;
+      : btn('verde', `Foglio Altobelli: ${formatEuro(eff)}`, eff);
+  }
 }
 
 function usaConto(id, valore) {
@@ -811,8 +804,8 @@ function buildParticipantCardHTML(id, nome, saldo, haCredito, haDebito, buttonsH
       <div class="entry-fields">
         <div class="form-group fld">
           <label for="contoProduttore_${id}">Conto produttore</label>
-          <small class="fld-hint" id="contoHint_${id}">${CONTO_HINT}</small>
-          <span class="fld-in"><input type="text" inputmode="decimal" id="contoProduttore_${id}" placeholder="0" aria-describedby="contoHint_${id}"
+          <small class="fld-hint" id="contoHint_${id}"></small>
+          <span class="fld-in"><input type="text" inputmode="decimal" id="contoProduttore_${id}" placeholder="${CONTO_PLACEHOLDER}" aria-describedby="contoHint_${id}"
                  oninput="normalizeInputField(this); handleContoProduttoreInput(${id}, ${saldo}); renderContoHint(${id})"
                  onfocus="handleInputFocus(this)"><span class="unit">€</span></span>
         </div>

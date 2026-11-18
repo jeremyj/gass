@@ -50,6 +50,33 @@ router.get('/', (req, res) => {
   }
 });
 
+// Quota teatro payments go on the movimento of their day (teatro_importo, teatro_copre); a day without
+// a movimento gets its own 'teatro' row. They don't change the saldo: such a row shows the saldo of that day.
+// transactions newest first (getTransactions), pagamenti oldest first (teatro.pagamentiCoperti)
+function conQuoteTeatro(transactions, pagamenti) {
+  const perGiorno = new Map();
+  for (const p of pagamenti) {
+    const g = perGiorno.get(p.data) || { tipo: 'teatro', data: p.data, teatro_importo: 0, copre: [], teatro_foglio: false };
+    g.teatro_importo = roundToCents(g.teatro_importo + p.importo);
+    g.copre.push(p.copre);
+    g.teatro_foglio = g.teatro_foglio || p.fonte === 'foglio';
+    perGiorno.set(p.data, g);
+  }
+  const out = transactions.map(t => {
+    const g = t.tipo === 'movimento' && perGiorno.get(t.data);
+    if (!g) return t;
+    perGiorno.delete(t.data);
+    return { ...t, teatro_importo: g.teatro_importo, teatro_copre: g.copre.join(', '), teatro_foglio: g.teatro_foglio };
+  });
+  for (const { copre, ...g } of perGiorno.values()) {
+    // Saldo after the last event up to that day (out is newest first; same day: the teatro row on top)
+    const i = out.findIndex(t => t.data <= g.data);
+    const saldo = i === -1 ? 0 : out[i].saldo_dopo;
+    out.splice(i === -1 ? out.length : i, 0, { ...g, teatro_copre: copre.join(', '), saldo_dopo: saldo });
+  }
+  return out;
+}
+
 // Get transactions for a specific participant
 router.get('/:id/transactions', (req, res) => {
   const timestamp = new Date().toISOString();
@@ -58,12 +85,10 @@ router.get('/:id/transactions', (req, res) => {
   console.log(`[PARTICIPANTS] ${timestamp} - GET transactions for participant ID: ${id}`);
 
   try {
-    const transactions = getTransactions(id);
-    // Quota teatro payments: apart, they go in the bussolotto and don't change the saldo
-    const teatro = db.prepare('SELECT data, importo, fonte FROM teatro_pagamenti WHERE user_id = ? ORDER BY data DESC, id DESC').all(id);
+    const transactions = conQuoteTeatro(getTransactions(id), teatro.pagamentiCoperti(db, id, toLocalDateString()));
 
     console.log(`[PARTICIPANTS] ${timestamp} - Retrieved ${transactions.length} transactions for participant ID: ${id}`);
-    res.json({ success: true, transactions, teatro });
+    res.json({ success: true, transactions });
   } catch (error) {
     console.error(`[PARTICIPANTS] ${timestamp} - Error fetching transactions for participant ID ${id}:`, error);
     res.status(500).json({ success: false, error: 'Errore durante il recupero delle transazioni' });
