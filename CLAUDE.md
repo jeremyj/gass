@@ -201,7 +201,7 @@ On a partial payoff `debito_saldato` holds the **whole prior debt** and `debito_
 - The day's movimenti are listed ("Chi ha ritirato"); tapping a row opens it
 - The participant card becomes a full-screen entry at ≤ 768px (pure CSS on `.participant-card-flow`); `#status` is a fixed toast above it
 - Saldi card (mobile) is read-only: Transazioni only, the saldo is edited on desktop (Modifica utente; mobile form removed 2026-11-18)
-- Mobile day's list (`movimentoDetails`) shows conto, pagato, quota teatro, no salda debito/usa credito (as Saldi on the phone). On a closed consegna a row opens the card read-only (`openMovimentoChiuso` in `consegna.js`, called by `openMovimento`; every field disabled, only Chiudi); desktop keeps closed rows inert
+- Mobile day's list (`movimentoDetails`) shows conto, pagato, quota teatro, no salda debito/usa credito (as Saldi on the phone). On a closed consegna a row opens the card read-only (`openMovimentoChiuso` in `consegna.js`, called by `openMovimento`; every field disabled, only Chiudi; empty note and receipts hidden, teatro block only for a quota paid in that consegna); desktop keeps closed rows inert
 
 ### Desktop
 - Form card below the table, buttons Annulla / Salva movimento

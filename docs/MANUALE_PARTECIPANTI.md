@@ -58,7 +58,7 @@ La pagina Consegna si apre sulla consegna giusta: l'ultimo turno fino a oggi, se
 
 Un riquadro in alto mostra le altre consegne ancora aperte. Premi una data per aprire quella consegna.
 
-Sul telefono, in alto ci sono lo stato della consegna e i pulsanti **Annulla consegna** (solo amministratori) e **Chiudi consegna**. Sotto c'è un riepilogo: conto produttore, quote teatro, entrate e uscite di cassa con il motivo. Premi **Apri: dettaglio, entrate/uscite, quaderno, note** per aprire la cassa completa, il quaderno, le entrate/uscite di cassa e le note. Premi **‹** per tornare alla pagina. Sul computer queste parti sono nella colonna a sinistra. Quando la consegna è chiusa, la scritta **Apri: …** non compare. Sul telefono puoi ancora premere una riga di *Chi ha ritirato*: la scheda si apre in sola lettura, con il pulsante **Chiudi**. Sul computer il riquadro **Entrate/uscite di cassa** non compare: le entrate e le uscite restano nella cassa.
+Sul telefono, in alto ci sono lo stato della consegna e i pulsanti **Annulla consegna** (solo amministratori) e **Chiudi consegna**. Sotto c'è un riepilogo: conto produttore, quote teatro, entrate e uscite di cassa con il motivo. Premi **Apri: dettaglio, entrate/uscite, quaderno, note** per aprire la cassa completa, il quaderno, le entrate/uscite di cassa e le note. Premi **‹** per tornare alla pagina. Sul computer queste parti sono nella colonna a sinistra. Quando la consegna è chiusa, la scritta **Apri: …** non compare. Sul telefono puoi ancora premere una riga di *Chi ha ritirato*: la scheda si apre in sola lettura, con il pulsante **Chiudi**. Note, scontrini e quota teatro compaiono solo se ci sono. Sul computer il riquadro **Entrate/uscite di cassa** non compare: le entrate e le uscite restano nella cassa.
 
 ### Registrare la spesa di un partecipante
 
@@ -68,7 +68,7 @@ Video: [Registrare un pagamento, 0:28](https://gass.x86.it/comefunziona#pagament
 2. Scegli il partecipante.
 3. Scrivi il **Conto produttore**.
    - Se il foglio Altobelli ha l'importo effettivo, sopra il campo c'è il bottone verde **Foglio Altobelli: X €**. Premi il bottone per scrivere l'importo nel campo. Quando il conto è uguale, GASS mostra **Uguale al foglio Altobelli**.
-   - Se il foglio non ha l'importo, il campo vuoto mostra **importo scontrino arrotondato: .01-.05 -> .00, .06-.09 -> .10**: scrivi il totale dello scontrino arrotondato ai 10 centesimi, come Altobelli. Per esempio, 20,82 diventa 20,80, 21,05 diventa 21,00 e 21,08 diventa 21,10.
+   - Se il foglio non ha l'importo, il campo vuoto mostra **arrotonda scontrino: ,01-,05 → ,00 · ,06-,09 → ,10**: scrivi il totale dello scontrino arrotondato ai 10 centesimi, come Altobelli. Per esempio, 20,82 diventa 20,80, 21,05 diventa 21,00 e 21,08 diventa 21,10.
 4. Scrivi l'**Importo saldato**.
 5. Controlla la riga **Prima di oggi** (credito, debito o in pari) e l'esito: credito, debito o "saldato".
 6. Premi **Salva movimento**.

@@ -718,7 +718,7 @@ function renderParticipant(id, buttonsHtml) {
 // The effettivo of the Altobelli sheet when there is one: a green button, a tap writes it (the conto
 // is never filled in by itself). Without it, the empty field says to write the receipt rounded to the
 // 10 cents as Leonardo writes the effettivi, .01-.05 down and .06-.09 up (user decision 2026-11-18: inside the field)
-const CONTO_PLACEHOLDER = 'importo scontrino arrotondato: .01-.05 -> .00, .06-.09 -> .10';
+const CONTO_PLACEHOLDER = 'arrotonda scontrino: ,01-,05 → ,00 · ,06-,09 → ,10';
 const contoFoglio = {};
 
 async function loadContoFoglio(id) {
@@ -868,8 +868,8 @@ async function loadTeatroBlock(id) {
     const box = document.getElementById(`teatro_${id}`);
     if (!box || !stato.righe.length) return;
     box.dataset.righe = JSON.stringify(stato.righe.filter(r => r.dovuto > r.pagato));
-    if (stato.residuo > 0 || teatroGiaQui(id) > 0) showTeatroBlock(id);
-    else if (isConsegnaClosed) box.innerHTML = '';
+    if (isConsegnaClosed && !teatroGiaQui(id)) box.innerHTML = ''; // read-only card: only a quota paid here
+    else if (stato.residuo > 0 || teatroGiaQui(id) > 0) showTeatroBlock(id);
     else box.innerHTML = `<button type="button" class="teatro-btn" onclick="showTeatroBlock(${id})"><span>+ Quota teatro (anticipo)</span></button>`;
   } catch (error) {
     showStatus('Errore: ' + error.message, 'error');

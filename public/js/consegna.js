@@ -303,6 +303,10 @@ function openMovimentoChiuso(id) {
   const chiudi = `<div class="entry-actions"><button type="button" class="btn btn-line" onclick="chiudiSolaLettura()">Chiudi</button></div>`;
   if (!renderParticipant(id, chiudi)) return;
   container.querySelectorAll('input, textarea, select').forEach(el => { el.disabled = true; });
+  // Only what was recorded: no empty note, no empty receipts block (the teatro block hides itself)
+  const nota = document.getElementById(`note_${id}`);
+  if (nota && !nota.value) nota.closest('.form-group')?.classList.add('initially-hidden');
+  if (!scontriniDi(id).length) document.getElementById(`scontrini_${id}`)?.classList.add('initially-hidden');
 }
 
 function chiudiSolaLettura() {
