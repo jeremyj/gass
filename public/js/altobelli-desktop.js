@@ -92,14 +92,14 @@ function renderConfronto() {
       <td>${amount(r.conto)}</td>
       <td class="alt-esito ${e.cls}">${e.testo}${diff}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="5" class="mute">Nessuna differenza.</td></tr>';
+  }).join('') || '<tr><td colspan="5" class="mute">Nessuna differenza</td></tr>';
 
   document.getElementById('kpi-effettivi').textContent = formatEuro(kpi.sommaEffettivi);
   document.getElementById('kpi-nonsegnati').textContent = kpi.nonSegnati
     ? `${kpi.nonSegnati} effettivi non segnati, esclusi` : `scheda "${scheda.nome}"`;
   document.getElementById('kpi-scritto').textContent = kpi.totaleScritto === null ? '–' : formatEuro(kpi.totaleScritto);
   document.getElementById('kpi-scritto-box').classList.toggle('ko', kpi.totaleDiverso);
-  document.getElementById('kpi-scritto-nota').textContent = kpi.totaleDiverso ? 'diverso dalla somma delle righe: il SUM del foglio non le prende tutte?' : '';
+  document.getElementById('kpi-scritto-nota').textContent = kpi.totaleDiverso ? 'diverso dalla somma delle righe: il totale del foglio salta qualche riga?' : '';
   document.getElementById('kpi-conti').textContent = formatEuro(kpi.sommaConti);
   const scarto = roundToCents(kpi.sommaConti - kpi.sommaEffettivi);
   document.getElementById('kpi-conti-nota').textContent = scarto ? `${formatSigned(scarto)} rispetto agli effettivi` : 'uguale agli effettivi';
@@ -108,13 +108,13 @@ function renderConfronto() {
 
 async function associa(button) {
   const select = button.previousElementSibling;
-  if (!select.value) return showStatus('Scegli la persona', 'error');
+  if (!select.value) return showStatus('Scegli il gassista', 'error');
   try {
     await API.put('/api/altobelli/nomi', { nome: select.dataset.nome, userId: Number(select.value) });
     showStatus('Nome associato', 'success');
     caricaConfronto();
   } catch (error) {
-    showStatus('Errore: ' + error.message, 'error');
+    showStatus('Nome non associato: ' + error.message, 'error');
   }
 }
 
@@ -125,7 +125,7 @@ async function salvaFoglio() {
     showStatus('Link salvato', 'success');
     caricaConfronto();
   } catch (error) {
-    showStatus('Errore: ' + error.message, 'error');
+    showStatus('Link non salvato: ' + error.message, 'error');
   }
 }
 

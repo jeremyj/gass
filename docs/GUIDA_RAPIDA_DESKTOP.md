@@ -25,25 +25,25 @@ Pagina principale per registrare i movimenti giornalieri. La pagina si apre da s
 
 La colonna a sinistra mostra la cassa come una somma, calcolata automaticamente dal sistema (non si scrive nulla):
 
-- **Trovato in cassa** — il lasciato della consegna precedente
+- **Trovato** — l'In cassa della consegna precedente
 - **+ Incassato** — somma degli importi saldati
 - **− Pagato al produttore** — somma dei conti produttore di tutti i movimenti del giorno
 - **Uscite di cassa** / **Entrate di cassa** — solo se ci sono: soldi presi dalla cassa (*esce*, es. quote portate al teatro) o rimessi dentro (*entra*, es. Altobelli pagato 357 € invece di 357,20)
-- **= Lasciato in cassa** — trovato + incassato - pagato - uscite + entrate
+- **= In cassa** — trovato + incassato - pagato - uscite + entrate
 
-Sotto, il riquadro **Quaderno** (foto della pagina dei conti scritti a mano), le **Note della giornata** e le **Entrate/uscite di cassa** (scegli *− esce* o *+ entra*, poi importo e motivo; **+** per un'altra riga), con **Salva** quando cambiano. Lo stato (*Consegna aperta* / *chiusa*) e i pulsanti Chiudi / Riapri / Annulla consegna sono nell'intestazione.
+Sotto, il riquadro **Quaderno** (foto della pagina dei conti scritti a mano), le **Note della giornata** e le **Entrate/uscite di cassa** (scegli *− esce* o *+ entra*, poi importo e motivo; **+** per un'altra riga), con **Salva** quando cambiano. Lo stato (*Consegna aperta* / *chiusa*) e i pulsanti Chiudi / Riapri / Elimina consegna sono nell'intestazione.
 
 ## Registrare un Movimento
 
-1. Nella sezione **Movimenti** seleziona il **partecipante** da **+ Aggiungi partecipante** (per modificare un movimento già inserito, clicca la sua riga nella tabella)
+1. Nella sezione **Chi ha ritirato** seleziona il **gassista** da **+ Aggiungi gassista** (per modificare un movimento già inserito, clicca la sua riga nella tabella)
 2. Sotto la tabella si apre il modulo: inserisci il **Conto produttore** (l'importo effettivo nel foglio Altobelli)
 3. Inserisci l'**Importo saldato** (quanto porta oggi) e, se c'è, la **Quota teatro** (vedi sotto)
 4. Il sistema calcola automaticamente eventuali **Lascia credito** o **Lascia debito** e lo mostra nel riquadro finale
 5. Clicca **Salva movimento**
 
-La tabella ha le colonne Partecipante, Conto produttore, Importo saldato, Lascia credito, Lascia debito, Usa credito, Salda debito, Quota teatro, Note e la riga **Totale**; gli zeri sono mostrati come "–".
+La tabella ha le colonne Gassista, Conto produttore, Importo saldato, Lascia credito, Lascia debito, Usa credito, Salda debito, Quota teatro, Note e la riga **Totale**; gli zeri sono mostrati come "–".
 
-> Se il partecipante ha un debito o credito pregressi, il sistema li compensa automaticamente — controlla il riepilogo prima di salvare.
+> Se il gassista ha un debito o credito pregressi, il sistema li compensa automaticamente — controlla il riepilogo prima di salvare.
 
 ![Consegna del 13/10 con i movimenti della giornata](screenshots/02-consegna.png){ width=100% }
 
@@ -55,17 +55,17 @@ Dopo aver inserito tutti i movimenti clicca **Chiudi consegna** e conferma il ri
 
 # Saldi
 
-Panoramica dei saldi di tutti i partecipanti. **Blu** con "+" = credito, **rosso vino** con "−" = debito, "–" = in pari.
+Panoramica dei saldi di tutti i gassisti. **Blu** con "+" = credito, **rosso vino** con "−" = debito, "–" = in pari.
 
-Clicca **Transazioni** per vedere lo storico movimenti di un partecipante.
+Clicca **Movimenti** per vedere i movimenti di un gassista, ognuno con il *Saldo dopo*. Nella colonna **Quota teatro**, ✗ è seguito da quanto manca (per esempio ✗ 10 €).
 
-![Pagina Saldi con tabella partecipanti](screenshots/03-saldi.png){ width=100% }
+![Pagina Saldi con tabella gassisti](screenshots/03-saldi.png){ width=100% }
 
 ---
 
 # Storico
 
-Indice delle consegne dalla più recente, in una tabella con Consegna, Stato, Persone, Trovato, Incassato, Pagato, In cassa e Quota teatro. Clicca una riga per aprire la consegna nella pagina Consegna (il tasto indietro riporta qui). Una cassa negativa è in rosso.
+Indice delle consegne dalla più recente, in una tabella con Consegna, Stato, Persone, Trovato, Incassato, Pagato, In cassa e Quote teatro. Clicca una riga per aprire la consegna nella pagina Consegna (il tasto indietro riporta qui). Una cassa negativa è in rosso.
 
 ![Pagina Storico](screenshots/05-storico.png){ width=100% }
 
@@ -75,15 +75,15 @@ Indice delle consegne dalla più recente, in una tabella con Consegna, Stato, Pe
 
 I prossimi 6 mesi con i due turnisti di ogni consegna (martedì). La tua riga è segnata **TU**; **da coprire** = manca un turnista; **riunione** = riunione GASS. **Mostra turni passati** aggiunge gli ultimi 3 mesi.
 
-Tutti scelgono i nomi di ogni consegna futura dai menu della tabella (sostituire o togliere un nome chiede conferma; per uno scambio cambia i nomi in tutte e due le date). **Giorno** sposta la consegna, la segna **niente consegna** o **riunione GASS**, aggiunge una nota.
+Tutti scelgono i nomi di ogni consegna futura dai menu della tabella (sostituire o togliere un nome chiede conferma; per uno scambio cambia i nomi in tutte e due le date). **Giorno** sposta la consegna, la segna **niente consegna** o **riunione**, aggiunge una nota.
 
-Gli amministratori mettono in pausa la **Generazione automatica dei turni** (in pausa, le settimane nuove arrivano da coprire), scrivono il riquadro **Note** sopra la tabella (lo leggono tutti) e gestiscono le **Pause** in fondo.
+Gli amministratori scrivono il riquadro **Note** sopra la tabella (lo leggono tutti) e gestiscono le **Pause** in fondo. Le settimane nuove arrivano da coprire.
 
 ---
 
 # Quota teatro
 
-Ogni semestre (gennaio–giugno, luglio–dicembre) si paga una quota per l'affitto del teatro, in una cassa separata da quella della consegna. Nella scheda del partecipante, sotto i campi della spesa, il riquadro **Quota teatro** (va nel bussolotto) mostra i semestri dovuti: scrivi quanto versa in **Versato per il teatro** (copre i semestri dal più vecchio; quello che avanza è un anticipo). Se non deve nulla c'è il link **+ Quota teatro (anticipo)**. Si salva con lo stesso **Salva movimento**; il riepilogo *Ha dato X €* dice quanto va in cassa fresco e quanto nel bussolotto. In **Saldi** la colonna **Quota teatro** ha ✓ per chi ha pagato tutto, ✗ per chi deve ancora qualche semestre e – per chi questo semestre non ha quota.
+Ogni semestre (gennaio–giugno, luglio–dicembre) si paga una quota per l'affitto del teatro, in una cassa separata da quella della consegna. Nella scheda del gassista, sotto i campi della spesa, il riquadro **Quota teatro** (va nella cassa teatro) mostra i semestri dovuti: scrivi la quota in **Importo** (copre i semestri dal più vecchio; quello che avanza è un anticipo). Se non deve nulla c'è il link **+ Quota teatro (anticipo)**. Si salva con lo stesso **Salva movimento**; il riepilogo *Ha dato in tutto X €* somma importo saldato e quota. In **Saldi** la colonna **Quota teatro** ha ✓ per chi ha pagato tutto, ✗ (con l'importo che manca) per chi deve ancora qualche semestre e – per chi questo semestre non ha quota.
 
 ---
 
@@ -92,13 +92,13 @@ Ogni semestre (gennaio–giugno, luglio–dicembre) si paga una quota per l'affi
 | Funzione | Come accedervi |
 |---|---|
 | Riaprire consegna chiusa | Storico → clicca la consegna → **Riapri consegna** |
-| Eliminare una consegna salvata | Consegna → **Annulla consegna** |
+| Eliminare una consegna salvata | Consegna → **Elimina consegna** |
 | Quote teatro: griglia, quote ridotte, cassa teatro | **Teatro** (menu in alto) |
 | Confrontare il foglio Altobelli con i conti | **Altobelli** (menu in alto, sperimentale): scegli la consegna e, se serve, la scheda del foglio; associa una volta i nomi del foglio alle persone; in *Link del foglio* il foglio dell'anno |
 | Modificare un saldo | Saldi → **Modifica utente** → campo Saldo |
-| Aggiungere partecipanti | Saldi → **+ Aggiungi partecipante** |
+| Aggiungere gassisti | Saldi → **+ Aggiungi gassista** |
 | Modificare utenti | Saldi → **Modifica utente** |
 | Eliminare un utente | Saldi → **Modifica utente** → **Elimina utente** (solo se non ha movimenti né rettifiche di saldo) |
 | Togliere dai turni / disattivare / riattivare un utente | Saldi → **Modifica utente** → Stato (**Attivo**, **No turni**, **Disattivato**); per vedere i disattivati spuntare **Mostra disattivati** |
-| Pause e generazione automatica dei turni, note | Turni → **Generazione automatica**, **Note**, **Pause** |
+| Note e pause dei turni | Turni → **Note**, **Pause** |
 | Log attività | Menu → **Attività** |

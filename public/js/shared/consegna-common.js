@@ -45,10 +45,10 @@ async function renderAvvisoAperte() {
 // People who paid a quota teatro in this consegna but have no movimento
 let teatroExtra = [];
 
-// "conto 15, pagato 25, salda debito 8, quota teatro 15" (mobile list rows)
+// "conto 15, saldato 25, quota teatro 15" (mobile list rows)
 // Mobile list row: like Saldi on the phone, without debito saldato / credito usato
 function movimentoDetails(m) {
-  const details = [`conto <b>${formatNumber(m.conto_produttore || 0)}</b>`, `pagato <b>${formatNumber(m.importo_saldato || 0)}</b>`];
+  const details = [`conto <b>${formatNumber(m.conto_produttore || 0)}</b>`, `saldato <b>${formatNumber(m.importo_saldato || 0)}</b>`];
   if (m.teatro) details.push(`quota teatro <b>${formatNumber(m.teatro)}</b>`);
   return details.join(', ');
 }
@@ -204,7 +204,7 @@ function updateUsciteView() {
   view.innerHTML = versi.map(v => `
     <div class="uscite-riga">
       <label>${v.label}: <span class="uscite-motivo">${escapeHtml(v.motivo)}</span></label>
-      <output>${formatEffettoCassa(v.totale)}</output>
+      <output>${formatEffettoCassa(v.totale)} €</output>
     </div>`).join('');
 }
 
@@ -213,9 +213,11 @@ function renderGiornataRow() {
   const righe = document.getElementById('giornata-righe');
   if (!righe) return;
   const riga = (label, valore, cls = '') => `<span class="rg"><span>${label}</span><b class="${cls}">${valore}</b></span>`;
+  // Closed consegna: the cassa (quote teatro included) is at the top of the page, so the box is only the button
+  if (typeof isConsegnaClosed !== 'undefined' && isConsegnaClosed) { righe.innerHTML = ''; return; }
   righe.innerHTML = [
     riga('Conto produttore', formatEuro(calculatePagatoProduttore())),
-    ...(typeof quoteOggi !== 'undefined' && quoteOggi ? [riga('Quote teatro', formatEuro(quoteOggi), 'te')] : []),
+    ...(typeof quoteOggi !== 'undefined' && quoteOggi ? [riga('Quote teatro raccolte', formatEuro(quoteOggi), 'te')] : []),
     ...usciteVersi().map(v => riga(`${v.label}: <span class="uscite-motivo">${escapeHtml(v.motivo)}</span>`, `${formatEffettoCassa(v.totale)} €`, v.totale < 0 ? 'en' : 'us'))
   ].join('');
 }
@@ -266,7 +268,7 @@ function consegnaSummaryDetails() {
     ['Incassato', formatEuro(calculateIncassato())],
     ['Pagato produttore', amount('pagatoProduttore')],
     ...usciteVersi().map(v => [v.label, `${formatEffettoCassa(v.totale)} €`]),
-    ['Lasciato in cassa', amount('lasciatoInCassa')]
+    ['In cassa', amount('lasciatoInCassa')]
   ];
 }
 
@@ -288,7 +290,7 @@ function renderParticipantSelect() {
   const select = document.getElementById('participant-select');
   if (!select) return;
 
-  select.innerHTML = '<option value="">+ Aggiungi partecipante</option>';
+  select.innerHTML = '<option value="">+ Aggiungi gassista</option>';
 
   // Disattivati can't be added (sospesi can); their saved movimenti still open from the day's list
   participants.filter(p => p.stato !== 'disattivato').forEach(p => {
@@ -299,7 +301,7 @@ function renderParticipantSelect() {
   });
 }
 
-// Open a saved movimento from the day's list (same as picking the participant in the select)
+// Open a saved movimento from the day's list (same as picking the gassista in the select)
 function openMovimento(id) {
   const select = document.getElementById('participant-select');
   if (!select) return;
@@ -320,7 +322,7 @@ function openMovimento(id) {
 function esitoMovimento(m) {
   if (m.credito_lasciato > 0) return { cls: 'cr', amount: formatSigned(m.credito_lasciato), word: 'credito' };
   if (m.debito_lasciato > 0) return { cls: 'db', amount: formatSigned(-m.debito_lasciato), word: 'debito' };
-  return { cls: '', amount: '–', word: 'saldato' }; // nothing left over today; the saldo may still hold older credit/debt
+  return { cls: '', amount: '', word: 'in pari' }; // nothing left over today; the saldo may still hold older credit/debt
 }
 
 // ===== BOZZE (bozze.js): the open card and the note/rows survive a page reload =====
@@ -397,7 +399,7 @@ async function toggleConsegnaStatus() {
       const ok = await confirmDialog({
         title: 'Chiudere la consegna?',
         message: (negativa ? '⚠️ La cassa è negativa. ' : '') +
-          'Dopo la chiusura i dati non potranno essere modificati (solo un admin può riaprirla).',
+          'Dopo la chiusura i dati non potranno essere modificati (solo un amministratore può riaprirla).',
         details: [...consegnaSummaryDetails(), ...(foto ? [['Foto del quaderno', String(foto)]] : [])],
         azione: foto === 0 ? { nota: 'Non hai fotografato il quaderno dei conti.', testo: 'Fotografa prima' } : null,
         checks: canali.map(c => [c, c === 'telegram' ? 'Invia il report su Telegram' : 'Invia il report per email']),
@@ -411,7 +413,7 @@ async function toggleConsegnaStatus() {
     }
     await checkDateData();
   } catch (error) {
-    showStatus('Errore: ' + error.message, 'error');
+    showStatus('Consegna non chiusa: ' + error.message, 'error');
   }
 }
 
@@ -506,7 +508,7 @@ function handleContoProduttoreInput(id, saldo) {
       // Remaining debt is shown in the debitoLasciato field; only show "saldato!" when fully paid
       remainingDebtEl.textContent = remainingDebtCarryForward === 0 ? 'Debito saldato per intero' : '';
     } else if (diff < 0 && debitoPreesistente > 0) {
-      remainingDebtEl.textContent = `Debito totale dopo oggi: ${formatEuro(debitoPreesistente + Math.abs(diff))}`;
+      remainingDebtEl.textContent = `Saldo dopo oggi: debito ${formatEuro(debitoPreesistente + Math.abs(diff))}`;
     } else {
       remainingDebtEl.textContent = '';
     }
@@ -517,17 +519,17 @@ function handleContoProduttoreInput(id, saldo) {
   if (remainingCreditEl) {
     if (creditoUsabileUsed > 0) {
       const remaining = creditoPreesistente - creditoUsabileUsed;
-      remainingCreditEl.textContent = remaining > 0 ? `Credito dopo oggi: ${formatEuro(remaining)}` : 'Credito usato per intero';
+      remainingCreditEl.textContent = remaining > 0 ? `Saldo dopo oggi: credito ${formatEuro(remaining)}` : 'Credito usato per intero';
     } else if (diff > 0 && creditoPreesistente > 0) {
-      remainingCreditEl.textContent = `Credito totale dopo oggi: ${formatEuro(creditoPreesistente + diff)}`;
+      remainingCreditEl.textContent = `Saldo dopo oggi: credito ${formatEuro(creditoPreesistente + diff)}`;
     } else if (diff < 0 && creditoPreesistente > 0) {
       const newCredit = Math.round((creditoPreesistente + diff) * 100) / 100;
       if (newCredit > 0) {
-        remainingCreditEl.textContent = `Credito dopo oggi: ${formatEuro(newCredit)}`;
+        remainingCreditEl.textContent = `Saldo dopo oggi: credito ${formatEuro(newCredit)}`;
       } else if (newCredit === 0) {
         remainingCreditEl.textContent = 'Credito usato per intero';
       } else {
-        remainingCreditEl.textContent = `Debito dopo oggi: ${formatEuro(-newCredit)}`;
+        remainingCreditEl.textContent = `Saldo dopo oggi: debito ${formatEuro(-newCredit)}`;
       }
     } else {
       remainingCreditEl.textContent = '';
@@ -634,8 +636,8 @@ function startNuovaConsegna() {
 async function annullaConsegna() {
   if (currentConsegnaId) {
     const ok = await confirmDialog({
-      title: 'Annullare la consegna?',
-      message: 'La consegna e tutti i suoi movimenti verranno eliminati, e i saldi dei partecipanti ricalcolati. Anche le quote teatro registrate in questa consegna verranno eliminate.',
+      title: 'Eliminare la consegna?',
+      message: 'Movimenti e quote teatro di questa consegna verranno eliminati; i saldi vengono ricalcolati.',
       details: consegnaSummaryDetails(),
       confirmText: 'Elimina consegna',
       danger: true
@@ -643,10 +645,10 @@ async function annullaConsegna() {
     if (!ok) return;
     try {
       await API.delete(`/api/consegna/${currentConsegnaId}`);
-      showStatus('Consegna annullata', 'success');
+      showStatus('Consegna eliminata', 'success');
       await checkDateData();
     } catch (error) {
-      showStatus('Errore: ' + error.message, 'error');
+      showStatus('Consegna non eliminata: ' + error.message, 'error');
     }
   } else {
     hidePartecipantiSection();
@@ -658,7 +660,7 @@ async function annullaConsegna() {
 
 // ===== SECTION BUILDERS =====
 
-// A computed amount shown as a text line ("Salda parte del debito    3 €"); the disabled input
+// A computed amount shown as a text line ("Debito saldato    3 €"); the disabled input
 // keeps the value readMovimentoForm submits
 function buildComputedLine(id, fieldId, label) {
   return `
@@ -823,8 +825,8 @@ function buildParticipantCardHTML(id, nome, saldo, haCredito, haDebito, buttonsH
       <p class="prima-oggi ${saldoClass}"><span>Prima di oggi</span><b>${saldoPrimaText(saldo)}</b></p>
 
       <div class="passi" id="passi_${id}">
-        ${haCredito ? buildComputedLine(id, 'usaCredito', 'Usa parte del credito') : ''}
-        ${haDebito ? buildComputedLine(id, 'debitoSaldato', 'Salda parte del debito') : ''}
+        ${haCredito ? buildComputedLine(id, 'usaCredito', 'Credito usato') : ''}
+        ${haDebito ? buildComputedLine(id, 'debitoSaldato', 'Debito saldato') : ''}
         ${haCredito ? `<p id="remainingCredit_${id}" class="passo-note"></p>` : ''}
         ${haDebito ? `<p id="remainingDebt_${id}" class="passo-note"></p>` : ''}
       </div>
@@ -832,7 +834,7 @@ function buildParticipantCardHTML(id, nome, saldo, haCredito, haDebito, buttonsH
       <div class="risult" id="risult_${id}">
         <div class="cr">${buildComputedLine(id, 'credito', 'Lascia credito')}</div>
         <div class="db">${buildComputedLine(id, 'debito', 'Lascia debito')}</div>
-        <p id="pari_${id}" class="form-group computed"><label>Esito</label><span>saldato, niente da riportare</span></p>
+        <p id="pari_${id}" class="form-group computed"><label>Esito</label><span>In pari</span></p>
       </div>
 
       <div class="form-group fld fld-note">
@@ -852,7 +854,7 @@ function buildParticipantCardHTML(id, nome, saldo, haCredito, haDebito, buttonsH
 
 // ===== QUOTA TEATRO =====
 // Paid in the same card and saved with the movimento (teatroVersato), but the money goes
-// to the bussolotto (cassa teatro), not to the consegna cassa
+// to the cassa teatro, not to the consegna cassa
 
 // Quota teatro this person already paid in the consegna shown (from the day's list)
 function teatroGiaQui(id) {
@@ -879,10 +881,10 @@ async function loadTeatroBlock(id) {
 function showTeatroBlock(id) {
   const gia = teatroGiaQui(id);
   document.getElementById(`teatro_${id}`).innerHTML = `
-    <h4 class="blocco-titolo"><span>Quota teatro</span><span>va nel bussolotto</span></h4>
+    <h4 class="blocco-titolo"><span>Quota teatro</span><span>va nella cassa teatro</span></h4>
     <div id="teatroRighe_${id}"></div>
     <div class="form-group fld teatro-importo">
-      <label for="teatroImporto_${id}" data-tip="teatro_versato">Versato per il teatro</label>
+      <label for="teatroImporto_${id}" data-tip="teatro_versato">Importo</label>
       <span class="fld-in"><input type="text" inputmode="decimal" id="teatroImporto_${id}" placeholder="0" value="${gia ? formatNumber(gia) : ''}"
             oninput="normalizeInputField(this); renderTeatro(${id})" onfocus="handleInputFocus(this)"${isConsegnaClosed ? ' disabled' : ''}><span class="unit">€</span></span>
     </div>
@@ -906,12 +908,13 @@ function renderTeatro(id) {
   const importo = parseAmount(document.getElementById(`teatroImporto_${id}`).value) || 0;
   const righe = teatroAllocate(JSON.parse(box.dataset.righe), importo);
   document.getElementById(`teatroRighe_${id}`).innerHTML = righe.map(r => `
-    <p class="teatro-riga"><span>${escapeHtml(r.label)} <small>da pagare ${formatEuro(r.resto)}</small></span>
-      <b class="${r.copre >= r.resto ? 'ok' : r.copre > 0 ? 'part' : ''}">${r.copre >= r.resto ? `${formatEuro(r.copre)} ✓` : r.copre > 0 ? `${formatNumber(r.copre)} di ${formatEuro(r.resto)}` : '–'}</b></p>`).join('');
+    <p class="teatro-riga"><span>${escapeHtml(r.label)} · ${formatEuro(r.resto)}</span>
+      <b class="${r.copre >= r.resto ? 'ok' : r.copre > 0 ? 'part' : ''}">${r.copre >= r.resto ? '✓' : r.copre > 0 ? `${formatNumber(r.copre)} di ${formatEuro(r.resto)}` : 'da pagare'}</b></p>`).join('');
   const dovuto = righe.reduce((s, r) => s + r.resto, 0);
   const resto = roundToCents(dovuto - importo);
-  document.getElementById(`teatroResto_${id}`).textContent = !importo ? '' : resto > 0
-    ? `Resta da pagare ${formatEuro(resto)}` : resto < 0 ? `In anticipo ${formatEuro(-resto)} sul prossimo semestre` : 'Quota pagata';
+  // Only what the rows above don't say: an advance, or the rest across several semesters
+  document.getElementById(`teatroResto_${id}`).textContent = resto < 0 ? `Anticipo ${formatEuro(-resto)} sul prossimo semestre`
+    : importo && resto > 0 && righe.length > 1 ? `Restano ${formatEuro(resto)}` : '';
   renderRiepilogoSoldi(id);
 }
 
@@ -922,9 +925,7 @@ function renderRiepilogoSoldi(id) {
   const fresco = roundToCents(parseAmount(document.getElementById(`importo_${id}`).value) || 0);
   const teatro = roundToCents(parseAmount(document.getElementById(`teatroImporto_${id}`)?.value || '0') || 0);
   el.classList.toggle('initially-hidden', !(teatro > 0));
-  el.innerHTML = `<b>Ha dato ${formatEuro(roundToCents(fresco + teatro))}</b>
-    <span><i class="dot dot-f"></i>in cassa fresco <b>${formatEuro(fresco)}</b></span>
-    <span><i class="dot dot-t"></i>nel bussolotto teatro <b>${formatEuro(teatro)}</b></span>`;
+  el.innerHTML = `<b>Ha dato in tutto ${formatEuro(roundToCents(fresco + teatro))}</b>`;
 }
 
 // Quotas collected in this consegna, shown with the cassa but outside its totals
@@ -1020,12 +1021,12 @@ async function saveParticipant(id) {
   const creditoLasciato = parseAmount(document.getElementById(`credito_${id}`).value);
 
   if (debitoLasciato > 0 && creditoLasciato > 0) {
-    showStatus(`Errore: non puoi lasciare sia credito che debito contemporaneamente`, 'error');
+    showStatus('Non puoi lasciare sia credito che debito', 'error');
     return;
   }
 
   if (!participants.find(p => p.id === id)) {
-    showStatus('Partecipante non trovato', 'error');
+    showStatus('Gassista non trovato', 'error');
     return;
   }
 

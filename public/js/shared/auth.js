@@ -14,24 +14,24 @@ function injectChangePasswordModal() {
   const modalHtml = `
     <div id="change-password-modal" class="modal" style="display:none;">
       <div class="modal-content">
-        <h3>Cambia Password</h3>
+        <h3>Cambia password</h3>
         <form id="change-password-form" onsubmit="event.preventDefault(); submitPasswordChange();">
           <div class="form-group">
-            <label>Password Attuale:</label>
+            <label for="current-password">Password attuale</label>
             <input type="password" id="current-password" required>
           </div>
           <div class="form-group">
-            <label>Nuova Password:</label>
+            <label for="new-password">Nuova password</label>
             <input type="password" id="new-password" required minlength="8">
           </div>
           <div class="form-group">
-            <label>Conferma Nuova Password:</label>
+            <label for="confirm-password">Conferma nuova password</label>
             <input type="password" id="confirm-password" required minlength="8">
           </div>
           <div id="password-error" class="error-message" style="display:none;"></div>
           <div class="modal-buttons">
-            <button type="submit" class="btn-save">Salva</button>
             <button type="button" onclick="closePasswordModal()">Annulla</button>
+            <button type="submit" class="btn-save">Salva</button>
           </div>
         </form>
       </div>
@@ -88,14 +88,14 @@ async function submitPasswordChange() {
 
     if (result.success) {
       closePasswordModal();
-      alert('Password modificata con successo!');
+      showStatus('Password cambiata', 'success');
     } else {
-      errorDiv.textContent = result.error || 'Errore durante la modifica';
+      errorDiv.textContent = result.error || 'Password non cambiata';
       errorDiv.style.display = 'block';
     }
   } catch (error) {
     console.error('Password change error:', error);
-    errorDiv.textContent = 'Errore di connessione';
+    errorDiv.textContent = 'Connessione non riuscita';
     errorDiv.style.display = 'block';
   }
 }
@@ -183,11 +183,11 @@ async function handleLogout() {
     if (response.ok) {
       window.location.href = '/login';
     } else {
-      alert('Errore durante il logout');
+      showStatus('Uscita non riuscita, riprova', 'error');
     }
   } catch (error) {
     console.error('Logout error:', error);
-    alert('Errore durante il logout');
+    showStatus('Uscita non riuscita, riprova', 'error');
   }
 }
 

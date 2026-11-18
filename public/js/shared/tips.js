@@ -3,14 +3,13 @@
 
 const TIPS = {
   uscite: 'Soldi che escono dalla cassa o entrano in cassa, oltre ai conti delle persone. Scegli prima − esce (es. hai pagato Altobelli 358 invece di 357,20: 0,80) o + entra (es. Altobelli ci restituisce 32,80), poi scrivi importo e motivo. Con il pulsante + a destra aggiungi una riga; per toglierne una svuota la riga.',
-  quaderno: 'Fotografa la pagina del quaderno dove avete fatto i conti a mano: è la controprova della cassa. Puoi farlo quando vuoi finché la consegna è aperta; alla chiusura GASS te lo ricorda. Dopo la chiusura può aggiungerle solo chi l\'ha chiusa o un admin.',
-  scontrini: 'Foto degli scontrini di questa persona, al massimo 3. Ogni foto si salva subito, anche senza premere Salva. Tutti gli utenti le vedono nella galleria della consegna; può toglierle chi le ha scattate o un admin, finché la consegna è aperta.',
-  teatro_oggi: 'Quote teatro pagate in questa consegna: vanno nella cassa del teatro, non in questa, e non cambiano In cassa.',
-  teatro_versato: 'Quanto paga ora per la quota teatro: questi soldi vanno nel bussolotto, non in cassa. Copre prima i semestri più vecchi; quello che avanza resta come anticipo.',
-  modifica_saldo: 'Scrivi il saldo giusto. L\'app registra la differenza come correzione con la data di oggi: i movimenti passati non cambiano.',
+  quaderno: 'Fotografa la pagina del quaderno dove avete fatto i conti a mano: è la controprova della cassa. Puoi farlo quando vuoi finché la consegna è aperta; alla chiusura GASS te lo ricorda. Dopo la chiusura può aggiungerle solo chi l\'ha chiusa o un amministratore.',
+  scontrini: 'Foto degli scontrini di questo gassista, al massimo 3. Ogni foto si salva subito, anche senza premere Salva movimento. Tutti i gassisti le vedono nella galleria della consegna; può toglierle chi le ha scattate o un amministratore, finché la consegna è aperta.',
+  teatro_oggi: 'Quote teatro pagate in questa consegna: vanno nella cassa teatro, non in questa, e non cambiano In cassa.',
+  teatro_versato: 'Copre prima i semestri più vecchi; quello che avanza è un anticipo.',
+  modifica_saldo: 'Scrivi il saldo giusto. La differenza diventa una Rettifica manuale con la data di oggi: i movimenti passati non cambiano.',
   stato: 'Attivo: fa i turni e deve la quota teatro del semestre. No turni: i suoi turni futuri tornano "da coprire" e non deve la quota teatro del semestre in corso, se non l\'ha già pagata. Disattivato: non accede più; saldo e storico restano.',
-  teatro_griglia: '✓ pagata, ✗ da pagare, – non dovuta o non era nel GASS. Clicca una cella per cambiare quanto deve quella persona in quel semestre; clicca un semestre per cambiare la quota di tutti.',
-  quanto_deve: 'Per una persona: quanto deve in quel semestre (quota piena, ridotta per chi entra a metà, 0 = non dovuta). Per un semestre: la quota di chi ha la quota piena.'
+  quanto_deve: 'Quanto deve questo gassista in quel semestre: la quota intera, una ridotta per chi entra a metà, 0 = non dovuta.'
 };
 
 function addTipButtons() {

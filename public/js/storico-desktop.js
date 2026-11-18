@@ -38,7 +38,7 @@ function renderStorico(consegne) {
       <tbody>${consegne.map(c => `
         <tr class="clickable" onclick="openConsegnaOn('${c.data}')">
           <td class="nm">${storicoDateLink(c.data, formatDateLong(c.data))}</td>
-          <td class="left"><span class="stato-label ${c.chiusa ? 'chiusa' : 'aperta'}">${c.chiusa ? 'Chiusa' : 'Aperta'}</span></td>
+          <td class="left"><span class="stato-label ${c.chiusa ? 'chiusa' : 'aperta'}">${c.chiusa ? 'chiusa' : 'aperta'}</span></td>
           <td>${c.num_movimenti}</td>
           ${cassaCell(c.trovato_in_cassa)}
           <td>${formatNumber(c.incassato)}</td>

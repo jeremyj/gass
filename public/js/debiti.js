@@ -17,7 +17,7 @@ function renderParticipants() {
 
   const list = visibleParticipants();
   if (list.length === 0) {
-    container.innerHTML = '<p class="empty-state">Nessun partecipante</p>';
+    container.innerHTML = '<p class="empty-state">Nessun gassista</p>';
     return;
   }
 
@@ -38,7 +38,7 @@ function createParticipantCard(p) {
   const summary = `
     <span class="nm">${escapeHtml(p.nome)}${adminBadge}</span>
     <span class="sub">ultimo movimento ${formatDateItalian(p.ultima_modifica)}</span>
-    ${p.teatro_residuo ? `<span class="sub"><span class="th-inline ${teatroLabel(p.teatro_residuo).cls}">teatro ${teatroLabel(p.teatro_residuo, p.teatro_anticipo_per).text}</span></span>` : ''}
+    ${p.teatro_residuo ? `<span class="sub"><span class="th-inline ${teatroLabel(p.teatro_residuo).cls}">quota teatro: ${teatroLabel(p.teatro_residuo, p.teatro_anticipo_per).text}</span></span>` : ''}
     <span class="esito ${saldo.cls}"><b>${saldo.amount}</b><small>${saldo.word}</small></span>
   `;
 
@@ -53,7 +53,7 @@ function createParticipantCard(p) {
   card.innerHTML = `
     <div class="saldo-header-expanded clickable" id="header-${p.id}">${summary}</div>
     <div class="saldo-transactions-section" id="transactions-${p.id}">
-      <h3>Transazioni</h3>
+      <h3>Movimenti</h3>
       <div class="transactions-loading">Caricamento…</div>
     </div>
     <button class="btn btn-line btn-block" onclick="toggleParticipantCard(${p.id})">Chiudi</button>
@@ -89,36 +89,36 @@ async function loadTransactions(participantId) {
     transactionsCache[participantId] = result;
     renderTransactions(container, result);
   } catch (error) {
-    container.innerHTML = `<h3>Transazioni</h3><p class="empty-state">Errore: ${escapeHtml(error.message)}</p>`;
+    container.innerHTML = `<h3>Movimenti</h3><p class="empty-state">Errore: ${escapeHtml(error.message)}</p>`;
   }
 }
 
-// The phone shows the latest transactions only, without credito usato / debito saldato: the computer has them all
+// The phone shows the latest movimenti only, without credito usato / debito saldato: the computer has them all
 const MOBILE_TRANSAZIONI = 12;
 
 function renderTransactions(container, { transactions }) {
   if (transactions.length === 0) {
-    container.innerHTML = '<h3>Transazioni</h3><p class="empty-state">Nessuna transazione</p>';
+    container.innerHTML = '<h3>Movimenti</h3><p class="empty-state">Nessun movimento</p>';
     return;
   }
 
-  let html = '<h3>Transazioni</h3>';
+  let html = '<h3>Movimenti</h3>';
   html += '<div class="transactions-list">';
 
   transactions.slice(0, MOBILE_TRANSAZIONI).forEach(t => {
     const saldo = saldoLabel(t.saldo_dopo);
 
     const details = [];
-    if (t.tipo === 'rettifica') details.push(`rettifica manuale ${formatSigned(t.importo)}`);
+    if (t.tipo === 'rettifica') details.push(`Rettifica manuale ${formatSigned(t.importo)}`);
     if (t.conto_produttore) details.push(`conto ${formatEuro(t.conto_produttore)}`);
-    if (t.importo_saldato) details.push(`pagato ${formatEuro(t.importo_saldato)}`);
+    if (t.importo_saldato) details.push(`saldato ${formatEuro(t.importo_saldato)}`);
     if (t.teatro_importo) details.push(quotaTeatroHtml(t));
 
     html += `
       <div class="transaction-item">
         <div class="transaction-header">
           <span class="transaction-date">${formatDateItalian(t.data)}</span>
-          <span class="transaction-effect ${saldo.cls}">${saldo.amount} ${saldo.word}</span>
+          <span class="transaction-effect ${saldo.cls}">saldo dopo: ${saldo.amount} ${saldo.word}</span>
         </div>
         <div class="transaction-details">${details.length > 0 ? details.join(', ') : 'nessun importo'}</div>
         ${t.note ? `<div class="transaction-note">${escapeHtml(t.note)}</div>` : ''}
@@ -127,7 +127,7 @@ function renderTransactions(container, { transactions }) {
   });
 
   html += '</div>';
-  html += '<p class="hint">Altri dettagli su movimenti di crediti e debiti sulla versione desktop.</p>';
+  html += '<p class="avviso-box">Altri dettagli su movimenti di crediti e debiti sulla versione desktop.</p>';
   container.innerHTML = html;
 }
 

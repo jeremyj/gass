@@ -128,7 +128,7 @@ async function togliScontrino(scontrinoId, id) {
   try {
     await API.delete(`/api/scontrini/${scontrinoId}`);
   } catch (error) {
-    showStatus('Errore: ' + error.message, 'error');
+    showStatus('Foto non tolta: ' + error.message, 'error');
   }
   await loadScontrini(getSelectedDate());
   renderScontriniBox(id);
@@ -226,7 +226,7 @@ async function togliQuaderno(fotoId) {
   try {
     await API.delete(`/api/scontrini/quaderno/${fotoId}`);
   } catch (error) {
-    showStatus('Errore: ' + error.message, 'error');
+    showStatus('Foto non tolta: ' + error.message, 'error');
   }
   await aggiornaQuaderno();
 }

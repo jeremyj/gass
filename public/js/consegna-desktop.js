@@ -145,7 +145,7 @@ function renderMovimentiGiorno() {
     <table class="t">
       <thead>
         <tr>
-          <th>Partecipante</th>
+          <th>Gassista</th>
           <th>Conto produttore</th>
           <th>Importo saldato</th>
           <th>Lascia credito</th>
@@ -295,22 +295,22 @@ async function saveCassaOnly() {
     return;
   }
 
-  showStatus('Salvataggio dati cassa in corso...', 'success');
+  showStatus('Salvataggio…', 'success');
 
   try {
     await postConsegna([]);
 
-    showStatus('Dati cassa salvati con successo!', 'success');
+    showStatus('Salvato', 'success');
     originalNoteGiornata = giornataSnapshot();
     noteGiornataModified = false;
     setTimeout(() => checkDateData(), 1000);
   } catch (error) {
-    showStatus('Errore durante il salvataggio: ' + error.message, 'error');
+    showStatus('Note non salvate: ' + error.message, 'error');
   }
 }
 
 async function saveWithParticipant(currentId) {
-  showStatus('Salvataggio in corso...', 'success');
+  showStatus('Salvataggio…', 'success');
 
   try {
     await postConsegna([readMovimentoForm(currentId)]);
@@ -323,7 +323,7 @@ async function saveWithParticipant(currentId) {
       updateSaveButtonVisibility();
     }, 1000);
   } catch (error) {
-    showStatus('Errore durante il salvataggio: ' + error.message, 'error');
+    showStatus('Movimento non salvato: ' + error.message, 'error');
   }
 }
 

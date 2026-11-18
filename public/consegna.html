@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Consegna</title>
-    <link rel="stylesheet" href="style.css?v=96">
+    <link rel="stylesheet" href="style.css?v=99">
 </head>
 <body>
     <header class="stag">
@@ -28,7 +28,7 @@
         <div id="consegna-status-section" class="stato initially-hidden">
             <span id="closed-badge" class="stato-label chiusa initially-hidden">Consegna chiusa</span>
             <span id="open-badge" class="stato-label aperta">Consegna aperta</span>
-            <button type="button" id="btn-annulla-consegna" class="link-btn danger initially-hidden" onclick="annullaConsegna()">Annulla consegna</button>
+            <button type="button" id="btn-annulla-consegna" class="link-btn danger initially-hidden" onclick="annullaConsegna()">Elimina consegna</button>
             <button type="button" id="close-consegna-btn" class="link-btn" onclick="toggleConsegnaStatus()">Chiudi consegna</button>
         </div>
 
@@ -36,19 +36,19 @@
         <section id="cassa-conto" class="conto" aria-label="Cassa">
             <div>
                 <label for="trovatoInCassa">Trovato</label>
-                <output id="trovatoInCassa">–</output>
+                <span class="conto-val"><output id="trovatoInCassa">–</output><i class="eur">€</i></span>
             </div>
             <div>
                 <label for="incassatoCassa">Incassato</label>
-                <span class="conto-val"><i>+</i><output id="incassatoCassa">–</output></span>
+                <span class="conto-val"><i>+</i><output id="incassatoCassa">–</output><i class="eur">€</i></span>
             </div>
             <div>
                 <label for="pagatoProduttore">Pagato</label>
-                <span class="conto-val"><i>−</i><output id="pagatoProduttore">–</output></span>
+                <span class="conto-val"><i>−</i><output id="pagatoProduttore">–</output><i class="eur">€</i></span>
             </div>
             <div class="tot">
                 <label for="lasciatoInCassa">In cassa</label>
-                <span class="conto-val"><i>=</i><output id="lasciatoInCassa">–</output></span>
+                <span class="conto-val"><i>=</i><output id="lasciatoInCassa">–</output><i class="eur">€</i></span>
             </div>
             <div id="uscite-view" class="uscite-cell initially-hidden"></div>
             <div id="quote-teatro-oggi" class="teatro-cell initially-hidden">
@@ -60,7 +60,7 @@
 
         <button type="button" id="giornata-row" class="riepilogo-box initially-hidden" onclick="openGiornata()">
             <span id="giornata-righe" class="riepilogo-righe"></span>
-            <span class="riepilogo-apri"><span>Apri: dettaglio, entrate/uscite, quaderno, note</span><span aria-hidden="true">›</span></span>
+            <span class="riepilogo-apri"><span>Cassa, quaderno e note</span><span aria-hidden="true">›</span></span>
         </button>
 
         <div id="giornata-sheet" class="giornata-sheet" role="dialog" aria-modal="true" aria-labelledby="giornata-titolo">
@@ -68,7 +68,7 @@
                 <button type="button" class="entry-back" onclick="closeGiornata()" aria-label="Indietro">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>
                 </button>
-                <h3 id="giornata-titolo" class="entry-name">Dettaglio, entrate/uscite, quaderno, note</h3>
+                <h3 id="giornata-titolo" class="entry-name">Cassa e note</h3>
             </div>
             <div id="giornata-body" class="entry-body">
                 <div id="quaderno-box" class="scontrini-box quaderno-box initially-hidden"></div>
@@ -87,8 +87,8 @@
         <button id="btn-nuova-consegna" class="btn btn-go btn-block initially-hidden" onclick="startNuovaConsegna()">Nuova consegna</button>
 
         <section id="section-movimenti" class="movimenti initially-hidden">
-            <select id="participant-select" class="add-select" onchange="showParticipantForm()" aria-label="Aggiungi partecipante">
-                <option value="">+ Aggiungi partecipante</option>
+            <select id="participant-select" class="add-select" onchange="showParticipantForm()" aria-label="Aggiungi gassista">
+                <option value="">+ Aggiungi gassista</option>
             </select>
             <div id="selected-participants"></div>
             <div class="sect">
@@ -113,14 +113,14 @@
 
     <script src="js/shared/utils.js?v=45"></script>
     <script src="js/shared/bozze.js?v=1"></script>
-    <script src="js/shared/tips.js?v=8"></script>
+    <script src="js/shared/tips.js?v=9"></script>
     <script src="js/shared/season.js?v=34"></script>
     <script src="js/shared/calendar.js?v=36"></script>
     <script src="js/shared/api-client.js"></script>
-    <script src="js/shared/consegna-common.js?v=56"></script>
-    <script src="js/shared/auth.js?v=34"></script>
+    <script src="js/shared/consegna-common.js?v=58"></script>
+    <script src="js/shared/auth.js?v=35"></script>
     <script src="js/shared/version.js"></script>
-    <script src="js/shared/scontrini.js?v=5"></script>
-    <script src="js/consegna.js?v=43"></script>
+    <script src="js/shared/scontrini.js?v=6"></script>
+    <script src="js/consegna.js?v=44"></script>
 </body>
 </html>

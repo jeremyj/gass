@@ -14,7 +14,7 @@ document.getElementById('change-password-form').addEventListener('submit', async
   }
 
   btn.disabled = true;
-  btn.textContent = 'Salvataggio...';
+  btn.textContent = 'Salvataggio…';
 
   try {
     const res = await fetch('/auth/oidc/change-password', {
@@ -28,12 +28,12 @@ document.getElementById('change-password-form').addEventListener('submit', async
     if (res.ok && data.success) {
       window.location.href = '/consegna';
     } else {
-      errorEl.textContent = data.error || 'Errore durante la modifica della password.';
+      errorEl.textContent = data.error || 'Password non cambiata.';
       btn.disabled = false;
       btn.textContent = 'Salva password';
     }
   } catch {
-    errorEl.textContent = 'Errore di rete. Riprova.';
+    errorEl.textContent = 'Connessione non riuscita. Riprova.';
     btn.disabled = false;
     btn.textContent = 'Salva password';
   }

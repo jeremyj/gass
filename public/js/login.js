@@ -28,10 +28,10 @@ if (urlError) {
   const messages = {
     user_not_found: 'Il tuo utente Authentik non è registrato in GASS. Contatta un amministratore.',
     user_disabled: 'Il tuo utente è disattivato. Contatta un amministratore.',
-    oidc_error: 'Errore durante l\'autenticazione con Authentik. Riprova.',
+    oidc_error: 'Autenticazione con Authentik non riuscita. Riprova.',
     oidc_unavailable: 'Servizio di autenticazione non disponibile. Riprova più tardi.'
   };
-  showError(messages[urlError] || 'Errore di accesso. Riprova.');
+  showError(messages[urlError] || 'Accesso non riuscito. Riprova.');
 }
 
 // Handle form submission
@@ -48,7 +48,7 @@ loginForm.addEventListener('submit', async (e) => {
 
   try {
     loginBtn.disabled = true;
-    loginBtn.textContent = 'Accesso in corso...';
+    loginBtn.textContent = 'Accesso in corso…';
     hideError();
 
     const response = await fetch('/api/auth/login', {
@@ -73,7 +73,7 @@ loginForm.addEventListener('submit', async (e) => {
 
   } catch (error) {
     console.error('Login error:', error);
-    showError('Errore durante l\'accesso. Riprova.');
+    showError('Accesso non riuscito. Riprova.');
     loginBtn.disabled = false;
     loginBtn.textContent = 'Accedi';
   }

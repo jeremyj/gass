@@ -1,5 +1,5 @@
 // Turni, desktop: next 6 months (last 3 on request); everyone picks every name from a menu and
-// moves/skips days; admins manage pauses, notes and pause automatic generation
+// moves/skips days; admins manage pauses and notes
 
 let turni = [];
 let attivi = [];
@@ -18,7 +18,7 @@ function noteCell(t) {
   const parts = [];
   if (t.saltata) parts.push(`<i>niente consegna${t.nota ? `: ${escapeHtml(t.nota)}` : ''}</i>`);
   else if (t.nota && !(t.riunione && /^riunione( gass)?$/i.test(t.nota.trim()))) parts.push(escapeHtml(t.nota));
-  if (t.riunione) parts.push('<span class="tag-riunione">riunione GASS</span>');
+  if (t.riunione) parts.push('<span class="tag-riunione">riunione</span>');
   return `<td class="left">${parts.join(' ')}</td>`;
 }
 
@@ -37,7 +37,7 @@ function renderTurni() {
   // "il tuo prossimo turno" with the date in a badge
   document.getElementById('mio-turno').innerHTML = next
     ? `il tuo prossimo turno <span class="mio-data">${formatDateLong(next.data)}</span>`
-    : 'nessun turno per te nei prossimi 6 mesi';
+    : 'nessun turno per te in programma';
 }
 
 async function assignSlot(id, slot, select) {
@@ -69,28 +69,8 @@ async function saveNote() {
     bozzaCancella('turni-note');
     showStatus('Note salvate', 'success');
   } catch (error) {
-    showStatus('Errore: ' + error.message, 'error');
+    showStatus('Note non salvate: ' + error.message, 'error');
   }
-}
-
-async function toggleAuto(input) {
-  const auto = input.checked;
-  const ok = await confirmDialog({
-    title: auto ? 'Riattivare la generazione automatica?' : 'Mettere in pausa la generazione automatica?',
-    message: auto
-      ? 'Le settimane nuove verranno riempite dalla coda: tocca a chi aspetta da più tempo. Le settimane già in calendario non cambiano.'
-      : 'Le settimane nuove arriveranno vuote, da coprire: i nomi li sceglie un amministratore. Le settimane già in calendario non cambiano.',
-    confirmText: auto ? 'Riattiva' : 'Metti in pausa'
-  });
-  if (!ok) { input.checked = !auto; return; }
-  try {
-    await API.put('/api/turni/auto', { auto });
-    showStatus(auto ? 'Generazione automatica riattivata' : 'Generazione automatica in pausa', 'success');
-  } catch (error) {
-    input.checked = !auto;
-    showStatus('Errore: ' + error.message, 'error');
-  }
-  await loadTurni();
 }
 
 const apriGiorno = id => openGiorno(turni.find(x => x.id === id), { autoOn, onSaved: loadTurni });
@@ -98,7 +78,7 @@ const apriGiorno = id => openGiorno(turni.find(x => x.id === id), { autoOn, onSa
 function renderPause(pause) {
   document.getElementById('pause-list').innerHTML = pause.length === 0
     ? '<li class="hint">Nessuna pausa in programma</li>'
-    : pause.map(p => `<li><span><b>${escapeHtml(p.nota || 'pausa')}</b> ${formatDateItalian(p.dal)} – ${formatDateItalian(p.al)}</span>
+    : pause.map(p => `<li><span><b>${escapeHtml(p.nota || 'Pausa')}</b> ${formatDateItalian(p.dal)} – ${formatDateItalian(p.al)}</span>
         <button type="button" class="link-btn danger" onclick="deletePause(${p.id})">elimina</button></li>`).join('');
 }
 
@@ -121,7 +101,7 @@ async function addPause() {
     if (al < toLocalDateString()) document.getElementById('turni-passati').checked = true;
     await loadTurni();
   } catch (error) {
-    showStatus('Errore: ' + error.message, 'error');
+    showStatus('Pausa non aggiunta: ' + error.message, 'error');
   }
 }
 
@@ -134,9 +114,10 @@ async function deletePause(id) {
   if (!ok) return;
   try {
     await API.delete(`/api/turni/pause/${id}`);
+    showStatus('Pausa eliminata', 'success');
     await loadTurni();
   } catch (error) {
-    showStatus('Errore: ' + error.message, 'error');
+    showStatus('Pausa non eliminata: ' + error.message, 'error');
   }
 }
 
@@ -151,8 +132,6 @@ async function loadTurni() {
     attivi = (await API.get('/api/participants')).participants.filter(p => p.stato === 'attivo')
       .sort((a, b) => a.nome.localeCompare(b.nome, 'it'));
     if (isAdmin()) {
-      document.getElementById('auto-wrap').classList.remove('initially-hidden');
-      document.getElementById('turni-auto').checked = result.auto;
       document.getElementById('pause-section').classList.remove('initially-hidden');
       renderPause(result.pause);
     }

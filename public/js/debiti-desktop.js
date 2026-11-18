@@ -27,7 +27,7 @@ function renderParticipants() {
 
   const list = visibleParticipants();
   if (list.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" class="text-center">Nessun partecipante</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center">Nessun gassista</td></tr>`;
     return;
   }
 
@@ -47,15 +47,15 @@ function createParticipantRow(p) {
   row.innerHTML = `
     <td class="nm">${escapeHtml(p.nome)}${statoBadge(p.stato)}</td>
     ${isAdmin() ? `<td class="left">${escapeHtml(p.username) || '–'}${adminBadge}</td>` : ''}
-    <td><span class="${saldo.cls ? `pill ${saldo.cls}` : 'mute'}">${saldo.cls ? saldo.amount : '–'}</span></td>
+    <td><span class="${saldo.cls ? `pill ${saldo.cls}` : 'mute'}">${saldo.amount}</span></td>
     ${p.teatro_residuo > 0
-      ? `<td><span class="th-mark n" title="deve ${formatEuro(p.teatro_residuo)}">✗</span></td>`
+      ? `<td><span class="th-mark n" title="deve ${formatEuro(p.teatro_residuo)}">✗ ${formatEuro(p.teatro_residuo)}</span></td>`
       : p.teatro_dovuto === 0 && p.teatro_residuo === 0
         ? '<td><span class="th-mark" title="nessuna quota questo semestre">–</span></td>'
         : `<td><span class="th-mark p" title="${p.teatro_residuo < 0 ? `pagato; ${teatroLabel(p.teatro_residuo, p.teatro_anticipo_per).text}` : 'tutto pagato'}">✓</span></td>`}
     <td>${formatDateItalian(p.ultima_modifica)}</td>
     <td class="lk">
-      <button type="button" class="btn btn-line btn-sm" onclick="showTransactionsModal(${p.id})">Transazioni</button>
+      <button type="button" class="btn btn-line btn-sm" onclick="showTransactionsModal(${p.id})">Movimenti</button>
       ${isAdmin() ? `<button type="button" class="btn btn-line btn-sm" onclick="showEditUserModal(${p.id})">Modifica utente</button>` : ''}
     </td>
   `;
@@ -63,7 +63,7 @@ function createParticipantRow(p) {
   return row;
 }
 
-// ===== ADD PARTICIPANT =====
+// ===== ADD GASSISTA =====
 
 async function addParticipant() {
   const nome = document.getElementById('new-name').value.trim();
@@ -82,15 +82,15 @@ async function addParticipant() {
 
   try {
     await API.post('/api/participants', { nome, username, password });
-    showStatus('Partecipante aggiunto con successo!', 'success');
+    showStatus('Gassista aggiunto', 'success');
     hideAddForm();
     loadParticipants();
   } catch (error) {
-    showStatus('Errore durante l\'aggiunta: ' + error.message, 'error');
+    showStatus('Gassista non aggiunto: ' + error.message, 'error');
   }
 }
 
-// ===== TRANSACTIONS MODAL =====
+// ===== MOVIMENTI MODAL =====
 
 // Almost full page, TRANSAZIONI_PAGINA rows per page, newest first
 const TRANSAZIONI_PAGINA = 15;
@@ -104,11 +104,11 @@ function injectTransactionsModal() {
     <div id="transactions-modal" class="modal" style="display:none;">
       <div class="modal-content modal-content-full">
         <div class="modal-header-row">
-          <h3 id="transactions-modal-title">Transazioni</h3>
+          <h3 id="transactions-modal-title">Movimenti</h3>
           <button type="button" class="modal-close-btn" onclick="closeTransactionsModal()" aria-label="Chiudi">&times;</button>
         </div>
         <div id="transactions-modal-body">
-          <p>Caricamento...</p>
+          <p>Caricamento…</p>
         </div>
       </div>
     </div>
@@ -122,8 +122,8 @@ async function showTransactionsModal(id) {
 
   const participant = participants.find(p => p.id === id);
   const name = participant ? participant.nome : '';
-  document.getElementById('transactions-modal-title').textContent = `Transazioni di ${name}`;
-  document.getElementById('transactions-modal-body').innerHTML = '<p>Caricamento...</p>';
+  document.getElementById('transactions-modal-title').textContent = `Movimenti di ${name}`;
+  document.getElementById('transactions-modal-body').innerHTML = '<p>Caricamento…</p>';
   document.getElementById('transactions-modal').style.display = 'flex';
 
   try {
@@ -146,7 +146,7 @@ function renderTransactionsTable() {
   const body = document.getElementById('transactions-modal-body');
 
   if (transazioni.length === 0) {
-    body.innerHTML = '<p>Nessuna transazione</p>';
+    body.innerHTML = '<p>Nessun movimento</p>';
     return;
   }
 
@@ -295,7 +295,7 @@ async function deleteUserFromModal() {
   try {
     await API.delete(`/api/participants/${editingUserId}`);
     closeEditUserModal();
-    showStatus('Utente eliminato con successo!', 'success');
+    showStatus('Utente eliminato', 'success');
     loadParticipants();
   } catch (error) {
     const errorDiv = document.getElementById('edit-user-error');
@@ -341,7 +341,7 @@ async function submitEditUser() {
         ? 'Non farà più turni; i suoi turni futuri restano da coprire.'
         : 'Non comparirà più negli elenchi e non potrà accedere; i suoi turni futuri restano da coprire.')
         + (saldo.cls && stato === 'disattivato' ? ` Attenzione: ha ancora ${saldo.amount} di ${saldo.word}.` : ''),
-      details: [['Utente', username], ['Saldo', `${saldo.amount} ${saldo.word}`]],
+      details: [['Utente', username], ['Saldo', `${saldo.amount} ${saldo.word}`.trim()]],
       confirmText: stato === 'sospeso' ? 'Togli dai turni' : 'Disattiva utente',
       danger: stato === 'disattivato'
     });
@@ -357,7 +357,7 @@ async function submitEditUser() {
     await API.put(`/api/users/${editingUserId}`, data);
     if (saldoCambiato) await API.put(`/api/participants/${editingUserId}`, { saldo: nuovoSaldo });
     closeEditUserModal();
-    showStatus('Utente aggiornato con successo!', 'success');
+    showStatus('Utente aggiornato', 'success');
     loadParticipants();
   } catch (error) {
     errorDiv.textContent = error.message;

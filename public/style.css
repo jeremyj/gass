@@ -291,6 +291,7 @@ body:has(.bottom-nav) { padding-bottom: 72px; }
 .conto-val, .conto output { font-family: var(--serif); font-weight: 700; font-size: 24px; line-height: 1.15; }
 .conto-val { display: flex; align-items: baseline; }
 .conto-val i { font-style: normal; font-weight: 500; font-size: 19px; color: var(--salvia); margin-right: 3px; }
+.conto-val i.eur { margin: 0 0 0 2px; font-size: 16px; }
 .conto .tot { margin: -14px -16px -14px 0; padding: 14px 16px 14px 12px; background: var(--s-tint); border-left: 3px solid var(--s-acc); }
 .conto .tot output { font-size: 28px; }
 /* Quote teatro of the day: last cell of the cassa row, in its own colour (not part of the cassa) */
@@ -304,6 +305,7 @@ body:has(.bottom-nav) { padding-bottom: 72px; }
 .conto .uscite-cell output { font-size: 20px; }
 .uscite-cell.initially-hidden, .cassa-v > p.initially-hidden { display: none; }
 .uscite-riga { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.uscite-riga output { white-space: nowrap; }
 .uscite-motivo { font-weight: 400; color: var(--salvia); }
 .cassa-v .uscite-cell { display: grid; gap: 4px; padding: 9px 16px; border-bottom: 1px solid var(--riga); }
 .cassa-v .uscite-riga label { font-weight: 500; font-size: 18px; }
@@ -397,7 +399,9 @@ tr.off td { opacity: .6; }
 .consegna-closed tr.clickable { cursor: default; }
 .consegna-closed .add-select { display: none; }
 /* Closed: no "Apri: dettaglio…" invitation on mobile, no entrate/uscite editor on desktop (the cassa shows them) */
-.consegna-closed .riepilogo-apri, .consegna-closed .uscite-blocco { display: none; }
+.consegna-closed .uscite-blocco { display: none; }
+.riepilogo-righe:empty { display: none; }
+.riepilogo-righe:empty + .riepilogo-apri { border-top: 0; }
 input[id^="contoProduttore_"]::placeholder { font-size: 16px; }
 
 /* Consegna page: other consegne still open */
@@ -434,9 +438,6 @@ input[id^="contoProduttore_"]::placeholder { font-size: 16px; }
 .riepilogo-soldi.initially-hidden { display: none; }
 .riepilogo-soldi span { display: flex; align-items: center; gap: 8px; }
 .riepilogo-soldi span b { margin-left: auto; }
-.riepilogo-soldi .dot { width: 12px; height: 12px; border-radius: 3px; }
-.riepilogo-soldi .dot-f { background: var(--s-deep); }
-.riepilogo-soldi .dot-t { background: var(--teatro); }
 .teatro-btn { width: 100%; display: flex; justify-content: space-between; gap: 10px; font: inherit; font-weight: 800; color: var(--teatro); background: transparent; border: 1.5px dashed var(--teatro); border-radius: 9px; padding: 10px 12px; cursor: pointer; }
 .teatro-box:has(h4) { background: var(--teatro-t); border-left: 4px solid var(--teatro); border-radius: 8px; padding: 12px 14px; }
 .teatro-riga { display: flex; justify-content: space-between; gap: 10px; margin: 4px 0; }
@@ -550,7 +551,7 @@ b.th { color: var(--teatro); }
 .transactions-list { display: flex; flex-direction: column; }
 .transaction-item { padding: 8px 0; border-bottom: 1px solid var(--riga); }
 .transaction-item:last-child { border-bottom: 0; }
-.transaction-header { display: flex; justify-content: space-between; gap: 10px; }
+.transaction-header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 10px; }
 .transaction-date { font-weight: 700; }
 .transaction-effect { font-weight: 700; }
 .transaction-effect:not(.cr):not(.db) { color: var(--salvia); }
@@ -871,3 +872,6 @@ body:has(.giornata-sheet.aperto) { overflow: hidden; }
 .turno-edit .turno-swap select { min-height: 48px; }
 .turno-edit-h { flex: 1 1 100%; font-size: 16px; font-weight: 700; color: var(--salvia); }
 .turni-t .btn-giorno { padding: 6px 12px; font-size: 16px; white-space: nowrap; }
+
+/* ===== AVVISO-BOX: highlighted notice under a list (Saldi on the phone) ===== */
+.avviso-box { background: var(--s-tint); border: 1.5px solid var(--s-acc); border-radius: 10px; padding: 10px 14px; margin: 14px 0 0; font-size: 16px; color: var(--inchiostro); }

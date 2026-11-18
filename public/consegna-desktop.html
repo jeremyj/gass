@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Consegna</title>
-    <link rel="stylesheet" href="style.css?v=96">
+    <link rel="stylesheet" href="style.css?v=99">
 </head>
 <body>
     <nav class="nav-menu">
@@ -33,7 +33,7 @@
                 <span id="closed-badge" class="stato-label chiusa initially-hidden">Consegna chiusa</span>
                 <span id="open-badge" class="stato-label aperta">Consegna aperta</span>
                 <button type="button" id="close-consegna-btn" class="link-btn" onclick="toggleConsegnaStatus()">Chiudi consegna</button>
-                <button type="button" id="btn-annulla-consegna" class="link-btn initially-hidden" onclick="annullaConsegna()">Annulla consegna</button>
+                <button type="button" id="btn-annulla-consegna" class="link-btn initially-hidden" onclick="annullaConsegna()">Elimina consegna</button>
             </div>
         </div>
     </header>
@@ -47,21 +47,21 @@
         <form id="consegna-form" class="d-grid" onsubmit="event.preventDefault(); saveData();">
             <aside class="cassa-v" aria-label="Cassa">
                 <p>
-                    <label for="trovatoInCassa">Trovato in cassa</label>
-                    <output id="trovatoInCassa">–</output>
+                    <label for="trovatoInCassa">Trovato</label>
+                    <span><output id="trovatoInCassa">–</output> €</span>
                 </p>
                 <p>
                     <label for="incassatoCassa">+ Incassato</label>
-                    <output id="incassatoCassa">–</output>
+                    <span><output id="incassatoCassa">–</output> €</span>
                 </p>
                 <p>
                     <label for="pagatoProduttore">− Pagato al produttore</label>
-                    <output id="pagatoProduttore">–</output>
+                    <span><output id="pagatoProduttore">–</output> €</span>
                 </p>
                 <div id="uscite-view" class="uscite-cell initially-hidden"></div>
                 <p class="tot">
-                    <label for="lasciatoInCassa">= Lasciato in cassa</label>
-                    <output id="lasciatoInCassa">–</output>
+                    <label for="lasciatoInCassa">= In cassa</label>
+                    <span><output id="lasciatoInCassa">–</output> €</span>
                 </p>
                 <div id="cassa-warning" class="cassa-warning initially-hidden" role="alert"></div>
                 <p id="quote-teatro-oggi" class="teatro-oggi initially-hidden" data-tip="teatro_oggi">Quote teatro raccolte: <output>0</output></p>
@@ -83,9 +83,9 @@
 
                 <div id="section-partecipanti" class="initially-hidden">
                     <div class="d-bar">
-                        <h2>Movimenti</h2>
-                        <select id="participant-select" class="add-select" onchange="showParticipantForm()" aria-label="Aggiungi partecipante">
-                            <option value="">+ Aggiungi partecipante</option>
+                        <h2>Chi ha ritirato</h2>
+                        <select id="participant-select" class="add-select" onchange="showParticipantForm()" aria-label="Aggiungi gassista">
+                            <option value="">+ Aggiungi gassista</option>
                         </select>
                     </div>
                     <div id="movimenti-giorno"></div>
@@ -102,14 +102,14 @@
 
     <script src="js/shared/utils.js?v=45"></script>
     <script src="js/shared/bozze.js?v=1"></script>
-    <script src="js/shared/tips.js?v=8"></script>
+    <script src="js/shared/tips.js?v=9"></script>
     <script src="js/shared/season.js?v=34"></script>
     <script src="js/shared/calendar.js?v=37"></script>
     <script src="js/shared/api-client.js"></script>
-    <script src="js/shared/consegna-common.js?v=56"></script>
-    <script src="js/shared/auth.js?v=34"></script>
+    <script src="js/shared/consegna-common.js?v=58"></script>
+    <script src="js/shared/auth.js?v=35"></script>
     <script src="js/shared/version.js"></script>
-    <script src="js/shared/scontrini.js?v=5"></script>
-    <script src="js/consegna-desktop.js?v=40"></script>
+    <script src="js/shared/scontrini.js?v=6"></script>
+    <script src="js/consegna-desktop.js?v=41"></script>
 </body>
 </html>

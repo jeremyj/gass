@@ -134,7 +134,7 @@ function updateNoteButtonVisibility() {
   }
 }
 
-// ===== SHEET "DETTAGLIO, ENTRATE/USCITE, QUADERNO, NOTE" =====
+// ===== SHEET "CASSA, QUADERNO E NOTE" =====
 // The page shows a summary box (renderGiornataRow); cassa, notebook, entrate/uscite and note are in a
 // full-screen sheet. A closed consegna shows its cassa at the top of the page instead (read-only).
 
@@ -177,6 +177,7 @@ function updateConsegnaStatusUI(consegna) {
   aggiornaQuaderno();
   isConsegnaClosed = consegna?.chiusa === true;
   placeCassa();
+  renderGiornataRow(); // a closed consegna shows a shorter box
 
   const statusSection = document.getElementById('consegna-status-section');
   if (!statusSection) return;
@@ -230,11 +231,11 @@ function enableConsegnaInputs() {
 
 async function saveNoteOnly() {
   if (!getSelectedDate()) {
-    showStatus('Errore: data non valida', 'error');
+    showStatus('Data non valida', 'error');
     return;
   }
 
-  showStatus('Salvataggio in corso...', 'success');
+  showStatus('Salvataggio…', 'success');
 
   try {
     await postConsegna([]);
@@ -247,7 +248,7 @@ async function saveNoteOnly() {
     // Reload to get fresh data
     setTimeout(() => checkDateData(), 1000);
   } catch (error) {
-    showStatus('Errore durante il salvataggio: ' + error.message, 'error');
+    showStatus('Note non salvate: ' + error.message, 'error');
   }
 }
 
@@ -259,7 +260,8 @@ function renderMovimentiGiorno() {
 
   const movimenti = existingConsegnaMovimenti || [];
   const count = document.getElementById('movimenti-count');
-  if (count) count.textContent = movimenti.length === 1 ? '1 partecipante' : `${movimenti.length} partecipanti`;
+  const persone = movimenti.length + teatroExtra.length + soloScontrini(movimenti, teatroExtra).length;
+  if (count) count.textContent = persone === 1 ? '1 gassista' : `${persone} gassisti`;
 
   container.innerHTML = movimenti.map(m => {
     const esito = esitoMovimento(m);
@@ -280,7 +282,7 @@ function renderMovimentiGiorno() {
   `).join('') + soloScontrini(movimenti, teatroExtra).map(p => `
       <li onclick="openMovimento(${p.id})">
         <span class="nm">${escapeHtml(p.nome)}</span>
-        <span class="sub">nessun movimento${scontriniBadge(p.id)}</span>
+        <span class="sub">${scontriniBadge(p.id)}</span>
         <span class="esito"><b>–</b><small>solo scontrini</small></span>
       </li>
   `).join('');
@@ -380,7 +382,7 @@ async function closeParticipant(id) {
 // ===== SAVE DATA =====
 
 async function saveWithParticipant(currentId) {
-  showStatus('Salvataggio in corso...', 'success');
+  showStatus('Salvataggio…', 'success');
 
   try {
     await postConsegna([readMovimentoForm(currentId)]);
@@ -400,7 +402,7 @@ async function saveWithParticipant(currentId) {
     // Clear saved values
     delete originalParticipantValues[currentId];
   } catch (error) {
-    showStatus('Errore durante il salvataggio: ' + error.message, 'error');
+    showStatus('Movimento non salvato: ' + error.message, 'error');
   }
 }
 

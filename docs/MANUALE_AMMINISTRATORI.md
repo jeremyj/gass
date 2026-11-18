@@ -1,10 +1,10 @@
 # GASS - Manuale degli amministratori
 
-Questo manuale contiene solo le funzioni degli amministratori. Le funzioni di tutti i partecipanti e i termini sono nel [Manuale dei partecipanti](MANUALE_PARTECIPANTI.md).
+Questo manuale contiene solo le funzioni degli amministratori. Le funzioni di tutti i gassisti e i termini sono nel [Manuale dei gassisti](MANUALE_PARTECIPANTI.md).
 
 Video brevi, uno per argomento: [funzioni degli amministratori](https://gass.x86.it/admin-video). Ogni sezione ha il link al suo video.
 
-Quasi tutte le funzioni degli amministratori sono solo sul computer. Sul telefono, un amministratore può riaprire e annullare una consegna e modificare un saldo.
+Quasi tutte le funzioni degli amministratori sono solo sul computer. Sul telefono, un amministratore può riaprire ed eliminare una consegna.
 
 ## Diventare amministratore
 
@@ -23,7 +23,7 @@ Video: [Riaprire una consegna, 0:13](https://gass.x86.it/admin-video#riaprire).
 
 Se il resoconto è diverso, GASS manda un resoconto con l'indicazione "(corretto)". Il resoconto corretto contiene solo le **Rettifiche rispetto al report del …** e la riga **In cassa ora**. Ogni rettifica è un valore cambiato, con il valore di prima e quello di ora (per esempio "Marco B: conto produttore 0 → 23,50"). Se non è cambiato nessun importo, GASS non manda niente. Per le consegne chiuse prima della versione 2.30.0, GASS manda di nuovo tutto il resoconto.
 
-Se la correzione cambia la cassa, GASS aggiorna anche le consegne dopo: il **Trovato in cassa** di ogni consegna è il **Lasciato in cassa** della consegna di prima. Non devi riaprire le consegne dopo.
+Se la correzione cambia la cassa, GASS aggiorna anche le consegne dopo: il **Trovato** di ogni consegna è l'**In cassa** della consegna di prima. Non devi riaprire le consegne dopo.
 
 ### Togliere la foto di uno scontrino
 
@@ -31,23 +31,23 @@ Video: [Togliere uno scontrino, 0:15](https://gass.x86.it/admin-video#scontrini)
 
 Un amministratore può togliere qualsiasi foto, anche se non l'ha scattata. La consegna deve essere aperta: se è chiusa, riaprila prima.
 
-1. Apri la scheda del partecipante nella consegna.
+1. Apri la scheda del gassista nella consegna.
 2. Premi **×** sulla foto e conferma.
 
-Se la prima foto del giorno arriva prima di ogni **Salva**, GASS crea la consegna. Se è una consegna sbagliata, annullala come sotto.
+Se la prima foto del giorno arriva prima di ogni **Salva**, GASS crea la consegna. Se è una consegna sbagliata, eliminala come sotto.
 
 Le foto del **Quaderno** sono diverse: un amministratore può aggiungerle e toglierle anche dopo la chiusura, senza riaprire la consegna.
 
-### Annullare una consegna
+### Eliminare una consegna
 
-**AVVERTENZA:** L'annullamento cancella la consegna, le sue spese, le sue uscite di cassa, le sue quote teatro, le foto dei suoi scontrini e del quaderno. Non puoi recuperare questi dati.
+**AVVERTENZA:** L'eliminazione cancella la consegna, le sue spese, le sue uscite di cassa, le sue quote teatro, le foto dei suoi scontrini e del quaderno. Non puoi recuperare questi dati.
 
 1. Apri la consegna.
-2. Premi **Annulla consegna**.
+2. Premi **Elimina consegna**.
 3. Controlla il riepilogo.
 4. Conferma.
 
-GASS calcola di nuovo il saldo dei partecipanti di quella consegna. Le spese cancellate restano nel registro **Attività**.
+GASS calcola di nuovo il saldo dei gassisti di quella consegna. Le spese cancellate restano nel registro **Attività**.
 
 ## Saldi
 
@@ -58,27 +58,27 @@ Video: [Correggere un saldo, 0:12](https://gass.x86.it/admin-video#saldo).
 Usa questa funzione solo per correggere un errore che non è in una consegna.
 
 1. Apri **Saldi**.
-2. Sul computer, premi il pulsante **Modifica utente** sulla riga del partecipante. Sul telefono non puoi modificare il saldo.
+2. Sul computer, premi il pulsante **Modifica utente** sulla riga del gassista. Sul telefono non puoi modificare il saldo.
 3. Scrivi il saldo corretto in **Saldo**. Per un debito, scrivi − prima dell'importo. Per un saldo in pari, scrivi 0.
 4. Premi **Salva**.
 
-GASS registra la differenza come **Rettifica manuale** con la data di oggi. La rettifica resta valida anche se una consegna viene annullata.
+GASS registra la differenza come **Rettifica manuale** con la data di oggi. La rettifica resta valida anche se una consegna viene eliminata.
 
-## Partecipanti
+## Gassisti
 
-### Aggiungere un partecipante
+### Aggiungere un gassista
 
 1. Apri **Saldi** sul computer.
-2. Premi **+ Aggiungi partecipante**.
+2. Premi **+ Aggiungi gassista**.
 3. Scrivi il **Nome completo**, lo **Username** e la **Password**.
-4. Premi **Aggiungi partecipante**.
+4. Premi **Aggiungi gassista**.
 
 Per l'accesso con Authentik, lo username in Authentik deve essere uguale allo username in GASS. Usa le stesse lettere, le stesse maiuscole, e nessun suffisso (per esempio `@gass.local`). Se lo username è diverso, l'accesso con Authentik non funziona.
 
-### Modificare un partecipante
+### Modificare un gassista
 
 1. Apri **Saldi** sul computer.
-2. Premi **Modifica utente** sulla riga del partecipante.
+2. Premi **Modifica utente** sulla riga del gassista.
 3. Cambia il nome, la password, il **Saldo** o lo **Stato**.
 4. Premi **Salva**.
 
@@ -86,7 +86,7 @@ Non puoi cambiare lo username.
 
 **Nuova password** cambia la password di GASS. Non cambia la password di Authentik.
 
-### Stato del partecipante
+### Stato del gassista
 
 Video: [Stato degli utenti, 0:28](https://gass.x86.it/admin-video#stato).
 
@@ -96,15 +96,15 @@ Video: [Stato degli utenti, 0:28](https://gass.x86.it/admin-video#stato).
 | No turni | Sì | No | No (semestri nuovi) | Sì, con l'etichetta "no turni" |
 | Disattivato | No | No | No | Solo con **Mostra disattivati** |
 
-- Quando un partecipante non è più attivo, i suoi turni futuri diventano **da coprire**.
-- Quando un partecipante torna attivo, l'attesa per il suo prossimo turno comincia da quel giorno.
+- Quando un gassista non è più attivo, i suoi turni futuri diventano **da coprire**.
+- Quando un gassista torna attivo, l'attesa per il suo prossimo turno comincia da quel giorno.
 - Nel semestre in corso, la quota teatro segue lo stato. Una quota già pagata o cambiata a mano non cambia.
 
-Usa **Disattivato** per un partecipante che lascia il GASS. Le sue consegne passate restano.
+Usa **Disattivato** per un gassista che lascia il GASS. Le sue consegne passate restano.
 
-### Eliminare un partecipante
+### Eliminare un gassista
 
-Puoi eliminare solo un partecipante senza spese, senza rettifiche e senza quote teatro pagate. Per gli altri, usa lo stato **Disattivato**.
+Puoi eliminare solo un gassista senza spese, senza rettifiche e senza quote teatro pagate. Per gli altri, usa lo stato **Disattivato**.
 
 1. Premi **Modifica utente**.
 2. Premi **Elimina utente**.
@@ -112,18 +112,16 @@ Puoi eliminare solo un partecipante senza spese, senza rettifiche e senza quote 
 
 ## Turni
 
-Video: [Turni: cambiare i nomi, 0:18](https://gass.x86.it/admin-video#turni), [Spostare una consegna (Giorno), 0:15](https://gass.x86.it/admin-video#giorno), [Generazione automatica e note, 0:13](https://gass.x86.it/admin-video#auto), [Pause, 0:26](https://gass.x86.it/admin-video#pause).
+Video: [Turni: cambiare i nomi, 0:18](https://gass.x86.it/admin-video#turni), [Spostare una consegna (Giorno), 0:15](https://gass.x86.it/admin-video#giorno), [Note, 0:13](https://gass.x86.it/admin-video#auto), [Pause, 0:26](https://gass.x86.it/admin-video#pause).
 
 Sul computer, nella pagina **Turni**:
 
 | Funzione | Procedura |
 |---|---|
-| Generazione automatica | Usa la casella **Generazione automatica dei turni**. Quando è spenta, le settimane nuove sono **da coprire** e un amministratore sceglie i nomi. |
-| Note | Scrivi nel riquadro **Note**. Premi **Salva note**. Tutti i partecipanti leggono le note. |
+| Nomi | Le settimane nuove sono **da coprire**. Un amministratore sceglie i nomi dai menu. |
+| Note | Scrivi nel riquadro **Note**. Premi **Salva note**. Tutti i gassisti leggono le note. |
 | Pausa | In **Pause**, scrivi le date **Dal** e **Al** e una nota. Premi **Aggiungi pausa**. Le settimane della pausa diventano **niente consegna**. |
 | Consegna saltata | Una consegna passata non è stata fatta? Spunta **Mostra turni passati**. Premi **Modifica giorno** su quella data e segna **niente consegna**, oppure aggiungi una pausa. GASS rifiuta se in quella data c'è una consegna registrata. Per annullare, premi **Modifica giorno** e togli **niente consegna**: i turnisti restano **da coprire**. Solo un amministratore modifica le consegne passate, anche dal telefono, e non i loro nomi. |
-
-Le settimane già visibili non cambiano quando cambi la generazione automatica.
 
 Quando elimini una pausa, GASS crea di nuovo le settimane mancanti. Le settimane segnate **niente consegna** a mano restano così. Per ripristinarle, premi **Modifica giorno**.
 
@@ -131,31 +129,31 @@ Quando elimini una pausa, GASS crea di nuovo le settimane mancanti. Le settimane
 
 Video: [Quota teatro, 0:24](https://gass.x86.it/admin-video#teatro).
 
-La pagina **Teatro** mostra la cassa del teatro e la griglia partecipanti × semestri.
+La pagina **Teatro** (sottotitolo "Quote e cassa teatro") mostra la **Nella cassa teatro** e la griglia gassisti × semestri. I riquadri **Versato per il …** e **Ancora da versare (tutti i semestri)** mostrano i totali in euro.
 
 | Simbolo | Significato |
 |---|---|
 | ✓ | Pagato. |
-| ✗ | Manca una parte. Passa il mouse sulla casella per vedere versato e dovuto. |
-| – | Non dovuto, o il partecipante non era nel GASS. |
+| ✗ | Manca una parte. |
+| – | Non dovuto, o il gassista non era nel GASS. |
 
 La griglia mostra gli ultimi due semestri. Per vedere i semestri più vecchi, usa **Mostra semestri precedenti**.
 
-### Cambiare quanto deve un partecipante
+### Cambiare quanto deve un gassista
 
-1. Premi la casella del partecipante e del semestre.
+1. Premi la casella del gassista e del semestre.
 2. Scrivi l'importo in **Quanto deve (€)**, o scegli **Non dovuto** o **Non era nel GASS**.
 3. Premi **Salva**.
 
-Usa un importo ridotto, per esempio, per un partecipante che entra a metà semestre.
+Usa un importo ridotto, per esempio, per un gassista che entra a metà semestre.
 
 ### Cambiare la quota di un semestre
 
 1. Premi l'intestazione del semestre.
-2. Scrivi la quota nuova.
+2. Scrivi la quota nuova in **Quota (€)**.
 3. Premi **Salva**.
 
-La quota nuova vale per i partecipanti con la quota piena. Le quote ridotte non cambiano. Un semestre nuovo comincia con la quota del semestre precedente.
+La quota nuova vale per i gassisti con la quota piena. Le quote ridotte non cambiano. Un semestre nuovo comincia con la quota del semestre precedente.
 
 ### Registro cassa teatro
 
@@ -188,16 +186,16 @@ Altobelli apre un foglio nuovo ogni anno.
 1. Scegli la **Consegna**. GASS sceglie la scheda del foglio con la stessa data.
 2. Se Leonardo ha scritto gli ordini in un'altra scheda, scegli la scheda giusta in **Scheda del foglio**. Il menu mostra tutte le schede, anche quelle nascoste. GASS ricorda la scelta per quella consegna.
 3. Premi **Aggiorna**.
-4. Compara **Σ effettivi (riga per riga)** con **Σ conti in GASS**.
+4. Compara **Somma effettivi (riga per riga)** con **Somma conti in GASS**.
 5. Per vedere solo le righe diverse, usa **Mostra solo le differenze**.
 
 GASS somma gli effettivi riga per riga. Il **Totale scritto nel foglio** può essere sbagliato, perché la formula del foglio a volte non contiene tutte le righe.
 
-### Associare un nome del foglio a un partecipante
+### Associare un nome del foglio a un gassista
 
-Quando un nome del foglio è uguale al nome di un partecipante in GASS, GASS associa il nome automaticamente. GASS non considera maiuscole, spazi e "&" (uguale a "e"). Quando GASS non trova il partecipante di un nome del foglio:
+Quando un nome del foglio è uguale al nome di un gassista in GASS, GASS associa il nome automaticamente. GASS non considera maiuscole, spazi e "&" (uguale a "e"). Quando GASS non trova il gassista di un nome del foglio:
 
-1. Nel menu **a chi corrisponde?**, scegli il partecipante.
+1. Nel menu **a chi corrisponde?**, scegli il gassista.
 2. Premi **Associa**.
 
 GASS usa l'associazione anche nelle consegne successive.
@@ -206,4 +204,4 @@ GASS usa l'associazione anche nelle consegne successive.
 
 Video: [Attività, 0:08](https://gass.x86.it/admin-video#attivita).
 
-La pagina **Attività** mostra il registro delle operazioni: consegne create, chiuse, riaperte e annullate, spese, cambi di saldo, partecipanti, turni e quote teatro. Usa il registro per trovare chi ha fatto una modifica e quando.
+La pagina **Attività** mostra il registro delle operazioni: consegne create, chiuse, riaperte ed eliminate, spese, cambi di saldo, gassisti, turni e quote teatro. La colonna **Fatto da** dice chi ha fatto la modifica. Usa il registro per trovare chi ha fatto una modifica e quando.

@@ -51,7 +51,7 @@ function renderTurni() {
     const tap = giornoModificabile(t);
     const open = tap && aperto === t.id;
     const tags = (mine(t) ? '<span class="tag-tu">TU</span>' : '') + (t.riunione ? '<span class="tag-riunione">riunione</span>' : '');
-    const action = tap && !open ? `<button type="button" class="link-btn" aria-expanded="false">modifica</button>` : '';
+    const action = tap && !open ? `<button type="button" class="link-btn" aria-expanded="false">Apri</button>` : '';
     html += `
       <li class="${t.id === curId ? 'cur' : ''}${t.data < today ? ' past' : ''}${t.saltata ? ' off' : ''}${tap ? ' tap' : ''}${open ? ' open' : ''}"${tap ? ` onclick="tocca(event, ${t.id})"` : ''}>
         <div class="turno-dd${t.data !== t.settimana ? ' moved' : ''}"><b>${Number(t.data.slice(8))}</b><small>${weekdayShort(t.data)}</small></div>
@@ -69,7 +69,7 @@ function renderTurni() {
   // "il tuo prossimo turno" with the date in a badge
   document.getElementById('mio-turno').innerHTML = next
     ? `il tuo prossimo turno <span class="mio-data">${formatDateLong(next.data)}</span>`
-    : 'nessun turno per te nei prossimi 6 mesi';
+    : 'nessun turno per te in programma';
 }
 
 // A tap on the row opens or closes it; taps inside the open part are its own controls

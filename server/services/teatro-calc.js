@@ -68,9 +68,10 @@ function coperturaPagamenti(dovuti, pagamenti, { quota = 0, dopo = null } = {}) 
   });
 }
 
-// 'salda 2° sem. 2025, anticipo 1° sem. 2026'
+// 'copre 2° sem. 2025, anticipo 1° sem. 2026': the stored tipo 'salda' is shown as "copre" ("salda" is also the Salda debito column)
+const TIPO_LABEL = { salda: 'copre' };
 function copreLabel(copre) {
-  return copre.map(c => `${c.tipo} ${semestreLabel(c.semestre)}`).join(', ');
+  return copre.map(c => `${TIPO_LABEL[c.tipo] || c.tipo} ${semestreLabel(c.semestre)}`).join(', ');
 }
 
 module.exports = { semestreOf, semestreLabel, semestreDopo, isSemestre, allocate, coperturaPagamenti, copreLabel };

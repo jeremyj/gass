@@ -142,7 +142,7 @@ describe('GET /api/participants/:id/transactions', () => {
     const res = await adminAgent.get(`/api/participants/${userId}/transactions`);
     expect(res.body.teatro).toBeUndefined();
     expect(res.body.transactions.map(t => [t.tipo, t.data, t.teatro_importo, t.teatro_copre, t.teatro_foglio, t.saldo_dopo])).toEqual([
-      ['movimento', '2026-10-27', 30, 'salda 1° sem. 2026, salda 2° sem. 2026, anticipo 1° sem. 2027', false, -65],
+      ['movimento', '2026-10-27', 30, 'copre 1° sem. 2026, copre 2° sem. 2026, anticipo 1° sem. 2027', false, -65],
       ['teatro', '2026-10-13', 10, 'acconto 1° sem. 2026', false, -5],
     ]); // the foglio payment and the rettifica are before 14/09/2026: not shown
   });

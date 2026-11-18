@@ -50,8 +50,8 @@ describe('coperturaPagamenti', () => {
       { id: 2, data: '2026-03-03', importo: 10 }
     ])).toEqual([
       [1, 'acconto 1° sem. 2026'],
-      [2, 'salda 1° sem. 2026, acconto 2° sem. 2026'],
-      [3, 'salda 2° sem. 2026, anticipo 1° sem. 2027']
+      [2, 'copre 1° sem. 2026, acconto 2° sem. 2026'],
+      [3, 'copre 2° sem. 2026, anticipo 1° sem. 2027']
     ]);
   });
 
@@ -61,7 +61,7 @@ describe('coperturaPagamenti', () => {
       { id: 2, data: '2026-10-01', importo: 20 },
       { id: 3, data: '2026-11-01', importo: 15 }
     ])).toEqual([
-      [1, 'salda 1° sem. 2026, salda 2° sem. 2026'],
+      [1, 'copre 1° sem. 2026, copre 2° sem. 2026'],
       [2, 'anticipo 1° sem. 2027, anticipo 2° sem. 2027'],
       [3, 'anticipo 2° sem. 2027, anticipo 1° sem. 2028']
     ]);
@@ -69,11 +69,11 @@ describe('coperturaPagamenti', () => {
 
   it('starts an advance after `dopo` when the owed semesters end earlier', () => {
     expect(labels([{ id: 1, data: '2027-02-01', importo: 45 }], { quota: 15, dopo: '2027-1' }))
-      .toEqual([[1, 'salda 1° sem. 2026, salda 2° sem. 2026, anticipo 2° sem. 2027']]);
+      .toEqual([[1, 'copre 1° sem. 2026, copre 2° sem. 2026, anticipo 2° sem. 2027']]);
   });
 
   it('puts the whole advance on one semester when the quota is 0', () => {
     expect(labels([{ id: 1, data: '2026-01-10', importo: 40 }], { quota: 0, dopo: '2026-2' }))
-      .toEqual([[1, 'salda 1° sem. 2026, salda 2° sem. 2026, anticipo 1° sem. 2027']]);
+      .toEqual([[1, 'copre 1° sem. 2026, copre 2° sem. 2026, anticipo 1° sem. 2027']]);
   });
 });

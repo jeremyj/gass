@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GASS Torpignattara - Teatro</title>
-    <link rel="stylesheet" href="style.css?v=96">
+    <link rel="stylesheet" href="style.css?v=99">
 </head>
 <body>
     <nav class="nav-menu">
@@ -25,17 +25,17 @@
     </nav>
     <header class="stag">
         <div class="stag-art" aria-hidden="true"><svg class="stag-ill"><use href="#ill-zucca"/></svg></div>
-        <div class="stag-when">Affitto del teatro</div>
-        <h1>Quota teatro</h1>
+        <div class="stag-when">Quote e cassa teatro</div>
+        <h1>Teatro</h1>
     </header>
 
     <main class="container">
         <div id="status" class="status" role="status"></div>
 
         <div class="teatro-kpi">
-            <div class="kpi th"><small>Nel bussolotto (cassa teatro)</small><b id="kpi-saldo">–</b></div>
-            <div class="kpi"><small id="kpi-sem-label">Quote del semestre</small><b id="kpi-sem">–</b></div>
-            <div class="kpi"><small>Quote mancanti</small><b id="kpi-mancanti" class="db">–</b></div>
+            <div class="kpi th"><small>Nella cassa teatro</small><b id="kpi-saldo">–</b></div>
+            <div class="kpi"><small id="kpi-sem-label">Versato per il semestre</small><b id="kpi-sem">–</b></div>
+            <div class="kpi"><small>Ancora da versare (tutti i semestri)</small><b id="kpi-mancanti" class="db">–</b></div>
         </div>
 
         <label id="show-old-wrap" class="show-old initially-hidden"><input type="checkbox" id="show-old" onchange="renderGrid()"> Mostra semestri precedenti</label>
@@ -45,7 +45,7 @@
                 <tbody id="teatro-body"></tbody>
             </table>
         </div>
-        <p class="hint">In ogni casella: ✓ pagato, ✗ manca (passa il mouse per vedere versato/dovuto), – non dovuto. Clic su una casella per cambiare quanto deve (quota ridotta, 0 = non dovuto); clic sull'intestazione di un semestre per cambiarne la quota. Un pagamento copre i semestri dal più vecchio; quello che avanza va sui semestri successivi.</p>
+        <p class="hint">In ogni casella: ✓ pagato, ✗ manca, – non dovuto. Clic su una casella per cambiare quanto deve (quota ridotta, 0 = non dovuto); clic sull'intestazione di un semestre per cambiarne la quota. Un pagamento copre i semestri dal più vecchio; quello che avanza va sui semestri successivi.</p>
 
         <section class="teatro-section">
             <h2>Registro cassa teatro</h2>
@@ -65,7 +65,8 @@
             <h3 id="dovuto-title">Quota</h3>
             <form onsubmit="event.preventDefault(); submitModal();">
                 <div class="form-group">
-                    <label for="dovuto-importo" data-tip="quanto_deve">Quanto deve (€)</label>
+                    <label for="dovuto-importo" id="dovuto-label-persona" data-tip="quanto_deve">Quanto deve (€)</label>
+                    <label for="dovuto-importo" id="dovuto-label-quota" style="display:none">Quota (€)</label>
                     <input type="text" inputmode="decimal" id="dovuto-importo" oninput="normalizeInputField(this)">
                     <small class="hint" id="dovuto-hint"></small>
                 </div>
@@ -85,12 +86,12 @@
 
     <script src="js/shared/utils.js?v=45"></script>
     <script src="js/shared/bozze.js?v=1"></script>
-    <script src="js/shared/tips.js?v=8"></script>
+    <script src="js/shared/tips.js?v=9"></script>
     <script src="js/shared/season.js?v=34"></script>
     <script src="js/shared/calendar.js?v=37"></script>
     <script src="js/shared/api-client.js"></script>
-    <script src="js/shared/auth.js?v=34"></script>
+    <script src="js/shared/auth.js?v=35"></script>
     <script src="js/shared/version.js"></script>
-    <script src="js/teatro-desktop.js?v=8"></script>
+    <script src="js/teatro-desktop.js?v=9"></script>
 </body>
 </html>

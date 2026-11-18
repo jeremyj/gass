@@ -47,7 +47,7 @@ async function scambiaTurno(turni, t, slot, userId) {
     showStatus('Turni scambiati', 'success');
     return true;
   } catch (error) {
-    showStatus('Errore: ' + error.message, 'error');
+    showStatus('Turni non scambiati: ' + error.message, 'error');
     return false;
   }
 }
@@ -66,7 +66,7 @@ function azioniTurnoHtml(turni, t, slot) {
   const dates = candidatiSposta(turni, t, p.id).map(x => `<option value="${x.id}">${dataBreve(x.data)}</option>`).join('');
   return `${scambioSelectHtml(turni, t, 'swap-select')}
     <select id="move-select"${dates ? '' : ' disabled'}><option value="">${dates ? 'sposta al…' : 'nessuna data libera'}</option>${dates}</select>
-    <button type="button" class="btn btn-line" id="leave-btn">Non posso</button>`;
+    <button type="button" class="btn btn-line" id="leave-btn">Salta turno</button>`;
 }
 
 // Wires the controls from azioniTurnoHtml; done() runs after a saved change, cancel() after a declined one
@@ -91,7 +91,7 @@ async function spostaTurno(turni, t, slot, toId) {
     showStatus('Turno spostato', 'success');
     return true;
   } catch (error) {
-    showStatus('Errore: ' + error.message, 'error');
+    showStatus('Turno non spostato: ' + error.message, 'error');
     return false;
   }
 }
@@ -102,15 +102,15 @@ async function lasciaTurno(t, slot) {
     title: 'Non puoi fare il turno?',
     message: 'Il posto resta da coprire: lo riempirà chi gestisce i turni o chi si offre.',
     details: [[dataBreve(t.data), `${p.nome} esce`]],
-    confirmText: 'Lascia il turno'
+    confirmText: 'Salta turno'
   });
   if (!ok) return false;
   try {
     await API.post('/api/turni/lascia', { a: { id: t.id, slot } });
-    showStatus('Turno lasciato', 'success');
+    showStatus('Turno saltato', 'success');
     return true;
   } catch (error) {
-    showStatus('Errore: ' + error.message, 'error');
+    showStatus('Turno non saltato: ' + error.message, 'error');
     return false;
   }
 }
@@ -141,9 +141,9 @@ async function assegnaTurnista(t, slot, select, attivi) {
   if (p) {
     const nuovo = value ? attivi.find(u => u.id === value)?.nome || '' : null;
     const ok = await confirmDialog({
-      title: nuovo ? 'Sostituire il turnista?' : 'Lasciare il posto da coprire?',
+      title: nuovo ? 'Sostituire il turnista?' : 'Togliere il nome?',
       details: [[dataBreve(t.data), nuovo ? `${nuovo} al posto di ${p.nome}` : `da coprire (esce ${p.nome})`]],
-      confirmText: nuovo ? 'Sostituisci' : 'Lascia da coprire'
+      confirmText: nuovo ? 'Sostituisci' : 'Togli il nome'
     });
     if (!ok) { select.value = p.id; return false; }
   }
@@ -151,7 +151,7 @@ async function assegnaTurnista(t, slot, select, attivi) {
     await API.put(`/api/turni/${t.id}`, { [slot === 1 ? 'turnista1Id' : 'turnista2Id']: value });
     showStatus('Turno aggiornato', 'success');
   } catch (error) {
-    showStatus('Errore: ' + error.message, 'error');
+    showStatus('Turno non aggiornato: ' + error.message, 'error');
   }
   return true;
 }
@@ -163,7 +163,7 @@ function initGiorno() {
   document.body.insertAdjacentHTML('beforeend', `
     <div id="giorno-modal" class="modal initially-hidden">
         <div class="modal-content">
-            <h3 id="giorno-title">Consegna</h3>
+            <h3 id="giorno-title">Giorno della consegna</h3>
             <form onsubmit="event.preventDefault(); saveGiorno();">
                 <div class="form-group">
                     <label for="giorno-data">Giorno della consegna</label>
@@ -186,7 +186,7 @@ function initGiorno() {
 
 function openGiorno(t, { autoOn, onSaved }) {
   giorno = { t, autoOn, onSaved };
-  document.getElementById('giorno-title').textContent = `Consegna di ${formatDateLong(t.settimana)}`;
+  document.getElementById('giorno-title').textContent = `Giorno della consegna del ${formatDateLong(t.settimana)}`;
   setDateField('giorno-data', t.data);
   document.getElementById('giorno-saltata').checked = t.saltata;
   document.getElementById('giorno-riunione').checked = t.riunione;
@@ -208,7 +208,7 @@ async function saveGiorno() {
     const ok = await confirmDialog({
       title: 'Niente consegna?',
       message: 'I due turnisti verranno tolti da questa data' + (autoOn ? ' e saranno i primi a fare il prossimo turno libero.' : '.'),
-      confirmText: 'Niente consegna'
+      confirmText: 'Segna niente consegna'
     });
     if (!ok) return;
   }
@@ -220,7 +220,7 @@ async function saveGiorno() {
       nota: document.getElementById('giorno-nota').value
     });
     closeGiorno();
-    showStatus('Consegna aggiornata', 'success');
+    showStatus('Giorno aggiornato', 'success');
     await onSaved();
   } catch (error) {
     const err = document.getElementById('giorno-error');

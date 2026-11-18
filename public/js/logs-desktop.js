@@ -24,7 +24,7 @@ function renderLogs(events) {
   container.innerHTML = '';
 
   if (events.length === 0) {
-    container.innerHTML = '<p>Nessuna attivita registrata</p>';
+    container.innerHTML = '<p>Nessuna attività registrata</p>';
     return;
   }
 
@@ -77,17 +77,17 @@ function getEventDescription(event) {
     case 'consegna_created':
       return `Nuova consegna`;
     case 'consegna_deleted':
-      return `Consegna annullata`;
+      return `Consegna eliminata`;
     case 'user_created':
-      return `Utente creato`;
+      return `Gassista creato`;
     case 'user_edited':
-      return `Utente modificato: <strong>${escapeHtml(event.partecipante_nome || 'utente eliminato')}</strong>`;
+      return `Gassista modificato: <strong>${escapeHtml(event.partecipante_nome || 'gassista eliminato')}</strong>`;
     case 'user_deleted':
-      return `Utente eliminato`;
+      return `Gassista eliminato`;
     case 'password_changed':
       return `Password cambiata`;
     case 'saldo_updated':
-      return `Saldo modificato per <strong>${escapeHtml(event.partecipante_nome || 'N/A')}</strong>`;
+      return `Saldo modificato per <strong>${escapeHtml(event.partecipante_nome || '–')}</strong>`;
     case 'turno_modificato':
       return 'Turno modificato';
     case 'turno_scambio':
@@ -101,17 +101,17 @@ function getEventDescription(event) {
     case 'teatro_modifica':
       return 'Quota teatro modificata';
     case 'teatro_cassa':
-      return 'Cassa teatro';
+      return 'Cassa teatro: voce aggiunta';
     case 'scontrino_aggiunto':
-      return `Scontrino aggiunto per <strong>${escapeHtml(event.partecipante_nome || 'N/A')}</strong>`;
+      return `Scontrino aggiunto per <strong>${escapeHtml(event.partecipante_nome || '–')}</strong>`;
     case 'scontrino_rimosso':
-      return `Scontrino tolto per <strong>${escapeHtml(event.partecipante_nome || 'N/A')}</strong>`;
+      return `Scontrino tolto per <strong>${escapeHtml(event.partecipante_nome || '–')}</strong>`;
     case 'quaderno_aggiunto':
       return 'Foto del quaderno aggiunta';
     case 'quaderno_rimosso':
       return 'Foto del quaderno tolta';
     case 'movimento_changed':
-      return `Movimento modificato per <strong>${escapeHtml(event.partecipante_nome || 'N/A')}</strong>`;
+      return `Movimento modificato per <strong>${escapeHtml(event.partecipante_nome || '–')}</strong>`;
     default:
       return escapeHtml(event.event_type);
   }
@@ -174,7 +174,7 @@ function createLogsTable(events) {
         <th>Consegna</th>
         <th>Azione</th>
         <th>Dettagli</th>
-        <th>Utente</th>
+        <th>Fatto da</th>
       </tr>
     </thead>
     <tbody>${rows}</tbody>

@@ -77,9 +77,9 @@ describe('getEventDescription', () => {
     expect(getEventDescription(event)).toBe('Consegna riaperta');
   });
 
-  it('shows "utente eliminato" when the edited user no longer exists', () => {
+  it('shows "gassista eliminato" when the edited user no longer exists', () => {
     const event = { event_type: 'user_edited', partecipante_nome: null };
-    expect(getEventDescription(event)).toContain('utente eliminato');
+    expect(getEventDescription(event)).toContain('gassista eliminato');
   });
 
   it('escapes event_type for unknown events', () => {

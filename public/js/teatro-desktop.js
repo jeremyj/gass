@@ -1,4 +1,4 @@
-// Teatro, desktop (admins): quota teatro per person and semester, the bussolotto, the cassa log
+// Teatro, desktop (admins): quota teatro per person and semester, the cassa teatro log
 
 let dati = null;
 let editing = null; // { userId, semestre } of the cell whose dovuto is being changed
@@ -26,7 +26,7 @@ function renderGrid() {
   document.getElementById('show-old-wrap').classList.toggle('initially-hidden', dati.semestri.length <= RECENT_SEMESTRI);
   const semestri = showOld ? dati.semestri : dati.semestri.slice(-RECENT_SEMESTRI);
   const persone = [...dati.persone].sort((a, b) => STATO_ORDER[a.stato] - STATO_ORDER[b.stato] || a.nome.localeCompare(b.nome, 'it'));
-  document.getElementById('teatro-head').innerHTML = `<tr><th class="left" data-tip="teatro_griglia">Gassista</th>${semestri.map(s =>
+  document.getElementById('teatro-head').innerHTML = `<tr><th class="left">Gassista</th>${semestri.map(s =>
     `<th class="c"><button type="button" class="link-btn" onclick="editQuota('${s.semestre}')" title="Cambia la quota">${escapeHtml(s.label)}<br><small>${formatEuro(s.quota)}</small></button></th>`).join('')}<th class="left">Note</th></tr>`;
   document.getElementById('teatro-body').innerHTML = persone.map(p => `
     <tr class="${p.stato === 'disattivato' ? 'off' : ''}">
@@ -38,7 +38,7 @@ function renderGrid() {
 
   const current = semestri[semestri.length - 1];
   document.getElementById('kpi-saldo').textContent = formatEuro(dati.saldo);
-  document.getElementById('kpi-sem-label').textContent = `Quote ${current ? current.label : 'del semestre'}`;
+  document.getElementById('kpi-sem-label').textContent = `Versato per il ${current ? current.label : 'semestre'}`;
   document.getElementById('kpi-sem').textContent = current ? formatEuro(roundToCents(tot(current))) : '–';
   document.getElementById('kpi-mancanti').textContent = formatEuro(roundToCents(persone.reduce((acc, p) => acc + Math.max(p.residuo, 0), 0)));
 }
@@ -52,7 +52,7 @@ function renderCassa() {
   }));
   const voci = [...dati.cassa.map(c => ({ ...c, manual: true })), ...quote].sort((a, b) => b.data.localeCompare(a.data));
   document.getElementById('cassa-list').innerHTML = voci.length === 0
-    ? '<li class="hint">Nessun movimento</li>'
+    ? '<li class="hint">Nessuna voce nella cassa teatro</li>'
     : voci.map(v => `<li><span>${formatDateItalian(v.data)} · ${v.manual ? escapeHtml(v.descrizione)
         : 'quote: ' + v.quote.map(p => `${escapeHtml(p.nome)} ${formatEuro(p.importo)} <button type="button" class="link-btn danger" onclick="deletePagamento(${p.id})" title="Elimina questo pagamento">×</button>`).join(', ')}</span>
         <b class="${v.importo < 0 ? 'db' : 'cr'}">${formatSigned(v.importo)}</b></li>`).join('');
@@ -64,6 +64,7 @@ function openDovuto(userId, semestre) {
   const r = cellOf(p, semestre);
   editing = { userId, semestre };
   document.getElementById('dovuto-title').textContent = `${p.nome}, ${s.label}`;
+  setDovutoLabel(false);
   document.getElementById('dovuto-importo').value = formatNumber(r ? r.dovuto : s.quota);
   document.getElementById('dovuto-hint').textContent = `Quota del semestre: ${formatEuro(s.quota)}. Per chi entra a metà semestre metti la quota ridotta.`;
   const modal = document.getElementById('dovuto-modal');
@@ -82,6 +83,12 @@ function closeDovuto() {
   quotaSem = null;
 }
 
+// The field is the person's "Quanto deve" or a semester's "Quota"; the (i) tip only fits the first
+function setDovutoLabel(quota) {
+  document.getElementById('dovuto-label-persona').style.display = quota ? 'none' : '';
+  document.getElementById('dovuto-label-quota').style.display = quota ? '' : 'none';
+}
+
 // dovuto: undefined = read the field, 0 = non dovuto, null = not in the GASS that semester
 async function saveDovuto(dovuto) {
   const value = dovuto === undefined ? parseAmount(document.getElementById('dovuto-importo').value) : dovuto;
@@ -89,10 +96,10 @@ async function saveDovuto(dovuto) {
   try {
     await API.put('/api/teatro/dovuti', { ...editing, dovuto: value });
     closeDovuto();
-    showStatus('Quota aggiornata', 'success');
+    showStatus('Importo dovuto aggiornato', 'success');
     await loadTeatro();
   } catch (error) {
-    showStatus('Errore: ' + error.message, 'error');
+    showStatus('Quota non salvata: ' + error.message, 'error');
   }
 }
 
@@ -104,6 +111,7 @@ function editQuota(semestre) {
   editing = null;
   quotaSem = semestre;
   document.getElementById('dovuto-title').textContent = `Quota ${s.label}`;
+  setDovutoLabel(true);
   document.getElementById('dovuto-importo').value = formatNumber(s.quota);
   document.getElementById('dovuto-hint').textContent = 'Vale per tutti quelli che hanno la quota piena; le quote ridotte e i non dovuti restano.';
   const modal = document.getElementById('dovuto-modal');
@@ -123,7 +131,7 @@ async function submitModal() {
     showStatus('Quota del semestre aggiornata', 'success');
     await loadTeatro();
   } catch (error) {
-    showStatus('Errore: ' + error.message, 'error');
+    showStatus('Quota non salvata: ' + error.message, 'error');
   }
 }
 
@@ -132,7 +140,7 @@ async function saveNota(userId, nota) {
     await API.put('/api/teatro/nota', { userId, nota });
     showStatus('Nota salvata', 'success');
   } catch (error) {
-    showStatus('Errore: ' + error.message, 'error');
+    showStatus('Nota non salvata: ' + error.message, 'error');
   }
 }
 
@@ -149,7 +157,7 @@ async function deletePagamento(id) {
     showStatus('Pagamento eliminato', 'success');
     await loadTeatro();
   } catch (error) {
-    showStatus('Errore: ' + error.message, 'error');
+    showStatus('Pagamento non eliminato: ' + error.message, 'error');
   }
 }
 
@@ -172,7 +180,7 @@ async function addCassa() {
     showStatus('Voce aggiunta', 'success');
     await loadTeatro();
   } catch (error) {
-    showStatus('Errore: ' + error.message, 'error');
+    showStatus('Voce non aggiunta: ' + error.message, 'error');
   }
 }
 

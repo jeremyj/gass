@@ -139,7 +139,7 @@ describe('public endpoints', () => {
   it('serves the two manuals without a session, linked to each other', async () => {
     const res = await request(app).get('/manuale');
     expect(res.status).toBe(200);
-    expect(res.text).toContain('<h1>GASS - Manuale dei partecipanti</h1>');
+    expect(res.text).toContain('<h1>GASS - Manuale dei gassisti</h1>');
     expect(res.text).toContain('href="/manuale-admin"');
     const admin = await request(app).get('/manuale-admin');
     expect(admin.status).toBe(200);
