@@ -718,7 +718,7 @@ function renderParticipant(id, buttonsHtml) {
 // The effettivo of the Altobelli sheet when there is one: a green button, a tap writes it (the conto
 // is never filled in by itself). Without it, the empty field says to write the receipt rounded to the
 // 10 cents as Leonardo writes the effettivi, .01-.05 down and .06-.09 up (user decision 2026-11-18: inside the field)
-const CONTO_PLACEHOLDER = 'arrotonda scontrino: ,01-,05 → ,00 · ,06-,09 → ,10';
+const CONTO_PLACEHOLDER = 'arrotonda: ,01-,05 → ,00 · ,06-,09 → ,10';
 const contoFoglio = {};
 
 async function loadContoFoglio(id) {

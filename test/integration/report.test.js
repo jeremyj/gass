@@ -125,6 +125,19 @@ describe('notifyClosed', () => {
     expect(sent[1].body).toBe('In cassa ora: 586,30 €');
   });
 
+  it('sends nothing when the report changed but no amount did', async () => {
+    const id = setup();
+    const sent = [];
+    const send = async title => { sent.push(title); };
+    await notifyClosed(db, id, URL, 'telegram', send);
+    const prima = db.prepare('SELECT report_telegram, report_dati FROM consegne WHERE id = ?').get(id);
+    // Only the credit/debt split changes: the body differs, the rettifiche are empty
+    db.prepare('UPDATE movimenti SET credito_lasciato = 7 WHERE consegna_id = ? AND id = (SELECT MIN(id) FROM movimenti WHERE consegna_id = ?)').run(id, id);
+    await notifyClosed(db, id, URL, 'telegram', send);
+    expect(sent).toHaveLength(1);
+    expect(db.prepare('SELECT report_telegram, report_dati FROM consegne WHERE id = ?').get(id)).toEqual(prima);
+  });
+
   it('sends a corrected report without rettifiche for a consegna reported before they existed', async () => {
     const id = setup();
     db.prepare("UPDATE consegne SET report_telegram = 'vecchio' WHERE id = ?").run(id);

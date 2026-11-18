@@ -68,7 +68,7 @@ Video: [Registrare un pagamento, 0:28](https://gass.x86.it/comefunziona#pagament
 2. Scegli il partecipante.
 3. Scrivi il **Conto produttore**.
    - Se il foglio Altobelli ha l'importo effettivo, sopra il campo c'è il bottone verde **Foglio Altobelli: X €**. Premi il bottone per scrivere l'importo nel campo. Quando il conto è uguale, GASS mostra **Uguale al foglio Altobelli**.
-   - Se il foglio non ha l'importo, il campo vuoto mostra **arrotonda scontrino: ,01-,05 → ,00 · ,06-,09 → ,10**: scrivi il totale dello scontrino arrotondato ai 10 centesimi, come Altobelli. Per esempio, 20,82 diventa 20,80, 21,05 diventa 21,00 e 21,08 diventa 21,10.
+   - Se il foglio non ha l'importo, il campo vuoto mostra **arrotonda: ,01-,05 → ,00 · ,06-,09 → ,10**: scrivi il totale dello scontrino arrotondato ai 10 centesimi, come Altobelli. Per esempio, 20,82 diventa 20,80, 21,05 diventa 21,00 e 21,08 diventa 21,10.
 4. Scrivi l'**Importo saldato**.
 5. Controlla la riga **Prima di oggi** (credito, debito o in pari) e l'esito: credito, debito o "saldato".
 6. Premi **Salva movimento**.

@@ -20,6 +20,7 @@ Decided with the user 2026-11-18. Points 1–3 and the auto-association of 4 imp
 
 - When a reopened consegna is closed again and a snapshot exists (`report_dati`), Telegram/email get: "Report turno 17/11/2026 (corretto)", the `rettifiche` lines, then "In cassa ora: 586,36 €". No full body.
 - No snapshot (consegne reported before 2.30) → full report as today.
+- Snapshot but no rettifiche lines (no amount changed) → nothing sent (user decision, same day).
 - Nothing changed → nothing sent (unchanged rule).
 
 ## 4. Altobelli names
