@@ -6,6 +6,8 @@ const db = setupTestDb();
 const { setupTestApp } = require('../helpers/setup-app');
 const { createUser, createConsegna, clearTeatro } = require('../helpers/seed');
 const request = require('supertest');
+const { semestreOf, semestreLabel, semestreDopo } = require('../../server/services/teatro-calc');
+const { toLocalDateString } = require('../../server/services/calculations');
 
 let app, adminAgent, userAgent, me;
 
@@ -41,6 +43,7 @@ describe('/api/teatro', () => {
     const p = (await userAgent.get('/api/participants')).body.participants.find(x => x.id === me);
     expect(p.teatro_residuo).toBe(-5); // 15 owed, 20 paid: 5 in advance
     expect(p.teatro_dovuto).toBe(15); // the current semester's quota
+    expect(p.teatro_anticipo_per).toBe(semestreLabel(semestreDopo(semestreOf(toLocalDateString())))); // the advance covers the next semester
     expect(db.prepare("SELECT COUNT(*) n FROM activity_logs WHERE event_type = 'teatro_pagamento'").get().n).toBe(1);
     expect((await userAgent.get(`/api/teatro/consegna/${consegna}`)).body.totale).toBe(20);
     expect((await adminAgent.post('/api/teatro/pagamenti').send({ userId: me, importo: -1, consegnaId: consegna })).status).toBe(400);

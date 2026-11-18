@@ -199,7 +199,7 @@ Colonna **Quota teatro** (computer):
 | ✓ | Il partecipante ha pagato tutto. |
 | – | Il partecipante non ha quota in questo semestre. |
 
-Sul telefono, sotto il nome, GASS mostra "deve X €" o "anticipo".
+Sul telefono, sotto il nome, GASS mostra "deve X €" o "X € anticipati per il 1° sem. 2027". Un anticipo vuol dire che il partecipante ha pagato tutto e ha già versato una parte del semestre successivo. Sul computer, tieni il puntatore sopra la ✓ per vedere l'anticipo.
 
 ## Storico
 

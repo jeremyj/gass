@@ -25,7 +25,7 @@ GASS Pagamenti is a financial management system for tracking deliveries, cash mo
 RESTful API with the following endpoints:
 
 ```
-GET    /api/participants              - Retrieve all participants with current balances, `teatro_residuo` (owed, negative = advance) and `teatro_dovuto` (current semester quota, 0 = none)
+GET    /api/participants              - Retrieve all participants with current balances, `teatro_residuo` (owed, negative = advance), `teatro_anticipo_per` (only with an advance: label of the semester after the person's last owed one, e.g. "1° sem. 2027") and `teatro_dovuto` (current semester quota, 0 = none)
 GET    /api/participants/:id/transactions - Ledger (movimenti + rettifiche) with running saldo (any authenticated user)
 GET    /api/consegna/apertura         - {data, aperte}: date the Consegna page opens on, all open consegne (declared before /:date)
 GET    /api/consegna/:date            - Delivery data for a date; each movimento has `teatro`, plus `teatroExtra` [{user_id, nome, importo}] for quota-only payers

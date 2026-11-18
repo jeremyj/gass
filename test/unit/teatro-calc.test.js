@@ -1,12 +1,14 @@
 'use strict';
 
-const { semestreOf, semestreLabel, isSemestre, allocate } = require('../../server/services/teatro-calc');
+const { semestreOf, semestreLabel, semestreDopo, isSemestre, allocate } = require('../../server/services/teatro-calc');
 
 describe('semesters', () => {
   it('maps dates to January-June / July-December', () => {
     expect(semestreOf('2026-06-30')).toBe('2026-1');
     expect(semestreOf('2026-07-01')).toBe('2026-2');
     expect(semestreLabel('2026-2')).toBe('2° sem. 2026');
+    expect(semestreDopo('2026-1')).toBe('2026-2');
+    expect(semestreDopo('2026-2')).toBe('2027-1');
     expect(isSemestre('2026-2')).toBe(true);
     expect(isSemestre('2026-3')).toBe(false);
   });

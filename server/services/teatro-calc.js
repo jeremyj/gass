@@ -13,6 +13,12 @@ function semestreLabel(s) {
   return `${h}° sem. ${y}`;
 }
 
+// The semester after s: '2026-2' → '2027-1'
+function semestreDopo(s) {
+  const [y, h] = s.split('-').map(Number);
+  return h === 1 ? `${y}-2` : `${y + 1}-1`;
+}
+
 function isSemestre(s) {
   return /^\d{4}-[12]$/.test(String(s));
 }
@@ -30,4 +36,4 @@ function allocate(dovuti, totalePagato) {
   return { righe, residuo: Math.round(residuo * 100) / 100, anticipo: left };
 }
 
-module.exports = { semestreOf, semestreLabel, isSemestre, allocate };
+module.exports = { semestreOf, semestreLabel, semestreDopo, isSemestre, allocate };

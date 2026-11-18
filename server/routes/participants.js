@@ -7,7 +7,7 @@ const { currentSaldo, recalculateSaldo, getTransactions } = require('../services
 const { logActivity } = require('../services/activity');
 const { deleteUser } = require('../services/users');
 const teatro = require('../services/teatro');
-const { semestreOf } = require('../services/teatro-calc');
+const { semestreOf, semestreLabel, semestreDopo } = require('../services/teatro-calc');
 
 const router = express.Router();
 
@@ -30,7 +30,17 @@ router.get('/', (req, res) => {
     const residui = teatro.residui(db);
     const dovuti = Object.fromEntries(db.prepare('SELECT user_id, dovuto FROM teatro_dovuti WHERE semestre = ?')
       .all(semestreOf(oggi)).map(r => [r.user_id, r.dovuto]));
-    participants = participants.map(u => ({ ...u, teatro_residuo: residui[u.id], teatro_dovuto: dovuti[u.id] || 0 }));
+    // An advance covers the semester after the person's last owed one (never before the next one)
+    const ultimi = Object.fromEntries(db.prepare('SELECT user_id, MAX(semestre) s FROM teatro_dovuti GROUP BY user_id')
+      .all().map(r => [r.user_id, r.s]));
+    const anticipoPer = id => {
+      const s = [ultimi[id], semestreOf(oggi)].filter(Boolean).sort().pop();
+      return semestreLabel(semestreDopo(s));
+    };
+    participants = participants.map(u => ({
+      ...u, teatro_residuo: residui[u.id], teatro_dovuto: dovuti[u.id] || 0,
+      ...(residui[u.id] < 0 && { teatro_anticipo_per: anticipoPer(u.id) })
+    }));
 
     console.log(`[PARTICIPANTS] ${timestamp} - Retrieved ${participants.length} participants`);
     res.json({ success: true, participants });
