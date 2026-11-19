@@ -1,6 +1,6 @@
 ---
 title: "GASS Torpignattara - Guida Rapida (Mobile)"
-date: "Ottobre 2026"
+date: "Novembre 2026"
 ---
 
 # Accesso
@@ -29,7 +29,7 @@ In cima lo stato (*Consegna aperta* / *Consegna chiusa*) con **Elimina consegna*
 
 1. Nella sezione **Chi ha ritirato** seleziona il **gassista** da **+ Aggiungi gassista** (per modificare un movimento già inserito, tocca la sua riga)
 2. Si apre il modulo a tutto schermo — inserisci:
-   - **Conto produttore** (l'importo effettivo nel foglio Altobelli)
+   - **Conto produttore** (l'importo effettivo nel foglio Altobelli): se il foglio ce l'ha già, tocca il pulsante verde **Foglio Altobelli: X €**; se no, scrivi lo scontrino arrotondato ai 10 centesimi
    - **Importo saldato** (quanto porta oggi); sotto, la riga **Prima di oggi** mostra il credito o il debito che aveva
    - se c'è, la **Quota teatro** (vedi sotto)
 3. Il sistema calcola automaticamente credito o debito residuo e lo mostra nel riquadro finale (*Lascia credito*, *Lascia debito* o *Esito: In pari*). Nell'elenco *Chi ha ritirato* ogni riga mostra conto, saldato e, quando c'è, *quota teatro* (debito saldato e credito usato sono nei Saldi dal computer); a consegna chiusa una riga apre la scheda in sola lettura; chi ha pagato solo la quota ha una riga *solo teatro*
@@ -69,7 +69,7 @@ Indice delle consegne, raggruppate per mese e dalla più recente: per ognuna dat
 
 I prossimi 6 mesi con i due turnisti di ogni consegna (martedì). La tua riga è segnata **TU**; **da coprire** = manca un turnista; **riunione** = riunione GASS. **Mostra turni passati** aggiunge gli ultimi 3 mesi.
 
-Tocca la tua riga (o **Apri**): sotto i menu dei turnisti compare **Il tuo turno** con **scambia con…** (prima mettiti d'accordo con qualcuno: prende il tuo turno e tu il suo primo turno da oggi), **sposta al…** (una data con un posto libero) e **Salta turno** (il posto resta da coprire). Ogni azione chiede conferma. Se ci sono, le **Note** sui turni compaiono sopra l'elenco. Gli altri turni si modificano da desktop.
+Tocca la tua riga (o **Apri**): sotto i menu dei turnisti compare **Il tuo turno** con **scambia con…** (prima mettiti d'accordo con qualcuno: prende il tuo turno e tu il suo primo turno da oggi), **sposta al…** (una data con un posto libero) e **Salta turno** (il posto resta da coprire). Ogni azione chiede conferma. Toccando qualsiasi consegna futura puoi anche cambiare i due turnisti dai menu e usare **Modifica giorno** (sposta la consegna, la segna niente consegna o riunione). Se ci sono, le **Note** sui turni compaiono sopra l'elenco.
 
 ---
 

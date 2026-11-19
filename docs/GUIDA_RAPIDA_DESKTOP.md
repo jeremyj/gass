@@ -1,6 +1,6 @@
 ---
 title: "GASS Torpignattara - Guida Rapida (Desktop)"
-date: "Ottobre 2026"
+date: "Novembre 2026"
 ---
 
 # Accesso
@@ -36,7 +36,7 @@ Sotto, il riquadro **Quaderno** (foto della pagina dei conti scritti a mano), le
 ## Registrare un Movimento
 
 1. Nella sezione **Chi ha ritirato** seleziona il **gassista** da **+ Aggiungi gassista** (per modificare un movimento già inserito, clicca la sua riga nella tabella)
-2. Sotto la tabella si apre il modulo: inserisci il **Conto produttore** (l'importo effettivo nel foglio Altobelli)
+2. Sotto la tabella si apre il modulo: inserisci il **Conto produttore** (l'importo effettivo nel foglio Altobelli: se il foglio ce l'ha già, clicca il pulsante verde **Foglio Altobelli: X €**; se no, scrivi lo scontrino arrotondato ai 10 centesimi)
 3. Inserisci l'**Importo saldato** (quanto porta oggi) e, se c'è, la **Quota teatro** (vedi sotto)
 4. Il sistema calcola automaticamente eventuali **Lascia credito** o **Lascia debito** e lo mostra nel riquadro finale
 5. Clicca **Salva movimento**
@@ -45,7 +45,7 @@ La tabella ha le colonne Gassista, Conto produttore, Importo saldato, Lascia cre
 
 > Se il gassista ha un debito o credito pregressi, il sistema li compensa automaticamente — controlla il riepilogo prima di salvare.
 
-![Consegna del 13/10 con i movimenti della giornata](screenshots/02-consegna.png){ width=100% }
+![Consegna del 17/11 con i movimenti della giornata](screenshots/02-consegna.png){ width=100% }
 
 ## Chiudere la Consegna
 
@@ -75,7 +75,7 @@ Indice delle consegne dalla più recente, in una tabella con Consegna, Stato, Pe
 
 I prossimi 6 mesi con i due turnisti di ogni consegna (martedì). La tua riga è segnata **TU**; **da coprire** = manca un turnista; **riunione** = riunione GASS. **Mostra turni passati** aggiunge gli ultimi 3 mesi.
 
-Tutti scelgono i nomi di ogni consegna futura dai menu della tabella (sostituire o togliere un nome chiede conferma; per uno scambio cambia i nomi in tutte e due le date). **Giorno** sposta la consegna, la segna **niente consegna** o **riunione**, aggiunge una nota.
+Tutti scelgono i nomi di ogni consegna futura dai menu della tabella (sostituire o togliere un nome chiede conferma; per uno scambio cambia i nomi in tutte e due le date). **Modifica giorno** sposta la consegna, la segna **niente consegna** o **riunione**, aggiunge una nota.
 
 Gli amministratori scrivono il riquadro **Note** sopra la tabella (lo leggono tutti) e gestiscono le **Pause** in fondo. Le settimane nuove arrivano da coprire.
 
