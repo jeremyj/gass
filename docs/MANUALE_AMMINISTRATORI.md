@@ -53,7 +53,7 @@ GASS calcola di nuovo il saldo dei gassisti di quella consegna. Le spese cancell
 
 ### Modificare un saldo
 
-Video: [Correggere un saldo, 0:12](https://gass.x86.it/admin-video#saldo).
+Video: [Correggere un saldo, 0:16](https://gass.x86.it/admin-video#saldo).
 
 Usa questa funzione solo per correggere un errore che non è in una consegna.
 
@@ -112,7 +112,7 @@ Puoi eliminare solo un gassista senza spese, senza rettifiche e senza quote teat
 
 ## Turni
 
-Video: [Turni: cambiare i nomi, 0:18](https://gass.x86.it/admin-video#turni), [Spostare una consegna (Giorno), 0:15](https://gass.x86.it/admin-video#giorno), [Note, 0:13](https://gass.x86.it/admin-video#auto), [Pause, 0:26](https://gass.x86.it/admin-video#pause).
+Video: [Turni: cambiare i nomi, 0:18](https://gass.x86.it/admin-video#turni), [Spostare una consegna (Modifica giorno), 0:15](https://gass.x86.it/admin-video#giorno), [Note sui turni, 0:09](https://gass.x86.it/admin-video#note), [Pause, 0:26](https://gass.x86.it/admin-video#pause).
 
 Sul computer, nella pagina **Turni**:
 
@@ -169,7 +169,7 @@ Per cancellare un pagamento sbagliato, premi **×** sulla riga del pagamento.
 
 ## Altobelli
 
-Video: [Foglio Altobelli, 0:50](https://gass.x86.it/admin-video#altobelli).
+Video: [Foglio Altobelli, 0:52](https://gass.x86.it/admin-video#altobelli).
 
 La pagina **Altobelli** compara il foglio di Altobelli con i conti produttore in GASS. La pagina è **sperimentale**: controlla sempre il risultato sul foglio.
 

@@ -22,7 +22,7 @@ Funzioni degli amministratori: [Manuale degli amministratori](MANUALE_AMMINISTRA
 
 ## Accesso
 
-Video: [Primo accesso e nuova password, 0:52](https://gass.x86.it/comefunziona#primo-accesso).
+Video: [Primo accesso e nuova password, 0:53](https://gass.x86.it/comefunziona#primo-accesso).
 
 1. Apri https://gass.x86.it.
 2. Premi **Accedi**.
@@ -62,7 +62,7 @@ Sul telefono, in alto ci sono lo stato della consegna e i pulsanti **Elimina con
 
 ### Registrare la spesa di un gassista
 
-Video: [Registrare un pagamento, 0:28](https://gass.x86.it/comefunziona#pagamento).
+Video: [Registrare un pagamento, 0:32](https://gass.x86.it/comefunziona#pagamento).
 
 1. Premi **+ Aggiungi gassista**.
 2. Scegli il gassista.
@@ -172,7 +172,7 @@ Dopo la chiusura, solo chi ha chiuso la consegna o un amministratore può aggiun
 
 ### Chiudere la consegna
 
-Video: [Chiudere la consegna, 0:17](https://gass.x86.it/comefunziona#chiudere).
+Video: [Chiudere la consegna, 0:28](https://gass.x86.it/comefunziona#chiudere).
 
 **AVVERTENZA:** Dopo la chiusura, non puoi cambiare la consegna. Solo un amministratore può riaprirla.
 
@@ -234,7 +234,7 @@ Per vedere gli ultimi 3 mesi, premi **Mostra turni passati**.
 
 ### Cambiare un turno (telefono)
 
-Video: [Scambiare un turno, 0:31](https://gass.x86.it/comefunziona#scambio).
+Video: [Scambiare un turno, 0:33](https://gass.x86.it/comefunziona#scambio).
 
 1. Premi la riga della consegna (o **Apri** a destra).
 2. Scegli i nomi in **Turnista 1** e **Turnista 2**. Se sostituisci o togli un nome, conferma (**Sostituisci** o **Togli il nome**).
