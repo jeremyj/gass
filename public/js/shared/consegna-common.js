@@ -392,17 +392,21 @@ async function toggleConsegnaStatus() {
       showStatus('Consegna riaperta', 'success');
     } else {
       const negativa = parseAmount(document.getElementById('lasciatoInCassa').value) < 0;
-      const { canali } = await API.get('/api/consegna/report-canali').catch(() => ({ canali: [] }));
+      const r = await API.get(`/api/consegna/report-canali?consegna=${currentConsegnaId}`).catch(() => ({ canali: [] }));
+      // Only the channels with something to send: a reclose with no amount changed sends nothing
+      const daInviare = r.daInviare || r.canali;
+      const nienteReport = r.canali.length > 0 && daInviare.length === 0;
       // The notebook photos are taken in the block under the cassa (a reload on the way back from the
       // camera would lose this dialog); here they are only counted, or proposed when there are none
       const foto = typeof quadernoGiorno !== 'undefined' ? quadernoGiorno.length : null;
       const ok = await confirmDialog({
         title: 'Chiudere la consegna?',
         message: (negativa ? '⚠️ La cassa è negativa. ' : '') +
-          'Dopo la chiusura i dati non potranno essere modificati (solo un amministratore può riaprirla).',
+          'Dopo la chiusura i dati non potranno essere modificati (solo un amministratore può riaprirla).' +
+          (nienteReport ? ' Nessun importo è cambiato dall\'ultimo report: il report non parte.' : ''),
         details: [...consegnaSummaryDetails(), ...(foto ? [['Foto del quaderno', String(foto)]] : [])],
         azione: foto === 0 ? { nota: 'Non hai fotografato il quaderno dei conti.', testo: 'Fotografa prima' } : null,
-        checks: canali.map(c => [c, c === 'telegram' ? 'Invia il report su Telegram' : 'Invia il report per email']),
+        checks: daInviare.map(c => [c, c === 'telegram' ? 'Invia il report su Telegram' : 'Invia il report per email']),
         confirmText: 'Chiudi consegna',
         danger: true
       });

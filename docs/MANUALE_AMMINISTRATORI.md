@@ -21,7 +21,7 @@ Video: [Riaprire una consegna, 0:13](https://gass.x86.it/admin-video#riaprire).
 3. Fai le correzioni.
 4. Premi **Chiudi consegna**.
 
-Se il resoconto è diverso, GASS manda un resoconto con l'indicazione "(corretto)". Il resoconto corretto contiene solo le **Rettifiche rispetto al report del …** e la riga **In cassa ora**. Ogni rettifica è un valore cambiato, con il valore di prima e quello di ora (per esempio "Marco B: conto produttore 0 → 23,50"). Se non è cambiato nessun importo, GASS non manda niente. Per le consegne chiuse prima della versione 2.30.0, GASS manda di nuovo tutto il resoconto.
+Se il resoconto è diverso, GASS manda un resoconto con l'indicazione "(corretto)". Il resoconto corretto contiene solo le **Rettifiche rispetto al report del …** e la riga **In cassa ora**. Ogni rettifica è un valore cambiato, con il valore di prima e quello di ora (per esempio "Marco B: conto produttore 0 → 23,50"). Se non è cambiato nessun importo, GASS non manda niente: la finestra di chiusura non mostra la casella del resoconto e scrive "il report non parte". Per le consegne chiuse prima della versione 2.30.0, GASS manda di nuovo tutto il resoconto.
 
 Se la correzione cambia la cassa, GASS aggiorna anche le consegne dopo: il **Trovato** di ogni consegna è l'**In cassa** della consegna di prima. Non devi riaprire le consegne dopo.
 

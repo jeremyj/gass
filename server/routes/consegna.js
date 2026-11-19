@@ -7,7 +7,7 @@ const { validateConsegnaPayload } = require('../services/validation');
 const { logActivity } = require('../services/activity');
 const { quotePerPersona, registraPagamento, ensureSemestre } = require('../services/teatro');
 const { apertura } = require('../services/apertura');
-const { notifyClosed, canaliAttivi } = require('../services/report');
+const { notifyClosed, canaliAttivi, canaliDaInviare } = require('../services/report');
 const { listUscite, totaleUscite, sostituisciUscite } = require('../services/uscite');
 const { ensureConsegna, propagaCassa } = require('../services/consegne');
 const { rimuoviScontriniConsegna } = require('../services/scontrini');
@@ -26,8 +26,11 @@ router.get('/apertura', (req, res) => {
 });
 
 // Report channels configured on this server, offered in the close confirmation (declared before /:date)
+// ?consegna=<id> adds daInviare: the channels where closing it would send something (none when no amount changed)
 router.get('/report-canali', (req, res) => {
-  res.json({ success: true, canali: canaliAttivi() });
+  const id = Number(req.query.consegna);
+  const daInviare = id ? canaliDaInviare(db, id, `${req.protocol}://${req.get('host')}`) : undefined;
+  res.json({ success: true, canali: canaliAttivi(), daInviare });
 });
 
 // Get consegna data for a specific date

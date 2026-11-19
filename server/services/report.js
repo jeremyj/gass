@@ -181,26 +181,37 @@ const CANALI = {
 
 const canaliAttivi = () => Object.keys(CANALI).filter(k => CANALI[k].vars.every(v => process.env[v]));
 
-// Send the report on one channel unless the same one was already sent there. A changed resend is marked (corretto)
-// and holds only the rettifiche against the previous report plus the cassa now (user decision 2026-11-18); with no
-// rettifiche to list it is nothing, unless the consegna was reported before v2.30 (no snapshot): then the whole report
-async function notifyClosed(db, consegnaId, baseUrl, canale, send = CANALI[canale].send) {
+// What closing would send on one channel, or null when nothing goes out: the same report was already sent there, or
+// it was reclosed with no amount changed (e.g. only a note: nothing sent, nothing stored, so the next corrected report
+// still compares with the one people received; user decision 2026-11-18). A changed resend is marked (corretto) and
+// holds only the rettifiche against the previous report plus the cassa now; a consegna reported before v2.30 (no
+// snapshot) gets the whole report again
+function prossimoInvio(db, consegnaId, baseUrl, canale) {
   const { column } = CANALI[canale];
   const c = db.prepare(`SELECT data, report_dati, ${column} AS inviato FROM consegne WHERE id = ?`).get(consegnaId);
+  if (!c) return null;
   const body = reportBody(db, consegnaId, baseUrl);
-  if (body === c.inviato) return;
+  if (body === c.inviato) return null;
   const dati = reportDati(db, consegnaId);
   const prima = c.inviato != null && c.report_dati ? JSON.parse(c.report_dati) : null;
   const righe = prima ? rettifiche(prima, dati) : [];
-  // Reclosed with no amount changed (e.g. only a note): nothing sent, nothing stored, so the next
-  // corrected report still compares with the one people received (user decision 2026-11-18)
-  if (prima && !righe.length) return;
+  if (prima && !righe.length) return null;
+  return { c, body, dati, prima, righe };
+}
+
+// Active channels where closing this consegna would send something (the close dialog offers only these)
+const canaliDaInviare = (db, consegnaId, baseUrl) => canaliAttivi().filter(k => prossimoInvio(db, consegnaId, baseUrl, k));
+
+async function notifyClosed(db, consegnaId, baseUrl, canale, send = CANALI[canale].send) {
+  const invio = prossimoInvio(db, consegnaId, baseUrl, canale);
+  if (!invio) return;
+  const { c, body, dati, prima, righe } = invio;
   if (righe.length) {
     await send(reportTitle(c.data, true), `In cassa ora: ${num(dati.lasciato)} €`, { titolo: rettificheTitolo(prima.inviato_at), righe });
   } else {
     await send(reportTitle(c.data, c.inviato != null), body, null);
   }
-  db.prepare(`UPDATE consegne SET ${column} = ?, report_dati = ? WHERE id = ?`).run(body, JSON.stringify(dati), consegnaId);
+  db.prepare(`UPDATE consegne SET ${CANALI[canale].column} = ?, report_dati = ? WHERE id = ?`).run(body, JSON.stringify(dati), consegnaId);
 }
 
-module.exports = { reportBody, reportTitle, reportDati, rettifiche, rettificheTitolo, notifyClosed, canaliAttivi };
+module.exports = { reportBody, reportTitle, reportDati, rettifiche, rettificheTitolo, notifyClosed, canaliAttivi, canaliDaInviare };

@@ -196,5 +196,13 @@ describe('close route', () => {
     const sent = JSON.parse(fetch.mock.calls[0][1].body);
     expect(sent.chat_id).toBe('@gass');
     expect(sent.message_thread_id).toBe(2456);
+
+    // Reopened and nothing changed: the dialog is told there is nothing to send
+    await agent.post(`/api/consegna/${id}/reopen`).expect(200);
+    const r = (await agent.get(`/api/consegna/report-canali?consegna=${id}`)).body;
+    expect(r.canali).toEqual(['telegram']);
+    expect(r.daInviare).toEqual([]);
+    const nuova = createConsegna(db, { data: '2026-10-06' });
+    expect((await agent.get(`/api/consegna/report-canali?consegna=${nuova}`)).body.daInviare).toEqual(['telegram']);
   });
 });
