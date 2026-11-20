@@ -76,6 +76,7 @@ messaggio-*.txt
 
 # Agent workspace and design material
 .superpowers/
+.playwright-mcp/
 design/
 handoff/
 storico-consegne-cassa/
