@@ -69,7 +69,7 @@ Indice delle consegne, raggruppate per mese e dalla più recente: per ognuna dat
 
 I prossimi 6 mesi con i due turnisti di ogni consegna (martedì). La tua riga è segnata **TU**; **da coprire** = manca un turnista; **riunione** = riunione GASS. **Mostra turni passati** aggiunge gli ultimi 3 mesi.
 
-Tocca la tua riga (o **Apri**): sotto i menu dei turnisti compare **Il tuo turno** con **scambia con…** (prima mettiti d'accordo con qualcuno: prende il tuo turno e tu il suo primo turno da oggi), **sposta al…** (una data con un posto libero) e **Salta turno** (il posto resta da coprire). Ogni azione chiede conferma. Toccando qualsiasi consegna futura puoi anche cambiare i due turnisti dai menu e usare **Modifica giorno** (sposta la consegna, la segna niente consegna o riunione). Se ci sono, le **Note** sui turni compaiono sopra l'elenco.
+Tocca la tua riga (o **Modifica**): sotto i menu dei turnisti compare **Il tuo turno** con **scambia con…** (prima mettiti d'accordo con qualcuno: prende il tuo turno e tu il suo primo turno da oggi), **sposta al…** (una data con un posto libero) e **Salta turno** (il posto resta da coprire). Ogni azione chiede conferma. Toccando qualsiasi consegna futura puoi anche cambiare i due turnisti dai menu e usare **Modifica giorno** (sposta la consegna, la segna niente consegna o riunione). Se ci sono, le **Note** sui turni compaiono sopra l'elenco.
 
 ---
 

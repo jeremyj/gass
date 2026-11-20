@@ -236,7 +236,7 @@ Per vedere gli ultimi 3 mesi, premi **Mostra turni passati**.
 
 Video: [Scambiare un turno, 0:33](https://gass.x86.it/comefunziona#scambio).
 
-1. Premi la riga della consegna (o **Apri** a destra).
+1. Premi la riga della consegna (o **Modifica** a destra).
 2. Scegli i nomi in **Turnista 1** e **Turnista 2**. Se sostituisci o togli un nome, conferma (**Sostituisci** o **Togli il nome**).
 3. Per cambiare il giorno, premi **Modifica giorno**.
 4. Premi **Chiudi**.

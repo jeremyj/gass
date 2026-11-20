@@ -51,7 +51,7 @@ function renderTurni() {
     const tap = giornoModificabile(t);
     const open = tap && aperto === t.id;
     const tags = (mine(t) ? '<span class="tag-tu">TU</span>' : '') + (t.riunione ? '<span class="tag-riunione">riunione</span>' : '');
-    const action = tap && !open ? `<button type="button" class="link-btn" aria-expanded="false">Apri</button>` : '';
+    const action = tap && !open ? `<button type="button" class="link-btn" aria-expanded="false">Modifica</button>` : '';
     html += `
       <li class="${t.id === curId ? 'cur' : ''}${t.data < today ? ' past' : ''}${t.saltata ? ' off' : ''}${tap ? ' tap' : ''}${open ? ' open' : ''}"${tap ? ` onclick="tocca(event, ${t.id})"` : ''}>
         <div class="turno-dd${t.data !== t.settimana ? ' moved' : ''}"><b>${Number(t.data.slice(8))}</b>${giornoTurno(t.data) ? `<small>${giornoTurno(t.data)}</small>` : ''}</div>

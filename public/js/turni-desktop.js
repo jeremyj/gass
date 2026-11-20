@@ -26,12 +26,20 @@ function renderTurni() {
   const body = document.getElementById('turni-body');
   const today = toLocalDateString();
   const curId = turni.find(t => t.data >= today)?.id;
-  body.innerHTML = turni.map(t => `
+  // grouped by month with the day number, as on the phone
+  let month = '';
+  body.innerHTML = turni.map(t => {
+    const m = monthName(t.data);
+    const head = m !== month ? `<tr class="mese"><td colspan="5"><h2 class="turni-mese">${m}</h2></td></tr>` : '';
+    month = m;
+    const giorno = giornoTurno(t.data);
+    return `${head}
     <tr class="${t.id === curId ? 'cur' : ''}${t.saltata ? ' off' : ''}${t.data < today ? ' past' : ''}">
-      <td class="left d"><b>${dataBreve(t.data)}</b>${t.data !== t.settimana ? `<span class="mv">da ${dataBreve(t.settimana)}</span>` : ''}</td>
+      <td class="left d"><div class="turno-dd${t.data !== t.settimana ? ' moved' : ''}"><b>${Number(t.data.slice(8))}</b>${giorno ? `<small>${giorno}</small>` : ''}</div>${t.data !== t.settimana ? `<span class="mv">da ${dataBreve(t.settimana)}</span>` : ''}</td>
       ${nameCell(t, 1)}${nameCell(t, 2)}${noteCell(t)}
       <td>${giornoModificabile(t) ? `<button type="button" class="btn btn-line btn-giorno" onclick="apriGiorno(${t.id})">Modifica giorno</button>` : ''}</td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 
   const next = turni.find(t => t.data >= today && !t.saltata && t.turnisti.some(p => p && p.id === myId));
   // "il tuo prossimo turno" with the date in a badge

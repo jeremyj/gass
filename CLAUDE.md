@@ -50,7 +50,7 @@
   - `utils.js` also holds the Storico → Consegna links: `openConsegnaOn(date)` (goes to `/consegna?data=<date>`), `consegnaHref(date)`, `storicoDateLink` (the row's date is a real link, the row onclick only a pointer shortcut), `storicoHint` (instruction on top; 2.24.1: the user removed the per-row "Dettaglio" and "Riapri consegna" links — the row opens the consegna, which has the detail and the Riapri button), `formatCassa` (negative cassa with typographic minus; Storico adds the `db` class)
 - **Page-Specific**: `public/js/`
   - Mobile: `consegna.js`, `debiti.js`, `storico.js`, `turni.js` (`turni.html`, agenda; tapping a row opens it inline with the name menus and "Modifica giorno" like desktop, plus "Il tuo turno" shortcuts; loads `calendar.js`)
-  - Desktop: `consegna-desktop.js`, `debiti-desktop.js`, `storico-desktop.js`, `logs-desktop.js`, `teatro-desktop.js` (`teatro-desktop.html`, admin; nav item `#nav-teatro` toggled with `#nav-logs` in `auth.js`), `turni-desktop.js` (`turni-desktop.html`, everyone edits names + Modifica giorno; admin: pauses, notes)
+  - Desktop: `consegna-desktop.js`, `debiti-desktop.js`, `storico-desktop.js`, `logs-desktop.js`, `teatro-desktop.js` (`teatro-desktop.html`, admin; nav item `#nav-teatro` toggled with `#nav-logs` in `auth.js`), `turni-desktop.js` (`turni-desktop.html`, rows under month headings with the day number like mobile, everyone edits names + Modifica giorno; admin: pauses, notes)
 
 ### HTML Script Loading Order
 ```html
