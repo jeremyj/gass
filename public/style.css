@@ -787,7 +787,7 @@ body:has(.giornata-sheet.aperto) { overflow: hidden; }
 .turno-swap .btn { flex: 1; }
 .tag-tu { font-size: 16px; font-weight: 800; letter-spacing: .03em; color: var(--s-deep); background: var(--s-tint); border: 1.5px solid var(--s-acc); border-radius: 6px; padding: 1px 9px; }
 .tag-riunione { font-size: 16px; font-weight: 700; color: #fff; background: var(--s-alt); border-radius: 6px; padding: 1px 9px; white-space: nowrap; }
-.turni-t td.d b { font-family: var(--serif); font-size: 19px; text-transform: capitalize; }
+.turni-t td.d b { font-family: var(--serif); font-size: 19px; }
 .turni-t td.d .mv { display: block; font-size: 16px; font-weight: 700; color: var(--s-alt); }
 .turni-t tr.cur td { background: var(--s-tint); }
 .turni-t tr.cur td:first-child { box-shadow: inset 4px 0 0 var(--s-acc); }

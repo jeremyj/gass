@@ -5,7 +5,9 @@
 // consegne are on Tuesday: the weekday shows only for a turno moved to another day
 // ("mar" was read as March)
 const giornoTurno = d => new Date(d + 'T00:00:00').getDay() === 2 ? '' : weekdayShort(d);
-const dataBreve = d => `${giornoTurno(d)} ${formatDateItalian(d).slice(0, 5)}`.trim();
+// "19 gen", "mer 21 gen"
+const meseBreve = d => new Date(d + 'T00:00:00').toLocaleDateString('it-IT', { month: 'short' }).replace('.', '');
+const dataBreve = d => `${giornoTurno(d)} ${Number(d.slice(8))} ${meseBreve(d)}`.trim();
 
 function primoTurnoDi(turni, userId, escludiId) {
   return turni.find(x => x.id !== escludiId && !x.saltata && x.data >= toLocalDateString()
