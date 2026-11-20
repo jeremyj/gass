@@ -54,7 +54,7 @@ function renderTurni() {
     const action = tap && !open ? `<button type="button" class="link-btn" aria-expanded="false">Apri</button>` : '';
     html += `
       <li class="${t.id === curId ? 'cur' : ''}${t.data < today ? ' past' : ''}${t.saltata ? ' off' : ''}${tap ? ' tap' : ''}${open ? ' open' : ''}"${tap ? ` onclick="tocca(event, ${t.id})"` : ''}>
-        <div class="turno-dd${t.data !== t.settimana ? ' moved' : ''}"><b>${Number(t.data.slice(8))}</b><small>${weekdayShort(t.data)}</small></div>
+        <div class="turno-dd${t.data !== t.settimana ? ' moved' : ''}"><b>${Number(t.data.slice(8))}</b>${giornoTurno(t.data) ? `<small>${giornoTurno(t.data)}</small>` : ''}</div>
         <div class="turno-who">${turnoWhoHtml(t)}</div>
         <div class="turno-act">${tags}${action}</div>${open ? turnoEditHtml(t) : ''}
       </li>`;

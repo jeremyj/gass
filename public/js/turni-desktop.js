@@ -28,7 +28,7 @@ function renderTurni() {
   const curId = turni.find(t => t.data >= today)?.id;
   body.innerHTML = turni.map(t => `
     <tr class="${t.id === curId ? 'cur' : ''}${t.saltata ? ' off' : ''}${t.data < today ? ' past' : ''}">
-      <td class="left d"><b>${weekdayShort(t.data)} ${formatDateItalian(t.data).slice(0, 5)}</b>${t.data !== t.settimana ? `<span class="mv">da ${weekdayShort(t.settimana)} ${formatDateItalian(t.settimana).slice(0, 5)}</span>` : ''}</td>
+      <td class="left d"><b>${dataBreve(t.data)}</b>${t.data !== t.settimana ? `<span class="mv">da ${dataBreve(t.settimana)}</span>` : ''}</td>
       ${nameCell(t, 1)}${nameCell(t, 2)}${noteCell(t)}
       <td>${giornoModificabile(t) ? `<button type="button" class="btn btn-line btn-giorno" onclick="apriGiorno(${t.id})">Modifica giorno</button>` : ''}</td>
     </tr>`).join('');

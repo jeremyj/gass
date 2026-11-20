@@ -2,7 +2,10 @@
 // "scambia con…": the chosen person takes the picked slot, the picked person
 // takes the chosen one's first non-skipped turno from today (same rule as the server).
 
-const dataBreve = d => `${weekdayShort(d)} ${formatDateItalian(d).slice(0, 5)}`;
+// consegne are on Tuesday: the weekday shows only for a turno moved to another day
+// ("mar" was read as March)
+const giornoTurno = d => new Date(d + 'T00:00:00').getDay() === 2 ? '' : weekdayShort(d);
+const dataBreve = d => `${giornoTurno(d)} ${formatDateItalian(d).slice(0, 5)}`.trim();
 
 function primoTurnoDi(turni, userId, escludiId) {
   return turni.find(x => x.id !== escludiId && !x.saltata && x.data >= toLocalDateString()
